@@ -24,12 +24,15 @@ import javax.vecmath.*;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class MatrixUtils
 {
     /** Work variable for the fallback lookat calculations. */
     private AxisAngle4f orient;
+
+    /** Work variable for the fallback lookat calculations. */
+    private AxisAngle4d orientd;
 
     /**
      * Construct a default instance of this class.
@@ -134,6 +137,109 @@ public class MatrixUtils
         res.m21 = (float)d1;
         res.m22 = (float)d2;
         res.m23 = (float)(-eye.x * res.m20 - eye.y * res.m21 - eye.z * res.m22);
+
+        res.m30 = 0;
+        res.m31 = 0;
+        res.m32 = 0;
+        res.m33 = 1;
+    }
+
+    /**
+     * Perform a LookAt camera calculation and place it in the given matrix.
+     * If using this for a viewing transformation, you should invert() the
+     * matrix after the call.
+     *
+     * @param eye The eye location
+     * @param center The place to look at
+     * @param up The up vector
+     * @param res The result to put the calculation into
+     */
+    public void lookAt(Point3d eye,
+                       Point3d center,
+                       Vector3d up,
+                       Matrix4d res)
+    {
+        double d = eye.x - center.x;
+        double d1 = eye.y - center.y;
+        double d2 = eye.z - center.z;
+
+        double det = d * d + d1 * d1 + d2 * d2;
+        if(det != 1)
+        {
+            if(det == 0)
+            {
+                res.setIdentity();
+                res.m03 = eye.x;
+                res.m13 = eye.y;
+                res.m23 = eye.z;
+                return;
+            }
+
+            det = 1 / Math.sqrt(det);
+            d *= det;
+            d1 *= det;
+            d2 *= det;
+        }
+
+        double d4 = up.x;
+        double d5 = up.y;
+        double d6 = up.z;
+
+        det = (up.x * up.x + up.y * up.y + up.z * up.z);
+        if(det != 1)
+        {
+            if(det == 0)
+                throw new IllegalArgumentException("Up vector is all zeroes");
+
+            det = 1 / Math.sqrt(det);
+            d4 *= det;
+            d5 *= det;
+            d6 *= det;
+        }
+
+        double d7 = d5 * d2 - d1 * d6;
+        double d8 = d6 * d - d4 * d2;
+        double d9 = d4 * d1 - d5 * d;
+
+        det = d7 * d7 + d8 * d8 + d9 * d9;
+
+        if(det != 1)
+        {
+            // If this value is zero then we have a case where the up vector is
+            // parallel to the eye-center vector. In this case, set the
+            // translation to the normal location and recalculate everything
+            // again using the slow way using a reference of the normal view
+            // orientation pointing along the -Z axis.
+            if(det == 0)
+            {
+                lookAtFallback(eye, d, d1, d2, res);
+                return;
+            }
+
+            det = 1 / Math.sqrt(det);
+            d7 *= det;
+            d8 *= det;
+            d9 *= det;
+        }
+
+        d4 = d1 * d9 - d8 * d2;
+        d5 = d2 * d7 - d * d9;
+        d6 = d * d8 - d1 * d7;
+
+        res.m00 = d7;
+        res.m01 = d8;
+        res.m02 = d9;
+        res.m03 = (-eye.x * res.m00 - eye.y * res.m01 - eye.z * res.m02);
+
+        res.m10 = d4;
+        res.m11 = d5;
+        res.m12 = d6;
+        res.m13 = (-eye.x * res.m10 - eye.y * res.m11 - eye.z * res.m12);
+
+        res.m20 = d;
+        res.m21 = d1;
+        res.m22 = d2;
+        res.m23 = (-eye.x * res.m20 - eye.y * res.m21 - eye.z * res.m22);
 
         res.m30 = 0;
         res.m31 = 0;
@@ -304,4 +410,54 @@ public class MatrixUtils
         res.m13 = eye.y;
         res.m23 = eye.z;
     }
+
+    /**
+     * Perform a LookAt camera calculation and place it in the given matrix.
+     * If using this for a viewing transformation, you should invert() the
+     * matrix after the call.
+     *
+     * @param eye The eye location
+     * @param center The place to look at
+     * @param up The up vector
+     * @param res The result to put the calculation into
+     */
+    private void lookAtFallback(Point3d eye,
+                                double evX,
+                                double evY,
+                                double evZ,
+                                Matrix4d res)
+    {
+         // cross product of the -Z axis and the direction vector (ev? params).
+         // This gives the rotation axis to put into the matrix. Since we know
+         // the original -Z axis is (0, 0, -1) then we can skip a lot of the
+         // calculations to be done.
+        double rot_x = evY;   //  0 * evZ - -1 * evY;
+        double rot_y = -evX;  // -1 * evX - 0 * evZ;
+        double rot_z = 0;     //  0 * evY - 0 * evX;
+
+        // Angle is  cos(theta) = (A / |A|) . (B / |B|)
+        // A is the -Z vector. B is ev? values that need to be normalised first
+        double n = evX * evX + evY * evY + evZ * evZ;
+        if(n != 0 || n != 1)
+        {
+            n = 1 / (double)Math.sqrt(n);
+            evX *= n;
+            evY *= n;
+            evZ *= n;
+        }
+
+        double dot = -evZ;   // 0 * evX + 0 * evY + -1 * evZ;
+        double angle = (double)Math.acos(dot);
+
+        if(orientd == null)
+            orientd = new AxisAngle4d(rot_x, rot_y, rot_z, angle);
+        else
+            orientd.set(rot_x, rot_y, rot_z, angle);
+
+        res.set(orientd);
+        res.m03 = eye.x;
+        res.m13 = eye.y;
+        res.m23 = eye.z;
+    }
+
 }
