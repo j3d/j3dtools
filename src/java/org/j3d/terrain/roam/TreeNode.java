@@ -45,20 +45,25 @@ package org.j3d.terrain.roam;
 
 // Standard imports
 import java.util.LinkedList;
-import javax.vecmath.Point3f;
+
 import javax.vecmath.Color3f;
+import javax.vecmath.Tuple3f;
 
 // Application specific imports
 import org.j3d.terrain.ViewFrustum;
 import org.j3d.terrain.TerrainData;
 
 /**
+ * Represents a single node of the triangle mesh of the patch.
  *
  * @author  Paul Byrne, Justin Couch
  * @version
  */
 class TreeNode
 {
+    /** The visibility status of this node in the tree is not known. */
+    public static final int UNDEFINED = -1;
+
     TreeNode leftChild;
     TreeNode rightChild;
 
@@ -68,15 +73,13 @@ class TreeNode
 
     TreeNode parent;
 
-    int leftX, leftY;       // Pointers into terrainData
-    int rightX, rightY;
-    int apexX, apexY;
+    private int leftX, leftY;       // Pointers into terrainData
+    private int rightX, rightY;
+    private int apexX, apexY;
 
-    int node;
+    private int node;
 
-    int depth;      // For debugging
-
-    public static final int UNDEFINED = -1;
+    private int depth;      // For debugging
 
     int visible = UNDEFINED;
 
@@ -118,18 +121,18 @@ class TreeNode
     /**
      * Creates new TreeNode customised with all the data set.
      */
-    public TreeNode(int leftX,
-                    int leftY,
-                    int rightX,
-                    int rightY,
-                    int apexX,
-                    int apexY,
-                    int node,
-                    TerrainData terrainData,
-                    ViewFrustum landscapeView,
-                    int parentVisible,
-                    int depth,
-                    VarianceTree varianceTree)
+    TreeNode(int leftX,
+             int leftY,
+             int rightX,
+             int rightY,
+             int apexX,
+             int apexY,
+             int node,
+             TerrainData terrainData,
+             ViewFrustum landscapeView,
+             int parentVisible,
+             int depth,
+             VarianceTree varianceTree)
     {
         this.leftX = leftX;
         this.leftY = leftY;
@@ -176,65 +179,11 @@ class TreeNode
         init(landscapeView, parentVisible);
     }
 
-    private void init(ViewFrustum landscapeView, int parentVisible)
-    {
-        float tmp[] = new float[3];
-        float texTmp[] = new float[2];
-
-        terrainData.getCoordinateFromGrid(tmp, texTmp, leftX, leftY);
-        p1X = tmp[0];
-        p1Y = tmp[1];
-        p1Z = tmp[2];
-
-        p1tS = texTmp[0];
-        p1tT = texTmp[1];
-
-        terrainData.getCoordinateFromGrid(tmp, texTmp, rightX, rightY);
-        p2X = tmp[0];
-        p2Y = tmp[1];
-        p2Z = tmp[2];
-
-        p2tS = texTmp[0];
-        p2tT = texTmp[1];
-
-        terrainData.getCoordinateFromGrid(tmp, texTmp, apexX, apexY);
-        p3X = tmp[0];
-        p3Y = tmp[1];
-        p3Z = tmp[2];
-
-        p3tS = texTmp[0];
-        p3tT = texTmp[1];
-
-        /*
-        p1X = (float)leftX*scale;
-        p1Y = heightMap[leftX][leftY];
-        p1Z = (float)-leftY*scale;
-        p2X = (float)rightX*scale;
-        p2Y = heightMap[rightX][rightY];
-        p2Z = (float)-rightY*scale;
-        p3X = (float)apexX*scale;
-        p3Y = heightMap[apexX][apexY];
-        p3Z = (float)-apexY*scale;
-         */
-
-        // Check the visibility of this triangle
-        if(parentVisible == UNDEFINED ||
-           parentVisible == ViewFrustum.CLIPPED)
-        {
-            visible = landscapeView.isTriangleInFrustum(p1X, p1Y, p1Z,
-                                                        p2X, p2Y, p2Z,
-                                                        p3X, p3Y, p3Z);
-        }
-        else
-            visible = parentVisible;
-
-        variance = 0;
-    }
-
     /**
-     * Reset this node by
-     *     removing all it's children,
-     *     set visible depending on visibiling in view
+     * Reset this node by removing all it's children, set visible depending
+     * on visibiling in view.
+     *
+     * @param landscapeView The latest view of the tree
      */
     void reset(ViewFrustum landscapeView)
     {
@@ -255,11 +204,17 @@ class TreeNode
         rightNeighbour = null;
 
         visible = landscapeView.isTriangleInFrustum(p1X, p1Y, p1Z,
-                                                        p2X, p2Y, p2Z,
-                                                        p3X, p3Y, p3Z);
+                                                    p2X, p2Y, p2Z,
+                                                    p3X, p3Y, p3Z);
     }
 
-    public boolean isLeaf()
+    /**
+     * Check to see if this treenode is a leaf or a branch. A leaf does not
+     * have a left-hand child node.
+     *
+     * @return true if this is a leaf
+     */
+    boolean isLeaf()
     {
         return (leftChild == null);
     }
@@ -290,16 +245,16 @@ class TreeNode
         addTreeNode(this);
     }
 
-    void computeVariance(Point3f position, QueueManager queueManager)
+    /**
+     * Request the recomputation of the variance of this node and place the
+     * node on the queue ready for processing.
+     *
+     * @param position The location to compute the value from
+     * @param queueManager The queue to place the node on
+     */
+    void computeVariance(Tuple3f position, QueueManager queueManager)
     {
-        float centerX = (p1X + p2X) * 0.5f;
-        float centerZ = -(p1Y + p2Y) * 0.5f;
-
-        float distance = (float)Math.sqrt(Math.pow(position.x - centerX, 2) +
-                                          Math.pow(position.z - centerZ, 2));
-
-        double angle = Math.atan(varianceTree.getVariance(node) / distance);
-        variance = (float)Math.abs(angle);
+        computeVariance(position);
 
         queueManager.addTriangle(this);
     }
@@ -307,6 +262,8 @@ class TreeNode
     /**
      * If this triangle was half of a diamond then remove the
      * diamond from the diamondQueue
+     *
+     * @param queueManager The queue to remove the node from
      */
     void removeDiamond(QueueManager queueManager)
     {
@@ -324,7 +281,15 @@ class TreeNode
         }
     }
 
-    int split(Point3f position,
+    /**
+     * Split this tree node into two smaller triangle tree nodes.
+     *
+     * @param position The current view location
+     * @param landscapeView The view information
+     * @param queueManager The queue to place newly generated items on
+     * @return The number of triangles generated as a result
+     */
+    int split(Tuple3f position,
               ViewFrustum landscapeView,
               QueueManager queueManager)
     {
@@ -381,6 +346,12 @@ class TreeNode
         return triCount;
     }
 
+    /**
+     * Merge the children nodes of this node into a single triangle.
+     *
+     * @param queueManager The queue to put the merged node on
+     * @return The number of triangles that were reduced as a result
+     */
     int merge(QueueManager queueManager)
     {
         int trisRemoved = 0;
@@ -429,6 +400,7 @@ class TreeNode
         // Not sure this needs to be here
         if(error)
         {
+System.out.println("In error area");
             byte clrR;
             byte clrG;
             byte clrB;
@@ -526,7 +498,7 @@ class TreeNode
     /**
      * Update the tree depending on the view position and variance
      */
-    void updateTree(Point3f position,
+    void updateTree(Tuple3f position,
                     ViewFrustum landscapeView,
                     VarianceTree varianceTree,
                     int parentVisible,
@@ -551,15 +523,7 @@ class TreeNode
            depth < varianceTree.getMaxDepth() &&
            visible != ViewFrustum.OUT)
         {
-            float centerX = (p1X + p2X) * 0.5f;
-            float centerZ = -(p1Y + p2Y) * 0.5f;
-
-            float pos_x = (position.x - centerX) * (position.x - centerX);
-            float pos_z = (position.z - centerZ) * (position.z - centerZ);
-            float distance = (float)Math.sqrt(pos_x + pos_z);
-
-            float angle = varianceTree.getVariance(node) / distance;
-            variance = (float)Math.abs(Math.atan(angle));
+            computeVariance(position);
 
             queueManager.addTriangle(this);
         }
@@ -578,15 +542,7 @@ class TreeNode
 // for the new position
                 if(visible != ViewFrustum.OUT)
                 {
-                    float centerX = (p1X + p2X) * 0.5f;
-                    float centerZ = -(p1Y + p2Y) * 0.5f;
-                    float pos_x = (position.x - centerX) * (position.x - centerX);
-                    float pos_z = (position.z - centerZ) * (position.z - centerZ);
-                    float distance = (float)Math.sqrt(pos_x + pos_z);
-
-                    float angle = varianceTree.getVariance(node) / distance;
-
-                    variance = (float)Math.abs(Math.atan(angle));
+                    computeVariance(position);
 
                     if(baseNeighbour != null)
                         diamondVariance = Math.max(variance,
@@ -630,9 +586,89 @@ class TreeNode
     //----------------------------------------------------------
 
     /**
+     * Internal common initialization for the startup of the class.
+     *
+     * @param landscapeView view information at start time
+     * @param parentVisible Flag about the visibility state of the parent
+     *    tree node
+     */
+    private void init(ViewFrustum landscapeView, int parentVisible)
+    {
+        float tmp[] = new float[3];
+        float texTmp[] = new float[2];
+
+        terrainData.getCoordinateFromGrid(tmp, texTmp, leftX, leftY);
+        p1X = tmp[0];
+        p1Y = tmp[1];
+        p1Z = tmp[2];
+
+        p1tS = texTmp[0];
+        p1tT = texTmp[1];
+
+        terrainData.getCoordinateFromGrid(tmp, texTmp, rightX, rightY);
+        p2X = tmp[0];
+        p2Y = tmp[1];
+        p2Z = tmp[2];
+
+        p2tS = texTmp[0];
+        p2tT = texTmp[1];
+
+        terrainData.getCoordinateFromGrid(tmp, texTmp, apexX, apexY);
+        p3X = tmp[0];
+        p3Y = tmp[1];
+        p3Z = tmp[2];
+
+        p3tS = texTmp[0];
+        p3tT = texTmp[1];
+
+        /*
+        p1X = (float)leftX*scale;
+        p1Y = heightMap[leftX][leftY];
+        p1Z = (float)-leftY*scale;
+        p2X = (float)rightX*scale;
+        p2Y = heightMap[rightX][rightY];
+        p2Z = (float)-rightY*scale;
+        p3X = (float)apexX*scale;
+        p3Y = heightMap[apexX][apexY];
+        p3Z = (float)-apexY*scale;
+         */
+
+        // Check the visibility of this triangle
+        if(parentVisible == UNDEFINED ||
+           parentVisible == ViewFrustum.CLIPPED)
+        {
+            visible = landscapeView.isTriangleInFrustum(p1X, p1Y, p1Z,
+                                                        p2X, p2Y, p2Z,
+                                                        p3X, p3Y, p3Z);
+        }
+        else
+            visible = parentVisible;
+
+        variance = 0;
+    }
+
+    /**
+     * Compute the variance variable value.
+     *
+     * @param position The position for the computation
+     */
+    private void computeVariance(Tuple3f position)
+    {
+        float center_x = (p1X + p2X) * 0.5f;
+        float center_z = -(p1Y + p2Y) * 0.5f;
+        float pos_x = (position.x - center_x) * (position.x - center_x);
+        float pos_z = (position.z - center_z) * (position.z - center_z);
+        float distance = (float)Math.sqrt(pos_x + pos_z);
+
+        float angle = varianceTree.getVariance(node) / distance;
+
+        variance = (float)Math.abs(Math.atan(angle));
+    }
+
+    /**
      * Forceful split of this triangle and turns it into two triangles.
      */
-    private void splitTriangle(Point3f position,
+    private void splitTriangle(Tuple3f position,
                                ViewFrustum landscapeView,
                                QueueManager queueManager)
     {
@@ -675,7 +711,7 @@ class TreeNode
         }
     }
 
-    private void split2(Point3f position,
+    private void split2(Tuple3f position,
                         ViewFrustum landscapeView,
                         QueueManager queueManager)
     {
