@@ -39,7 +39,7 @@ import javax.vecmath.Vector3f;
  * that the normal points directly away from the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SphereGenerator extends GeometryGenerator
 {
@@ -248,10 +248,10 @@ public class SphereGenerator extends GeometryGenerator
         switch(data.geometryType)
         {
             case GeometryData.TRIANGLES:
-                ret_val = facetCount * facetCount * 3;
+                ret_val = facetCount * facetCount * 6;
                 break;
             case GeometryData.QUADS:
-                ret_val = facetCount * facetCount * 2;
+                ret_val = facetCount * facetCount * 4;
                 break;
 
             // These all have the same vertex count
@@ -750,6 +750,9 @@ public class SphereGenerator extends GeometryGenerator
     {
         int vtx_cnt = facetCount * facetCount * 6;
 
+        if(useHalf)
+            vtx_cnt /= 2;
+
         if(data.coordinates == null)
             data.coordinates = new float[vtx_cnt * 3];
         else if(data.coordinates.length < vtx_cnt * 3)
@@ -764,7 +767,7 @@ public class SphereGenerator extends GeometryGenerator
 
         // quad torus generates coordinates at facetCount * 3 indexes apart.
         // Go around and build coordinate arrays from this.
-        int half = facetCount / 2;
+        int half = facetCount / 4;
         int i, k;
         int facet_inc = facetCount * 3;
         int last_facet = facetCount - 1; // always stop one short of the end
@@ -880,6 +883,9 @@ public class SphereGenerator extends GeometryGenerator
     {
         int vtx_cnt = getVertexCount(data);
 
+        if(useHalf)
+            vtx_cnt /= 2;
+
         if(data.coordinates == null)
             data.coordinates = new float[vtx_cnt * 3];
         else if(data.coordinates.length < vtx_cnt * 3)
@@ -984,6 +990,9 @@ public class SphereGenerator extends GeometryGenerator
         throws InvalidArraySizeException
     {
         int vtx_cnt = facetCount * (facetCount + 1) * 2;
+
+        if(useHalf)
+            vtx_cnt /= 2;
 
         if(data.coordinates == null)
             data.coordinates = new float[vtx_cnt * 3];
@@ -1100,15 +1109,16 @@ public class SphereGenerator extends GeometryGenerator
     private void generateNormals(GeometryData data)
         throws InvalidArraySizeException
     {
+        int vtx_cnt = getVertexCount(data);
+
         if(data.normals == null)
-            data.normals = new float[data.coordinates.length];
-        else if(data.normals.length < data.coordinates.length)
+            data.normals = new float[vtx_cnt * 3];
+        else if(data.normals.length < vtx_cnt * 3)
             throw new InvalidArraySizeException("Normals",
                                                 data.normals.length,
-                                                data.coordinates.length);
+                                                vtx_cnt * 3);
 
         float[] normals = data.normals;
-        int vtx_cnt = normals.length / 3;
         Vector3f norm;
         int count = 0;
 
