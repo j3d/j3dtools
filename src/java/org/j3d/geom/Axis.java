@@ -29,7 +29,7 @@ import javax.vecmath.Color3f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Axis extends Group
 {
@@ -92,14 +92,17 @@ public class Axis extends Group
         Color3f blue = new Color3f(0, 0, 0.8f);
         Material blue_material = new Material();
         blue_material.setDiffuseColor(blue);
+        blue_material.setLightingEnable(true);
 
         Color3f red = new Color3f(0.8f,0, 0);
         Material red_material = new Material();
         red_material.setDiffuseColor(red);
+        red_material.setLightingEnable(true);
 
         Color3f green = new Color3f(0, 0.8f, 0);
         Material green_material = new Material();
         green_material.setDiffuseColor(green);
+        green_material.setLightingEnable(true);
 
         Appearance x_app = new Appearance();
         x_app.setMaterial(red_material);
