@@ -36,7 +36,7 @@ import java.util.List;
  * users too.
  *
  * @author David Yazel
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class OverlayUtilities
 {
@@ -102,8 +102,23 @@ public class OverlayUtilities
      */
     public static List subdivide(Dimension dimension, int threshhold, int max)
     {
-        List cols = components(dimension.width, threshhold, max);
-        List rows = components(dimension.height, threshhold, max);
+        return subdivide(dimension.width, dimension.height, threshhold, max);
+    }
+
+    /**
+     * Subdivides an area into a closest fit set of Rectangle with sides that are
+     * powers of 2. All elements will be less than max and greater than the minimum
+     * value by threshhold.
+     *
+     * @param dimension The required total size
+     * @param threshold The minimum required size
+     * @param max The maximum required size
+     * @return A collection of the rectangles needed to construct the total size
+     */
+    public static List subdivide(int width, int height, int threshhold, int max)
+    {
+        List cols = components(width, threshhold, max);
+        List rows = components(height, threshhold, max);
         List parts = new ArrayList();
 
         int i = 0, j = 0;

@@ -72,13 +72,16 @@ import javax.vecmath.Vector3d;
  * the overlays.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class OverlayBase
     implements Overlay, ScreenComponent, ComponentListener
 {
     /** I do not undersand what this is for */
     private final static double CONSOLE_Z = 2.1f;
+
+    /** Default field of view if we can't work it out */
+    private static final double DEFAULT_FOV = 0.785398;  // PI / 4 == 45 deg
 
     // checks for altered elements
 
@@ -93,6 +96,21 @@ public abstract class OverlayBase
 
     /** Mark the size as dirty and needing correction */
     protected final static int DIRTY_SIZE = 3;
+
+    /** Default amount of inset that this overlay uses */
+    protected static final int DEFAULT_INSET = 5;
+
+    /** Inset (border spacing) for the left edge */
+    protected int leftInset;
+
+    /** Inset (border spacing) for the right edge */
+    protected int rightInset;
+
+    /** Inset (border spacing) for the top edge */
+    protected int topInset;
+
+    /** Inset (border spacing) for the bottom edge */
+    protected int bottomInset;
 
 
     /** The current background mode. Defaults to copy */
@@ -150,6 +168,14 @@ public abstract class OverlayBase
     protected BranchGroup consoleBG;
 
     /**
+     * An empty branchgroup used to clear the consoleBG. There's a bug that
+     * says that I can't use setChild(null) to clear an item, but leave the
+     * space available. It's more efficient to set than add/remove, so
+     * this makes life easier.
+     */
+    private BranchGroup blankBG;
+
+    /**
      * Contains the texture objects from the suboverlays. Each time the window
      * size changes, this instance is thrown away and replaced with a new one.
      * Ensures that we can change over the raster objects. Always set as child
@@ -175,7 +201,7 @@ public abstract class OverlayBase
      * size is when the user gives us bounds. Resizable when they don't and we
      * track the canvas.
      */
-    private boolean fixedSize;
+    protected final boolean fixedSize;
 
     /** Used to avoid calls to repaint backing up */
     private boolean painting = false;
@@ -272,7 +298,6 @@ public abstract class OverlayBase
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      * @param numBuffers The number of buffers to generate, the default is two
-     * @throws IllegalArgumentException Both the canvas and bounds are null
      */
     protected OverlayBase(Canvas3D canvas,
                           Dimension size,
@@ -281,48 +306,53 @@ public abstract class OverlayBase
                           UpdateManager updateManager,
                           int numBuffers)
     {
-        if(canvas == null && size == null)
-            throw new IllegalArgumentException("Both canvas and size null");
-
         this.numBuffers = numBuffers;
 
         initComplete = false;
+        leftInset = DEFAULT_INSET;
+        rightInset = DEFAULT_INSET;
+        topInset = DEFAULT_INSET;
+        bottomInset = DEFAULT_INSET;
+
         canvas3D = canvas;
 
         if(size == null)
         {
-            overlayBounds = canvas.getBounds();
-            componentSize = canvas.getSize();
-            View v = canvas.getView();
-
-            if(v == null)
-                fieldOfView = 0.785398;  // PI / 4 == 45 deg
-            else
-                fieldOfView = v.getFieldOfView();
-
             fixedSize = false;
             minDivSize = 1;
+
+            if(canvas != null)
+            {
+                overlayBounds = canvas.getBounds();
+                componentSize = canvas.getSize();
+                View v = canvas.getView();
+
+                fieldOfView = (v == null) ? DEFAULT_FOV : v.getFieldOfView();
+            }
+            else
+            {
+                overlayBounds = new Rectangle();
+                componentSize = new Dimension();
+                fieldOfView = DEFAULT_FOV;
+            }
         }
         else
         {
-            overlayBounds = new Rectangle(0, 0, size.width, size.height);
             fixedSize = true;
             minDivSize = 8;
+            overlayBounds = new Rectangle(0, 0, size.width, size.height);
 
             if(canvas3D != null)
             {
                 componentSize = canvas.getSize();
                 View v = canvas.getView();
 
-                if(v == null)
-                    fieldOfView = 0.785398;  // PI / 4 == 45 deg
-                else
-                    fieldOfView = v.getFieldOfView();
+                fieldOfView = (v == null) ? DEFAULT_FOV : v.getFieldOfView();
             }
             else
             {
                 componentSize = new Dimension(size);
-                fieldOfView = 0.785398;  // PI / 4 == 45 deg
+                fieldOfView = DEFAULT_FOV;
             }
 
         }
@@ -336,10 +366,12 @@ public abstract class OverlayBase
             this.canvas = OverlayUtilities.createBufferedImage(size, hasAlpha);
         }
 
-        if(!fixedSize || (canvas3D != null))
+        if((canvas3D != null) && !fixedSize)
             canvas3D.addComponentListener(this);
 
         // define the branch group where we are putting all the sub-overlays
+        blankBG = new BranchGroup();
+        blankBG.setCapability(BranchGroup.ALLOW_DETACH);
 
         consoleBG = new BranchGroup();
         consoleBG.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
@@ -393,7 +425,10 @@ public abstract class OverlayBase
             textureAttributes.setTextureBlendColor(new Color4f(0, 0, 0, 1));
         }
 
-        List overlays = OverlayUtilities.subdivide(size, minDivSize, 256);
+        List overlays = OverlayUtilities.subdivide(componentSize.width,
+                                                   componentSize.height,
+                                                   minDivSize,
+                                                   256);
 
         subOverlay = new SubOverlay[overlays.size()];
         int n = overlays.size();
@@ -442,7 +477,7 @@ public abstract class OverlayBase
      */
     public void setComponentDetails(Dimension size, double fov)
     {
-        componentSize = size;
+        componentSize.setSize(size);
         fieldOfView = fov;
 
         if(fixedSize)
@@ -483,6 +518,34 @@ public abstract class OverlayBase
             overlayBounds.height = h;
             dirty(DIRTY_SIZE);
         }
+    }
+
+    /**
+     * Set the insets for this overlay. Note that this will not force a
+     * dirty condition. A derived class will need to override the other
+     * setInsets() method (this one calls it directly) and make any size
+     * recalculations and dirty bit handling if this is needed.
+     *
+     * @param insets The new set of values to use for insets
+     */
+    public void setInsets(Insets insets)
+    {
+        setInsets(insets.left, insets.top, insets.right, insets.bottom);
+    }
+
+    /**
+     * Set the insets for this overlay. Note that this will not force a
+     * dirty condition. A derived class will need to override this method and
+     * make any size recalculations and dirty bit handling if this is needed.
+     *
+     * @param insets The new set of values to use for insets
+     */
+    public void setInsets(int left, int top, int right, int bottom)
+    {
+        leftInset = left;
+        topInset = top;
+        rightInset = right;
+        bottomInset = bottom;
     }
 
     /**
@@ -919,7 +982,8 @@ public abstract class OverlayBase
     {
         synchronized(overlayBounds)
         {
-            if(componentSize.width == 0 || componentSize.height == 0)
+            if(componentSize.width == 0 || componentSize.height == 0 ||
+               overlayBounds.width == 0 || overlayBounds.height == 0)
                 return;
 
             if(canvas == null)
@@ -968,7 +1032,7 @@ public abstract class OverlayBase
      */
     private void syncSize()
     {
-        if(!fixedSize)
+        if(!fixedSize && (canvas3D != null))
             overlayBounds = canvas3D.getBounds();
 
         if((overlayBounds.width != 0) && (overlayBounds.height != 0))
@@ -1010,7 +1074,7 @@ public abstract class OverlayBase
             consoleTG = null;
             subOverlay = new SubOverlay[0];
 
-            consoleBG.setChild(null, 0);
+            consoleBG.setChild(blankBG, 0);
         }
 
 

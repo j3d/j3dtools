@@ -36,7 +36,7 @@ import javax.media.j3d.Canvas3D;
  * is white. Alignment of the text is set to the top-left of the overlay.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class LabelOverlay extends OverlayBase
 {
@@ -80,6 +80,9 @@ public class LabelOverlay extends OverlayBase
     /** The font to render the text in */
     private Font font;
 
+    /** Rendering context to generate text size calculations. */
+    private FontRenderContext renderContext;
+
     /** The colour to use to render the font with */
     private Color color;
 
@@ -94,12 +97,6 @@ public class LabelOverlay extends OverlayBase
 
     /** The current Y position to render the text in */
     private int textY;
-
-    /**
-     * Flag to say the text string has changed and the coordinates should be
-     * recalculated during the next paint cycle.
-     */
-    private boolean textChanged;
 
     /**
      * Create a new, simple label overlay that does not contain any text.
@@ -196,11 +193,20 @@ public class LabelOverlay extends OverlayBase
         this.color = (color == null) ? DEFAULT_COLOR : color;
         this.text = str;
         renderedText = text;
+
+        visibleLength = -1;
+        renderContext = new FontRenderContext(null, true, true);
+
         setVerticalAlignment(vAlign);
         setHorizontalAlignment(hAlign);
-        textChanged = true;
-        visibleLength = -1;
+
+        resize();
+        repositionText();
     }
+
+    //------------------------------------------------------------------------
+    // Methods defined by OverlayBase
+    //------------------------------------------------------------------------
 
     /**
      * Repaint the overlay now. Overrides the base class to provide text
@@ -215,60 +221,21 @@ public class LabelOverlay extends OverlayBase
 
         g.setColor(color);
         g.setFont(font);
-
-        if(textChanged)
-        {
-            FontRenderContext frc = g.getFontRenderContext();
-            LineMetrics lm = font.getLineMetrics(renderedText, frc);
-            float x = 0;
-            float y = 0;
-
-            switch(verticalAlignment)
-            {
-                case TOP_ALIGN:
-                    y = lm.getAscent() + lm.getLeading();
-                    break;
-
-                case BOTTOM_ALIGN:
-                    y = overlayBounds.height - lm.getDescent() -
-                            lm.getLeading();
-                    break;
-
-                case CENTER_ALIGN:
-                    y = (overlayBounds.height / 2) + (lm.getHeight() / 2);
-                    break;
-            }
-
-            Rectangle2D text_bounds = font.getStringBounds(renderedText, frc);
-            float width = 0;
-
-            if(text_bounds instanceof Rectangle)
-                width = ((Rectangle)text_bounds).width;
-            else if(text_bounds instanceof Rectangle2D.Float)
-                width = ((Rectangle.Float)text_bounds).width;
-            else if(text_bounds instanceof Rectangle2D.Double)
-                width = (float)((Rectangle.Double)text_bounds).width;
-
-            switch(horizontalAlignment)
-            {
-                case LEFT_ALIGN:
-                    x = 0;
-                    break;
-
-                case RIGHT_ALIGN:
-                    x = overlayBounds.width - width;
-                    break;
-
-                case CENTER_ALIGN:
-                    x = (overlayBounds.width / 2) - (width / 2);
-                    break;
-            }
-
-            textX = (int)x;
-            textY = (int)y;
-        }
-
         g.drawString(renderedText, textX, textY);
+    }
+
+    /**
+     * Set the insets for this overlay. Note that this will not force a
+     * dirty condition. A derived class will need to override this method and
+     * make any size recalculations and dirty bit handling if this is needed.
+     *
+     * @param insets The new set of values to use for insets
+     */
+    public void setInsets(int left, int top, int right, int bottom)
+    {
+        super.setInsets(left, top, right, bottom);
+        resize();
+        repositionText();
     }
 
     //------------------------------------------------------------------------
@@ -296,7 +263,7 @@ public class LabelOverlay extends OverlayBase
                 throw new IllegalArgumentException(BAD_ALIGN_MSG);
         }
 
-        textChanged = true;
+        repositionText();
     }
 
     /**
@@ -330,7 +297,7 @@ public class LabelOverlay extends OverlayBase
                 throw new IllegalArgumentException(BAD_ALIGN_MSG);
         }
 
-        textChanged = true;
+        repositionText();
     }
 
     /**
@@ -367,6 +334,8 @@ public class LabelOverlay extends OverlayBase
         if(!font.equals(f))
         {
             font = f;
+            resize();
+            repositionText();
             repaint();
         }
     }
@@ -395,7 +364,8 @@ public class LabelOverlay extends OverlayBase
                 break;
         }
 
-        textChanged = true;
+        resize();
+        repositionText();
         repaint();
     }
 
@@ -435,7 +405,103 @@ public class LabelOverlay extends OverlayBase
                 break;
         }
 
-        textChanged = true;
+        resize();
+        repositionText();
         repaint();
+    }
+
+    /**
+     * Recalculate the size of the overlay needed to hold the string. We
+     * don't recalculate if this is a fixed-size overlay.
+     */
+    private void resize()
+    {
+        if(fixedSize)
+            return;
+
+        LineMetrics lm = font.getLineMetrics(renderedText, renderContext);
+        Rectangle2D text_bounds = font.getStringBounds(renderedText,
+                                                       renderContext);
+        float width = 0;
+        float height = 0;
+
+        if(text_bounds instanceof Rectangle)
+        {
+            width = ((Rectangle)text_bounds).width;
+            height = ((Rectangle)text_bounds).height;
+        }
+        else if(text_bounds instanceof Rectangle2D.Float)
+        {
+            width = ((Rectangle.Float)text_bounds).width;
+            height = ((Rectangle.Float)text_bounds).height;
+        }
+        else if(text_bounds instanceof Rectangle2D.Double)
+        {
+            width = (float)((Rectangle.Double)text_bounds).width;
+            height = (float)((Rectangle.Double)text_bounds).height;
+        }
+
+        width += leftInset + rightInset;
+        height += bottomInset + topInset;
+
+        setSize((int)width, (int)height);
+    }
+
+    /**
+     * Recalculate the textX and textY positions of the text in the overlay.
+     */
+    private void repositionText()
+    {
+        if(renderedText == null)
+            return;
+
+        LineMetrics lm = font.getLineMetrics(renderedText, renderContext);
+        float x = 0;
+        float y = 0;
+
+        switch(verticalAlignment)
+        {
+            case TOP_ALIGN:
+                y = lm.getAscent() + lm.getLeading() + topInset;
+                break;
+
+            case BOTTOM_ALIGN:
+                y = overlayBounds.height - lm.getDescent() -
+                    lm.getLeading() - bottomInset;
+                break;
+
+            case CENTER_ALIGN:
+                y = (overlayBounds.height * 0.5f) + (lm.getHeight() * 0.5f);
+                break;
+        }
+
+        Rectangle2D text_bounds = font.getStringBounds(renderedText,
+                                                       renderContext);
+        float width = 0;
+
+        if(text_bounds instanceof Rectangle)
+            width = ((Rectangle)text_bounds).width;
+        else if(text_bounds instanceof Rectangle2D.Float)
+            width = ((Rectangle.Float)text_bounds).width;
+        else if(text_bounds instanceof Rectangle2D.Double)
+            width = (float)((Rectangle.Double)text_bounds).width;
+
+        switch(horizontalAlignment)
+        {
+            case LEFT_ALIGN:
+                x = leftInset;
+                break;
+
+            case RIGHT_ALIGN:
+                x = overlayBounds.width - width - rightInset;
+                break;
+
+            case CENTER_ALIGN:
+                x = (overlayBounds.width * 0.5f) - (width * 0.5f);
+                break;
+        }
+
+        textX = (int)x;
+        textY = (int)y;
     }
 }
