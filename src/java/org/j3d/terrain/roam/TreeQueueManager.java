@@ -54,7 +54,7 @@ import java.util.TreeSet;
  * @author  Paul Byrne, Justin Couch
  * @version
  */
-public class TreeQueueManager implements QueueManager
+class TreeQueueManager implements QueueManager
 {
     private TreeSet triQueue;
     private TreeSet diamondQueue;
@@ -108,11 +108,21 @@ public class TreeQueueManager implements QueueManager
 
     public TreeNode getSplitCandidate()
     {
-        return (TreeNode)triQueue.last();
+        TreeNode ret_val = null;
+
+        if(!triQueue.isEmpty())
+            ret_val = (TreeNode)triQueue.last();
+
+        return ret_val;
     }
 
     public TreeNode getMergeCandidate()
     {
-        return (TreeNode)diamondQueue.first();
+        TreeNode ret_val = null;
+
+        if(!diamondQueue.isEmpty())
+            ret_val = (TreeNode)diamondQueue.first();
+
+        return ret_val;
     }
 }
