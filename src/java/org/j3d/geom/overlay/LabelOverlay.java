@@ -31,7 +31,7 @@ import javax.media.j3d.Canvas3D;
  * The text is placed with the baseline at 3/4 of the height of the label.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class LabelOverlay extends OverlayBase
 {
@@ -232,7 +232,10 @@ public class LabelOverlay extends OverlayBase
     public void setText(AttributedString text)
     {
         if(text != null)
+        {
             this.text = text;
+            repaint();
+        }
     }
 
     /**
@@ -254,6 +257,7 @@ public class LabelOverlay extends OverlayBase
     public void setVisibleLength(int length)
     {
         visibleLength = (length < 0) ? 0 : length;
+        repaint();
     }
 
 
