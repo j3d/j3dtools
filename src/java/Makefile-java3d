@@ -89,6 +89,7 @@ JARS = j3d-org-util.jar \
     j3d-org-loader-dem.jar \
     j3d-org-loader-stl.jar \
     j3d-org-loader-vterrain.jar \
+    j3d-org-loader-3ds.jar \
     j3d-org-navigation.jar \
     j3d-org-terrain.jar \
     j3d-org-texture.jar \
