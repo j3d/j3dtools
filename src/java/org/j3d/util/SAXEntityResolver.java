@@ -20,7 +20,7 @@ import org.xml.sax.InputSource;
  * An entity resolver for both DOM and SAX models of the SAX document.
  * <p>
  * The entity resolver only handles queries for the DTD. It will find
- * any URI that ends in *.dtd and return an {@link org.xml.sax.InputStream}.
+ * any URI that ends in *.dtd and return an {@link org.xml.sax.InputSource}.
  * <p>
  * As the SAX specification does not yet define what the system resource
  * ID is, we'll take a guess. The current resolution scheme only strips the
@@ -38,7 +38,7 @@ import org.xml.sax.InputSource;
  * The current implementation ignores the publicId information.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SAXEntityResolver implements EntityResolver
 {
@@ -64,7 +64,11 @@ System.out.println(" systemID: " + systemId);
         InputStream is = resolveDTD(systemId);
 
         if(is != null)
+        {
             ret_val = new InputSource(is);
+            ret_val.setPublicId(publicId);
+            ret_val.setSystemId(systemId);
+        }
 
         return ret_val;
     }
