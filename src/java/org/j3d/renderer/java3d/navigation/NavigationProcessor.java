@@ -19,11 +19,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
-import javax.vecmath.AxisAngle4d;
-import javax.vecmath.Matrix3d;
-import javax.vecmath.Vector3f;
+import javax.vecmath.*;
 
 // Application specific imports
 import org.j3d.ui.navigation.NavigationState;
@@ -32,6 +28,7 @@ import org.j3d.ui.navigation.HeightDataSource;
 import org.j3d.geom.GeometryData;
 import org.j3d.renderer.java3d.util.J3DIntersectionUtils;
 import org.j3d.util.UserSupplementData;
+import org.j3d.util.MatrixUtils;
 
 /**
  * A listener and handler responsible for executing all navigation commands
@@ -187,7 +184,7 @@ import org.j3d.util.UserSupplementData;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class NavigationProcessor
 {
@@ -400,6 +397,12 @@ public class NavigationProcessor
     /** The avatar representation to use */
     private int avatarRep;
 
+    /** Scratch var for lookat calcs */
+    private Matrix4d lookatTmp;
+
+    /** Matrix utilities */
+    private MatrixUtils matUtils;
+
     /**
      * Inner class that provides an internally driven frame timer loop if there
      * is no external driver for the navigation system.
@@ -515,6 +518,8 @@ public class NavigationProcessor
         speed = 0;
 
         centerOfRotation = new Point3d(0, 0, 0);
+        lookatTmp = new Matrix4d();
+        matUtils = new MatrixUtils();
     }
 
     /**
@@ -573,7 +578,8 @@ public class NavigationProcessor
 
             locationPoint.set(viewTranslation);
 
-            viewTx.lookAt(locationPoint, centerOfRotation, Y_UP);
+            matUtils.lookAt(locationPoint, centerOfRotation, Y_UP, lookatTmp);
+            viewTx.set(lookatTmp);
             viewTx.invert();
             viewTg.setTransform(viewTx);
         }
@@ -624,7 +630,9 @@ public class NavigationProcessor
         if(tg == null)
             return;
 
+
         viewTg.getTransform(viewTx);
+System.out.println("setViewInfo LM: \n" + viewTx);
 
         if(tg.isLive())
         {
@@ -784,6 +792,7 @@ public class NavigationProcessor
      */
     public void startMove()
     {
+
         if(movementInProgress || (viewTg == null) ||
            (navigationState == NavigationState.NO_STATE))
             return;
@@ -855,10 +864,10 @@ public class NavigationProcessor
 
             locationPoint.set(viewTranslation);
 
-            viewTx.lookAt(locationPoint, centerOfRotation, Y_UP);
+            matUtils.lookAt(locationPoint, centerOfRotation, Y_UP, lookatTmp);
+            viewTx.set(lookatTmp);
             viewTx.invert();
             viewTg.setTransform(viewTx);
-
         }
     }
 
@@ -1085,9 +1094,11 @@ public class NavigationProcessor
             locationPoint.y = locationVector.y;
             locationPoint.z = centerOfRotation.z + z;
 
-            viewTx.lookAt(locationPoint, centerOfRotation, Y_UP);
+            matUtils.lookAt(locationPoint, centerOfRotation, Y_UP, lookatTmp);
+            viewTx.set(lookatTmp);
             viewTx.invert();
             viewTg.setTransform(viewTx);
+
         }
 
         startFrameDurationCalc = System.currentTimeMillis();
@@ -1176,6 +1187,7 @@ public class NavigationProcessor
 
         try
         {
+System.out.println("VTG3");
             viewTg.setTransform(viewTx);
         }
         catch(Exception e)
