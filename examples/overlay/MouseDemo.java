@@ -29,7 +29,7 @@ import org.j3d.geom.overlay.UpdateControlBehavior;
  * the user to draw over it with a mouse.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MouseDemo extends DemoFrame
 {
@@ -100,12 +100,13 @@ public class MouseDemo extends DemoFrame
         view_tg.addChild(updater);
 
         MouseDemoOverlay ovl1 =
-            new MouseDemoOverlay(canvas,
-                                 new Rectangle(0, 0, 100, 50));
+            new MouseDemoOverlay(canvas, new Dimension(100, 50));
+        ovl1.setLocation(10, 10);
 
         MouseDemoOverlay ovl2 =
-            new MouseDemoOverlay(canvas,
-                                 new Rectangle(10, 200, 50, 100));
+            new MouseDemoOverlay(canvas, new Dimension(50, 100));
+        ovl2.setLocation(10, 200);
+
         ovl1.setVisible(true);
         ovl2.setVisible(true);
 

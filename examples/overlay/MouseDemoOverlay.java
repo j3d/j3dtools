@@ -9,7 +9,7 @@
 
 // Standard imports
 import java.awt.Color;
-import java.awt.Rectangle;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 
@@ -24,7 +24,7 @@ import org.j3d.geom.overlay.InteractiveOverlayBase;
  * <P>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MouseDemoOverlay extends MouseOverlay
 {
@@ -34,11 +34,11 @@ public class MouseDemoOverlay extends MouseOverlay
      * until you attach it to the view platform transform.
      *
      * @param canvas3D Canvas being drawn onto
-     * @param bounds Bounds on the canvas covered by the overlay
+     * @param size The size of the overlay
      */
-    public MouseDemoOverlay(Canvas3D canvas3D, Rectangle bounds)
+    public MouseDemoOverlay(Canvas3D canvas3D, Dimension size)
     {
-        super(canvas3D, bounds);
+        super(canvas3D, size);
     }
 
     /**

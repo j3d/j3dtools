@@ -29,7 +29,7 @@ import org.j3d.geom.overlay.UpdateControlBehavior;
  * the user to draw over it with a mouse.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class LabelDemo extends DemoFrame
 {
@@ -105,15 +105,19 @@ public class LabelDemo extends DemoFrame
         view_tg.addChild(updater);
 
         overlay = new LabelOverlay(canvas,
-                                   new Rectangle(10, 10, 100, 50),
+                                   new Dimension(100, 50),
                                    "hello world");
+        overlay.setLocation(10, 10);
         overlay.setUpdateManager(updater);
         overlay.setVisible(true);
 
         view_tg.addChild(overlay.getRoot());
-        overlay.repaint();
         locale.addBranchGraph(view_group);
         locale.addBranchGraph(world_object_group);
+
+        overlay.setAntialiased(false);
+        overlay.initialize();
+        overlay.repaint();
     }
 
     public static void main(String[] argv)

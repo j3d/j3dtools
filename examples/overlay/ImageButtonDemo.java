@@ -31,7 +31,7 @@ import org.j3d.util.ImageUtils;
  * the user to draw over it with a mouse.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ImageButtonDemo extends DemoFrame
 {
@@ -136,19 +136,19 @@ public class ImageButtonDemo extends DemoFrame
         view_tg.addChild(updater);
 
         ImageButtonOverlay overlay =
-            new ImageButtonOverlay(canvas,
-                                   new Rectangle(10, 10, w, h),
-                                   images);
+            new ImageButtonOverlay(null, new Dimension(w, h), images);
+        overlay.setLocation(10, 10);
         overlay.setVisible(true);
 
         OverlayManager mgr = new OverlayManager(canvas, updater);
         mgr.addOverlay(overlay);
+        mgr.initialize();
 
         view_tg.addChild(mgr);
         locale.addBranchGraph(view_group);
         locale.addBranchGraph(world_object_group);
 
-        overlay.initialize();
+        overlay.repaint();
     }
 
     public static void main(String[] argv)

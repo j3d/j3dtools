@@ -17,22 +17,25 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.HashMap;
 
 // Application Specific imports
 import org.j3d.geom.Axis;
+import org.j3d.geom.overlay.TextureOverlay;
 import org.j3d.geom.overlay.ImageOverlay;
 import org.j3d.geom.overlay.UpdateControlBehavior;
-import org.j3d.util.ImageUtils;
+import org.j3d.texture.TextureCache;
+import org.j3d.texture.TextureCacheFactory;
 
 /**
  * Demonstration of the scribble overlay. Presents a box on screen and allows
  * the user to draw over it with a mouse.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.1 $
  */
-public class ImageDemo extends DemoFrame
+public class TextureDemo extends DemoFrame
 {
     private static final double BACK_CLIP_DISTANCE = 100.0;
 
@@ -40,9 +43,9 @@ public class ImageDemo extends DemoFrame
      * Construct a new demo with no geometry currently showing, but the
      * default type is set to quads.
      */
-    public ImageDemo()
+    public TextureDemo()
     {
-        super("Image test window");
+        super("TextureOverlay test window");
 
         buildScene();
     }
@@ -97,44 +100,43 @@ public class ImageDemo extends DemoFrame
         view.attachViewPlatform(camera);
 
         // Load the test image, which should be in the same directory as
-        // this demo.
-        Toolkit tk = Toolkit.getDefaultToolkit();
-        Image img1 = tk.createImage("test_image.gif");
-        Image img2 = tk.createImage("test_image2.png");
+        // this demo. Texture 1 has transparency, texture 2 does not.
+        TextureCache cache = TextureCacheFactory.getCache();
+        Texture2D texture1 = null;
+        Texture2D texture2 = null;
 
         try
         {
-            MediaTracker mt = new MediaTracker(this);
-            mt.addImage(img1, 0);
-            mt.addImage(img2, 0);
-            mt.waitForAll();
+            texture1 = (Texture2D)cache.fetchTexture("test_image.gif");
+            texture1.setMagFilter(Texture.NICEST);
+            texture1.setMinFilter(Texture.FASTEST);
+
+            texture2 = (Texture2D)cache.fetchTexture("test_image2.gif");
+            texture2.setMagFilter(Texture.NICEST);
+            texture2.setMinFilter(Texture.FASTEST);
         }
-        catch(InterruptedException ie)
+        catch(IOException ioe)
         {
+            System.out.println(ioe.getMessage());
+            ioe.printStackTrace();
+            return;
         }
 
-        int w1 = img1.getWidth(null);
-        int h1 = img1.getHeight(null);
-        int w2 = img2.getWidth(null);
-        int h2 = img2.getHeight(null);
+        int w = texture1.getWidth();
+        int h = texture1.getHeight();
+
+        Dimension o_bounds = new Dimension(w, h);
 
         UpdateControlBehavior updater = new UpdateControlBehavior();
         updater.setSchedulingBounds(new BoundingSphere());
         view_tg.addChild(updater);
 
-        ImageOverlay ovl1 =
-            new ImageOverlay(canvas,
-                             new Dimension(w1, h1),
-                             ImageUtils.createBufferedImage(img1));
+        TextureOverlay ovl1 = new TextureOverlay(canvas, o_bounds, texture1);
         ovl1.setLocation(10, 10);
         ovl1.setUpdateManager(updater);
         ovl1.setVisible(true);
 
-
-        ImageOverlay ovl2 =
-            new ImageOverlay(canvas,
-                             new Dimension(w2, h2),
-                             ImageUtils.createBufferedImage(img2));
+        TextureOverlay ovl2 = new TextureOverlay(canvas, o_bounds, texture2);
         ovl2.setLocation(100, 10);
         ovl2.setUpdateManager(updater);
         ovl2.setVisible(true);
@@ -146,14 +148,11 @@ public class ImageDemo extends DemoFrame
 
         ovl1.initialize();
         ovl2.initialize();
-
-        ovl1.repaint();
-        ovl2.repaint();
     }
 
     public static void main(String[] argv)
     {
-        ImageDemo demo = new ImageDemo();
+        TextureDemo demo = new TextureDemo();
         demo.setVisible(true);
     }
 }
