@@ -17,14 +17,14 @@ import java.awt.Component;
 import java.awt.event.MouseEvent;
 
 // Application specific imports
-import org.j3d.ui.navigation.NavigationMouseProcessor;
+// none
 
 /**
  * Abstract interface to take mouse events and process them for a navigation
  * response.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface NavigationMouseProcessor
 {
