@@ -39,7 +39,7 @@ import javax.vecmath.Vector3f;
  * that the normal points directly away from the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class SphereGenerator extends GeometryGenerator
 {
@@ -248,7 +248,7 @@ public class SphereGenerator extends GeometryGenerator
         switch(data.geometryType)
         {
             case GeometryData.TRIANGLES:
-                ret_val = facetCount * facetCount * 3 * 2;
+                ret_val = facetCount * facetCount * 3;
                 break;
 
             case GeometryData.QUADS:
@@ -703,7 +703,7 @@ public class SphereGenerator extends GeometryGenerator
     private void generateUnindexedTriCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = facetCount * facetCount * 6;
+        int vtx_cnt = facetCount * facetCount * 3;
 
         if(useHalf)
             vtx_cnt /= 2;
@@ -764,34 +764,37 @@ public class SphereGenerator extends GeometryGenerator
             }
         }
 
-        int tempVertCount = count;
-        for(k = 0; k < tempVertCount; k += 18)
+        if(!useHalf)
         {
-            // triangle 1
-            coords[count++] =  coords[k + 6];
-            coords[count++] = -coords[k + 7];
-            coords[count++] =  coords[k + 8];
+            int tempVertCount = count;
+            for(k = 0; k < tempVertCount; k += 18)
+            {
+                // triangle 1
+                coords[count++] =  coords[k + 6];
+                coords[count++] = -coords[k + 7];
+                coords[count++] =  coords[k + 8];
 
-            coords[count++] =  coords[k + 3];
-            coords[count++] = -coords[k + 4];
-            coords[count++] =  coords[k + 5];
+                coords[count++] =  coords[k + 3];
+                coords[count++] = -coords[k + 4];
+                coords[count++] =  coords[k + 5];
 
-            coords[count++] =  coords[k + 0];
-            coords[count++] = -coords[k + 1];
-            coords[count++] =  coords[k + 2];
+                coords[count++] =  coords[k + 0];
+                coords[count++] = -coords[k + 1];
+                coords[count++] =  coords[k + 2];
 
-            // triangle 2
-            coords[count++] =  coords[k + 15];
-            coords[count++] = -coords[k + 16];
-            coords[count++] =  coords[k + 17];
+                // triangle 2
+                coords[count++] =  coords[k + 15];
+                coords[count++] = -coords[k + 16];
+                coords[count++] =  coords[k + 17];
 
-            coords[count++] =  coords[k + 12];
-            coords[count++] = -coords[k + 13];
-            coords[count++] =  coords[k + 14];
+                coords[count++] =  coords[k + 12];
+                coords[count++] = -coords[k + 13];
+                coords[count++] =  coords[k + 14];
 
-            coords[count++] =  coords[k +  9];
-            coords[count++] = -coords[k + 10];
-            coords[count++] =  coords[k + 11];
+                coords[count++] =  coords[k +  9];
+                coords[count++] = -coords[k + 10];
+                coords[count++] =  coords[k + 11];
+            }
         }
     }
 
