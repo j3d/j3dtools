@@ -9,9 +9,13 @@
 
 package org.j3d.geom.particle;
 
-import javax.media.j3d.*;
+// Standard imports
 import javax.vecmath.Color4f;
-import java.util.Map;
+
+import javax.media.j3d.*;
+
+// Application specific imports
+// None
 
 /**
  * Abstract ParticleSystem for handling ByRef GeometryArrays.
@@ -25,7 +29,7 @@ import java.util.Map;
  * TODO: add support for interleaved arrays and test performance.
  *
  * @author Daniel Selman
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public abstract class ByRefParticleSystem extends ParticleSystem
         implements GeometryUpdater
@@ -73,7 +77,7 @@ public abstract class ByRefParticleSystem extends ParticleSystem
     {
         super(systemName, maxParticleCount);
 
-        shape = new OrientedShape3D();
+        shape = new Shape3D(); // new OrientedShape3D();
 
         geometryArray = createGeometryArray();
         geometryArray.setCapability(GeometryArray.ALLOW_REF_DATA_WRITE);
@@ -87,7 +91,7 @@ public abstract class ByRefParticleSystem extends ParticleSystem
         shape.setCollidable(false);
         shape.setPickable(false);
 
-        firstUpdate = false;
+        firstUpdate = true;
     }
 
     /**
@@ -173,7 +177,6 @@ public abstract class ByRefParticleSystem extends ParticleSystem
         // Reuse the color_index and coord_index fields
         if(firstUpdate)
         {
-            firstUpdate = false;
             color_index = 0;
             coord_index = 0;
             p = (ByRefParticle)particleList.next();
@@ -218,7 +221,12 @@ public abstract class ByRefParticleSystem extends ParticleSystem
 
         geometryArray.setCoordRefFloat(positionRefArray);
         geometryArray.setColorRefFloat(colorRefArray);
-        geometryArray.setNormalRefFloat(normalRefArray);
-        geometryArray.setTexCoordRefFloat(0, textureCoordRefArray);
+
+        if(firstUpdate)
+        {
+            geometryArray.setNormalRefFloat(normalRefArray);
+            geometryArray.setTexCoordRefFloat(0, textureCoordRefArray);
+            firstUpdate = false;
+        }
     }
 }
