@@ -21,7 +21,8 @@ import javax.media.j3d.Transform3D;
 import javax.vecmath.*;
 
 /**
- * Class.<p>
+ * Class which adds a relative transformation change to an absolute
+ * transformation in a local coordinate system.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
  * @version 15. Jun. 2001
@@ -36,20 +37,27 @@ public class DefaultManipulator implements Manipulator
     private final Matrix3d  itsTempMatrix1 = new Matrix3d( );
     private final Matrix3d  itsTempMatrix2 = new Matrix3d( );
 
+    /**
+     * Creates a DefaultManipulator object.
+     */
     public DefaultManipulator( )
     {
         super( );
     }
 
     /**
+     * Adds the relative transformation change in <code>deltaTransform</code> to
+     * the absolute  transforamtion in <code>currentTransform</code> in the
+     * local coordinate system specified with
+     * <code>localToVWorldTransform</code>.
      * @param result new absolute transformation in virtual world coordinate
      *      system.
-     * @param currentTransform current absolute transformation
-     * @param deltaTransform the <code>currentTransform</code> is concatenated
-     *      to this transformation
-     * @param localToVWorldTransform Set to the identical transformation if
-     *      <code>deltaTransform</code> shall take place in the virtual world
-     *      coordinate system.
+     * @param currentTransform current applied absolute transformation
+     * @param deltaTransform relative transformation change
+     * @param localToVWorldTransform Transformation from the coordinate system
+     *      in which the transformation shall be done to the virtual coordinate
+     *      system. Set to identity transformation if the transformation shall
+     *      be done in the virtual world coordinate system.
      */
     public void calculateTransform
     (

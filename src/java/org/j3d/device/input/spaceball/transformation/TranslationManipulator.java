@@ -15,6 +15,8 @@
  * University of Vienna, Dept. of Medical Computer Sciences
  ****************************************************************************/
 
+package org.j3d.device.input.spaceball.transformation;
+
 import javax.media.j3d.Transform3D;
 import javax.vecmath.*;
 
@@ -41,6 +43,14 @@ public class TranslationManipulator implements Manipulator
      * Combines the current transformation with the translational
      * part of <code>deltaTransform</code> under consideration of a local
      * coordinate system.
+     * @param result new absolute transformation in virtual world coordinate
+     *      system.
+     * @param currentTransform current applied absolute transformation
+     * @param deltaTransform relative transformation change
+     * @param localToVWorldTransform Transformation from the coordinate system
+     *      in which the transformation shall be done to the virtual coordinate
+     *      system. Set to identity transformation if the transformation shall
+     *      be done in the virtual world coordinate system.
      */
     public void calculateTransform
     (
@@ -59,4 +69,4 @@ public class TranslationManipulator implements Manipulator
         itsTempVector2.add( itsTempVector1 );
         result.setTranslation( itsTempVector2 );
     }
-} 
+}

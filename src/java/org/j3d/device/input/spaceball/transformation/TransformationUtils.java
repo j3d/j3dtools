@@ -11,7 +11,7 @@
  * facility. Licensee represents and warrants that it will not use or
  * redistribute the Software for such purposes.
  *
- * Copyright (c) 2001 Dipl. Ing. P. Szawlowski
+ * Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski
  * University of Vienna, Dept. of Medical Computer Sciences
  ****************************************************************************/
 
@@ -24,23 +24,52 @@ import javax.media.j3d.Transform3D;
   * Transformation utility class.<p>
   * @author  Dipl. Ing. Paul Szawlowski -
   *          University of Vienna, Dept of Medical Computer Sciences
-  * @version 23. Oct. 2001
+  * @version 12. Feb. 2002
   * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
   */
 public final class TransformationUtils
 {
+    /**
+     * Unit vector in x direction. Do not change.
+     */
+    public final static Vector3d  itsUnitXVector =
+            new Vector3d( 1.0, 0.0, 0.0 );
+    /**
+     * Unit vector in y direction. Do not change.
+     */
+    public final static Vector3d  itsUnitYVector =
+            new Vector3d( 0.0, 1.0, 0.0 );
+    /**
+     * unit vector in z direction. Do not change.
+     */
+    public final static Vector3d  itsUnitZVector =
+            new Vector3d( 0.0, 0.0, 1.0 );
+
+    /**
+     * Origin at (0,0,0). Do not change.
+     */
     public final static Point3d   itsOrigin = new Point3d( );
+    /**
+     * Initial up vector of camera. Do not change.
+     */
     public final static Vector3d  itsInitialUpVector =
             new Vector3d( 0.0, 1.0, 0.0 );
+    /**
+     * Initial viewing direction of camera. Do not change.
+     */
     public final static Vector3d  itsInitialViewDirection =
             new Vector3d( 0.0, 0.0, -1.0 );
 
+    /**
+     * creates a TransformationUtils object
+     */
     public TransformationUtils( )
     {
 
     }
 
     /**
+     * Converts polar coordiantes to cartesian coordinates.
      * @param result the calculated normalized cartesian coordinates will be
      *      copied into this object
      * @param phi [rad] polar angle in xy-plane counted from positive x axis to
@@ -65,6 +94,7 @@ public final class TransformationUtils
     }
 
     /**
+     * Converts polar to cartesian coordinates.
      * @param result the calculated cartesian coordinates will be copied into
      *      this object
      * @param radius length of vector
@@ -91,6 +121,7 @@ public final class TransformationUtils
    }
 
     /**
+     * Converts cartesian to polar coordiantes.
      * @param result the calculated polar coordinates will be copied into this
      *      object:
      *      index 0: radius,
@@ -222,6 +253,7 @@ public final class TransformationUtils
     }
 
     /**
+     * Calculates a scale matrix.
      * @param result it is assumed it contains no rotation, existing translation
      *      will be preserved
      * @param tempMatrix: it is assumed that this is an identity matrix or all
@@ -243,6 +275,7 @@ public final class TransformationUtils
     }
 
     /**
+     * Caculates a matrix which contains a rotation around the x axis.
      * @param result it is assumed that it contains no scaling, existing
      *    translations will be preserved
      * @param tempMatrix it is assumed that this is an identity matrix or a
@@ -267,6 +300,7 @@ public final class TransformationUtils
     }
 
     /**
+     * Caculates a matrix which contains a rotation around the y axis.
      * @param result it is assumed that it contains no scaling, existing
      *      translations will be preserved
      * @param tempMatrix it is assumed that this is an identity matrix or a
@@ -291,6 +325,7 @@ public final class TransformationUtils
     }
 
     /**
+     * Caculates a matrix which contains a rotation around the z axis.
      * @param result it is assumed that it contains no scaling, existing
      *    translations will be preserved
      * @param tempMatrix it is assumed that this is an identity matrix or a

@@ -20,7 +20,9 @@ package org.j3d.device.input.spaceball.transformation;
 import javax.media.j3d.Transform3D;
 
 /**
- * Class.<p>
+ * Interface for combining a relative transformation change with and an absoulte
+ * absolute transformation in the local coordinate system.<p>
+ * coordinate system.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
  * @version 15. Jun. 2001
@@ -29,10 +31,12 @@ import javax.media.j3d.Transform3D;
 public interface Manipulator
 {
     /**
+     * Combines an absolute transformation with a relative transformation change
+     * in the local coordinate system.
      * @param result new absolute transformation in virtual world coordinate
      *      system.
-     * @param currentTransform
-     * @param deltaTransform
+     * @param currentTransform absolute transformation.
+     * @param deltaTransform relative transformation change
      * @param localToVWorldTransform Transformation from the coordinate system
      *      in which the transformation shall be done to the virtual coordinate
      *      system. Set to identity transformation if the transformation shall

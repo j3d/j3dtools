@@ -29,7 +29,7 @@ import java.awt.*;
  *    of Labtec Inc.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept. of Medical Computer Sciences
- * @version 29. Oct. 2001
+ * @version 5. May 2001
  * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
  */
 public class SpaceballTypeDetector
@@ -261,8 +261,8 @@ public class SpaceballTypeDetector
             final int length = state ? 2: 6;
             itsText4.getChars( offset, length + offset, itsChar3, itsLength );
             itsLength += length;
-            repaint( );
             toFront( );
+            repaint( );
         }
 
         public void paint( Graphics g )

@@ -11,7 +11,7 @@
  * facility. Licensee represents and warrants that it will not use or
  * redistribute the Software for such purposes.
  *
- * Copyright (c) 2001 Dipl. Ing. P. Szawlowski
+ * Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski
  * University of Vienna, Dept. of Medical Computer Sciences
  ****************************************************************************/
 
@@ -27,19 +27,19 @@ import java.util.Enumeration;
  * value. It supports up to 3 additional input values. The mouse input
  * values use the indexes 0 and 1 of the input values array and the additional
  * key input values uses the index 2.<p>
+ * Add the object to a Component with the {@link #attachToComponent}
+ * method in order to receive input from the mouse.<p>
  * Calculation of a transformation is triggered by keeping the left mouse button
  * pressed while dragging the mouse or by pressing the +, - buttons while the
  * attached Component object has focus.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version 15. Jun. 2001
+ * @version 5. May 2002
  * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
  */
 public class MouseKeyboard3DInputDevice extends MouseInputDevice
-implements MouseListener, MouseMotionListener, KeyListener
+implements KeyListener
 {
-    private int itsCurrentValue = 0;
-
     /**
      * Constructs an MouseInputDevice object with default settings. Sets the
      * default scale (0.001/0.001/0.01/1.0/1.0/1.0) for all input values.
@@ -62,40 +62,45 @@ implements MouseListener, MouseMotionListener, KeyListener
         super.removeFromComponent( component );
     }
 
+    /**
+     * Checks if the + or - key is pressed, sets the new values for translation
+     * along the z coordinate and activates the associated
+     * <code>Behavior</code>.
+     */
     public void keyTyped( KeyEvent evt )
     {
         if( evt.getKeyChar() == '+' )
         {
-            itsCurrentValue ++;
-            setInputValue( 2, itsCurrentValue );
+            synchronized( this )
+            {
+                itsCurrentValues[ 2 ] ++;
+            }
             postStimulus( );
         }
         else if( evt.getKeyChar() == '-' )
         {
-            itsCurrentValue --;
-            setInputValue( 2, itsCurrentValue );
+            synchronized( this )
+            {
+                itsCurrentValues[ 2 ] --;
+            }
             postStimulus( );
         }
     }
 
+    /**
+     * implementation does nothing.
+     */
     public void keyPressed( KeyEvent evt )
     {
 
     }
 
+    /**
+     * implementation does nothing.
+     */
     public void keyReleased( KeyEvent evt )
     {
 
-    }
-
-    /**
-     * Sets the sensor for the input device and initialises the input values.
-     */
-    public boolean initialize( )
-    {
-        itsCurrentValue = 0;
-        setStartValue( 2, 0 );
-        return super.initialize();
     }
 }
 

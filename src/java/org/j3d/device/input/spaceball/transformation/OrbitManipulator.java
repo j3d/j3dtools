@@ -58,6 +58,11 @@ public class OrbitManipulator implements Manipulator
 
     /**
      * Calculates a transformation which mimics orbiting around a fixed point.
+     * The rotation part of <code>deltaTransform</code> will specify the
+     * relative rotation change within the sphere with radius  = translational
+     * part of <code>currentTransform</code> - <code>orbitCenter</code> and
+     * center in <code>orbitCenter</code>. The change in radius is specified in
+     * the z component of the translational part of <code>deltaTransform</code>.
      * @param result new absolute transformation in virtual world coordinate
      *      system.
      * @param currentTransform current absolute transformation

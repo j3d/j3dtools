@@ -23,18 +23,20 @@ import javax.vecmath.*;
 import org.j3d.device.input.spaceball.transformation.*;
 
 /**
- * Base class for input devices with one sensor. Inherited classes shall use
- * {@link #setDeltaDeviceInput} for transformation calculation. Input values
- * will be scaled. A difference transformation will be put into the sensor
- * object.<p>
- * Before using this class an appropriate <code>Behavior</code> must be added
- * to the scene graph.<p>
+ * Base class for input devices with one sensor. Inherited classes shall
+ * provide the raw difference values (old absolute value - new absolute value)
+ * to {@link #setDeltaDeviceInput} for transformation calculation in the
+ * <code>processStimulus</code> method. Input values will be scaled. A
+ * difference transformation will be put into the sensor object.<p>
+ * The <code>initialize</code> method of inherited classes must call the
+ * {@link #setSensor} method to set a Sensor object to be used for storing the
+ * calculated transformation.<p>
+ * Before using this class an appropriate <code>Behavior</code> (obtained with
+ * the {@link #getBehavior} method) must be added to the scene graph.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept. of Medical Computer Sciences
  * @version 15. Jun. 2001
  * Copyright (c) Dipl. Ing. Paul Szawlowski
- * @see InputDeviceBase#getBehavior
- *
  */
 public abstract class InputDeviceBase implements InputDevice
 {
@@ -135,7 +137,7 @@ public abstract class InputDeviceBase implements InputDevice
     }
 
     /**
-     * use after initialisation
+     * use only after initialisation
      */
     public Sensor getSensor( int sensorIndex )
     {
@@ -195,8 +197,8 @@ public abstract class InputDeviceBase implements InputDevice
     }
 
     /**
-     * Calculates the transformation puts the result into the sensor. Scales the
-     * input values. Uses the first 3 input values to translate along the
+     * Calculates the transformation and puts the result into the sensor. Scales
+     * the input values. Uses the first 3 input values to translate along the
      * x-axis, y-axis and z-axis respectively and uses the second 3 input
      * values to rotate about the y-axis, x-axis and z-axis respectively
      * ( clockwise ). The 4th and 5th input values (rotation about y- and
@@ -206,8 +208,14 @@ public abstract class InputDeviceBase implements InputDevice
      *      Size of array = 6.
      * @param buttonValues set to <code>null</code> if input device has no
      *      buttons
+     * @see org.j3d.device.input.spaceball.transformation.
+     *      TransformationUtils#getRotationTranslationTransform3D
      */
-    protected void setDeltaDeviceInput( final int[ ] input, final int[ ] buttonValues )
+    protected void setDeltaDeviceInput
+    (
+        final int[ ]    input,
+        final int[ ]    buttonValues
+    )
     {
         final int length = input.length;
         for( int i = 0; i < length; i ++ )

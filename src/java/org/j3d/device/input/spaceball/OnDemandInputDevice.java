@@ -21,7 +21,7 @@ import javax.media.j3d.InputDevice;
 
 /**
  * Base class for on demand input devices with one sensor. The associated
- * Behavior will be activated when the {@link OnDemandInputDevice#postStimulus}
+ * Behavior will be activated when the {@link #postStimulus}
  * method is called.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
@@ -57,6 +57,11 @@ public abstract class OnDemandInputDevice extends InputDeviceBase
         super.close( );
     }
 
+    /**
+     * call this method from inherited classes to activate the associated
+     * <code>Behavior</code>, which reads the sensor data and applies it to the
+     * scene.
+     */
     protected void postStimulus( )
     {
         if( itsBehavior != null )

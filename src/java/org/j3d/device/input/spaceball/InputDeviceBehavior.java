@@ -21,14 +21,18 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 import java.util.Enumeration;
 
-import org.j3d.device.input.spaceball.transformation.*;
+import org.j3d.device.input.spaceball.transformation.Manipulator;
+import org.j3d.device.input.spaceball.transformation.DefaultManipulator;
 
 /**
- * Class.<p>
- * A listener can be added to get notified if the transformation is updated
- * and to process button events. In this case it is the listeners
- * responsiblity to set the updated transformation to the
- * <code>TransformGroup</code>.<p>
+ * Behavior which reads a <code>Sensor</code> object connected to an
+ * <code>InputDevice</code>. Depending on the processing mode of the
+ * <code>InputDevice</code> the Behavior will get activated every frame or
+ * on demand<p>
+ * A listener can be added ({@link #setCallback})to get notified if the
+ * transformation is updated and to process button events. In this case it is
+ * the listeners responsiblity to set the updated transformation to the
+ * <code>TransformGroup</code> !<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
  * @version 25. Oct. 2001
@@ -58,7 +62,7 @@ public class InputDeviceBehavior extends Behavior
      * Constructs an InputDeviceBehavior object. Uses per default a
      * {@link DefaultManipulator}.<p>
      * @param sensor The sensor of an input device which shall be used for
-     *      calculating the absolute transformation.
+     *      setting the absolute transformation.
      */
     public InputDeviceBehavior( final Sensor sensor )
     {
@@ -66,10 +70,9 @@ public class InputDeviceBehavior extends Behavior
     }
 
     /**
-     * Constructs an InputDeviceBehavior object. Uses a
-     * {@link DefaultManipulator} per default.
+     * Constructs an InputDeviceBehavior object.
      * @param sensor The sensor of an input device which shall be used for
-     *      calculating the absolute transformation.
+     *      setting the absolute transformation.
      * @param manipulator manipulator for calculating a transformation out of
      *      the input values
      */
@@ -102,6 +105,7 @@ public class InputDeviceBehavior extends Behavior
     }
 
     /**
+     * Set the type of transformation.
      * @parameter manipulator must not be null
      */
     public synchronized void setManipulator( final Manipulator manipulator )
@@ -150,7 +154,7 @@ public class InputDeviceBehavior extends Behavior
 
     /**
      * Sets a new object to be called if the transformation is updated.<p>
-     * NOTe: The <code>listener</code> is reponsible to apply the new
+     * NOTE: The <code>listener</code> is reponsible to apply the new
      * transformation to the <code>TransformGroup</code>.
      * @param listener Set to <code>null</code> to remove the current
      *      <code>listener</code>.
@@ -194,7 +198,7 @@ public class InputDeviceBehavior extends Behavior
 
         if( listener != null )
         {
-            listener.update
+            listener.sensorRead
             (
                 this,
                 tg,

@@ -11,7 +11,7 @@
  * facility. Licensee represents and warrants that it will not use or
  * redistribute the Software for such purposes.
  *
- * Copyright (c) 2001 Dipl. Ing. P. Szawlowski
+ * Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski
  * University of Vienna, Dept. of Medical Computer Sciences
  ****************************************************************************/
 
@@ -21,10 +21,11 @@ import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 
 /**
- * Interface.<p>
+ * Interface for notification if the transformation of a
+ * <code>TransformGroup</code> is updated.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version 25. Oct. 2001
+ * @version 5. May 2001
  * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
  */
 public interface InputDeviceCallback
@@ -32,7 +33,7 @@ public interface InputDeviceCallback
     /**
      * Called if a new transformation was calculated from the input of an
      * input device. The implementation of the method is responsible to set
-     * the new transformation to the <code>TransformGroup</code>.
+     * the new transformation to the <code>TransformGroup</code> !
      * @param tg <code>TransformGroup</code> to be updated, still containing
      *      the last transformation.
      * @param newTransform Updated transformation to be applied to
@@ -43,7 +44,7 @@ public interface InputDeviceCallback
      *      sensor.Size of array is the number of available buttons of the
      *      input device.
      */
-    public void update
+    public void sensorRead
     (
         InputDeviceBehavior behavior,
         TransformGroup      tg,
