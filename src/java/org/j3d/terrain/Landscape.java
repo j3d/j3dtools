@@ -61,7 +61,7 @@ import org.j3d.ui.navigation.HeightMapGeometry;
  * implementation is free to do what it likes.
  *
  * @author Justin Couch, based on original ideas from Paul Byrne
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public abstract class Landscape extends javax.media.j3d.BranchGroup
     implements FrameUpdateListener, HeightMapGeometry
@@ -184,6 +184,18 @@ public abstract class Landscape extends javax.media.j3d.BranchGroup
     //----------------------------------------------------------
     // Local methods
     //----------------------------------------------------------
+
+    /**
+     * Initialise the landscape ready for viewing. This should be called
+     * before you add the parent branchgroup to the live scenegraph as the
+     * implementation code will need to construct the renderable scene graph.
+     * It also sets the initial position so that if the terrain is using
+     * tilable datasets it can determine where to start building from.
+     *
+     * @param position The position the user is in the virtual world
+     * @param direction The orientation of the user's gaze
+     */
+    public abstract void initialize(Tuple3f position, Vector3f direction);
 
     /**
      * Set the current viewing direction for the user. The user is located
