@@ -50,7 +50,7 @@ import javax.media.j3d.Texture;
  * using the utilities of this class.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface TextureCache
 {
@@ -120,4 +120,37 @@ public interface TextureCache
      * caution.
      */
     public void clearAll();
+
+    /**
+     * Check to see if a filename is cached for a Texture.
+     *
+     * @param filename The filename loaded
+     * @return Whether the filename is cached as a Texture
+     */
+    public boolean checkTexture(String filename);
+
+    /**
+     * Check to see if a filename is cached for an ImageComponent.
+     *
+     * @param filename The filename loaded
+     * @return Whether the filename is cached as an ImageComponent
+     */
+    public boolean checkImageComponent(String filename);
+
+    /**
+     * Register a texture with the cache assigned to a filename.
+     *
+     * @param texture The texture to store
+     * @param filename The filename to register
+     */
+    public void registerTexture(Texture texture, String filename);
+
+    /**
+     * Register an imagecomponent with the cache assigned to a filename.
+     *
+     * @param texture The texture to store
+     * @param filename The filename to register
+     */
+    public void registerImageComponent(ImageComponent component, String filename);
+
 }

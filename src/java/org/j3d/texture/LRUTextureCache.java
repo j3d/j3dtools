@@ -20,12 +20,7 @@ import java.net.URL;
 import java.io.IOException;
 import java.util.HashMap;
 
-import javax.media.j3d.ImageComponent;
-import javax.media.j3d.ImageComponent2D;
-import javax.media.j3d.ImageComponent3D;
-import javax.media.j3d.Texture;
-import javax.media.j3d.Texture2D;
-import javax.media.j3d.Texture3D;
+import javax.media.j3d.*;
 
 // Application specific imports
 import org.j3d.util.ImageUtils;
@@ -49,8 +44,8 @@ import org.j3d.util.Queue;
  * </pre>
  * This property must be set before this class is first referenced.
  *
- * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @author Justin Couch, Alan Hudson
+ * @version $Revision: 1.3 $
  */
 class LRUTextureCache extends AbstractTextureCache
 {
@@ -333,6 +328,62 @@ class LRUTextureCache extends AbstractTextureCache
 
         textureQueue.clear();
         componentQueue.clear();
+    }
+
+    /**
+     * Check to see if a filename is cached for a Texture.
+     *
+     * @param filename The filename loaded
+     * @return Whether the filename is cached as a Texture
+     */
+    public boolean checkTexture(String filename)
+    {
+        if (textureMap.containsKey(filename))
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * Check to see if a filename is cached for an ImageComponent.
+     *
+     * @param filename The filename loaded
+     * @return Whether the filename is cached as an ImageComponent
+     */
+    public boolean checkImageComponent(String filename) {
+        if (componentMap.containsKey(filename))
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * Register a texture with the cache assigned to a filename.
+     *
+     * @param texture The texture to store
+     * @param filename The filename to register
+     */
+    public void registerTexture(Texture texture, String filename)
+    {
+        textureMap.put(filename, texture);
+
+        try {
+           ImageComponent component = texture.getImage(0);
+           componentMap.put(filename, component);
+        }
+        catch (CapabilityNotSetException cnse) {
+        }
+    }
+
+    /**
+     * Register an imagecomponent with the cache assigned to a filename.
+     *
+     * @param texture The texture to store
+     * @param filename The filename to register
+     */
+    public void registerImageComponent(ImageComponent component, String filename)
+    {
+        componentMap.put(filename, component);
     }
 
     //------------------------------------------------------------------------

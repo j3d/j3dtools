@@ -21,12 +21,7 @@ import java.net.URL;
 import java.io.IOException;
 import java.util.HashMap;
 
-import javax.media.j3d.ImageComponent;
-import javax.media.j3d.ImageComponent2D;
-import javax.media.j3d.ImageComponent3D;
-import javax.media.j3d.Texture;
-import javax.media.j3d.Texture2D;
-import javax.media.j3d.Texture3D;
+import javax.media.j3d.*;
 
 // Application specific imports
 import org.j3d.util.ImageUtils;
@@ -36,8 +31,8 @@ import org.j3d.util.ImageUtils;
  * to Java's WeakReference system.
  * <p>
  *
- * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @author Justin Couch, Alan Hudson
+ * @version $Revision: 1.3 $
  */
 class WeakRefTextureCache extends AbstractTextureCache
 {
@@ -64,6 +59,8 @@ class WeakRefTextureCache extends AbstractTextureCache
     public Texture fetchTexture(String filename)
         throws IOException
     {
+        WeakReference ref;
+
         Texture texture = getTexture(filename);
 
         if(texture == null)
@@ -73,7 +70,8 @@ class WeakRefTextureCache extends AbstractTextureCache
             if(img == null)
             {
                 img = load2DImage(filename);
-                componentMap.put(filename, img);
+                ref = new WeakReference(img);
+                componentMap.put(filename, ref);
             }
 
             int format = getTextureFormat(img);
@@ -95,8 +93,8 @@ class WeakRefTextureCache extends AbstractTextureCache
             }
 
             texture.setImage(0, img);
-
-            textureMap.put(filename, texture);
+            ref = new WeakReference(texture);
+            textureMap.put(filename, ref);
         }
 
         return texture;
@@ -115,6 +113,7 @@ class WeakRefTextureCache extends AbstractTextureCache
         String file_path = url.toExternalForm();
 
         Texture texture = getTexture(file_path);
+        WeakReference ref;
 
         if(texture == null)
         {
@@ -123,7 +122,8 @@ class WeakRefTextureCache extends AbstractTextureCache
             if(img == null)
             {
                 img = load2DImage(file_path);
-                componentMap.put(file_path, img);
+                ref = new WeakReference(img);
+                componentMap.put(file_path, ref);
             }
 
             int format = getTextureFormat(img);
@@ -145,8 +145,8 @@ class WeakRefTextureCache extends AbstractTextureCache
             }
 
             texture.setImage(0, img);
-
-            textureMap.put(file_path, texture);
+            ref = new WeakReference(texture);
+            textureMap.put(file_path, ref);
         }
 
         return texture;
@@ -164,11 +164,13 @@ class WeakRefTextureCache extends AbstractTextureCache
         throws IOException
     {
         ImageComponent ret_val = getImageComponent(filename);
+        WeakReference ref;
 
         if(ret_val == null)
         {
             ret_val = load2DImage(filename);
-            componentMap.put(filename, ret_val);
+            ref = new WeakReference(ret_val);
+            componentMap.put(filename, ref);
         }
 
         return ret_val;
@@ -186,11 +188,13 @@ class WeakRefTextureCache extends AbstractTextureCache
     {
         String file_path = url.toExternalForm();
         ImageComponent ret_val = getImageComponent(file_path);
+        WeakReference ref;
 
         if(ret_val == null)
         {
             ret_val = load2DImage(file_path);
-            componentMap.put(file_path, ret_val);
+            ref = new WeakReference(ret_val);
+            componentMap.put(file_path, ref);
         }
 
         return ret_val;
@@ -232,6 +236,66 @@ class WeakRefTextureCache extends AbstractTextureCache
     {
         textureMap.clear();
         componentMap.clear();
+    }
+
+    /**
+     * Check to see if a filename is cached for a Texture.
+     *
+     * @param filename The filename loaded
+     * @return Whether the filename is cached as a Texture
+     */
+    public boolean checkTexture(String filename)
+    {
+        if (textureMap.containsKey(filename))
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * Check to see if a filename is cached for an ImageComponent.
+     *
+     * @param filename The filename loaded
+     * @return Whether the filename is cached as an ImageComponent
+     */
+    public boolean checkImageComponent(String filename) {
+        if (componentMap.containsKey(filename))
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * Register a texture with the cache assigned to a filename.
+     *
+     * @param texture The texture to store
+     * @param filename The filename to register
+     */
+    public void registerTexture(Texture texture, String filename)
+    {
+        WeakReference ref = new WeakReference(texture);
+        textureMap.put(filename, ref);
+
+        try {
+           ImageComponent component = texture.getImage(0);
+           ref = new WeakReference(component);
+           componentMap.put(filename, ref);
+        }
+        catch (CapabilityNotSetException cnse) {
+        }
+    }
+
+    /**
+     * Register an imagecomponent with the cache assigned to a filename.
+     *
+     * @param texture The texture to store
+     * @param filename The filename to register
+     */
+    public void registerImageComponent(ImageComponent component, String filename)
+    {
+        WeakReference ref = new WeakReference(component);
+
+        componentMap.put(filename, ref);
     }
 
     //------------------------------------------------------------------------
