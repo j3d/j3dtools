@@ -30,9 +30,9 @@ package org.j3d.geom;
  * generate 2D values if asked.
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
-public class GeometryData
+public class GeometryData implements Cloneable
 {
     /** Generate the geometry as individual unindexed triangles */
     public static final int TRIANGLES = 1;
@@ -155,4 +155,105 @@ public class GeometryData
      * used by the geometry generation classes, but may be by 3rd party software.
      */
     public int[] colorIndexes;
+
+    public void prettyPrint() {
+        if (coordinates != null) {
+            System.out.print(" Coords: " );
+            for(int i=0; i < coordinates.length; i++) {
+                System.out.print(coordinates[i] + " ");
+                if ((i+1) % 3 == 0)
+                   System.out.print(", ");
+            }
+            System.out.println();
+        }
+
+        if (textureCoordinates != null) {
+            System.out.print("TCoords: " );
+            for(int i=0; i < textureCoordinates.length; i++) {
+                System.out.print(textureCoordinates[i] + " ");
+                if ((i+1) % 2 == 0)
+                   System.out.print(", ");
+
+            }
+            System.out.println();
+        }
+
+        if (normals != null) {
+            System.out.print("NCoords: " );
+            for(int i=0; i < normals.length; i++) {
+                System.out.print(normals[i] + " ");
+                if ((i+1) % 3 == 0)
+                   System.out.print(", ");
+            }
+            System.out.println();
+        }
+
+        if (colors != null) {
+            System.out.print("Ccoords: " );
+            for(int i=0; i < colors.length; i++) {
+                System.out.print(colors[i] + " ");
+                if ((i+1) % 3 == 0)
+                   System.out.print(", ");
+            }
+            System.out.println();
+        }
+    }
+
+    public Object clone() {
+        GeometryData gd = new GeometryData();
+        gd.geometryType = geometryType;
+        gd.geometrySubType = geometrySubType;
+        gd.geometryComponents = geometryComponents;
+        gd.vertexCount = vertexCount;
+        if (coordinates != null) {
+            gd.coordinates = new float[coordinates.length];
+            System.arraycopy(coordinates, 0, gd.coordinates, 0, coordinates.length);
+        }
+
+        if (normals != null) {
+            gd.normals = new float[normals.length];
+            System.arraycopy(normals, 0, gd.normals, 0, normals.length);
+        }
+
+        gd.indexesCount = indexesCount;
+
+        if (indexes != null) {
+            gd.indexes = new int[indexes.length];
+            System.arraycopy(indexes, 0, gd.indexes, 0, indexes.length);
+        }
+
+        gd.numStrips = numStrips;
+
+        if (stripCounts != null) {
+            gd.stripCounts = new int[stripCounts.length];
+            System.arraycopy(stripCounts, 0, gd.stripCounts, 0, stripCounts.length);
+        }
+
+        if (textureCoordinates != null) {
+            gd.textureCoordinates = new float[textureCoordinates.length];
+            System.arraycopy(textureCoordinates, 0, gd.textureCoordinates, 0, textureCoordinates.length);
+        }
+
+        if (colors != null) {
+            gd.colors = new float[colors.length];
+            System.arraycopy(colors, 0, gd.colors, 0, colors.length);
+        }
+
+        if (normalIndexes != null) {
+            gd.normalIndexes = new int[normalIndexes.length];
+            System.arraycopy(normalIndexes, 0, gd.normalIndexes, 0, normalIndexes.length);
+        }
+
+        if (texCoordIndexes != null) {
+            gd.texCoordIndexes = new int[texCoordIndexes.length];
+            System.arraycopy(texCoordIndexes, 0, gd.texCoordIndexes, 0, texCoordIndexes.length);
+        }
+
+        if (colorIndexes != null) {
+            gd.colorIndexes = new int[colorIndexes.length];
+            System.arraycopy(colorIndexes, 0, gd.colorIndexes, 0, colorIndexes.length);
+        }
+
+        return gd;
+    }
 }
