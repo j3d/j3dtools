@@ -36,7 +36,7 @@ import javax.vecmath.Vector3f;
  * geometry type, but is supported non-the-less for completeness.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ConeGenerator extends GeometryGenerator
 {
@@ -61,8 +61,31 @@ public class ConeGenerator extends GeometryGenerator
     /** The number of values used in the base coordinate array */
     private int numBaseValues;
 
+    /**
+     * The 2D texture coordinates for the sphere. These match the order of
+     * vertex declaration in the quadCoordinates field thus making life
+     * easy for dealing with half spheres
+     */
+    private float[] texCoordinates2D;
+
+    /** The number of values used in the 2D tex coord array */
+    private int numTexCoords2D;
+
+    /**
+     * The 3D texture coordinates for the sphere. These match the order of
+     * vertex declaration in the quadCoordinates field thus making life
+     * easy for dealing with half spheres
+     */
+    private float[] texCoordinates3D;
+
+    /** The number of values used in the 2D tex coord array */
+    private int numTexCoords3D;
+
     /** Flag indicating base values have changed */
     private boolean baseChanged;
+
+    /** Flag to indicate the facet count or half settings have changed */
+    private boolean facetsChanged;
 
     /**
      * Construct a default cone of height 2 and bottom radius of 1.
@@ -143,6 +166,7 @@ public class ConeGenerator extends GeometryGenerator
         bottomRadius = radius;
         useBottom = hasBottom;
         baseChanged = true;
+        facetsChanged = true;
     }
 
     /**
@@ -184,9 +208,13 @@ public class ConeGenerator extends GeometryGenerator
 
         coneHeight = height;
         bottomRadius = radius;
-        useBottom = hasBottom;
 
         baseChanged = true;
+
+        if(useBottom != hasBottom)
+            facetsChanged = true;
+
+        useBottom = hasBottom;
     }
 
     /**
@@ -203,7 +231,10 @@ public class ConeGenerator extends GeometryGenerator
             throw new IllegalArgumentException("Number of facets is < 3");
 
         if(facetCount != facets)
+        {
             baseChanged = true;
+            facetsChanged = true;
+        }
 
         facetCount = facets;
     }
@@ -239,9 +270,9 @@ public class ConeGenerator extends GeometryGenerator
             case GeometryData.INDEXED_QUADS:
             case GeometryData.INDEXED_TRIANGLE_STRIPS:
             case GeometryData.INDEXED_TRIANGLE_FANS:
-                ret_val = facetCount * 2;
+                ret_val = (facetCount + 1) * 2;
                 if(useBottom)
-                    ret_val += facetCount + 1;
+                    ret_val += facetCount + 2;
                 break;
 
             default:
@@ -287,9 +318,9 @@ public class ConeGenerator extends GeometryGenerator
             case GeometryData.INDEXED_TRIANGLES:
                 indexedTriangles(data);
                 break;
-//            case GeometryData.INDEXED_TRIANGLE_STRIPS:
-//                indexedTriangleStrips(data);
-//                break;
+            case GeometryData.INDEXED_TRIANGLE_STRIPS:
+                indexedTriangleStrips(data);
+                break;
             case GeometryData.INDEXED_TRIANGLE_FANS:
                 indexedTriangleFans(data);
                 break;
@@ -317,7 +348,7 @@ public class ConeGenerator extends GeometryGenerator
             generateUnindexedTriNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
+            generateUnindexedTriTexture2D(data);
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
     }
@@ -352,12 +383,12 @@ public class ConeGenerator extends GeometryGenerator
             generateIndexedTriNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
+            generateIndexedTexture2D(data);
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
 
         // now let's do the index list
-        int index_size = data.vertexCount * 4;
+        int index_size = facetCount * 4 + (useBottom ? facetCount * 4 : 0);
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -372,34 +403,27 @@ public class ConeGenerator extends GeometryGenerator
         int vtx = 0;
 
         // each face consists of an anti-clockwise
-        for(int i = facetCount; --i > 0; )
+        for(int i = facetCount; --i >= 0; )
         {
+            int start = idx;
             indexes[idx++] = vtx++;
             indexes[idx++] = vtx++;
             indexes[idx++] = vtx + 1;
-            indexes[idx++] = vtx + 1;
+            indexes[idx++] = vtx;
         }
 
-        indexes[idx++] = vtx++;
-        indexes[idx++] = vtx++;
-        indexes[idx++] = 1;
-        indexes[idx++] = 1;
+        if(!useBottom)
+            return;
 
-        if(useBottom)
+        int middle = (facetCount + 1) << 1;
+        vtx++;
+
+        for(int i = facetCount; --i >= 0; )
         {
-            int middle = vtx++;
-            for(int i = facetCount; --i > 0; )
-            {
-                indexes[idx++] = middle;
-                indexes[idx++] = vtx + 1;
-                indexes[idx++] = vtx++;
-                indexes[idx++] = middle;
-            }
-
+            indexes[idx++] = vtx++;
             indexes[idx++] = middle;
-            indexes[idx++] = middle + 1;
-            indexes[idx++] = vtx;
             indexes[idx++] = middle;
+            indexes[idx++] = vtx + 1;
         }
     }
 
@@ -419,12 +443,15 @@ public class ConeGenerator extends GeometryGenerator
             generateIndexedTriNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
+            generateIndexedTexture2D(data);
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
 
         // now let's do the index list
-        int index_size = data.vertexCount * 3;
+        int index_size = (facetCount + 1) * 3;
+
+        if(useBottom)
+            index_size <<= 1;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -439,30 +466,22 @@ public class ConeGenerator extends GeometryGenerator
         int vtx = 0;
 
         // each face consists of an anti-clockwise
-        for(int i = facetCount; --i > 0; )
+        for(int i = facetCount; --i >= 0; )
         {
             indexes[idx++] = vtx++;
             indexes[idx++] = vtx++;
             indexes[idx++] = vtx + 1;
         }
 
-        indexes[idx++] = vtx++;
-        indexes[idx++] = vtx++;
-        indexes[idx++] = 1;
+        if(!useBottom)
+            return;
 
-        if(useBottom)
+        int middle = vtx++;
+        for(int i = facetCount + 1; --i >= 0; )
         {
-            int middle = vtx++;
-            for(int i = facetCount; --i > 0; )
-            {
-                indexes[idx++] = middle;
-                indexes[idx++] = vtx + 1;
-                indexes[idx++] = vtx++;
-            }
-
+            indexes[idx++] = vtx + 1;
             indexes[idx++] = middle;
-            indexes[idx++] = middle + 1;
-            indexes[idx++] = vtx;
+            indexes[idx++] = vtx++;
         }
     }
 
@@ -504,6 +523,67 @@ public class ConeGenerator extends GeometryGenerator
     private void indexedTriangleStrips(GeometryData data)
         throws InvalidArraySizeException
     {
+        generateIndexedTriCoordinates(data);
+
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
+            generateIndexedTriNormals(data);
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+            generateIndexedTexture2D(data);
+        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+            generateTriTexture3D(data);
+
+        // now let's do the index list
+        int index_size = (facetCount + 1) * 2;
+        if(useBottom)
+            index_size <<= 1;
+
+        int num_strips = useBottom ? 2 : 1;
+
+        if(data.indexes == null)
+            data.indexes = new int[index_size];
+        else if(data.indexes.length < index_size)
+            throw new InvalidArraySizeException("Indexes",
+                                                data.indexes.length,
+                                                index_size);
+
+        if(data.stripCounts == null)
+            data.stripCounts = new int[num_strips];
+        else if(data.stripCounts.length < num_strips)
+            throw new InvalidArraySizeException("Strip counts",
+                                                data.stripCounts.length,
+                                                num_strips);
+
+        int[] indexes = data.indexes;
+        int[] strip_counts = data.stripCounts;
+        data.indexesCount = index_size;
+        data.numStrips = num_strips;
+        int idx = 0;
+        int vtx = 0;
+
+        // each face consists of an anti-clockwise triangle
+        for(int i = 0; i <= facetCount; i++)
+        {
+            indexes[idx++] = vtx++;
+            indexes[idx++] = vtx++;
+        }
+
+        strip_counts[0] = (facetCount + 1) << 1;
+
+        if(!useBottom)
+            return;
+
+        // Single big fan on the bottom.
+        // wind the bottom in reverse order so that it can be seen
+        int middle = vtx + 2;
+
+        vtx = data.vertexCount - 1;
+        for(int i = facetCount + 1; --i >= 0; ) {
+            indexes[idx++] = middle;
+            indexes[idx++] = vtx--;
+        }
+
+        strip_counts[1] = (facetCount + 1) << 1;
     }
 
     /**
@@ -525,7 +605,7 @@ public class ConeGenerator extends GeometryGenerator
             generateIndexedTriNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
+            generateIndexedTexture2D(data);
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
 
@@ -554,8 +634,8 @@ public class ConeGenerator extends GeometryGenerator
         int idx = 0;
         int vtx = 0;
 
-        // each face consists of an anti-clockwise
-        for(int i = facetCount; --i > 0; )
+        // each face consists of an anti-clockwise triangle
+        for(int i = 0; i < facetCount; i++)
         {
             indexes[idx++] = vtx++;
             indexes[idx++] = vtx++;
@@ -563,24 +643,17 @@ public class ConeGenerator extends GeometryGenerator
             stripCounts[i] = 3;
         }
 
-        indexes[idx++] = vtx++;
-        indexes[idx++] = vtx++;
-        indexes[idx++] = 0;
-
-        stripCounts[0] = 3;
-
         if(useBottom)
         {
+            // Single big fan on the bottom.
             // wind the bottom in reverse order so that it can be seen
-            int middle = vtx++;
+            int middle = vtx + 2;
             indexes[idx++] = middle;
             stripCounts[num_strips - 1] = facetCount + 2;
 
             vtx = data.vertexCount - 1;
-            for(int i = facetCount; --i >= 0; )
+            for(int i = facetCount + 1; --i >= 0; )
                 indexes[idx++] = vtx--;
-
-            indexes[idx++] = data.vertexCount - 1;
         }
     }
 
@@ -621,7 +694,7 @@ public class ConeGenerator extends GeometryGenerator
 
         // Reverse loop count because it is *much* faster than the forward
         // version.
-        for(i = facetCount; --i > 0; )
+        for(i = facetCount; --i >= 0; )
         {
             //side coords
             coords[count++] = 0;
@@ -639,23 +712,11 @@ public class ConeGenerator extends GeometryGenerator
 
         // The last set of coordinates reuses the first two base coords
         //side coords
-        coords[count++] = 0;
-        coords[count++] = height_2;
-        coords[count++] = 0;
-
-        coords[count++] = baseCoordinates[base_count++];
-        coords[count++] = -height_2;
-        coords[count++] = baseCoordinates[base_count++];
-
-        coords[count++] = baseCoordinates[0];
-        coords[count++] = -height_2;
-        coords[count++] = baseCoordinates[1];
-
         if(useBottom)
         {
             base_count = 0;
 
-            for(i = facetCount; --i > 0;)
+            for(i = facetCount; --i >= 0;)
             {
                 coords[count++] = baseCoordinates[base_count++];
                 coords[count++] = -height_2;
@@ -669,18 +730,6 @@ public class ConeGenerator extends GeometryGenerator
                 coords[count++] = -height_2;
                 coords[count++] = baseCoordinates[base_count + 1];
             }
-
-            coords[count++] = baseCoordinates[base_count++];
-            coords[count++] = -height_2;
-            coords[count++] = baseCoordinates[base_count++];
-
-            coords[count++] = 0;
-            coords[count++] = -height_2;
-            coords[count++] = 0;
-
-            coords[count++] = baseCoordinates[0];
-            coords[count++] = -height_2;
-            coords[count++] = baseCoordinates[1];
         }
     }
 
@@ -696,7 +745,7 @@ public class ConeGenerator extends GeometryGenerator
     private void generateIndexedTriCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = getVertexCount( data);
+        int vtx_cnt = getVertexCount(data);
 
         if(data.coordinates == null)
             data.coordinates = new float[vtx_cnt * 3];
@@ -716,7 +765,7 @@ public class ConeGenerator extends GeometryGenerator
         int i;
         float height_2 = coneHeight / 2;
 
-        for(i = facetCount; --i >= 0; )
+        for(i = facetCount + 1; --i >= 0; )
         {
             coords[count++] = 0;
             coords[count++] = height_2;
@@ -734,7 +783,7 @@ public class ConeGenerator extends GeometryGenerator
             coords[count++] = 0;
 
             base_count = 0;
-            for(i = facetCount; --i >= 0; )
+            for(i = facetCount + 1; --i >= 0; )
             {
                coords[count++] = baseCoordinates[base_count++];
                coords[count++] = -height_2;
@@ -803,23 +852,23 @@ public class ConeGenerator extends GeometryGenerator
         }
 
         // Now generate the bottom if we need it.
-        if(useBottom)
+        if(!useBottom)
+            return;
+
+        for(i = facetCount; --i >= 0; )
         {
-            for(i = facetCount; --i >= 0; )
-            {
-                // The three vertices of the base in an unrolled loop
-                normals[count++] = 0;
-                normals[count++] = -1;
-                normals[count++] = 0;
+            // The three vertices of the base in an unrolled loop
+            normals[count++] = 0;
+            normals[count++] = -1;
+            normals[count++] = 0;
 
-                normals[count++] = 0;
-                normals[count++] = -1;
-                normals[count++] = 0;
+            normals[count++] = 0;
+            normals[count++] = -1;
+            normals[count++] = 0;
 
-                normals[count++] = 0;
-                normals[count++] = -1;
-                normals[count++] = 0;
-            }
+            normals[count++] = 0;
+            normals[count++] = -1;
+            normals[count++] = 0;
         }
     }
 
@@ -839,7 +888,7 @@ public class ConeGenerator extends GeometryGenerator
     private void generateIndexedTriNormals(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = data.vertexCount * 3;
+        int vtx_cnt = getVertexCount(data) * 3;
 
         if(data.normals == null)
             data.normals = new float[vtx_cnt];
@@ -853,7 +902,7 @@ public class ConeGenerator extends GeometryGenerator
         Vector3f norm;
         int count = 0;
 
-        for(i = facetCount; --i > 0; )
+        for(i = facetCount + 1; --i >= 0; )
         {
             norm = createFaceNormal(data.coordinates,
                                     count + 3,
@@ -871,34 +920,19 @@ public class ConeGenerator extends GeometryGenerator
             normals[count++] = norm.z;
         }
 
-        norm = createFaceNormal(data.coordinates,
-                                count + 3,
-                                count,
-                                0);
-
-        normals[count++] = norm.x;
-        normals[count++] = norm.y;
-        normals[count++] = norm.z;
-
-        norm = createRadialNormal(data.coordinates, count);
-
-        normals[count++] = norm.x;
-        normals[count++] = norm.y;
-        normals[count++] = norm.z;
-
         // Now generate the bottom if we need it.
-        if(useBottom)
+        if(!useBottom)
+            return;
+
+        normals[count++] = 0;
+        normals[count++] = -1;
+        normals[count++] = 0;
+
+        for(i = facetCount + 1; --i >= 0; )
         {
             normals[count++] = 0;
             normals[count++] = -1;
             normals[count++] = 0;
-
-            for(i = facetCount; --i >= 0; )
-            {
-                normals[count++] = 0;
-                normals[count++] = -1;
-                normals[count++] = 0;
-            }
         }
     }
 
@@ -907,17 +941,14 @@ public class ConeGenerator extends GeometryGenerator
     //------------------------------------------------------------------------
 
     /**
-     * Generate a new set of texCoords for a normal set of unindexed points. Each
-     * normal faces directly perpendicular for each point. This makes each face
-     * seem flat.
-     * <p>
-     * This must always be called after the coordinate generation.
+     * Generate a new set of texCoords for a normal set of unindexed triangle
+     * points.
      *
      * @param data The data to base the calculations on
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void generateTriTexture2D(GeometryData data)
+    private void generateUnindexedTriTexture2D(GeometryData data)
         throws InvalidArraySizeException
     {
         int vtx_cnt = data.vertexCount * 2;
@@ -929,7 +960,77 @@ public class ConeGenerator extends GeometryGenerator
                                                 data.textureCoordinates.length,
                                                 vtx_cnt);
 
-        float[] texCoords = data.textureCoordinates;
+        float[] tex_coords = data.textureCoordinates;
+
+        recalc2DTexture();
+
+        int i;
+        int pos;
+        int count = 0;
+
+        for(i = 0; i < facetCount; i++) {
+            pos = i * 4;
+
+            tex_coords[count++] = texCoordinates2D[pos];
+            tex_coords[count++] = texCoordinates2D[pos + 1];
+
+            tex_coords[count++] = texCoordinates2D[pos + 2];
+            tex_coords[count++] = texCoordinates2D[pos + 3];
+
+            tex_coords[count++] = texCoordinates2D[pos + 6];
+            tex_coords[count++] = texCoordinates2D[pos + 7];
+        }
+
+        if(!useBottom)
+            return;
+
+        // The base
+        int offset = (facetCount + 1) * 4;
+
+        for(i = 0; i < facetCount; i++) {
+            pos = i * 2 + offset + 2;
+
+            tex_coords[count++] = texCoordinates2D[pos];
+            tex_coords[count++] = texCoordinates2D[pos + 1];
+
+            tex_coords[count++] = texCoordinates2D[offset];
+            tex_coords[count++] = texCoordinates2D[offset + 1];
+
+            tex_coords[count++] = texCoordinates2D[pos + 2];
+            tex_coords[count++] = texCoordinates2D[pos + 3];
+        }
+    }
+
+    /**
+     * Generates new set of points suitable for use in an indexed array.
+     * This array is your basic shape, but with the bottom part mirrored if
+     * need be.
+     *
+     * @param data The data to base the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateIndexedTexture2D(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = data.vertexCount * 2;
+
+        if(data.textureCoordinates == null)
+            data.textureCoordinates = new float[vtx_cnt];
+        else if(data.textureCoordinates.length < vtx_cnt)
+            throw new InvalidArraySizeException("2D Texture coordinates",
+                                                data.textureCoordinates.length,
+                                                vtx_cnt);
+
+        float[] tex_coords = data.textureCoordinates;
+
+        recalc2DTexture();
+
+        System.arraycopy(texCoordinates2D,
+                         0,
+                         data.textureCoordinates,
+                         0,
+                         numTexCoords2D);
     }
 
     /**
@@ -969,14 +1070,14 @@ public class ConeGenerator extends GeometryGenerator
             return;
 
         baseChanged = false;
+        numBaseValues = (facetCount + 1) * 2;
 
         if((baseCoordinates == null) ||
-           (facetCount * 2 > baseCoordinates.length))
+           (numBaseValues > baseCoordinates.length))
         {
-            baseCoordinates = new float[facetCount * 2];
+            baseCoordinates = new float[numBaseValues];
         }
 
-        numBaseValues = facetCount * 2;
 
          // local constant to make math calcs faster
         double segment_angle = 2.0 * Math.PI / facetCount;
@@ -997,5 +1098,82 @@ public class ConeGenerator extends GeometryGenerator
             baseCoordinates[count++] = x;
             baseCoordinates[count++] = z;
         }
+
+        baseCoordinates[count++] = baseCoordinates[0];
+        baseCoordinates[count++] = baseCoordinates[1];
+    }
+
+    /**
+     * Recalculate the 2D texture coordinates IAW the coordinate values. This
+     * starts by using the circumference as a T value of 0.5 to indicate it is
+     * halfway through the texture (we are starting at the middle of the
+     * sphere!). Then, if we have a bottom, we calculate the T from 0 to 0.5.
+     * thus the coordinates are for the top half of the sphere, followed by
+     * the bottom half.
+     */
+    private void recalc2DTexture()
+    {
+        if(!facetsChanged)
+            return;
+
+        // not a good idea because we should also leave this set to recalc
+        // the 3D coordinates.
+        facetsChanged = false;
+
+        int vtx_count = (facetCount + 1) << 1;
+
+        if(useBottom)
+            vtx_count += (facetCount + 1) << 1;
+
+        if((texCoordinates2D == null) ||
+           (vtx_count * 2 > texCoordinates2D.length))
+        {
+            texCoordinates2D = new float[vtx_count * 2];
+        }
+
+        // local constant to make math calcs faster
+        float segment_angle = 1 / (float)facetCount;
+        float angle = (float)(2.0 * Math.PI / facetCount);
+
+        int count = 0;
+        int i, k;
+        float s, a;
+        float[] bottom_s = new float[facetCount + 1];
+        float[] bottom_t = new float[facetCount + 1];
+        for(i = 0; i < facetCount; i++)
+        {
+            s = i * segment_angle;
+
+            texCoordinates2D[count++] = s;
+            texCoordinates2D[count++] = 1;
+
+            texCoordinates2D[count++] = s;
+            texCoordinates2D[count++] = 0;
+
+            a = i * angle;
+            bottom_s[i] = (float)(0.5f - bottomRadius * Math.cos(a) / 2);
+            bottom_t[i] = (float)(0.5f - bottomRadius * Math.sin(a) / 2);
+        }
+
+        texCoordinates2D[count++] = 1;
+        texCoordinates2D[count++] = 1;
+
+        texCoordinates2D[count++] = 1;
+        texCoordinates2D[count++] = 0;
+
+        bottom_s[facetCount] = bottom_s[0];
+        bottom_t[facetCount] = bottom_t[0];
+
+        // bottom is a flat square that is based with the centre at
+        // the centre of the cone. Start with the centre point first
+        texCoordinates2D[count++] = 0.5f;
+        texCoordinates2D[count++] = 0.5f;
+
+        for(i = 0; i <= facetCount; i++) {
+            texCoordinates2D[count++] = bottom_s[i];
+            texCoordinates2D[count++] = bottom_t[i];
+        }
+
+        numTexCoords2D = count;
     }
 }
