@@ -7,7 +7,6 @@ PACKAGE = org.j3d.ui.navigation
 SOURCE = NavigationState.java \
     FrameUpdateListener.java \
     NavigationStateListener.java \
-    NavigationUIStateListener.java \
 	ViewpointSelectionListener.java \
 	CollisionListener.java \
 	ViewpointData.java \
