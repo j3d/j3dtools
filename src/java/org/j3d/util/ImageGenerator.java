@@ -30,7 +30,7 @@ import java.util.Hashtable;
  * consumer can be reset if needed to work on another image.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class ImageGenerator implements ImageConsumer
 {
@@ -44,12 +44,14 @@ class ImageGenerator implements ImageConsumer
 
     private BufferedImage image;
     private int[] intBuffer;
+    private boolean loadComplete;
 
     ImageGenerator()
     {
         holder = new Object();
         width = -1;
         height = -1;
+        loadComplete = false;
     }
 
     //------------------------------------------------------------------------
@@ -68,6 +70,8 @@ class ImageGenerator implements ImageConsumer
            status == IMAGEABORTED ||
            status == IMAGEERROR)
         {
+            loadComplete = true;
+
             synchronized(holder)
             {
                 holder.notify();
@@ -189,14 +193,17 @@ class ImageGenerator implements ImageConsumer
      */
     BufferedImage getImage()
     {
-        synchronized(holder)
+        if(!loadComplete)
         {
-            try
+            synchronized(holder)
             {
-                holder.wait();
-            }
-            catch(InterruptedException ie)
-            {
+                try
+                {
+                    holder.wait();
+                }
+                catch(InterruptedException ie)
+                {
+                }
             }
         }
 
@@ -214,6 +221,7 @@ class ImageGenerator implements ImageConsumer
             holder.notify();
         }
 
+        loadComplete = false;
         colorModel = null;
         raster = null;
         properties = null;
