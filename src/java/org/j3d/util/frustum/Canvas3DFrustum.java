@@ -60,7 +60,7 @@ import javax.vecmath.Matrix4d;
  * The frustum is for the previous Java3D frame that has just been rendered.
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class Canvas3DFrustum
 {
@@ -74,14 +74,14 @@ class Canvas3DFrustum
     static final int CLIPPED = 0x4;
 
     /** The planes describing this frustum */
-    Vector4d frustumPlanes[];
+    Vector4d[] frustumPlanes;
 
     /**
      * Create a new, default frustum for a canvas.
      */
     Canvas3DFrustum()
     {
-        frustumPlanes = new Vector4d[8];
+        frustumPlanes = new Vector4d[6];
 
         frustumPlanes[0] = new Vector4d();
         frustumPlanes[1] = new Vector4d();
@@ -89,8 +89,6 @@ class Canvas3DFrustum
         frustumPlanes[3] = new Vector4d();
         frustumPlanes[4] = new Vector4d();
         frustumPlanes[5] = new Vector4d();
-        frustumPlanes[6] = new Vector4d();
-        frustumPlanes[7] = new Vector4d();
     }
 
     /**
