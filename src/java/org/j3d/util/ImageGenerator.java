@@ -30,7 +30,7 @@ import java.util.Hashtable;
  * consumer can be reset if needed to work on another image.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 class ImageGenerator implements ImageConsumer
 {
@@ -136,6 +136,9 @@ class ImageGenerator implements ImageConsumer
                           int offset,
                           int scansize)
     {
+        if (loadComplete)
+            return;
+
         if((intBuffer == null) || (pixels.length > intBuffer.length))
             intBuffer = new int[pixels.length];
 
@@ -166,6 +169,9 @@ class ImageGenerator implements ImageConsumer
                           int offset,
                           int scansize)
     {
+        if (loadComplete)
+            return;
+
         image.setRGB(x, y, w, h, pixels, offset, scansize);
     }
 
@@ -240,13 +246,12 @@ class ImageGenerator implements ImageConsumer
         // meet the preconditions first.
         if((image != null) ||
            (width == -1) ||
-           (colorModel == null))
+           (colorModel == null) || loadComplete)
             return;
 
         raster = colorModel.createCompatibleWritableRaster(width, height);
 
         boolean premult = colorModel.isAlphaPremultiplied();
-
         image = new BufferedImage(colorModel, raster, premult, properties);
     }
 }
