@@ -58,10 +58,19 @@ import org.j3d.terrain.TerrainData;
  * @author  Paul Byrne, Justin Couch
  * @version
  */
-class TreeNode
+class TreeNode extends QueueItem
 {
     /** The visibility status of this node in the tree is not known. */
     public static final int UNDEFINED = -1;
+
+    /** Base to base orientation of the edge split routine */
+    public static final int BASE_TO_BASE = 1;
+
+    /** Left to right orientation of the edge split routine */
+    public static final int LEFT_TO_RIGHT = 2;
+
+    /** right to left orientation of the edge split routine */
+    public static final int RIGHT_TO_LEFT = 3;
 
     /** Child tree node on the left side of the diamond */
     TreeNode leftChild;
@@ -102,9 +111,6 @@ class TreeNode
 
     private TerrainData terrainData;
     private VarianceTree varianceTree;
-
-    float variance = 0f;
-    float diamondVariance = 0f;
 
     boolean diamond = false;
 
@@ -218,7 +224,7 @@ class TreeNode
         diamond = false;
         visible = UNDEFINED;
 
-        addTreeNode(this);
+        nodeCache.add(this);
     }
 
     /**
@@ -258,6 +264,72 @@ class TreeNode
     }
 
     /**
+     * Split the edge of this triangle to match the neighbour. This
+     * is used for the edges when blending a new tile with a pre-existing
+     * tile.
+     *
+     * @param newNeighbour The neighbour node to match up with
+     * @param orientation One of the directions to look at the split
+     * @param position The current view location
+     * @param frustum The view information
+     * @param queueManager The queue to place newly generated items on
+     * @return The number of triangles generated as a result
+     */
+    int edgeSplit(TreeNode newNeighbour,
+                  int orientation,
+                  Tuple3f position,
+                  ViewFrustum frustum,
+                  QueueManager queueManager)
+    {
+        // If the new neighbour triangle is not split, don't go any further
+        if(newNeighbour.leftChild == null)
+            return 0;
+
+        int tri_count = 0;
+
+        // If we are not split, force split ourselves and then work out which
+        // way to start splitting the new set of code.
+        if(leftChild == null)
+        {
+            splitTriangle(position, frustum, queueManager);
+            tri_count = 2;
+        }
+
+        switch(orientation)
+        {
+            case LEFT_TO_RIGHT:
+                tri_count += leftChild.edgeSplit(newNeighbour.rightChild,
+                                                 BASE_TO_BASE,
+                                                 position,
+                                                 frustum,
+                                                 queueManager);
+                break;
+
+            case RIGHT_TO_LEFT:
+                tri_count += rightChild.edgeSplit(newNeighbour.leftChild,
+                                                  BASE_TO_BASE,
+                                                  position,
+                                                  frustum,
+                                                  queueManager);
+                break;
+
+            case BASE_TO_BASE:
+                tri_count += rightChild.edgeSplit(newNeighbour.leftChild,
+                                                  LEFT_TO_RIGHT,
+                                                  position,
+                                                  frustum,
+                                                  queueManager);
+                tri_count += leftChild.edgeSplit(newNeighbour.rightChild,
+                                                 RIGHT_TO_LEFT,
+                                                 position,
+                                                 frustum,
+                                                 queueManager);
+        }
+
+        return tri_count;
+    }
+
+    /**
      * Split this tree node into two smaller triangle tree nodes.
      *
      * @param position The current view location
@@ -269,7 +341,7 @@ class TreeNode
               ViewFrustum frustum,
               QueueManager queueManager)
     {
-        int triCount = 0;
+        int tri_count = 0;
 
         if(leftChild != null || rightChild != null)
             throw new RuntimeException(" Triangle already split "+ hashCode());
@@ -278,15 +350,15 @@ class TreeNode
         {
             if(baseNeighbour.baseNeighbour != this)
             {
-                triCount += baseNeighbour.split(position,
+                tri_count += baseNeighbour.split(position,
                                                 frustum,
                                                 queueManager);
             }
 
             split2(position, frustum, queueManager);
-            triCount++;
+            tri_count++;
             baseNeighbour.split2(position, frustum, queueManager);
-            triCount++;
+            tri_count++;
 
             leftChild.rightNeighbour = baseNeighbour.rightChild;
             rightChild.leftNeighbour = baseNeighbour.leftChild;
@@ -300,14 +372,14 @@ class TreeNode
         else
         {
             split2(position, frustum, queueManager);
-            triCount++;
+            tri_count++;
 
             diamondVariance = variance;
             diamond = true;
             queueManager.addDiamond(this);
         }
 
-        return triCount;
+        return tri_count;
     }
 
     /**
@@ -667,6 +739,10 @@ class TreeNode
 
     /**
      * Forceful split of this triangle and turns it into two triangles.
+     *
+     * @param position The current view location
+     * @param frustum The view information
+     * @param queueManager The queue to place newly generated items on
      */
     private void splitTriangle(Tuple3f position,
                                ViewFrustum frustum,
@@ -712,6 +788,14 @@ class TreeNode
         }
     }
 
+    /**
+     * No idea what this does.
+     *
+     * @param position The current view location
+     * @param frustum The view information
+     * @param queueManager The queue to place newly generated items on
+     * @return The number of triangles generated as a result
+     */
     private void split2(Tuple3f position,
                         ViewFrustum frustum,
                         QueueManager queueManager)
@@ -753,6 +837,14 @@ class TreeNode
         }
     }
 
+    /**
+     * Merge this node with the given node and place them into the diamond
+     * queue.
+     *
+     * @param mergeNode The node to merge with this one
+     * @param queueManager The queue to place newly generated items on
+     * @return The number of triangles generated as a result
+     */
     private void merge(TreeNode mergeNode, QueueManager queueManager)
     {
         if(mergeNode.leftChild == null ||
@@ -848,13 +940,5 @@ class TreeNode
 
             queueManager.addDiamond(tn);
         }
-    }
-
-    /**
-     * Add the node to the free cache.
-     */
-    private static void addTreeNode(TreeNode node)
-    {
-        nodeCache.add(node);
     }
 }
