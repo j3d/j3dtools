@@ -22,3 +22,4 @@ MAKEDIR  = mkdir -p
 RMDIR    = rm -fr
 PRINT    = @echo
 
+MAKEFLAGS=-s
