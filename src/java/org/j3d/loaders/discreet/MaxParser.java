@@ -28,7 +28,7 @@ import org.j3d.io.BlockDataInputStream;
  * http://www.spacesimulator.net/tut4_3dsloader.html
  *
  * @author  Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class MaxParser
 {
@@ -44,6 +44,9 @@ public class MaxParser
 
     /** The mesh that was last parsed */
     private ObjectMesh decodedMesh;
+
+    /** The version of the mesh structures we're reading */
+    private int releaseVersion;
 
     /**
      * Construct a new parser with no stream set.
@@ -160,6 +163,7 @@ public class MaxParser
             {
                 case MaxConstants.VERSION:
                     data.meshVersion = readInt();
+                    releaseVersion = data.meshVersion;
                     break;
 
                 case MaxConstants.MESH_DATA:
@@ -199,7 +203,6 @@ public class MaxParser
             int type = readUnsignedShort();
             int size = readInt();
 
-//System.out.println("reading 0x" + Integer.toHexString(type) + " size " + size);
             switch(type)
             {
                 case MaxConstants.NAMED_OBJECT:
@@ -234,6 +237,135 @@ public class MaxParser
                 case MaxConstants.SHADOW_MAP_FILTER:
                 case MaxConstants.RAY_BIAS:
                 case MaxConstants.O_CONST:
+                case MaxConstants.VIEWPORT_LAYOUT_OLD:
+                case MaxConstants.VIEWPORT_LAYOUT:
+                case MaxConstants.NETWORK_VIEW:
+                    skipBytes(size - 6);
+                    break;
+
+                case MaxConstants.BITMAP:
+                    data.backgroundBitmap = readString();
+                    break;
+
+                case MaxConstants.SOLID_BG:
+
+                    data.solidBackgroundColor = new float[3];
+
+                    if(releaseVersion == 3)
+                    {
+                        // Skip the COLOR_F section
+                        skipBytes(18);
+                        readColor(data.solidBackgroundColor);
+                    }
+                    else
+                    {
+                        readColor(data.solidBackgroundColor);
+                    }
+
+                    break;
+
+                case MaxConstants.V_GRADIENT:
+                    data.backgroundMidpoint = readFloat();  // midpoint of gradient
+
+                    data.gradientBackgroundColors = new float[3][3];
+
+                    if(releaseVersion == 3)
+                    {
+                        // Basically need to skip each of the COLOR_F sections,
+                        // which are 18 bytes each.
+                        skipBytes(18);
+                        readColor(data.gradientBackgroundColors[0]);
+                        skipBytes(18);
+                        readColor(data.gradientBackgroundColors[1]);
+                        skipBytes(18);
+                        readColor(data.gradientBackgroundColors[2]);
+                    }
+                    else
+                    {
+                        readColor(data.gradientBackgroundColors[0]);
+                        readColor(data.gradientBackgroundColors[1]);
+                        readColor(data.gradientBackgroundColors[2]);
+                    }
+                    break;
+
+                case MaxConstants.USE_V_GRADIENT:
+                    data.selectedBackground = ObjectMesh.USE_GRADIENT;
+                    break;
+
+                case MaxConstants.USE_SOLID_BG:
+                    data.selectedBackground = ObjectMesh.USE_SOLID_BG;
+                    break;
+
+                case MaxConstants.USE_BITMAP:
+                    data.selectedBackground = ObjectMesh.USE_BITMAP;
+                    break;
+
+                case MaxConstants.FOG:
+                    data.linearFogDetails = new float[4];
+                    data.fogColor = new float[3];
+
+                    data.linearFogDetails[0] = readFloat();
+                    data.linearFogDetails[1] = readFloat();
+                    data.linearFogDetails[2] = readFloat();
+                    data.linearFogDetails[3] = readFloat();
+
+                    read = readColor(data.fogColor);
+
+                    // have the fog background flag?
+                    if(size - read - 16 - 6 != 0)
+                    {
+                        if(readUnsignedShort() == MaxConstants.FOG_BACKGROUND)
+                        {
+                            readInt();
+                            data.fogBackground = true;
+                        }
+                    }
+                    break;
+
+                case MaxConstants.LAYER_FOG:
+                    data.layerFogDetails = new float[4];
+                    data.fogColor = new float[3];
+
+                    data.layerFogDetails[0] = readFloat();
+                    data.layerFogDetails[1] = readFloat();
+                    data.layerFogDetails[2] = readFloat();
+                    data.layerFogFlags = readInt();
+
+                    readColor(data.fogColor);
+                    break;
+
+                case MaxConstants.DISTANCE_CUE:
+                    data.distanceFogDetails = new float[4];
+
+                    data.distanceFogDetails[0] = readFloat();
+                    data.distanceFogDetails[1] = readFloat();
+                    data.distanceFogDetails[2] = readFloat();
+                    data.distanceFogDetails[3] = readFloat();
+
+                    if(size - 16 - 6 != 0)
+                    {
+                        if(readUnsignedShort() == MaxConstants.DCUE_BACKGROUND)
+                        {
+                            readInt();
+                            data.fogBackground = true;
+                        }
+                    }
+                    break;
+
+                case MaxConstants.USE_FOG:
+                    data.selectedBackground = ObjectMesh.USE_LINEAR_FOG;
+                    break;
+
+                case MaxConstants.USE_LAYER_FOG:
+                    data.selectedBackground = ObjectMesh.USE_LAYER_FOG;
+                    break;
+
+                case MaxConstants.USE_DISTANCE_CUE:
+                    data.selectedBackground = ObjectMesh.USE_DISTANCE_FOG;
+                    break;
+
+                case MaxConstants.DEFAULT_VIEW:
+                    System.out.println("default views not handled yet");
                     skipBytes(size - 6);
                     break;
 
@@ -294,6 +426,16 @@ public class MaxParser
                     readCameraBlock(size - 6, block);
                     break;
 
+                // Ignore, zero size.
+                case MaxConstants.VIS_LOFTER:
+                case MaxConstants.NO_CAST:
+                case MaxConstants.OBJ_MATTE:
+                case MaxConstants.OBJ_FAST:
+                case MaxConstants.OBJ_PROCEDURAL:
+                case MaxConstants.OBJ_FROZEN:
+                case MaxConstants.OBJ_NOT_SHADOWED:
+                    break;
+
                 default:
                     System.out.println("Unknown object block chunk ID 0x" +
                                        Integer.toHexString(type));
@@ -334,8 +476,6 @@ public class MaxParser
             int type = readUnsignedShort();
             int size = readInt();
 
-            int cnt = 0;
-
             switch(type)
             {
                 case MaxConstants.VERTEX_LIST:
@@ -343,10 +483,7 @@ public class MaxParser
                     mesh.vertices = new float[mesh.numVertices * 3];
 
                     for(int i = 0; i < mesh.numVertices; i++)
-                    {
-                        readPoint(mesh.vertices, cnt);
-                        cnt += 3;
-                    }
+                        readPoint(mesh.vertices, i * 3);
                     break;
 
                 case MaxConstants.TEXCOORD_LIST:
@@ -355,8 +492,8 @@ public class MaxParser
 
                     for(int i = 0; i < mesh.numTexCoords; i++)
                     {
-                        mesh.texCoords[cnt++] = readFloat();
-                        mesh.texCoords[cnt++] = readFloat();
+                        mesh.texCoords[i * 2] = readFloat();
+                        mesh.texCoords[i * 2 + 1] = readFloat();
                     }
                     break;
 
@@ -458,8 +595,9 @@ public class MaxParser
             }
 
             if(bytes_read != bytesToRead)
-             System.out.println("Incorrect bytes read from file for face chunk. " +
-                                "Read: " + bytes_read + " required " + bytesToRead);
+                 System.out.println("Incorrect bytes read from file for face " +
+                                    "chunk. Read: " + bytes_read + " required " +
+                                    bytesToRead);
         }
     }
 
@@ -494,7 +632,13 @@ public class MaxParser
         for(int i = 0; i < mat.numFaces; i++)
             mat.faceList[i] = readUnsignedShort();
 
-        // TODO: should confirm number of bytes read here.
+        int bytes_read = mat.materialName.length() + 1 + 2 + mat.numFaces * 2;
+        if(bytesToRead != bytes_read)
+             System.out.println("Incorrect bytes read from file for material " +
+                                "list. Read: " + bytes_read + " required " +
+                                bytesToRead);
+
+
     }
 
 
@@ -526,7 +670,6 @@ public class MaxParser
 
         bytes_read += 12;
 
-//System.out.println("reading 0x" + Integer.toHexString(type) + " size " + size);
         while(bytes_read < bytesToRead)
         {
             int type = readUnsignedShort();
@@ -535,30 +678,15 @@ public class MaxParser
             switch(type)
             {
                 case MaxConstants.SPOT_LIGHT:
-                    light.type = LightBlock.SPOT_LIGHT;
-                    light.target = new float[3];
-                    light.target[0] = readFloat();
-                    light.target[1] = readFloat();
-                    light.target[2] = readFloat();
-                    light.hotspotAngle = readFloat();
-                    light.falloffAngle = readFloat();
+                    readSpotlightBlock(size - 6, light);
                     break;
 
                 case MaxConstants.DIR_LIGHT_OFF:
-                    int enable = inputStream.readUnsignedByte();
-                    light.enabled = (enable != 0);
+                    light.enabled = false;
                     break;
 
                 case MaxConstants.DIR_LIGHT_ATTENUATION:
                     light.attenuation = readFloat();
-                    break;
-
-                case MaxConstants.DIR_LIGHT_SPOT_ROLLOFF:
-                    light.rollAngle = readFloat();
-                    break;
-
-                case MaxConstants.DIR_LIGHT_SPOT_ASPECTRATIO:
-                    light.aspectRatio = readFloat();
                     break;
 
                 case MaxConstants.DIR_LIGHT_INNER_RANGE:
@@ -571,6 +699,12 @@ public class MaxParser
 
                 case MaxConstants.DIR_LIGHT_MULTIPLIER:
                     light.multiple = readFloat();
+                    break;
+
+                case MaxConstants.DIR_LIGHT_EXCLUDE:
+                    // Light exclusion range string. Not sure what this does
+                    // so ignore it.
+                    readString();
                     break;
 
                 default:
@@ -588,10 +722,80 @@ public class MaxParser
     }
 
     /**
+     * Read an extended spotlight block.
+     *
+     * @param bytesToRead number of bytes requiring processing
+     * @param data The light object to put everything into
+     */
+    private void readSpotlightBlock(int bytesToRead, LightBlock light)
+        throws IOException
+    {
+        light.type = LightBlock.SPOT_LIGHT;
+        light.target = new float[3];
+        readPoint(light.target, 0);
+        light.hotspotAngle = readFloat();
+        light.falloffAngle = readFloat();
+
+        int bytes_read = 12 + 4 + 4;
+
+        while(bytes_read < bytesToRead)
+        {
+            int type = readUnsignedShort();
+            int size = readInt();
+
+            switch(type)
+            {
+                case MaxConstants.DIR_LIGHT_SPOT_ROLLOFF:
+                    light.rollAngle = readFloat();
+                    break;
+
+                case MaxConstants.DIR_LIGHT_SPOT_ASPECTRATIO:
+                    light.aspectRatio = readFloat();
+                    break;
+
+                case MaxConstants.DIR_LIGHT_SEE_CONE:
+                    light.seeCone = true;
+                    break;
+
+                case MaxConstants.DIR_LIGHT_SHADOWED:
+                    light.castsShadows = true;
+                    break;
+
+                case MaxConstants.DIR_LIGHT_LOCAL_SHADOW2:
+                    light.shadowParams = new float[2];
+                    light.shadowParams[0] = readFloat();
+                    light.shadowParams[1] = readFloat();
+                    light.shadowMapSize = readUnsignedShort();
+                    break;
+
+                case MaxConstants.DIR_LIGHT_RAY_BIAS:
+                    // ignored because it's for raytracing
+                    skipBytes(size - 6);
+                    break;
+
+                case MaxConstants.DIR_LIGHT_RAYSHAD:
+                    // ignored because it's for raytracing
+                    break;
+
+                default:
+                    System.out.println("Unknown spotlight block ID 0x" +
+                                       Integer.toHexString(type));
+                    skipBytes(size - 6);
+            }
+
+            bytes_read += size;
+        }
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Incorrect bytes read from file for spotlight block. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
+    }
+
+    /**
      * Read all a Camera block.
      *
      * @param bytesToRead number of bytes requiring processing
-     * @param data The mesh object to put everything into
+     * @param data The object mesh object to put everything into
      */
     private void readCameraBlock(int bytesToRead, ObjectBlock data)
         throws IOException
@@ -766,6 +970,21 @@ public class MaxParser
                 case MaxConstants.MAT_XPFALLIN:
                 case MaxConstants.MAT_PHONGSOFT:
                 case MaxConstants.MAT_REFBLUR:
+                case MaxConstants.MAT_SXP_TEXT_DATA:
+                case MaxConstants.MAT_SXP_TEXT2_DATA:
+                case MaxConstants.MAT_SXP_OPAC_DATA:
+                case MaxConstants.MAT_SXP_BUMP_DATA:
+                case MaxConstants.MAT_SXP_SPEC_DATA:
+                case MaxConstants.MAT_SXP_SHIN_DATA:
+                case MaxConstants.MAT_SXP_SELFI_DATA:
+                case MaxConstants.MAT_SXP_TEXT_MASKDATA:
+                case MaxConstants.MAT_SXP_TEXT2_MASKDATA:
+                case MaxConstants.MAT_SXP_OPAC_MASKDATA:
+                case MaxConstants.MAT_SXP_BUMP_MASKDATA:
+                case MaxConstants.MAT_SXP_SPEC_MASKDATA:
+                case MaxConstants.MAT_SXP_SHIN_MASKDATA:
+                case MaxConstants.MAT_SXP_SELFI_MASKDATA:
+                case MaxConstants.MAT_SXP_REFL_MASKDATA:
                     skipBytes(size - 6);
                     break;
 
@@ -1622,6 +1841,7 @@ public class MaxParser
 
             case MaxConstants.FLOAT_PERCENT:
                 ret_val = readFloat();
+                break;
 
             default:
                 System.out.println("Unknown percentage chunk ID 0x" +
@@ -1783,6 +2003,9 @@ public class MaxParser
     private void skipBytes(int numBytes)
         throws IOException
     {
+        if(numBytes == 0)
+            return;
+
         int skipped = (int)inputStream.skip(numBytes);
 
         if(skipped != numBytes)
