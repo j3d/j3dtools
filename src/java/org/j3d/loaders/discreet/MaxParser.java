@@ -28,7 +28,7 @@ import org.j3d.io.BlockDataInputStream;
  * http://www.spacesimulator.net/tut4_3dsloader.html
  *
  * @author  Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class MaxParser
 {
@@ -330,14 +330,14 @@ public class MaxParser
             switch(type)
             {
                 case MaxConstants.VERTEX_LIST:
-                    mesh.numVertex = readUnsignedShort();
-                    mesh.vertex = new float[mesh.numVertex * 3];
+                    mesh.numVertices = readUnsignedShort();
+                    mesh.vertices = new float[mesh.numVertices * 3];
 
-                    for(int i = 0; i < mesh.numVertex; i++)
+                    for(int i = 0; i < mesh.numVertices; i++)
                     {
-                        mesh.vertex[cnt++] = readFloat();
-                        mesh.vertex[cnt++] = readFloat();
-                        mesh.vertex[cnt++] = readFloat();
+                        mesh.vertices[cnt++] = readFloat();
+                        mesh.vertices[cnt++] = readFloat();
+                        mesh.vertices[cnt++] = readFloat();
                     }
                     break;
 
@@ -360,7 +360,16 @@ public class MaxParser
 
                 case MaxConstants.FACE_LIST:
                     readFaceList(size - 6, mesh);
+                    break;
 
+                case MaxConstants.BOX_MAP:
+                    mesh.boxMapMaterials = new String[6];
+                    mesh.boxMapMaterials[0] = readString();
+                    mesh.boxMapMaterials[1] = readString();
+                    mesh.boxMapMaterials[2] = readString();
+                    mesh.boxMapMaterials[3] = readString();
+                    mesh.boxMapMaterials[4] = readString();
+                    mesh.boxMapMaterials[5] = readString();
                     break;
 
                 default:
@@ -386,21 +395,21 @@ public class MaxParser
         throws IOException
     {
         int cnt = 0;
-        data.numFace = readUnsignedShort();
-        data.face = new int[data.numFace * 3];
+        data.numFaces = readUnsignedShort();
+        data.faces = new int[data.numFaces * 3];
 
-        for(int i = 0; i < data.numFace; i++)
+        for(int i = 0; i < data.numFaces; i++)
         {
-            data.face[cnt++] = readUnsignedShort();
-            data.face[cnt++] = readUnsignedShort();
-            data.face[cnt++] = readUnsignedShort();
+            data.faces[cnt++] = readUnsignedShort();
+            data.faces[cnt++] = readUnsignedShort();
+            data.faces[cnt++] = readUnsignedShort();
             readUnsignedShort();
         }
 
         // num faces * sizeof(unsigned short) * 4 shorts per face
         // plus 2 bytes for numFaces int and 6 bytes for the
         // chunk ID + size indicator
-        int bytes_read = data.numFace * 2 * 4 + 2;
+        int bytes_read = data.numFaces * 2 * 4 + 2;
 
         if(bytes_read < bytesToRead)
         {
@@ -412,10 +421,10 @@ public class MaxParser
                 switch(type)
                 {
                     case MaxConstants.SMOOTH_LIST:
-                        data.smoothgroup = new int[data.numFace];
+                        data.smoothgroups = new int[data.numFaces];
 
-                        for(int i = 0; i < data.numFace; i++)
-                            data.smoothgroup[i] = readInt();
+                        for(int i = 0; i < data.numFaces; i++)
+                            data.smoothgroups[i] = readInt();
                         break;
 
                     case MaxConstants.MATERIAL_LIST:
@@ -649,16 +658,45 @@ public class MaxParser
                     break;
 
                 case MaxConstants.MAT_SHININESS:
-                    mat.shininess = readPercentage();
+                    mat.shininessRatio = readPercentage();
+                    break;
+
+                case MaxConstants.MAT_SHIN2PCT:
+                    mat.shininessStrength = readPercentage();
+                    break;
+
+                case MaxConstants.MAT_WIREFRAME:
+                    mat.wireframe = true;
+                    break;
+
+                case MaxConstants.MAT_WIRESIZE:
+                    mat.wireSize = readFloat();
+                    break;
+
+                case MaxConstants.MAT_SHADING:
+                    mat.shadingType = readUnsignedShort();
+                    break;
+
+                case MaxConstants.MAT_ADDITIVE:
+                    mat.additiveBlend = true;
                     break;
 
                 case MaxConstants.MAT_TRANSPARENCY:
-                    mat.shininess = readPercentage();
+                    mat.transparency = readPercentage();
                     break;
 
                 case MaxConstants.MAT_TWO_SIDE:
-                    int enable = inputStream.readUnsignedByte();
-                    mat.twoSidedLighting = (enable != 0);
+                    mat.twoSidedLighting = true;
+                    break;
+
+                case MaxConstants.MAT_TEXMAP:
+                case MaxConstants.MAT_TEX2MAP:
+                case MaxConstants.MAT_SHINMAP:
+                case MaxConstants.MAT_SPECMAP:
+                case MaxConstants.MAT_OPACMAP:
+                case MaxConstants.MAT_REFLMAP:
+                case MaxConstants.MAT_BUMPMAP:
+                    readTextureBlock(size - 6, mat, type);
                     break;
 
                 default:
@@ -672,6 +710,171 @@ public class MaxParser
 
         if(bytes_read != bytesToRead)
              System.out.println("Not enough bytes in file for material block");
+    }
+
+    /**
+     * Common method to read all texture block types for this material.
+     *
+     * @param bytesToRead number of bytes requiring processing
+     * @param data The object block to put everything into
+     * @param textureType the ID of the texture to read and assign
+     */
+    private void readTextureBlock(int bytesToRead,
+                                  MaterialBlock data,
+                                  int textureType)
+        throws IOException
+    {
+        TextureBlock tex = new TextureBlock();
+
+        int bytes_read = 0;
+
+        while(bytes_read < bytesToRead)
+        {
+            int type = readUnsignedShort();
+            int size = readInt();
+
+            switch(type)
+            {
+                case MaxConstants.INT_PERCENT:
+                    int i_perc = readUnsignedShort();
+                    tex.strength = i_perc * 0.01f;
+                    break;
+
+                case MaxConstants.MAT_MAPNAME:
+                    tex.filename = readString();
+System.out.println("texture name " + tex.filename);
+                    break;
+
+                case MaxConstants.MAT_MAP_TILING:
+                    tex.tiling = readUnsignedShort();
+                    break;
+
+                case MaxConstants.MAT_MAP_TEXBLUR:
+                    tex.blurring = readFloat();
+                    break;
+
+                case MaxConstants.MAT_MAP_USCALE:
+                    tex.uScale = readFloat();
+                    break;
+
+                case MaxConstants.MAT_MAP_VSCALE:
+                    tex.vScale = readFloat();
+                    break;
+
+                case MaxConstants.MAT_MAP_UOFFSET:
+                    tex.uOffset = readFloat();
+                    break;
+
+                case MaxConstants.MAT_MAP_VOFFSET:
+                    tex.vOffset = readFloat();
+                    break;
+
+                case MaxConstants.MAT_MAP_ANG:
+                    tex.angle = readFloat();
+                    break;
+
+                case MaxConstants.MAT_MAP_COL1:
+                    tex.blendColor1 = new float[3];
+                    int c = inputStream.readUnsignedByte();
+                    tex.blendColor1[0] = c *= 0.0039215f;
+
+                    c = inputStream.readUnsignedByte();
+                    tex.blendColor1[1] = c *= 0.0039215f;
+
+                    c = inputStream.readUnsignedByte();
+                    tex.blendColor1[2] = c *= 0.0039215f;
+                    break;
+
+                case MaxConstants.MAT_MAP_COL2:
+                    tex.blendColor2 = new float[3];
+                    c = inputStream.readUnsignedByte();
+                    tex.blendColor2[0] = c *= 0.0039215f;
+
+                    c = inputStream.readUnsignedByte();
+                    tex.blendColor2[1] = c *= 0.0039215f;
+
+                    c = inputStream.readUnsignedByte();
+                    tex.blendColor2[2] = c *= 0.0039215f;
+                    break;
+
+                case MaxConstants.MAT_MAP_RCOL:
+                    tex.redBlends = new float[3];
+                    c = inputStream.readUnsignedByte();
+                    tex.redBlends[0] = c *= 0.0039215f;
+
+                    c = inputStream.readUnsignedByte();
+                    tex.redBlends[1] = c *= 0.0039215f;
+
+                    c = inputStream.readUnsignedByte();
+                    tex.redBlends[2] = c *= 0.0039215f;
+                    break;
+
+                case MaxConstants.MAT_MAP_GCOL:
+                    tex.greenBlends = new float[3];
+                    c = inputStream.readUnsignedByte();
+                    tex.greenBlends[0] = c *= 0.0039215f;
+
+                    c = inputStream.readUnsignedByte();
+                    tex.greenBlends[1] = c *= 0.0039215f;
+
+                    c = inputStream.readUnsignedByte();
+                    tex.greenBlends[2] = c *= 0.0039215f;
+                    break;
+
+                case MaxConstants.MAT_MAP_BCOL:
+                    tex.blueBlends = new float[3];
+                    c = inputStream.readUnsignedByte();
+                    tex.blueBlends[0] = c *= 0.0039215f;
+
+                    c = inputStream.readUnsignedByte();
+                    tex.blueBlends[1] = c *= 0.0039215f;
+
+                    c = inputStream.readUnsignedByte();
+                    tex.blueBlends[2] = c *= 0.0039215f;
+                    break;
+
+                default:
+                    System.out.println("Unknown texture block chunk ID 0x" +
+                                       Integer.toHexString(type));
+                    inputStream.skip(size - 6);
+            }
+
+            bytes_read += size;
+        }
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Not enough bytes in file for material block");
+
+        switch(textureType)
+        {
+            case MaxConstants.MAT_TEXMAP:
+                data.textureMap1 = tex;
+                break;
+
+            case MaxConstants.MAT_TEX2MAP:
+                data.textureMap2 = tex;
+                break;
+
+            case MaxConstants.MAT_SHINMAP:
+                data.shininessMap = tex;
+                break;
+
+            case MaxConstants.MAT_SPECMAP:
+                data.specularMap = tex;
+                break;
+
+            case MaxConstants.MAT_OPACMAP:
+                data.opacityMap = tex;
+                break;
+
+            case MaxConstants.MAT_REFLMAP:
+                data.reflectionMap = tex;
+                break;
+
+            case MaxConstants.MAT_BUMPMAP:
+                data.bumpMap = tex;
+                break;
+        }
     }
 
 
@@ -1261,32 +1464,32 @@ public class MaxParser
 
     private void calcNormals(TriangleMesh mesh)
     {
-        float[] normal_face = new float[mesh.numFace * 3];
-        float[] tangent_face = new float[mesh.numFace * 3];
-        float[] binormal_face = new float[mesh.numFace * 3];
+        float[] normal_face = new float[mesh.numFaces * 3];
+        float[] tangent_face = new float[mesh.numFaces * 3];
+        float[] binormal_face = new float[mesh.numFaces * 3];
 
-        int[] face = mesh.face;
-        int[] vertex_count = new int[mesh.numVertex];
-        int[][] vertex_face = new int[mesh.numVertex][];
+        int[] face = mesh.faces;
+        int[] vertex_count = new int[mesh.numVertices];
+        int[][] vertex_face = new int[mesh.numVertices][];
 
-        float[] vertex = mesh.vertex;
+        float[] vertex = mesh.vertices;
         float[] tex_coords = mesh.texCoords;
-        int[] smoothgroup = mesh.smoothgroup;
+        int[] smoothgroup = mesh.smoothgroups;
 
-        mesh.normal = new float[mesh.numFace * 9];
-        mesh.tangent = new float[mesh.numFace * 9];
-        mesh.binormal = new float[mesh.numFace * 9];
-        float[] normal = mesh.normal;
-        float[] tangent = mesh.tangent;
-        float[] binormal = mesh.binormal;
+        mesh.normals = new float[mesh.numFaces * 9];
+        mesh.tangents = new float[mesh.numFaces * 9];
+        mesh.binormals = new float[mesh.numFaces * 9];
+        float[] normal = mesh.normals;
+        float[] tangent = mesh.tangents;
+        float[] binormal = mesh.binormals;
 
         if(tex_coords == null)
         {
-            mesh.texCoords = new float[mesh.numVertex * 2];
+            mesh.texCoords = new float[mesh.numVertices * 2];
             tex_coords = mesh.texCoords;
         }
 
-        for(int i = 0; i < mesh.numFace; i++)
+        for(int i = 0; i < mesh.numFaces; i++)
         {
             int j = i * 3;
             int v0 = face[j + 0];
@@ -1389,13 +1592,13 @@ public class MaxParser
                                        n_y * tangent_face[i * 3];
         }
 
-        for(int i = 0; i < mesh.numVertex; i++)
+        for(int i = 0; i < mesh.numVertices; i++)
         {
             vertex_face[i] = new int[vertex_count[i] + 1];
             vertex_face[i][0] = vertex_count[i];
         }
 
-        for(int i = 0; i < mesh.numFace; i++)
+        for(int i = 0; i < mesh.numFaces; i++)
         {
             int j = i * 3;
             int v0 = face[j + 0];
@@ -1408,7 +1611,7 @@ public class MaxParser
 
         boolean do_smooth = (smoothgroup != null);
 
-        for(int i = 0; i < mesh.numFace; i++)
+        for(int i = 0; i < mesh.numFaces; i++)
         {
             int j = i * 3;
             int v0 = face[j + 0];
@@ -1482,7 +1685,7 @@ public class MaxParser
             }
         }
 
-        int num_calc = mesh.numFace * 3;
+        int num_calc = mesh.numFaces * 3;
         for(int i = 0; i < num_calc; i++)
         {
             float x = normal[i * 3];
