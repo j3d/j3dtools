@@ -31,27 +31,33 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class BSplinePatchGenerator extends GeometryGenerator
+public class BSplinePatchGenerator extends PatchGenerator
 {
     /** Default number of segments used in the patch */
     private static final int DEFAULT_FACETS = 16;
 
-    /** The number of sections used around the patch */
-    private int facetCount;
+    /** Default degree of the curve */
+    private static final int DEFAULT_DEGREE = 3;
 
-    /** Knot values used to generate patches */
-    private float[][] knotCoordinates;
+    /** Knots on the width curve to control weighting. */
+    private int[] widthKnots;
 
-    /** The points on the patch. */
-    private float[] patchCoordinates;
+    /** The number of knot coordinates in the width. */
+    private int numWidthKnots;
 
-    /** The number of values used in the patch coordinate array */
-    private int numPatchValues;
+    /** The degree of the width curve to generate. Must be positive. */
+    private int widthDegree;
 
-    /** Flag indicating base values have changed */
-    private boolean patchChanged;
+    /** Knots on the width curve to control weighting. */
+    private int[] depthKnots;
+
+    /** The number of knot coordinates in the depth. */
+    private int numDepthKnots;
+
+    /** The degree of the depth curve to generate. Must be positive. */
+    private int depthDegree;
 
     /**
      * Construct a new generator with default settings of 20 grid squares over
@@ -59,41 +65,68 @@ public class BSplinePatchGenerator extends GeometryGenerator
      */
     public BSplinePatchGenerator()
     {
+        this(DEFAULT_FACETS, DEFAULT_DEGREE, DEFAULT_DEGREE);
     }
 
     /**
      * Construct a new generator with the specified number of tessellations
-     * over the side of the patch, regardless of extents.
+     * over the side of the patch, regardless of extents and default degree
+     * of 3 for both width and depth.
      *
      * @param facets The number of facets on the side of the cone
      * @throws IllegalArgumentException The number of facets is less than 3
      */
     public BSplinePatchGenerator(int facets)
     {
-        if(facets < 3)
-            throw new IllegalArgumentException("Number of facets is < 3");
-
-        patchChanged = true;
-        facetCount = facets;
+        this(facets, DEFAULT_DEGREE, DEFAULT_DEGREE);
     }
 
     /**
-     * Change the number of facets used to create this cone. This will cause
-     * the geometry to be regenerated next time they are asked for.
-     * The minimum number of facets is 3.
+     * Construct a new generator with the specified number of tessellations
+     * over the side of the patch, regardless of extents and the same degree
+     * for both width and depth.
      *
      * @param facets The number of facets on the side of the cone
+     * @param t The degree of the curve > 1
      * @throws IllegalArgumentException The number of facets is less than 3
      */
-    public void setFacetCount(int facets)
+    public BSplinePatchGenerator(int facets, int t)
+    {
+        this(facets, t, t);
+    }
+
+    /**
+     * Construct a new generator with the specified number of tessellations
+     * over the side of the patch, regardless of extents and specific degree
+     * for both width and depth.
+     *
+     * @param facets The number of facets on the side of the cone
+     * @param tWidth The degree of the curve in the width direction > 1
+     * @param tDepth The degree of the curve in the depth direction > 1
+     * @throws IllegalArgumentException The number of facets is less than 3
+     */
+    public BSplinePatchGenerator(int facets, int tWidth, int tDepth)
     {
         if(facets < 3)
             throw new IllegalArgumentException("Number of facets is < 3");
 
-        if(facetCount != facets)
-            patchChanged = true;
+        if(tWidth < 2)
+            throw new IllegalArgumentException("Width degree is < 2");
 
+        if(tDepth < 2)
+            throw new IllegalArgumentException("Depth degree is < 2");
+
+        patchChanged = true;
         facetCount = facets;
+
+        widthDegree = tWidth;
+        depthDegree = tDepth;
+
+        numWidthKnots = widthDegree;
+        numDepthKnots = depthDegree;
+
+        widthKnots = new int[numWidthKnots];
+        depthKnots = new int[numDepthKnots];
     }
 
     /**
@@ -102,469 +135,306 @@ public class BSplinePatchGenerator extends GeometryGenerator
      * order of the patch is determined by the passed array. If the arrays are
      * not of minimum length 3 and equal length an exception is generated.
      *
-     * @param knots The knot coordinate values
+     * @param tWidth The degree in the width direction
+     * @param wKnots The knot coordinate values in the width direction
+     * @param tDepth The degree in the depth direction
+     * @param dKnots The knot coordinate values in the depth direction
      */
-    public void setPatchKnots(float[][] knots)
+    public void setPatchKnots(int tWidth,
+                              float[] wKnots,
+                              int tDepth,
+                              int[] dKnots)
     {
-        int min_length = knots[0].length;
+        if(tWidth < 2)
+            throw new IllegalArgumentException("Width degree is < 2");
 
-        if((knots.length < 3) || (knots[0].length < 3))
-            throw new IllegalArgumentException("Depth patch size < 3");
+        if(wKnots.length < (numWidthControlPoints + tWidth + 1))
+            throw new IllegalArgumentException("Width Knots < 3");
 
-        // second check for consistent lengths of the width patches
-        int i;
+        if(tDepth < 2)
+            throw new IllegalArgumentException("Depth degree is < 2");
 
-        for(i = 1; i < knots.length; i++)
-        {
-            if(knots[i].length != min_length)
-                throw new IllegalArgumentException("Non-equal array lengths");
-        }
+        if(dKnots.length < (numDepthControlPoints + tDepth + 1))
+            throw new IllegalArgumentException("Depth Knots < 3");
 
-        if((knots.length != knotCoordinates.length) &&
-           (min_length != knotCoordinates[0].length))
-        {
-            if(knots.length != knotCoordinates.length)
-            {
-                knotCoordinates = new float[knots.length][min_length];
-            }
-            else
-            {
-                for(i = 0; i < knots.length; i++)
-                    knotCoordinates[i] = new float[min_length];
-            }
-        }
+        widthDegree = tWidth;
+        depthDegree = tDepth;
 
-        for(i = 0; i < knots.length; i++)
-        {
-            System.arraycopy(knots[i],
-                             0,
-                             knotCoordinates[i],
-                             0,
-                             min_length);
-        }
+        if(wKnots.length > widthKnots.length)
+            widthKnots = new int[wKnots.length];
+
+        if(dKnots.length > depthKnots.length)
+            depthKnots = new int[dKnots.length];
+
+        System.arraycopy(wKnots, 0, widthKnots, 0, wKnots.length);
+        System.arraycopy(dKnots, 0, depthKnots, 0, dKnots.length);
+
+        numWidthKnots = wKnots.length;
+        numDepthKnots = dKnots.length;
 
         patchChanged = true;
     }
 
     /**
-     * Get the number of vertices that this generator will create for the
-     * shape given in the definition.
+     * Get the degree of the curve being generated.
      *
-     * @param data The data to patch the calculations on
-     * @return The vertex count for the object
-     * @throws UnsupportedTypeException The generator cannot handle the type
-     *   of geometry you have requested.
+     * @return A value >= 2
      */
-    public int getVertexCount(GeometryData data)
-        throws UnsupportedTypeException
+    public int getWidthDegree()
     {
-        int ret_val = 0;
+        return widthDegree;
+    }
 
-        switch(data.geometryType)
+    /**
+     * Get the degree of the curve being generated.
+     *
+     * @return A value >= 2
+     */
+    public int getDepthDegree()
+    {
+        return depthDegree;
+    }
+
+    /**
+     * Convenience method to set knots that give a better looking curve shape and
+     * set a new degree for the curve directly.
+     * The traditional way of setting these is to have knot[i] = i, but
+     * whenever curves change this results in a lot of extra calculations. This
+     * smoothing function will localize the changes at any particular breakpoint
+     * in the line.
+     *
+     * @param tWidth The degree of the curve in the width direction
+     * @param tDepth The degree of the curve in the depth direction
+     */
+    public void generateSmoothKnots(int tWidth, int tDepth)
+    {
+        if(tWidth < 2)
+            throw new IllegalArgumentException("Width degree is < 2");
+
+        if(tDepth < 2)
+            throw new IllegalArgumentException("Depth degree is < 2");
+
+        if(tWidth != widthDegree)
         {
-            case GeometryData.TRIANGLES:
-                ret_val = facetCount * facetCount * 3 ;
-                break;
-            case GeometryData.QUADS:
-                ret_val = facetCount * facetCount * 4;
-                break;
-
-            // These all have the same vertex count
-            case GeometryData.TRIANGLE_STRIPS:
-            case GeometryData.TRIANGLE_FANS:
-            case GeometryData.INDEXED_TRIANGLES:
-            case GeometryData.INDEXED_QUADS:
-            case GeometryData.INDEXED_TRIANGLE_STRIPS:
-            case GeometryData.INDEXED_TRIANGLE_FANS:
-                ret_val = facetCount * facetCount;
-                break;
-
-            default:
-                throw new UnsupportedTypeException("Unknown geometry type: " +
-                                                   data.geometryType);
+            widthDegree = tWidth;
+            patchChanged = true;
         }
 
-        return ret_val;
+        if(tDepth != depthDegree)
+        {
+            depthDegree = tDepth;
+            patchChanged = true;
+        }
+
+        generateSmoothKnots();
     }
 
     /**
-     * Generate a new set of geometry items patchd on the passed data. If the
-     * data does not contain the right minimum array lengths an exception will
-     * be generated. If the array reference is null, this will create arrays
-     * of the correct length and assign them to the return value.
+     * Convenience method to set knots that give a better looking curve shape
+     * using the existing curve degree. The traditional way of setting these is
+     * to have knot[i] = i, but whenever curves change this results in a lot of
+     * extra calculations. This smoothing function will localize the changes at
+     * any particular breakpoint in the line.
      *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     * @throws UnsupportedTypeException The generator cannot handle the type
-     *   of geometry you have requested
+     * @param t The degree of the curve
      */
-    public void generate(GeometryData data)
-        throws UnsupportedTypeException, InvalidArraySizeException
+    public void generateSmoothKnots()
     {
-        switch(data.geometryType)
-        {
-            case GeometryData.TRIANGLES:
-                unindexedTriangles(data);
-                break;
-//            case GeometryData.QUADS:
-//                unindexedQuads(data);
-//                break;
-//            case GeometryData.TRIANGLE_STRIPS:
-//                triangleStrips(data);
-//                break;
-//            case GeometryData.TRIANGLE_FANS:
-//                triangleFans(data);
-//                break;
-//            case GeometryData.INDEXED_QUADS:
-//                indexedQuads(data);
-//                break;
-//            case GeometryData.INDEXED_TRIANGLES:
-//                indexedTriangles(data);
-//                break;
-//            case GeometryData.INDEXED_TRIANGLE_STRIPS:
-//                indexedTriangleStrips(data);
-//                break;
-//            case GeometryData.INDEXED_TRIANGLE_FANS:
-//                indexedTriangleFans(data);
-//                break;
+        // resize if necessary
+        numWidthKnots = numWidthControlPoints + widthDegree;
+        if(widthKnots.length < numWidthKnots)
+            widthKnots = new int[numWidthKnots];
 
-            default:
-                throw new UnsupportedTypeException("Unknown geometry type: " +
-                                                   data.geometryType);
+        int j;
+
+        for(j = 0; j < numWidthKnots; j++)
+        {
+            if(j < widthDegree)
+                widthKnots[j] = 0;
+            else if(j < numWidthControlPoints)
+                widthKnots[j] = j - widthDegree + 1;
+            else if(j >= numWidthControlPoints)
+                widthKnots[j] = numWidthControlPoints - widthDegree + 1;
+        }
+
+        numDepthKnots = numDepthControlPoints + depthDegree;
+        if(depthKnots.length < numDepthKnots)
+            depthKnots = new int[numDepthKnots];
+
+        for(j = 0; j < numDepthKnots; j++)
+        {
+            if(j < depthDegree)
+                depthKnots[j] = 0;
+            else if(j < numDepthControlPoints)
+                depthKnots[j] = j - depthDegree + 1;
+            else if(j >= numDepthControlPoints)
+                depthKnots[j] = numDepthControlPoints - depthDegree + 1;
         }
     }
 
-   /**
-     * Generate a new set of points for an unindexed quad array
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void unindexedTriangles(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        generateUnindexedTriCoordinates(data);
-
-        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateUnindexedTriNormals(data);
-
-        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
-        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
-            generateTriTexture3D(data);
-    }
-
-
     /**
-     * Generate a new set of points for an unindexed quad array
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
+     * Regenerate the patch coordinate points according to the NURBS
+     * surface function.
      */
-    private void unindexedQuads(GeometryData data)
-        throws InvalidArraySizeException
-    {
-    }
-
-    /**
-     * Generate a new set of points for an indexed quad array. Uses the same
-     * points as an indexed triangle, but repeats the top coordinate index.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void indexedQuads(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        generateIndexedTriCoordinates(data);
-
-        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateIndexedTriNormals(data);
-
-        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
-        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
-            generateTriTexture3D(data);
-    }
-
-    /**
-     * Generate a new set of points for an indexed triangle array
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void indexedTriangles(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        generateIndexedTriCoordinates(data);
-
-        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateIndexedTriNormals(data);
-
-        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
-        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
-            generateTriTexture3D(data);
-
-    }
-
-    /**
-     * Generate a new set of points for a triangle strip array. Each side is a
-     * strip of two faces.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void triangleStrips(GeometryData data)
-        throws InvalidArraySizeException
-    {
-    }
-
-    /**
-     * Generate a new set of points for a triangle fan array. Each facet on the
-     * side of the cone is a single fan, but the patch is one big fan.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void triangleFans(GeometryData data)
-        throws InvalidArraySizeException
-    {
-    }
-
-    /**
-     * Generate a new set of points for an indexed triangle strip array. We
-     * build the strip from the existing points, and there's no need to
-     * re-order the points for the indexes this time.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void indexedTriangleStrips(GeometryData data)
-        throws InvalidArraySizeException
-    {
-    }
-
-    /**
-     * Generate a new set of points for an indexed triangle fan array. We
-     * build the strip from the existing points, and there's no need to
-     * re-order the points for the indexes this time. As for the simple fan,
-     * we use the first index, the lower-right corner as the apex for the fan.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void indexedTriangleFans(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        generateIndexedTriCoordinates(data);
-
-        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateIndexedTriNormals(data);
-
-        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
-        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
-            generateTriTexture3D(data);
-    }
-
-    //------------------------------------------------------------------------
-    // Coordinate generation routines
-    //------------------------------------------------------------------------
-
-    /**
-     * Generates new set of points suitable for use in an unindexed array. Each
-     * patch coordinate will appear twice in this list. The first half of the
-     * array is the top, the second half, the bottom.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void generateUnindexedTriCoordinates(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        int vtx_cnt = getVertexCount(data);
-
-        if(data.coordinates == null)
-            data.coordinates = new float[vtx_cnt * 3];
-        else if(data.coordinates.length < vtx_cnt * 3)
-            throw new InvalidArraySizeException("Coordinates",
-                                                data.coordinates.length,
-                                                vtx_cnt * 3);
-
-        float[] coords = data.coordinates;
-        data.vertexCount = vtx_cnt;
-
-        regeneratePatch();
-
-    }
-
-    /**
-     * Generate a new set of points for use in an indexed array. The first
-     * index will always be the cone tip - parallel for each face so that we
-     * can get the smoothing right. If the array is to use the bottom,
-     * a second set of coordinates will be produced separately for the patch
-     * so that independent surface normals can be used. These values will
-     * start at vertexCount / 2 with the first value as 0,0,0 (the center of
-     * the patch) and then all the following values as the patch.
-     */
-    private void generateIndexedTriCoordinates(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        int vtx_cnt = getVertexCount( data);
-
-        if(data.coordinates == null)
-            data.coordinates = new float[vtx_cnt * 3];
-        else if(data.coordinates.length < vtx_cnt * 3)
-            throw new InvalidArraySizeException("Coordinates",
-                                                data.coordinates.length,
-                                                vtx_cnt * 3);
-
-        float[] coords = data.coordinates;
-        data.vertexCount = vtx_cnt;
-
-        regeneratePatch();
-
-    }
-
-    //------------------------------------------------------------------------
-    // Normal generation routines
-    //------------------------------------------------------------------------
-
-    /**
-     * Generate a new set of normals for a normal set of unindexed points.
-     * Smooth normals are used for the sides at the average between the faces.
-     * Bottom normals always point down.
-     * <p>
-     * This must always be called after the coordinate generation. The
-     * top normal of the cone is always perpendicular to the face.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void generateUnindexedTriNormals(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        int vtx_cnt = data.vertexCount * 3;
-
-        if(data.normals == null)
-            data.normals = new float[vtx_cnt];
-        else if(data.normals.length < vtx_cnt)
-            throw new InvalidArraySizeException("Normals",
-                                                data.normals.length,
-                                                vtx_cnt);
-    }
-
-    /**
-     * Generate a new set of normals for a normal set of indexed points.
-     * Handles both flat and smooth shading of normals. Flat just has them
-     * perpendicular to the face. Smooth has them at the value at the
-     * average between the faces. Bottom normals always point down.
-     * <p>
-     * This must always be called after the coordinate generation. The
-     * top normal of the cone is always perpendicular to the face.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void generateIndexedTriNormals(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        int vtx_cnt = data.vertexCount * 3;
-
-        if(data.normals == null)
-            data.normals = new float[vtx_cnt];
-        else if(data.normals.length < vtx_cnt)
-            throw new InvalidArraySizeException("Normals",
-                                                data.normals.length,
-                                                vtx_cnt);
-    }
-
-    //------------------------------------------------------------------------
-    // Texture coordinate generation routines
-    //------------------------------------------------------------------------
-
-    /**
-     * Generate a new set of texCoords for a normal set of unindexed points. Each
-     * normal faces directly perpendicular for each point. This makes each face
-     * seem flat.
-     * <p>
-     * This must always be called after the coordinate generation.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void generateTriTexture2D(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        int vtx_cnt = data.vertexCount * 2;
-
-        if(data.textureCoordinates == null)
-            data.textureCoordinates = new float[vtx_cnt];
-        else if(data.textureCoordinates.length < vtx_cnt)
-            throw new InvalidArraySizeException("2D Texture coordinates",
-                                                data.textureCoordinates.length,
-                                                vtx_cnt);
-
-        float[] texCoords = data.textureCoordinates;
-    }
-
-    /**
-     * Generate a new set of texCoords for a normal set of unindexed points. Each
-     * normal faces directly perpendicular for each point. This makes each face
-     * seem flat.
-     * <p>
-     * This must always be called after the coordinate generation.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void generateTriTexture3D(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        int vtx_cnt = data.vertexCount * 2;
-
-        if(data.textureCoordinates == null)
-            data.textureCoordinates = new float[vtx_cnt];
-        else if(data.textureCoordinates.length < vtx_cnt)
-            throw new InvalidArraySizeException("3D Texture coordinates",
-                                                data.textureCoordinates.length,
-                                                vtx_cnt);
-
-        float[] texCoords = data.textureCoordinates;
-    }
-
-    /**
-     * Regenerate the patch coordinate points. These are the flat circle that
-     * makes up the patch of the code. The coordinates are generated patchd on
-     * the 2 PI divided by the number of facets to generate.
-     */
-    private final void regeneratePatch()
+    protected final void regeneratePatch()
     {
         if(!patchChanged)
             return;
 
         patchChanged = false;
-        numPatchValues = ((facetCount + 1) << 1) * 3;
+        numPatchValues = (facetCount + 1) * 3;
 
         if((patchCoordinates == null) ||
-           (numPatchValues > patchCoordinates.length))
+           (numPatchValues > patchCoordinates.length) ||
+           (numPatchValues > patchCoordinates[0].length))
         {
-            patchCoordinates = new float[numPatchValues];
+            patchCoordinates = new float[facetCount + 1][numPatchValues];
         }
+
+
+        int i, j, ki, kj;
+        double i_inter, i_inc;
+        double j_inter, j_inc;
+        double bi,bj;
+        double x, y, z;
+        int cnt, p_cnt;
+        int last = facetCount * 3;
+        int last_depth = (numDepthControlPoints - 1) * 3;
+        int last_width = numWidthControlPoints - 1;
+
+       // Step size along the curve
+       i_inc = (numWidthControlPoints - widthDegree + 1) / (double)facetCount;
+       j_inc = (numDepthControlPoints - depthDegree + 1) / (double)facetCount;
+
+        i_inter = 0;
+        for(i = 0; i < facetCount; i++)
+        {
+            j_inter = 0;
+            p_cnt = 0;
+            for(j = 0; j < facetCount; j++)
+            {
+                x = 0;
+                y = 0;
+                z = 0;
+                cnt = 0;
+                kj = 0;
+
+                for(ki = 0; ki < numWidthControlPoints; ki++)
+                {
+                    cnt = 0;
+                    for(kj = 0; kj < numDepthControlPoints; kj++)
+                    {
+                        bi = splineBlend(ki, widthDegree, false, i_inter);
+                        bj = splineBlend(kj, depthDegree, true, j_inter);
+                        x += controlPointCoordinates[ki][cnt++] * bi * bj;
+                        y += controlPointCoordinates[ki][cnt++] * bi * bj;
+                        z += controlPointCoordinates[ki][cnt++] * bi * bj;
+                    }
+                }
+
+                patchCoordinates[i][p_cnt++] = (float)x;
+                patchCoordinates[i][p_cnt++] = (float)y;
+                patchCoordinates[i][p_cnt++] = (float)z;
+
+                j_inter += j_inc;
+            }
+
+            i_inter += i_inc;
+        }
+
+
+        // Process the last row along the depth.
+        i_inter = 0;
+
+        for(i = 0; i < facetCount; i++)
+        {
+            x = 0;
+            y = 0;
+            z = 0;
+
+            for(ki = 0; ki < numWidthControlPoints; ki++)
+            {
+                bi = splineBlend(ki, widthDegree, false, i_inter);
+                x += controlPointCoordinates[ki][last_depth] * bi;
+                y += controlPointCoordinates[ki][last_depth + 1] * bi;
+                z += controlPointCoordinates[ki][last_depth + 2] * bi;
+            }
+
+            patchCoordinates[i][last] = (float)x;
+            patchCoordinates[i][last + 1] = (float)y;
+            patchCoordinates[i][last + 2] = (float)z;
+            i_inter += i_inc;
+        }
+
+        patchCoordinates[facetCount][last] =
+            controlPointCoordinates[last_width][last_depth];
+        patchCoordinates[facetCount][last + 1] =
+            controlPointCoordinates[last_width][last_depth + 1];
+        patchCoordinates[facetCount][last + 2] =
+            controlPointCoordinates[last_width][last_depth + 2];
+
+        // Process the last row along the width.
+        j_inter = 0;
+        for(j = 0; j < facetCount; j++)
+        {
+            x = 0;
+            y = 0;
+            z = 0;
+            cnt = 0;
+            for(kj = 0; kj < numDepthControlPoints; kj++)
+            {
+                bj = splineBlend(kj, depthDegree, true, j_inter);
+                x += controlPointCoordinates[last_width][cnt++] * bj;
+                y += controlPointCoordinates[last_width][cnt++] * bj;
+                z += controlPointCoordinates[last_width][cnt++] * bj;
+            }
+
+            patchCoordinates[facetCount][j * 3] = (float)x;
+            patchCoordinates[facetCount][j * 3 + 1] = (float)y;
+            patchCoordinates[facetCount][j * 3 + 2] = (float)z;
+            j_inter += j_inc;
+        }
+
+        patchCoordinates[facetCount][last] =
+            controlPointCoordinates[last_width][last_depth];
+        patchCoordinates[facetCount][last + 1] =
+            controlPointCoordinates[last_width][last_depth + 1];
+        patchCoordinates[facetCount][last + 2] =
+            controlPointCoordinates[last_width][last_depth + 2];
+    }
+
+    /**
+     * Calculate the blending value for the spline recursively.
+     * If the numerator and denominator are 0 the result is 0.
+     */
+    private double splineBlend(int k, int t, boolean useDepth, double v)
+    {
+        double ret_val;
+
+        // Do this just to make the maths traceable with the std algorithm
+        int[] u = useDepth ? depthKnots : widthKnots;
+
+        if(t == 1)
+        {
+            ret_val = ((u[k] <= v) && (v < u[k+1])) ? 1 : 0;
+        }
+        else
+        {
+            if((u[k+t-1] == u[k]) && (u[k+t] == u[k+1]))
+                ret_val = 0;
+            else if(u[k+t-1] == u[k])
+                ret_val = (u[k+t] - v) /
+                          (u[k+t] - u[k+1]) * splineBlend(k+1, t-1, useDepth, v);
+            else if(u[k+t] == u[k+1])
+                ret_val = (v - u[k]) /
+                          (u[k+t-1] - u[k]) * splineBlend(k, t-1, useDepth, v);
+            else
+                ret_val = (v - u[k]) /
+                          (u[k+t-1] - u[k]) * splineBlend(k, t-1, useDepth, v) +
+                          (u[k+t] - v) /
+                          (u[k+t] - u[k+1]) * splineBlend(k+1, t-1, useDepth, v);
+        }
+
+        return ret_val;
     }
 }
