@@ -34,7 +34,7 @@ import org.j3d.terrain.*;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class SplitMergeLandscape extends Landscape
 {
@@ -57,9 +57,14 @@ public class SplitMergeLandscape extends Landscape
     /** Patch size in grid points if the user doesn't supply one */
     private static final int DEFAULT_PATCH_SIZE = 64;
 
-    /**
+    /** The number of tiles to use on an axis */
+    private static final int AXIS_TILE_COUNT = 8;
+
     /** The patch size to use for this landscape */
     private final int patchSize;
+
+    /** 1 over patchSize for calcs */
+    private final int invPatchSize;
 
     /** The terrain data size */
     private final int terrainDataType;
@@ -100,6 +105,9 @@ public class SplitMergeLandscape extends Landscape
      */
     private LinkedList freePatchList;
 
+    /** Working var for the patches just removed */
+    private ArrayList removedPatches;
+
     /** The grid that holds the current patches for the viewable grid. */
     private PatchGrid patchGrid;
 
@@ -120,6 +128,7 @@ public class SplitMergeLandscape extends Landscape
         accuracy = (float)Math.toRadians(0.1);
 
         this.patchSize = init(data, DEFAULT_PATCH_SIZE);
+        invPatchSize = 1 / patchSize;
     }
 
     /**
@@ -151,6 +160,7 @@ public class SplitMergeLandscape extends Landscape
         accuracy = (float)Math.toRadians(0.1);
 
         this.patchSize = init(data, patchSize);
+        invPatchSize = 1 / patchSize;
     }
 
     /**
@@ -174,6 +184,7 @@ public class SplitMergeLandscape extends Landscape
         accuracy = (float)Math.toRadians(0.1);
 
         this.patchSize = init(data, DEFAULT_PATCH_SIZE);
+        invPatchSize = 1 / patchSize;
     }
 
     /**
@@ -205,6 +216,7 @@ public class SplitMergeLandscape extends Landscape
         accuracy = (float)Math.toRadians(0.1);
 
         this.patchSize = init(data, patchSize);
+        invPatchSize = 1 / patchSize;
     }
 
     /**
@@ -219,6 +231,9 @@ public class SplitMergeLandscape extends Landscape
      */
     public void initialize(Tuple3f position, Vector3f direction)
     {
+        // Just to make sure
+        landscapeView.viewingPlatformMoved();
+
         switch(terrainDataType)
         {
             case TerrainData.STATIC_DATA:
@@ -231,6 +246,7 @@ public class SplitMergeLandscape extends Landscape
                 reqdBounds = new Rectangle();
                 oldTileBounds = new Rectangle();
                 freePatchList = new LinkedList();
+                removedPatches = new ArrayList();
 
                 createTiledPatches(position, direction);
                 break;
@@ -263,9 +279,20 @@ public class SplitMergeLandscape extends Landscape
         switch(terrainDataType)
         {
             case TerrainData.TILED_DATA:
-                calculateViewTileBounds();
-                clearOldTiledPatches();
-                loadNewTiles();
+                if(!calculateViewTileBounds(position, direction))
+                {
+
+//System.out.println("New tile " + reqdBounds);
+//System.out.println("old      " + oldTileBounds);
+//System.out.println(patchGrid.toString());
+//System.out.println();
+
+                    patchGrid.prepareNewBounds(reqdBounds);
+                    clearOldTiledPatches();
+                    loadNewTiles();
+
+                    oldTileBounds.setBounds(reqdBounds);
+                }
                 break;
 
             case TerrainData.FREEFORM_DATA:
@@ -276,9 +303,6 @@ public class SplitMergeLandscape extends Landscape
         }
 
         int size = patches.size();
-
-
-// Does not handle the various terrain types yet....
 
         // Firstly set up the queue of triangles that need merging or splitting
         for(int i = 0; i < size; i++)
@@ -403,63 +427,44 @@ public class SplitMergeLandscape extends Landscape
     {
         TiledTerrainData t_data = (TiledTerrainData)terrainData;
 
-        double x_spacing = t_data.getGridXStep();
-        double y_spacing = t_data.getGridYStep();
-        int tile_size = t_data.getTileSize();
-
-        landscapeView.getBounds(minViewBound, maxViewBound);
-
-        // calc the tile that the current viewpoint is in
-        double min_tile_x = minViewBound.x / (x_spacing * tile_size);
-        double min_tile_y = minViewBound.z / (y_spacing * tile_size);
-
-        reqdBounds.x = (int)Math.floor(min_tile_x);
-        reqdBounds.y = (int)Math.floor(min_tile_y);
-
-        double max_tile_x = maxViewBound.x / (x_spacing * tile_size);
-        double max_tile_y = maxViewBound.z / (y_spacing * tile_size);
-
-        reqdBounds.width = reqdBounds.x + (int)Math.ceil(max_tile_x);
-        reqdBounds.height = reqdBounds.y + (int)Math.ceil(max_tile_y);
+        calculateViewTileBounds(position, direction);
 
         // request the bounds be set to the minimum required
         t_data.setActiveBounds(reqdBounds);
         oldTileBounds.setBounds(reqdBounds);
-
         patchGrid = new PatchGrid(reqdBounds);
-
-        Patch[] westPatchNeighbour = new Patch[reqdBounds.width];
-        Patch southPatchNeighbour = null;
-        Patch p = null;
 
         AppearanceGenerator app_gen = getAppGenerator();
         Appearance app;
+        Patch p = null;
 
-        float patch_1 = 1 / (float)patchSize;
-        int east = (int)Math.floor(min_tile_x);
-        int y_tile = reqdBounds.y;
+        int east = reqdBounds.x * patchSize;
+        int x_tile = reqdBounds.x;
 
-        for( ; east <= reqdBounds.width; east += patchSize)
+        int e_grid = east;
+        int n_grid;
+
+        for(int i = 0 ; i < reqdBounds.width; i++)
         {
-            int north = (int)Math.floor(min_tile_y);
-            int x_tile = reqdBounds.x;
+            int north = reqdBounds.y * patchSize;
+            int y_tile = reqdBounds.y;
 
-            for(; north <= reqdBounds.height; north += patchSize)
+            n_grid = north;
+
+            for(int j = 0; j < reqdBounds.height; j++)
             {
                 app = app_gen.createAppearance();
+                app.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
                 app.setTexture(t_data.getTexture(x_tile, y_tile));
-
-                int w_pos = (int)(north * patch_1);
 
                 p = new Patch(terrainData,
                               patchSize,
-                              east,
-                              north,
                               app,
                               landscapeView);
 
-                p.setWestNeighbour(westPatchNeighbour[w_pos]);
-                p.setSouthNeighbour(southPatchNeighbour);
+                p.setOrigin(e_grid, n_grid);
+
+                patchGrid.addPatch(p, x_tile, y_tile);
                 p.makeActive();
 
                 patches.add(p);
@@ -467,13 +472,14 @@ public class SplitMergeLandscape extends Landscape
                 triCount += 2;
                 addChild(p.getShape3D());
 
-                southPatchNeighbour = p;
-                westPatchNeighbour[w_pos] = p;
-                x_tile++;
+                y_tile++;
+                north++;
+                n_grid += patchSize;
             }
 
-            southPatchNeighbour = null;
-            y_tile++;
+            x_tile++;
+            east++;
+            e_grid += patchSize;
         }
     }
 
@@ -520,11 +526,10 @@ System.out.println("Free-form terrain not implemented yet");
             {
                 p = new Patch(terrainData,
                               patchSize,
-                              0,
-                              north,
                               app,
                               landscapeView);
 
+                p.setOrigin(0, north);
                 p.setSouthNeighbour(southPatchNeighbour);
                 p.makeActive();
 
@@ -540,20 +545,18 @@ System.out.println("Free-form terrain not implemented yet");
         }
         else
         {
-            float patch_1 = 1 / (float)patchSize;
-
             for(int east = 0 ; east <= width; east += patchSize)
             {
                 for(int north = 0; north <= depth; north += patchSize)
                 {
-                    int w_pos = (int)(north * patch_1);
+                    int w_pos = (int)(north * invPatchSize);
 
                     p = new Patch(terrainData,
                                   patchSize,
-                                  east,
-                                  north,
                                   app,
                                   landscapeView);
+
+                    p.setOrigin(east, north);
 
                     p.setWestNeighbour(westPatchNeighbour[w_pos]);
                     p.setSouthNeighbour(southPatchNeighbour);
@@ -611,29 +614,85 @@ System.out.println("Free-form terrain not implemented yet");
      * information directly from the view frustum, so no need to pass in the
      * position and orientation info. Assumes that the update of the view
      * platform is called before this method, for this frame.
+     *
+     * @param direction The direction the viewer is looking
+     * @return true if these bounds are the same as the old ones
      */
-    private void calculateViewTileBounds()
+    private boolean calculateViewTileBounds(Tuple3f position,
+                                            Vector3f direction)
     {
         TiledTerrainData t_data = (TiledTerrainData)terrainData;
 
-        double x_spacing = t_data.getGridXStep();
-        double y_spacing = t_data.getGridYStep();
+        float x_spacing = (float)t_data.getGridXStep();
+        float y_spacing = (float)t_data.getGridYStep();
         int tile_size = t_data.getTileSize();
 
-        landscapeView.getBounds(minViewBound, maxViewBound);
+        float[] origin = new float[3];
+        t_data.getCoordinate(origin, 0, 0);
 
-        // calc the tile that the current viewpoint is in
-        double min_tile_x = minViewBound.x / (x_spacing * tile_size);
-        double min_tile_y = minViewBound.z / (y_spacing * tile_size);
+        // turn the position into a tile coord
+        float cur_x = position.x - origin[0];
+        float cur_z = origin[2] - position.z;
 
-        reqdBounds.x = (int)Math.floor(min_tile_x);
-        reqdBounds.y = (int)Math.floor(min_tile_y);
+        int tile_x = (int)Math.floor(cur_x / (x_spacing * tile_size));
+        int tile_y = (int)Math.floor(cur_z / (y_spacing * tile_size));
 
-        double max_tile_x = maxViewBound.x / (x_spacing * tile_size);
-        double max_tile_y = maxViewBound.z / (y_spacing * tile_size);
+        // first check - are we looking straight up/down? If so, then get
+        // the tile we are over and just build a square grid around that
+        // point.
+        if(direction.x == 0 && direction.z == 0)
+        {
+            tile_x -= AXIS_TILE_COUNT >> 1;
+            tile_y -= AXIS_TILE_COUNT >> 1;
+        }
+        else
+        {
+            // The int rounding helps us because if the angle is such that
+            // it takes more than half a tile then the numbers round up and
+            // we get something that looks right.
+            float aspect = Math.abs(direction.x / direction.z);
 
-        reqdBounds.width = reqdBounds.x + (int)Math.ceil(max_tile_x);
-        reqdBounds.height = reqdBounds.y + (int)Math.ceil(max_tile_y);
+            if(direction.x >= 0)
+            {
+                if(direction.z <= 0)
+                {
+                    if(aspect < 0.5f)
+                        tile_x--;
+                    else if(aspect > 2)
+                        tile_y--;
+                }
+                else
+                {
+                    tile_y--;
+
+                    if(aspect < 0.5f)
+                        tile_x--;
+                }
+            }
+            else
+            {
+                if(direction.z <= 0)
+                {
+                    tile_x--;
+
+                    if(aspect > 2)
+                        tile_y--;
+                }
+                else
+                {
+                    tile_x--;
+                    tile_y--;
+                }
+            }
+
+            reqdBounds.x = tile_x;
+            reqdBounds.y = tile_y;
+            reqdBounds.width = AXIS_TILE_COUNT;
+            reqdBounds.height = AXIS_TILE_COUNT;
+        }
+
+        // If the two are the same, don't bother going any further.
+        return oldTileBounds.equals(reqdBounds);
     }
 
     /**
@@ -644,6 +703,7 @@ System.out.println("Free-form terrain not implemented yet");
     private void clearOldTiledPatches()
     {
         int size = patches.size();
+        boolean patch_removed = false;
 
         for(int i = 0; i < size; i++)
         {
@@ -653,7 +713,15 @@ System.out.println("Free-form terrain not implemented yet");
             {
                 p.clear();
                 freePatchList.add(p);
+                removedPatches.add(p);
+                patch_removed = true;
             }
+        }
+
+        if(patch_removed)
+        {
+            patches.removeAll(removedPatches);
+            removedPatches.clear();
         }
     }
 
@@ -666,46 +734,73 @@ System.out.println("Free-form terrain not implemented yet");
         // Since we run axis aligned boundaies, let's just look at the
         // difference between new and old.
 
+        Appearance app;
+        Patch p = null;
+
+        AppearanceGenerator app_gen = getAppGenerator();
+        int north, east;
+
+        // For each row difference
+        // add a tile
+        float invPatchSize = 1 / (float)patchSize;
+
+        int start_east = 0;
+        int start_north = 0;
+
         // Do we need to add stuff to the start in the depth direction?
         int diff = reqdBounds.x - oldTileBounds.x;
 
-        Appearance app;
-        Patch south_neighbour = null;
-        Patch p = null;
+        if(diff <= 0)
+            start_east = reqdBounds.x;
+        else
+            start_east = reqdBounds.x + reqdBounds.width - diff;
 
-        if(diff < 0)
+        int num_east = Math.abs(diff);
+
+        diff = reqdBounds.y - oldTileBounds.y;
+
+        if(diff <= 0)
+            start_north = reqdBounds.y;
+        else
+            start_north = reqdBounds.y + reqdBounds.height - diff;
+
+        int num_north = Math.abs(diff);
+        int i = 0;
+        int j = 0;
+
+//System.out.print("** add e: " + start_east + " " + num_east);
+//System.out.println(" n: " + start_north + " " + num_north);
+
+        // Do we need to tack on a row in the north-south direction?
+        // Only works from the old tile bounds beginning, up to the end
+        // of the new section.
+        if(num_north != 0)
         {
-            Patch[] west_neighbour = new Patch[reqdBounds.width];
+            TiledTerrainData td = (TiledTerrainData)terrainData;
+            east = oldTileBounds.x - 1;
+            int e_grid = east * patchSize;
+            int n_grid;
 
-            AppearanceGenerator app_gen = getAppGenerator();
-            int north, east;
-
-            // For each row difference
-            // add a tile
-            float patch_1 = 1 / (float)patchSize;
-
-            for(east = 0 ; east <= reqdBounds.width; east++)
+            for(i = 0; i < reqdBounds.width; i++)
             {
-                int e_grid = east * patchSize;
+                e_grid += patchSize;
+                east++;
 
-                for(north = reqdBounds.x; north <= oldTileBounds.x; north++)
+                north = start_north;
+                n_grid = (north - 1) * patchSize;
+
+                for(j = 0; j < num_north; j++)
                 {
-                    int w_pos = (int)(north * patch_1);
-                    int n_grid = north * patchSize;
+                    n_grid += patchSize;
 
-                    p = (Patch)freePatchList.remove(0);
-
-                    if(p == null)
+                    if(freePatchList.size() == 0)
                     {
-                        TiledTerrainData td = (TiledTerrainData)terrainData;
-
                         app = app_gen.createAppearance();
+                        app.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
                         app.setTexture(td.getTexture(east, north));
 
                         p = new Patch(terrainData,
                                       patchSize,
-                                      e_grid,
-                                      n_grid,
                                       app,
                                       landscapeView);
 
@@ -713,21 +808,76 @@ System.out.println("Free-form terrain not implemented yet");
                     }
                     else
                     {
-                        p.setOrigin(e_grid, n_grid);
+                        p = (Patch)freePatchList.remove(0);
+                        app = p.getAppearance();
+                        app.setTexture(td.getTexture(east, north));
                     }
 
+                    p.setOrigin(e_grid, n_grid);
                     patchGrid.addPatch(p, east, north);
                     p.makeActive();
 
                     patches.add(p);
 
                     triCount += 2;
-
-                    south_neighbour = p;
-                    west_neighbour[w_pos] = p;
+                    north++;
                 }
+            }
+        }
 
-                south_neighbour = null;
+        // Now clean up anything that needs to be added to the east/west
+        // sides. Add this the full length, including any new north/south
+        // parts.
+        if(num_east != 0)
+        {
+            east = start_east - 1;
+            num_north = reqdBounds.height;
+
+            TiledTerrainData td = (TiledTerrainData)terrainData;
+            int e_grid = east * patchSize;
+            int n_grid;
+
+            for(i = 0; i < num_east; i++)
+            {
+                e_grid += patchSize;
+                north = start_north;
+                n_grid = (north - 1) * patchSize;
+                east++;
+
+                for(j = 0; j < num_north; j++)
+                {
+                    int w_pos = (int)(north * invPatchSize);
+                    n_grid += patchSize;
+
+                    if(freePatchList.size() == 0)
+                    {
+                        app = app_gen.createAppearance();
+                        app.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
+                        app.setTexture(td.getTexture(east, north));
+
+                        p = new Patch(terrainData,
+                                      patchSize,
+                                      app,
+                                      landscapeView);
+
+                        addChild(p.getShape3D());
+                    }
+                    else
+                    {
+                        p = (Patch)freePatchList.remove(0);
+                        app = p.getAppearance();
+                        app.setTexture(td.getTexture(east, north));
+                    }
+
+                    p.setOrigin(e_grid, n_grid);
+                    patchGrid.addPatch(p, east, north);
+                    p.makeActive();
+
+                    patches.add(p);
+
+                    triCount += 2;
+                    north++;
+                }
             }
         }
     }

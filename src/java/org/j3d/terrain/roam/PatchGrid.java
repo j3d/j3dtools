@@ -29,10 +29,10 @@ import java.util.ArrayList;
 class PatchGrid
 {
     private int numNorth;
-    private int numWest;
+    private int numEast;
 
     private int northOffset;
-    private int westOffset;
+    private int eastOffset;
 
     private Patch[][] grid;
 
@@ -46,14 +46,17 @@ class PatchGrid
     PatchGrid(Rectangle bounds)
     {
         grid = new Patch[bounds.width][bounds.height];
-        northOffset = bounds.y;
-        westOffset = bounds.x;
+        numEast = bounds.width;
         numNorth = bounds.height;
-        numWest = bounds.width;
+
+        eastOffset = bounds.x;
+        northOffset = bounds.y;
     }
 
     /**
      * Change the grid to occupy the bounds given the current setup.
+     *
+     * @param bounds The bounds to update the grid for
      */
     void prepareNewBounds(Rectangle bounds)
     {
@@ -65,7 +68,7 @@ class PatchGrid
 
         if(bounds.width > grid.length)
         {
-            Patch[][] tmp = new Patch[bounds.width][0];
+            Patch[][] tmp = new Patch[bounds.width][];
 
             for(i = 0; i < grid.length; i++)
                 tmp[i] = grid[i];
@@ -75,10 +78,10 @@ class PatchGrid
             for( ; i < bounds.width; i++)
                 tmp[i] = new Patch[cur_depth];
         }
-        else if(bounds.width < numWest)
+        else if(bounds.width < numEast)
         {
             // dereference the bits that are left over
-            for(i = bounds.width; i < numWest; i++)
+            for(i = bounds.width; i < numEast; i++)
             {
                 for(j = 0; j < numNorth; j++)
                 {
@@ -93,7 +96,7 @@ class PatchGrid
             Patch[] tmp;
 
             // Copy only the ones that have valid data. Replace the rest
-            for(i = 0; i < numWest; i++)
+            for(i = 0; i < numEast; i++)
             {
                 tmp = new Patch[bounds.height];
                 System.arraycopy(grid[i], 0, tmp, 0, numNorth);
@@ -107,7 +110,7 @@ class PatchGrid
         else if(bounds.height < numNorth)
         {
             // dereference the bits that are left over
-            for(i = 0; i < numWest; i++)
+            for(i = 0; i < numEast; i++)
             {
                 for(j = bounds.height; j < numNorth; j++)
                 {
@@ -116,66 +119,71 @@ class PatchGrid
             }
         }
 
-
         // Right, now, where were we again? Oh, that's right, we need to now
         // shift everything around within the array so that we leave blank
         // spots in the right place. Start first with depth issues.
-        if(bounds.y < northOffset)
-        {
-            int diff = northOffset - bounds.y;
-
-            for(i = 0; i < bounds.width; i++)
-                System.arraycopy(grid[i], 0, grid[i], diff, bounds.height);
-
-            for(i = 0; i < bounds.width; i++)
-                for(j = 0; j < diff; j++)
-                    grid[i][j] = null;
-        }
-        else if(bounds.y > northOffset)
+        if(bounds.y > northOffset)
         {
             int diff = bounds.y - northOffset;
+            int num_copy = bounds.height - diff;
 
             for(i = 0; i < bounds.width; i++)
-                System.arraycopy(grid[i], diff, grid[i], 0, bounds.height);
+            {
+                System.arraycopy(grid[i], diff, grid[i], 0, num_copy);
 
-            for(i = 0; i < bounds.width; i++)
                 for(j = diff; j < numNorth; j++)
                     grid[i][j] = null;
+            }
+        }
+        else if(bounds.y < northOffset)
+        {
+            int diff = northOffset - bounds.y;
+            int num_copy = bounds.height - diff;
+
+            for(i = 0; i < bounds.width; i++)
+            {
+                System.arraycopy(grid[i], 0, grid[i], diff, num_copy);
+
+                for(j = 0; j < diff; j++)
+                    grid[i][j] = null;
+            }
         }
 
-        if(bounds.x < westOffset)
+        if(bounds.x > eastOffset)
         {
-            int diff = westOffset - bounds.x;
+            int diff = bounds.x - eastOffset;
+            int num_copy = bounds.height - diff;
 
-            for(i = bounds.width - 1; i > diff; i--)
-                System.arraycopy(grid[i - 1], 0, grid[i], 0, bounds.height);
+            for(i = 0; i < diff; i++)
+                System.arraycopy(grid[i], 0, grid[i + 1], 0, numNorth);
 
-            for( ; i > 0; i--)
+            for( ; i < bounds.width; i++)
                 for(j = 0; j < bounds.height; j++)
                     grid[i][j] = null;
         }
-        else if(bounds.x > westOffset)
+        else if(bounds.x < eastOffset)
         {
-            int diff = bounds.x - westOffset;
+            int diff = eastOffset - bounds.x;
+            int num_copy = bounds.height - diff;
 
-            for(i = 0; i < bounds.width; i++)
-                System.arraycopy(grid[i + diff], 0, grid[i], 0, bounds.height);
+            for(i = diff; i <= bounds.width - diff; i++)
+                System.arraycopy(grid[i - 1], 0, grid[i], 0, numNorth);
 
-            for( ; i < numWest; i++)
+            for(i = 0 ; i < diff; i++)
                 for(j = 0; j < bounds.height; j++)
                     grid[i][j] = null;
         }
 
         // Now that we are all done, set the vars with the correct values
-        numWest = bounds.width;
+        numEast = bounds.width;
         numNorth = bounds.height;
 
-        westOffset = bounds.x;
+        eastOffset = bounds.x;
         northOffset = bounds.y;
     }
 
     /**
-     * Add the patch to the grid. Sets the south and west neighbour
+     * Add the patch to the grid. Sets the south and east neighbour
      * patches of both this class and the nearest north and east
      * neighbours.
      *
@@ -185,21 +193,84 @@ class PatchGrid
      */
     void addPatch(Patch p, int tileX, int tileY)
     {
-        int local_x = tileX - westOffset;
+        int local_x = tileX - eastOffset;
         int local_y = tileY - northOffset;
 
         grid[local_x][local_y] = p;
 
         if(local_x != 0)
-            grid[local_x - 1][local_y].setWestNeighbour(p);
+            p.setWestNeighbour(grid[local_x - 1][local_y]);
+
+        if((local_x < numEast - 1) && (grid[local_x + 1][local_y] != null))
+            grid[local_x + 1][local_y].setWestNeighbour(p);
+
 
         if(local_y != 0)
-            grid[local_x][local_y - 1].setSouthNeighbour(p);
+            p.setSouthNeighbour(grid[local_x][local_y - 1]);
 
-        if(local_x < grid.length - 1)
-            p.setWestNeighbour(grid[local_x + 1][local_y]);
-
-        if(local_y < grid[0].length - 1)
-            p.setSouthNeighbour(grid[local_x][local_y + 1]);
+        if((local_y < numNorth - 1) && (grid[local_x][local_y + 1] != null))
+            grid[local_x][local_y + 1].setSouthNeighbour(p);
     }
+
+    /**
+     * Generate a string version of this grid. Prints out the patch size and
+     * the hashcodes of each item in the grid.
+     *
+     * @return A string representation of the patch
+     */
+    public String toString()
+    {
+        StringBuffer buf = new StringBuffer("PatchGrid:\n");
+        buf.append("Size: ");
+        buf.append(numEast);
+        buf.append(' ');
+        buf.append(numNorth);
+        buf.append("\nOffsets: ");
+        buf.append(eastOffset);
+        buf.append(' ');
+        buf.append(northOffset);
+
+        for(int i = numNorth - 1; i >= 0; i--)
+        {
+            buf.append('\n');
+
+            for(int j = 0; j < numEast; j++)
+            {
+                if(grid[j][i] == null)
+                    buf.append('0');
+                else
+                    buf.append(grid[j][i].hashCode());
+                buf.append(' ');
+            }
+        }
+
+        return buf.toString();
+    }
+
+    /**
+     * Print out the relationships at each grid square area.
+     *
+     * @return A string representation of the patch relations
+     */
+    public String toRelationsString()
+    {
+        StringBuffer buf = new StringBuffer("PatchGrid Relations:");
+
+        for(int i = numNorth - 1; i >= 0; i--)
+        {
+            buf.append('\n');
+
+            for(int j = 0; j < numEast; j++)
+            {
+                if(grid[j][i] == null)
+                    buf.append('0');
+                else
+                    buf.append(grid[j][i].toString2());
+                buf.append("  ");
+            }
+        }
+
+        return buf.toString();
+    }
+
 }

@@ -63,7 +63,10 @@ class TreeNode
     /** The visibility status of this node in the tree is not known. */
     public static final int UNDEFINED = -1;
 
+    /** Child tree node on the left side of the diamond */
     TreeNode leftChild;
+
+    /** Child tree node on the right side of the diamond */
     TreeNode rightChild;
 
     TreeNode baseNeighbour;
@@ -117,39 +120,10 @@ class TreeNode
     /**
      * Default constructor for use by TreeNodeCache.
      */
-    TreeNode()
+    private TreeNode()
     {
     }
 
-    /**
-     * Creates new TreeNode customised with all the data set.
-     */
-    TreeNode(int leftX,
-             int leftY,
-             int rightX,
-             int rightY,
-             int apexX,
-             int apexY,
-             int node,
-             TerrainData terrainData,
-             ViewFrustum landscapeView,
-             int parentVisible,
-             int depth,
-             VarianceTree varianceTree)
-    {
-        this.leftX = leftX;
-        this.leftY = leftY;
-        this.rightX = rightX;
-        this.rightY = rightY;
-        this.apexX = apexX;
-        this.apexY = apexY;
-        this.node = node;
-        this.terrainData = terrainData;
-        this.depth = depth;
-        this.varianceTree = varianceTree;
-
-        init(landscapeView, parentVisible);
-    }
 
     /**
      * Used to populate a node retrieved from the TreeNodeCache
@@ -163,7 +137,7 @@ class TreeNode
                  int apexY,
                  int node,
                  TerrainData terrainData,
-                 ViewFrustum landscapeView,
+                 ViewFrustum frustum,
                  int parentVisible,
                  int depth,
                  VarianceTree varianceTree)
@@ -179,37 +153,7 @@ class TreeNode
         this.depth = depth;
         this.varianceTree = varianceTree;
 
-
-        init(landscapeView, parentVisible);
-    }
-
-    /**
-     * Reset this node by removing all it's children, set visible depending
-     * on visibiling in view.
-     *
-     * @param landscapeView The latest view of the tree
-     */
-    void reset(ViewFrustum landscapeView)
-    {
-        if(leftChild != null)
-        {
-            leftChild.freeNode();
-            leftChild = null;
-        }
-
-        if(rightChild != null)
-        {
-            rightChild.freeNode();
-            rightChild = null;
-        }
-
-        baseNeighbour = null;
-        leftNeighbour = null;
-        rightNeighbour = null;
-
-        visible = landscapeView.isTriangleInFrustum(p1X, p1Y, p1Z,
-                                                    p2X, p2Y, p2Z,
-                                                    p3X, p3Y, p3Z);
+        init(frustum, parentVisible);
     }
 
     /**
@@ -243,8 +187,10 @@ class TreeNode
         baseNeighbour = null;
         leftNeighbour = null;
         rightNeighbour = null;
+
         parent = null;
         diamond = false;
+        visible = UNDEFINED;
 
         addTreeNode(this);
     }
@@ -289,32 +235,31 @@ class TreeNode
      * Split this tree node into two smaller triangle tree nodes.
      *
      * @param position The current view location
-     * @param landscapeView The view information
+     * @param frustum The view information
      * @param queueManager The queue to place newly generated items on
      * @return The number of triangles generated as a result
      */
     int split(Tuple3f position,
-              ViewFrustum landscapeView,
+              ViewFrustum frustum,
               QueueManager queueManager)
     {
         int triCount = 0;
 
         if(leftChild != null || rightChild != null)
-        {
-            throw new RuntimeException(" Triangle is already split "+node);
-        }
+            throw new RuntimeException(" Triangle already split "+ hashCode());
 
         if(baseNeighbour != null)
         {
             if(baseNeighbour.baseNeighbour != this)
+            {
                 triCount += baseNeighbour.split(position,
-                                                landscapeView,
+                                                frustum,
                                                 queueManager);
+            }
 
-            split2(position, landscapeView, queueManager);
+            split2(position, frustum, queueManager);
             triCount++;
-            baseNeighbour.split2(position, landscapeView, queueManager);
-            //if(baseNeighbour.visible!=ViewFrustum.OUT)
+            baseNeighbour.split2(position, frustum, queueManager);
             triCount++;
 
             leftChild.rightNeighbour = baseNeighbour.rightChild;
@@ -328,7 +273,7 @@ class TreeNode
         }
         else
         {
-            split2(position, landscapeView, queueManager);
+            split2(position, frustum, queueManager);
             triCount++;
 
             diamondVariance = variance;
@@ -351,18 +296,14 @@ class TreeNode
 
         if(baseNeighbour != null && baseNeighbour.baseNeighbour != this)
         {
-            System.out.println("++++++++++++ Illegal merge *********************************");
-            queueManager.removeDiamond(this);
-            diamond = false;
-            diamondVariance = 0f;
-            return 0;
-            //throw new RuntimeException("Illegal merge");
+            throw new RuntimeException("Illegal merge");
         }
 
         merge(this, queueManager);
         trisRemoved++;
-        checkForNewDiamond(this.parent, queueManager);
-        if(baseNeighbour!=null)
+        checkForNewDiamond(parent, queueManager);
+
+        if(baseNeighbour != null)
         {
             merge(baseNeighbour, queueManager);
             trisRemoved++;
@@ -371,13 +312,16 @@ class TreeNode
 
         queueManager.removeDiamond(this);
         diamond = false;
-        diamondVariance = 0f;
+        diamondVariance = 0;
 
         return trisRemoved;
     }
 
     /**
-     * Add the coordinates for this triangle to the list
+     * Add the coordinates for this triangle to the list of vertex information.
+     * Updates are to include colour and texture information as needed.
+     *
+     * @param vertexData The place to put the extra vertex information
      */
     void getTriangles(VertexData vertexData)
     {
@@ -427,22 +371,42 @@ class TreeNode
     }
 
     /**
-     * Update the tree depending on the view position and variance
+     * Check to see if this tree node is visible. This is part of the
+     * optimisation step to prevent recalculating the entire visibility if
+     * the system is the same as before. Only update now if the parent was
+     * not visible before.
+     *
+     * @param frustum The view frustum to check against
+     * @return The visibility status for this frustum - IN, OUT, CLIPPED
+     */
+    int checkVisibility(ViewFrustum frustum)
+    {
+        return frustum.isTriangleInFrustum(p1X, p1Y, p1Z,
+                                           p2X, p2Y, p2Z,
+                                           p3X, p3Y, p3Z);
+    }
+
+    /**
+     * Update the tree and variance information for the new view position.
+     *
+     *
+     * @param frustum view information at start time
+     * @param position The location to compute the value from
+     * @param varianceTree Nested set of variances for each level
+     * @param parentVisible Flag about the visibility state of the parent
+     *    tree node
+     * @param queueManager The queue to put the merged node on
      */
     void updateTree(Tuple3f position,
-                    ViewFrustum landscapeView,
+                    ViewFrustum frustum,
                     VarianceTree varianceTree,
                     int parentVisible,
                     QueueManager queueManager)
     {
-
-        //splitThisFrame = false;
-        //mergedThisFrame = false;
-
         if(parentVisible == UNDEFINED ||
            parentVisible == ViewFrustum.CLIPPED)
         {
-            visible = landscapeView.isTriangleInFrustum(p1X, p1Y, p1Z,
+            visible = frustum.isTriangleInFrustum(p1X, p1Y, p1Z,
                                                         p2X, p2Y, p2Z,
                                                         p3X, p3Y, p3Z);
         }
@@ -461,12 +425,19 @@ class TreeNode
         else
         {
             if(leftChild != null)
-                leftChild.updateTree(position, landscapeView, varianceTree, visible, queueManager);
+                leftChild.updateTree(position,
+                                     frustum,
+                                     varianceTree,
+                                     visible,
+                                     queueManager);
 
             if(rightChild != null)
-                rightChild.updateTree(position, landscapeView, varianceTree, visible, queueManager);
+                rightChild.updateTree(position,
+                                      frustum,
+                                      varianceTree,
+                                      visible,
+                                      queueManager);
 
-            //System.out.println(diamond+"  "+diamondVariance);
             if(diamond)
             {
 // BUG Here, baseNeighbour may not have had it's variance updated
@@ -491,9 +462,20 @@ class TreeNode
         }
     }
 
-    public String toString()
+    /**
+     * Either return a node from the cache or if the cache is empty, return
+     * a new tree node.
+     */
+    static TreeNode getTreeNode()
     {
-        return Integer.toString(node);
+        TreeNode ret_val;
+
+        if(nodeCache.size() > 0)
+            ret_val = (TreeNode)nodeCache.removeFirst();
+        else
+            ret_val = new TreeNode();
+
+        return ret_val;
     }
 
     //----------------------------------------------------------
@@ -503,11 +485,11 @@ class TreeNode
     /**
      * Internal common initialization for the startup of the class.
      *
-     * @param landscapeView view information at start time
+     * @param frustum view information at start time
      * @param parentVisible Flag about the visibility state of the parent
      *    tree node
      */
-    private void init(ViewFrustum landscapeView, int parentVisible)
+    private void init(ViewFrustum frustum, int parentVisible)
     {
         float[] tmp = new float[3];
         float[] tex = new float[2];
@@ -629,7 +611,7 @@ class TreeNode
         if(parentVisible == UNDEFINED ||
            parentVisible == ViewFrustum.CLIPPED)
         {
-            visible = landscapeView.isTriangleInFrustum(p1X, p1Y, p1Z,
+            visible = frustum.isTriangleInFrustum(p1X, p1Y, p1Z,
                                                         p2X, p2Y, p2Z,
                                                         p3X, p3Y, p3Z);
         }
@@ -661,11 +643,11 @@ class TreeNode
      * Forceful split of this triangle and turns it into two triangles.
      */
     private void splitTriangle(Tuple3f position,
-                               ViewFrustum landscapeView,
+                               ViewFrustum frustum,
                                QueueManager queueManager)
     {
-        int splitX = (leftX+rightX)/2;
-        int splitY = (leftY+rightY)/2;
+        int splitX = (leftX + rightX)/2;
+        int splitY = (leftY + rightY)/2;
 
         if(parent != null)
             parent.removeDiamond(queueManager);
@@ -674,29 +656,30 @@ class TreeNode
         rightChild = getTreeNode();
 
         leftChild.newNode(apexX, apexY,
-                                  leftX, leftY,
-                                  splitX, splitY,
-                                  node << 1,
-                                  terrainData,
-                                  landscapeView,
-                                  visible,
-                                  depth + 1,
-                                  varianceTree);
+                          leftX, leftY,
+                          splitX, splitY,
+                          node << 1,
+                          terrainData,
+                          frustum,
+                          visible,
+                          depth + 1,
+                          varianceTree);
 
         rightChild.newNode(rightX, rightY,
-                                   apexX, apexY,
-                                   splitX, splitY,
-                                   1 + (node << 1),
-                                   terrainData,
-                                   landscapeView,
-                                   visible,
-                                   depth + 1,
-                                   varianceTree);
+                           apexX, apexY,
+                           splitX, splitY,
+                           1 + (node << 1),
+                           terrainData,
+                           frustum,
+                           visible,
+                           depth + 1,
+                           varianceTree);
 
         leftChild.parent = this;
         rightChild.parent = this;
 
-        if(depth+1 < varianceTree.getMaxDepth() && visible!=ViewFrustum.OUT)
+        if(depth + 1 < varianceTree.getMaxDepth() &&
+           visible != ViewFrustum.OUT)
         {
             rightChild.computeVariance(position, queueManager);
             leftChild.computeVariance(position, queueManager);
@@ -704,10 +687,10 @@ class TreeNode
     }
 
     private void split2(Tuple3f position,
-                        ViewFrustum landscapeView,
+                        ViewFrustum frustum,
                         QueueManager queueManager)
     {
-        splitTriangle(position, landscapeView, queueManager);
+        splitTriangle(position, frustum, queueManager);
 
         queueManager.removeTriangle(this);
 
@@ -808,7 +791,10 @@ class TreeNode
     }
 
     /**
-     * Check if tn forms a diamond
+     * Check if the tree node forms a diamond.
+     *
+     * @param tn The tree node to check
+     * @param queueManager The queue for nodes
      */
     private void checkForNewDiamond(TreeNode tn, QueueManager queueManager)
     {
@@ -836,22 +822,6 @@ class TreeNode
 
             queueManager.addDiamond(tn);
         }
-    }
-
-    /**
-     * Either return a node from the cache or if the cache is empty, return
-     * a new tree node.
-     */
-    private static TreeNode getTreeNode()
-    {
-        TreeNode ret_val;
-
-        if(nodeCache.size() > 0)
-            ret_val = (TreeNode)nodeCache.removeFirst();
-        else
-            ret_val = new TreeNode();
-
-        return ret_val;
     }
 
     /**
