@@ -17,6 +17,7 @@ import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
 
 import javax.media.j3d.Canvas3D;
 
@@ -31,9 +32,11 @@ import org.j3d.util.ImageLoader;
  * mouse and navigation state. There are three cursors used for walk, tilt and
  * pan states. These can be found as:
  * <ul>
- * <li>Pan:  images/navigation/CursorPan.gif</li>
- * <li>Tilt: images/navigation/CursorTilt.gif</li>
- * <li>Walk: images/navigation/CursorWalk.gif</li>
+ * <li>Pan:     images/navigation/CursorPan.gif</li>
+ * <li>Tilt:    images/navigation/CursorTilt.gif</li>
+ * <li>Walk:    images/navigation/CursorWalk.gif</li>
+ * <li>Fly:     images/navigation/CursorFly.gif</li>
+ * <li>Examine: images/navigation/CursorExamine.gif</li>
  * </ul>
  *
  * @author Justin Couch
@@ -50,6 +53,13 @@ public class NavigationStateManager
     /** The name of the file for the walk cursor image */
     private static final String WALK_CURSOR = "images/navigation/CursorWalk.gif";
 
+    /** The name of the file for the fly cursor image */
+    private static final String FLY_CURSOR = "images/navigation/CursorFly.gif";
+
+    /** The name of the file for the examine cursor image */
+    private static final String EXAMINE_CURSOR = "images/navigation/CursorExamine.gif";
+
+
     /** The canvas this handler is operating on */
     private Canvas3D canvas;
 
@@ -62,11 +72,20 @@ public class NavigationStateManager
     /** Cursor used to represent the walk state */
     private Cursor walkCursor = null;
 
+    /** Cursor used to represent the fly state */
+    private Cursor flyCursor = null;
+
+    /** Cursor used to represent the examine state */
+    private Cursor examineCursor = null;
+
+    /** The last used cursor */
+    private Cursor previousCursor;
+
     /** The current navigation state either set from us or externally */
     private int navigationState;
 
     /** The mouse view handler for mouse events */
-    private MouseViewHandler mouseHandler;
+    private NavigationHandler mouseHandler;
 
     /** The mouse view handler for mouse events */
     private NavigationToolbar toolbarHandler;
@@ -102,20 +121,38 @@ public class NavigationStateManager
             switch(navigationState)
             {
                 case WALK_STATE:
+                    previousCursor = canvas.getCursor();
                     canvas.setCursor(walkCursor);
                     break;
 
                 case PAN_STATE:
+                    previousCursor = canvas.getCursor();
                     canvas.setCursor(panCursor);
                     break;
 
                 case TILT_STATE:
+                    previousCursor = canvas.getCursor();
                     canvas.setCursor(tiltCursor);
+                    break;
+
+                case FLY_STATE:
+                    previousCursor = canvas.getCursor();
+                    canvas.setCursor(flyCursor);
+                    break;
+
+                case EXAMINE_STATE:
+                    previousCursor = canvas.getCursor();
+                    canvas.setCursor(examineCursor);
+                    break;
+
+                case NO_STATE:
+                    canvas.setCursor(previousCursor);
                     break;
             }
 
             if(mouseHandler != null)
-                mouseHandler.setNavigationState(state);
+                mouseHandler.setButtonNavigation(MouseEvent.BUTTON1_MASK,
+                                                 state);
 
             if(navigationListener != null)
                 navigationListener.setNavigationState(state);
@@ -152,15 +189,32 @@ public class NavigationStateManager
             switch(navigationState)
             {
                 case WALK_STATE:
+                    previousCursor = canvas.getCursor();
                     canvas.setCursor(walkCursor);
                     break;
 
                 case PAN_STATE:
+                    previousCursor = canvas.getCursor();
                     canvas.setCursor(panCursor);
                     break;
 
                 case TILT_STATE:
+                    previousCursor = canvas.getCursor();
                     canvas.setCursor(tiltCursor);
+                    break;
+
+                case FLY_STATE:
+                    previousCursor = canvas.getCursor();
+                    canvas.setCursor(flyCursor);
+                    break;
+
+                case EXAMINE_STATE:
+                    previousCursor = canvas.getCursor();
+                    canvas.setCursor(examineCursor);
+                    break;
+
+                case NO_STATE:
+                    canvas.setCursor(previousCursor);
                     break;
             }
 
@@ -201,7 +255,8 @@ public class NavigationStateManager
         this.canvas = canvas;
         loadCursors();
 
-        setNavigationState(NavigationStateListener.WALK_STATE);
+        previousCursor = canvas.getCursor();
+        setNavigationState(NavigationStateListener.NO_STATE);
     }
 
     /**
@@ -225,12 +280,12 @@ public class NavigationStateManager
     }
 
     /**
-     * Set the toolbar instance to use. Setting a value of null will clear the
-     * currently set instance.
+     * Set the navigation handler instance to use. Setting a value of null
+     * will clear the currently set instance.
      *
      * @param tbr The new toolbar instance to use
      */
-    public void setMouseHandler(MouseViewHandler view)
+    public void setMouseHandler(NavigationHandler view)
     {
         if(mouseHandler != null)
             mouseHandler.setNavigationStateListener(null);
@@ -240,7 +295,6 @@ public class NavigationStateManager
         if(mouseHandler != null)
         {
             mouseHandler.setNavigationStateListener(new MouseHandler());
-            mouseHandler.setNavigationState(navigationState);
         }
     }
 
@@ -267,25 +321,38 @@ public class NavigationStateManager
 
         switch(navigationState)
         {
-            case NavigationStateListener.WALK_STATE:
+            case NavigationState.WALK_STATE:
+                previousCursor = canvas.getCursor();
                 canvas.setCursor(walkCursor);
                 break;
 
-            case NavigationStateListener.PAN_STATE:
+            case NavigationState.PAN_STATE:
+                previousCursor = canvas.getCursor();
                 canvas.setCursor(panCursor);
                 break;
 
-            case NavigationStateListener.TILT_STATE:
+            case NavigationState.TILT_STATE:
+                previousCursor = canvas.getCursor();
                 canvas.setCursor(tiltCursor);
+                break;
 
+            case NavigationState.FLY_STATE:
+                previousCursor = canvas.getCursor();
+                canvas.setCursor(flyCursor);
+                break;
+
+            case NavigationState.EXAMINE_STATE:
+                previousCursor = canvas.getCursor();
+                canvas.setCursor(examineCursor);
+                break;
+
+            case NavigationState.NO_STATE:
+                canvas.setCursor(previousCursor);
                 break;
         }
 
         if(toolbarHandler != null)
             toolbarHandler.setNavigationState(state);
-
-        if(mouseHandler != null)
-            mouseHandler.setNavigationState(state);
 
         if(navigationListener != null)
             navigationListener.setNavigationState(state);
@@ -352,6 +419,36 @@ public class NavigationStateManager
         else
         {
             System.out.println("Unable to load tilt cursor image");
+        }
+
+        img = ImageLoader.loadImage(FLY_CURSOR);
+        center = new Point();
+
+        if(img != null)
+        {
+            center.x = img.getWidth(null) / 2;
+            center.y = img.getHeight(null) / 2;
+
+            flyCursor = tk.createCustomCursor(img, center ,null);
+        }
+        else
+        {
+            System.out.println("Unable to load fly cursor image");
+        }
+
+        img = ImageLoader.loadImage(EXAMINE_CURSOR);
+        center = new Point();
+
+        if(img != null)
+        {
+            center.x = img.getWidth(null) / 2;
+            center.y = img.getHeight(null) / 2;
+
+            examineCursor = tk.createCustomCursor(img, center ,null);
+        }
+        else
+        {
+            System.out.println("Unable to load examine cursor image");
         }
     }
 }
