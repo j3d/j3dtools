@@ -34,7 +34,7 @@ import javax.vecmath.Vector3f;
  *   Normalized result is N3/(|N3|)
  *
  * @author Guy Carpenter
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class NormalInterpolator extends Interpolator
 {
@@ -107,7 +107,14 @@ public class NormalInterpolator extends Interpolator
      */
     public void addKeyFrame(float key, float normals[])
     {
-        int loc = findKeyIndex(key);
+        int loc = findKeyIndex(key); 
+
+        // loc is now the largest key less than the new key.
+        // adjust loc up to first key greater than new key.
+        if (loc>=0) {
+            while (loc<currentSize && keys[loc]<=key) 
+                loc++; 
+        }
 
         angleCacheIndex = -1;  // invalidate angle cache
 
@@ -138,12 +145,6 @@ public class NormalInterpolator extends Interpolator
         }
         else
         {
-            // Check to see if the location is the actual key value or it
-            // represents a case of this key being between to values in our
-            // array. If so, set the location to be +1 from it's current
-            if(keys[loc] != key)
-                loc++;
-
             int k = currentSize - loc;
             System.arraycopy(keyValues, loc, keyValues, loc + 1, k);
             System.arraycopy(keys, loc, keys, loc + 1, k);
