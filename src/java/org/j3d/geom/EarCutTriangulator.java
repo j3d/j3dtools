@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                          J3D.org Copyright (c) 2000
+ *                          J3D.org Copyright (c) 2000-2004
  *                                Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -9,10 +9,10 @@
 
 package org.j3d.geom;
 
-// Standard imports
+// External imports
 // none
 
-// Application specific imports
+// Local imports
 import org.j3d.util.HashSet;
 import org.j3d.util.ObjectArray;
 
@@ -38,7 +38,7 @@ import org.j3d.util.ObjectArray;
  * http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class EarCutTriangulator
 {
@@ -452,6 +452,16 @@ while(tmp != first)
             current.next = last;
         }
 
+/*
+System.out.println("vertices : num " + numVertex + " start " + startIndex);
+PolyVertex tmp = first.next;
+System.out.println(first.toString());
+while(tmp != first)
+{
+    System.out.println(tmp.toString());
+    tmp = tmp.next;
+}
+*/
         return triangulate(first,
                            coordOutput,
                            normalOutput,
@@ -491,10 +501,13 @@ while(tmp != first)
         int maxCnt = (coordOutput.length / 3);
         maxCnt *= maxCnt;
 
+//System.out.println("first vertex " + first);
+//System.out.println("last vertex " + first.prev);
+//System.out.println("two out " + first.next.next);
+
         PolyVertex current = first.next.next;
         while(current != first)
         {
-
             PolyVertex prev_vtx = current.prev;
             boolean is_tri = false;
 
@@ -701,7 +714,7 @@ for(int i = 0; i < output_index; i += 3)
         {
             // copy out the values from the convex array and test to see
             // if any of them lie inside the triangle
-            tmpArray = (PolyVertex[]) concaveVertices.toArray(tmpArray);
+            tmpArray = (PolyVertex[])concaveVertices.toArray(tmpArray);
 
             boolean found_vertex = false;
             for(int i = 0; i < num_concaves; i++)
@@ -709,9 +722,29 @@ for(int i = 0; i < output_index; i += 3)
                 PolyVertex cp = tmpArray[i];
                 if((cp != p && cp != p.prev && cp != p.next) &&
                    isPointInTriangle(cp, p.prev, p, p.next))
-                    found_vertex = true;
-            }
+                {
+                    // In some cases we'll have a repeated vertex but in
+                    // two different positions. A classic case of this is where
+                    // the input has a polygon with holes that has run an "edge"
+                    // between the outer and inner portion of the polygon to make
+                    // it into a single contiguous edge. If one of those vertices
+                    // happens to also be concave, it will not correctly work it
+                    // out that there's an ear there. This checks to see if it is
+                    // the identical vertex but in a different place in the vertex
+                    // list. If it is, then ignore it and continue on
+                    if(cp.x == p.x && cp.y == p.y && cp.z == p.z)
+                        continue;
 
+                    if(cp.x == p.prev.x && cp.y == p.prev.y && cp.z == p.prev.z)
+                        continue;
+
+                    if(cp.x == p.next.x && cp.y == p.next.y && cp.z == p.next.z)
+                        continue;
+
+                    found_vertex = true;
+                    break;
+                }
+            }
             return !found_vertex;
         }
         else
