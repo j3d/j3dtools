@@ -29,7 +29,7 @@ import javax.vecmath.Color3f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Axis extends Group
 {
@@ -58,7 +58,7 @@ public class Axis extends Group
             throw new IllegalArgumentException("Axis length is not positive");
 
         int format = GeometryArray.COORDINATES | GeometryArray.NORMALS;
-        BoxGenerator gen = new BoxGenerator(X_SIZE, X_SIZE, length);
+        BoxGenerator gen = new BoxGenerator(length, X_SIZE, X_SIZE);
 
         GeometryData data = new GeometryData();
         data.geometryType = GeometryData.TRIANGLE_STRIPS;
@@ -80,7 +80,7 @@ public class Axis extends Group
         y_array.setCoordinates(0, data.coordinates);
         y_array.setNormals(0, data.normals);
 
-        gen.setDimensions(length, X_SIZE, X_SIZE);
+        gen.setDimensions(X_SIZE, X_SIZE, length);
         gen.generate(data);
 
         TriangleStripArray z_array =
