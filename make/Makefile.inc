@@ -5,7 +5,11 @@
 #
 
 ifndef PROJECT_ROOT
-export PROJECT_ROOT=/usr/local/src/projects/j3d.org/code
+  export PROJECT_ROOT=/usr/local/src/projects/j3d.org/code
+endif
+
+ifndef JAVA_HOME
+  JAVA_HOME=/usr/local/java/jdk1.3
 endif
 
 SRC_DIR=$(PROJECT_ROOT)/java
@@ -21,5 +25,6 @@ DELETE   = rm -f
 MAKEDIR  = mkdir -p
 RMDIR    = rm -fr
 PRINT    = @echo
+COPY     = cp
 
 MAKEFLAGS=-s
