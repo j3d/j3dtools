@@ -13,7 +13,7 @@
 package org.j3d.ui.navigation;
 
 // Standard imports
-import javax.media.j3d.SceneGraphObject;
+import javax.media.j3d.SceneGraphPath;
 
 // Application specific imports
 // none
@@ -24,7 +24,7 @@ import javax.media.j3d.SceneGraphObject;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface CollisionListener
 {
@@ -34,5 +34,5 @@ public interface CollisionListener
      *
      * @param node The node that was collided with
      */
-    public void avatarCollision(SceneGraphObject node);
+    public void avatarCollision(SceneGraphPath path);
 }
