@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.device.input.vfx directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
 
@@ -15,7 +15,6 @@ PACKAGE = org.j3d.device.input.vfx
 # The source files to compile. These are declared in order that they must be
 # compiled in
 SOURCE = VFXDriver.java \
-    VFXTrackerInputDevice.java 
 
 # Source files to create the JNI header information from
 JNI_SOURCE=VFXDriver.java
