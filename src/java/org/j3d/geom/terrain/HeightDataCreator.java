@@ -32,7 +32,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * in the X-Z plain and height values along the Y axis.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class HeightDataCreator
 {
@@ -126,7 +126,7 @@ public class HeightDataCreator
         int width = raster.getWidth();
         int height = raster.getHeight();
 
-        float[][] ret_val = new float[width][height];
+        float[][] ret_val = new float[height][width];
         int[] data = new int[width];
 
         int i, j;
