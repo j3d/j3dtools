@@ -30,7 +30,7 @@ import java.util.Hashtable;
  * consumer can be reset if needed to work on another image.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class ImageGenerator implements ImageConsumer
 {
@@ -214,12 +214,12 @@ class ImageGenerator implements ImageConsumer
             holder.notify();
         }
 
-        colorModel == null;
-        raster == null;
-        properties == null;
-        image == null;
-        width == -1;
-        height == -1;
+        colorModel = null;
+        raster = null;
+        properties = null;
+        image = null;
+        width = -1;
+        height = -1;
     }
 
     /**
