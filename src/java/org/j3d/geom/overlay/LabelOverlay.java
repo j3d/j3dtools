@@ -14,10 +14,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.font.TextLayout;
-import java.awt.font.TextAttribute;
-import java.text.AttributedString;
-import java.text.AttributedCharacterIterator;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
 
 import javax.media.j3d.Canvas3D;
 
@@ -28,10 +28,15 @@ import javax.media.j3d.Canvas3D;
  * An overlay that renders a text label.
  * <P>
  *
- * The text is placed with the baseline at 3/4 of the height of the label.
+ * The text alignment relative to the label may be controlled in both the
+ * horizontal and vertical alignment.
+ * <p>
  *
- * @author David Yazel, Justin Couch
- * @version $Revision: 1.5 $
+ * By default, the font is Helvetica, Plain, 14 point, and the text colour
+ * is white. Alignment of the text is set to the top-left of the overlay.
+ *
+ * @author Justin Couch
+ * @version $Revision: 1.6 $
  */
 public class LabelOverlay extends OverlayBase
 {
@@ -40,10 +45,34 @@ public class LabelOverlay extends OverlayBase
         new Font("Helvetica", Font.PLAIN, 14);
 
     /** If the user does not supply a colour, use this one */
-    private static final Color DEFAULT_COLOR = Color.red;
+    private static final Color DEFAULT_COLOR = Color.white;
+
+    /** The  value for the LEFT horizontal alignment */
+    public static final int LEFT_ALIGN = 1;
+
+    /** The  value for the RIGHT horizontal alignment */
+    public static final int RIGHT_ALIGN = 2;
+
+    /** The  value for the CENTER horizontal and vertical alignments */
+    public static final int CENTER_ALIGN = 3;
+
+    /** The  value for the TOP vertical alignment */
+    public static final int TOP_ALIGN = 4;
+
+    /** The  value for the BOTTOM vertical alignment */
+    public static final int BOTTOM_ALIGN = 5;
+
+    /** Message when the alignment value provided is incorrect */
+    private static final String BAD_ALIGN_MSG =
+        "The alignment value provided is unknown: ";
+
+    // Class vars
 
     /** The string we are using to draw the text with */
-    private AttributedString text;
+    private String text;
+
+    /** The rendered string, trimmed if needed to the right length */
+    private String renderedText;
 
     /** The number of characters the user wants to be painted */
     private int visibleLength;
@@ -54,42 +83,88 @@ public class LabelOverlay extends OverlayBase
     /** The colour to use to render the font with */
     private Color color;
 
+    /** The vertical alignment direction */
+    private int verticalAlignment;
+
+    /** The horizontal alignment direction */
+    private int horizontalAlignment;
+
+    /** The current X position to render the text in */
+    private int textX;
+
+    /** The current Y position to render the text in */
+    private int textY;
+
+    /**
+     * Flag to say the text string has changed and the coordinates should be
+     * recalculated during the next paint cycle.
+     */
+    private boolean textChanged;
+
     /**
      * Create a new, simple label overlay that does not contain any text.
+     * The default colour and font is used and it is aligned to the top-left
+     * of the overlay.
      *
      * @param canvas The canvas for this overlay to live on
      * @param size The size of the overlay in pixels
      */
     public LabelOverlay(Canvas3D canvas, Dimension size)
     {
-        this(canvas, size, "");
+        this(canvas,
+             size,
+             null,
+             DEFAULT_FONT,
+             DEFAULT_COLOR,
+             LEFT_ALIGN,
+             TOP_ALIGN,
+             null);
     }
 
     /**
      * Create a label overlay that displays the given text on the given
-     * screen space.
+     * screen space. The default colour and font is used and it is aligned to
+     * the top-left of the overlay. A null string will not be rendered.
      *
      * @param canvas The canvas for this overlay to live on
      * @param size The size of the overlay in pixels
+     * @param str The string to render or null
      */
-    public LabelOverlay(Canvas3D canvas, Dimension size, String text)
+    public LabelOverlay(Canvas3D canvas, Dimension size, String str)
     {
-        this(canvas, size, text, DEFAULT_FONT, DEFAULT_COLOR, null);
+        this(canvas,
+             size,
+             str,
+             DEFAULT_FONT,
+             DEFAULT_COLOR,
+             LEFT_ALIGN,
+             TOP_ALIGN,
+             null);
     }
 
     /**
      * Create a customised label overlay that uses the given attributes of
-     * font and colour styles.
+     * font and colour styles. If the font or colour values are null then
+     * the defaults are used.
      *
      * @param canvas The canvas for this overlay to live on
      * @param size The size of the overlay in pixels
+     * @param str The string to render or null
+     * @param font The font to use
+     * @param color the color to render the text in
+     * @param hAlign The horizontal alignment (LEFT, RIGHT, CENTER)
+     * @param vAlign The vertical alignment (TOP, BOTTOM, CENTER)
+     * @throws IllegalArguementException The alignment value given is
+     *     not valid.
      */
     public LabelOverlay(Canvas3D canvas,
                         Dimension size,
                         String str,
                         Font font,
-                        Color color) {
-        this(canvas, size, str, font, color, null);
+                        Color color,
+                        int hAlign,
+                        int vAlign) {
+        this(canvas, size, str, font, color, hAlign, vAlign, null);
     }
 
     /**
@@ -98,51 +173,33 @@ public class LabelOverlay extends OverlayBase
      *
      * @param canvas The canvas for this overlay to live on
      * @param size The size of the overlay in pixels
+     * @param str The string to render or null
+     * @param font The font to use
+     * @param color the color to render the text in
+     * @param hAlign The horizontal alignment (LEFT, RIGHT, CENTER)
+     * @param vAlign The vertical alignment (TOP, BOTTOM, CENTER)
+     * @param manager The manger to use to control updates
+     * @throws IllegalArguementException The alignment value given is
+     *     not valid.
      */
     public LabelOverlay(Canvas3D canvas,
                         Dimension size,
                         String str,
                         Font font,
                         Color color,
+                        int hAlign,
+                        int vAlign,
                         UpdateManager manager)
     {
         super(canvas, size, manager);
-        this.font = font;
-        this.color = color;
-        setText(str);
-
-        visibleLength = str.length();
-    }
-
-    /**
-     * Create a new label overlay that uses the given text with attributes
-     * for rendering.
-     *
-     * @param canvas The canvas for this overlay to live on
-     * @param size The size of the overlay in pixels
-     */
-    public LabelOverlay(Canvas3D canvas, Dimension size, AttributedString text)
-    {
-        this(canvas, size, text, (UpdateManager)null);
-    }
-
-    /**
-     * Create a new label overlay that uses text with attributes and a custom
-     * update manager.
-     *
-     * @param canvas The canvas for this overlay to live on
-     * @param size The size of the overlay in pixels
-     */
-    public LabelOverlay(Canvas3D canvas,
-                        Dimension size,
-                        AttributedString text,
-                        UpdateManager manager)
-    {
-        super(canvas, size, manager);
-        setText(text);
-        setBackgroundColor(new Color(0, 0, 0, 0));
-
-        visibleLength = text.getIterator().getEndIndex();
+        this.font = (font == null) ? DEFAULT_FONT : font;
+        this.color = (color == null) ? DEFAULT_COLOR : color;
+        this.text = str;
+        renderedText = text;
+        setVerticalAlignment(vAlign);
+        setHorizontalAlignment(hAlign);
+        textChanged = true;
+        visibleLength = -1;
     }
 
     /**
@@ -153,25 +210,138 @@ public class LabelOverlay extends OverlayBase
      */
     public void paint(Graphics2D g)
     {
-        if(text == null)
+        if(renderedText == null)
             return;
 
-        synchronized(text)
-        {
-            AttributedCharacterIterator char_itr =
-                text.getIterator(null, 0, visibleLength);
+        g.setColor(color);
+        g.setFont(font);
 
-            if(char_itr.getEndIndex() > 0)
+        if(textChanged)
+        {
+            FontRenderContext frc = g.getFontRenderContext();
+            LineMetrics lm = font.getLineMetrics(renderedText, frc);
+            float x = 0;
+            float y = 0;
+
+            switch(verticalAlignment)
             {
-                g.setColor(color);
-                g.drawString(char_itr, 0, (overlayBounds.height * 3) / 4);
+                case TOP_ALIGN:
+                    y = lm.getAscent() + lm.getLeading();
+                    break;
+
+                case BOTTOM_ALIGN:
+                    y = overlayBounds.height - lm.getDescent() -
+                            lm.getLeading();
+                    break;
+
+                case CENTER_ALIGN:
+                    y = (overlayBounds.height / 2) + (lm.getHeight() / 2);
+                    break;
             }
+
+            Rectangle2D text_bounds = font.getStringBounds(renderedText, frc);
+            float width = 0;
+
+            if(text_bounds instanceof Rectangle)
+                width = ((Rectangle)text_bounds).width;
+            else if(text_bounds instanceof Rectangle2D.Float)
+                width = ((Rectangle.Float)text_bounds).width;
+            else if(text_bounds instanceof Rectangle2D.Double)
+                width = (float)((Rectangle.Double)text_bounds).width;
+
+            switch(horizontalAlignment)
+            {
+                case LEFT_ALIGN:
+                    x = 0;
+                    break;
+
+                case RIGHT_ALIGN:
+                    x = overlayBounds.width - width;
+                    break;
+
+                case CENTER_ALIGN:
+                    x = (overlayBounds.width / 2) - (width / 2);
+                    break;
+            }
+
+            textX = (int)x;
+            textY = (int)y;
         }
+
+        g.drawString(renderedText, textX, textY);
     }
 
     //------------------------------------------------------------------------
     // Local utility methods
     //------------------------------------------------------------------------
+
+    /**
+     * Set the vertical alignment of the text in this overlay.
+     *
+     * @param align One of TOP, BOTTOM, CENTER
+     * @throws IllegalArguementException The alignment value given is
+     *     not valid.
+     */
+    public void setVerticalAlignment(int align)
+    {
+        switch(align)
+        {
+            case TOP_ALIGN:
+            case BOTTOM_ALIGN:
+            case CENTER_ALIGN:
+                verticalAlignment = align;
+                break;
+
+            default:
+                throw new IllegalArgumentException(BAD_ALIGN_MSG);
+        }
+
+        textChanged = true;
+    }
+
+    /**
+     * Fetch the current vertical alignment setting.
+     *
+     * @return One of TOP, BOTTOM, CENTER
+     */
+    public int getVerticalAlignment()
+    {
+        return verticalAlignment;
+    }
+
+    /**
+     * Set the horizontal alignment of the text in this overlay.
+     *
+     * @param align One of LEFT, RIGHT, CENTER
+     * @throws IllegalArguementException The alignment value given is
+     *     not valid.
+     */
+    public void setHorizontalAlignment(int align)
+    {
+        switch(align)
+        {
+            case LEFT_ALIGN:
+            case RIGHT_ALIGN:
+            case CENTER_ALIGN:
+                horizontalAlignment = align;
+                break;
+
+            default:
+                throw new IllegalArgumentException(BAD_ALIGN_MSG);
+        }
+
+        textChanged = true;
+    }
+
+    /**
+     * Fetch the current horizontal alignment setting.
+     *
+     * @return One of LEFT, RIGHT, CENTER
+     */
+    public int getHorizontalAlignment()
+    {
+        return horizontalAlignment;
+    }
 
     /**
      * Change the rendering color of the text to be rendered.
@@ -183,11 +353,7 @@ public class LabelOverlay extends OverlayBase
         if(!color.equals(c))
         {
             color = c;
-            if(text != null)
-            {
-                text.addAttribute(TextAttribute.FOREGROUND, color);
-                repaint();
-            }
+            repaint();
         }
     }
 
@@ -201,11 +367,7 @@ public class LabelOverlay extends OverlayBase
         if(!font.equals(f))
         {
             font = f;
-            if(text != null)
-            {
-                text.addAttribute(TextAttribute.FONT, font);
-                repaint();
-            }
+            repaint();
         }
     }
 
@@ -217,29 +379,29 @@ public class LabelOverlay extends OverlayBase
      */
     public void setText(String str)
     {
-        if(str != null)
-            setText(createAttributedString(str, font, color));
-    }
+        text = str;
 
-    /**
-     * Set the text to the new string. The visible length does not change so if
-     * you want to change the length, you should reset the visible length too.
-     * If the param reference is null, the request is ignored. To remove a string
-     * from being rendered, set the visible length to zero.
-     *
-     * @param text The new string to use
-     */
-    public void setText(AttributedString text)
-    {
-        if(text != null)
-        {
-            this.text = text;
-            repaint();
+        switch(visibleLength) {
+            case -1:
+                renderedText = text;
+                break;
+
+            case 0:
+                renderedText = null;
+                break;
+
+            default:
+                renderedText = text.substring(0, visibleLength);
+                break;
         }
+
+        textChanged = true;
+        repaint();
     }
 
     /**
      * Get the number of characters that are rendered from the given string.
+     * If the value is -1 the entire string is printed.
      *
      * @return The current number of visble characters
      */
@@ -250,38 +412,30 @@ public class LabelOverlay extends OverlayBase
 
     /**
      * Set the number of visible characters to the given size. A size of zero
-     * effectively stops the string being rendered.
+     * effectively stops the string being rendered. If the value is -1 the
+     * entire string is printed.
      *
      * @param length The number of characters to be shown
      */
     public void setVisibleLength(int length)
     {
-        visibleLength = (length < 0) ? 0 : length;
-        repaint();
-    }
+        visibleLength = length;
 
+        switch(visibleLength) {
+            case -1:
+                renderedText = text;
+                break;
 
-    /**
-     * Convenience method to create a new attributed string that is used
-     * by the painting.
-     *
-     * @param text The string to use
-     * @param font The font to use
-     * @param color The color to use
-     * @returns A matching attributed string instance for the parameters
-     */
-    private AttributedString createAttributedString(String text,
-                                                    Font font,
-                                                    Color color)
-    {
-        AttributedString attributedString = null;
-        if(text.length() > 0)
-        {
-            attributedString = new AttributedString(text);
-            attributedString.addAttribute(TextAttribute.FONT, font);
-            attributedString.addAttribute(TextAttribute.FOREGROUND, color);
+            case 0:
+                renderedText = null;
+                break;
+
+            default:
+                renderedText = text.substring(0, visibleLength);
+                break;
         }
 
-        return attributedString;
+        textChanged = true;
+        repaint();
     }
 }
