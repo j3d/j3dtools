@@ -7,40 +7,6 @@
  *
  ****************************************************************************/
 
-/*
- * @(#)TreeNode.java 1.1 02/01/10 09:27:31
- *
- * Copyright (c) 2000-2002 Sun Microsystems, Inc.  All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *    -Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *    -Redistribution in binary form must reproduct the above copyright notice,
- *     this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- * Neither the name of Sun Microsystems, Inc. or the names of contributors may
- * be used to endorse or promote products derived from this software without
- * specific prior written permission.
- *
- * This software is provided "AS IS," without a warranty of any kind. ALL
- * EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY
- * IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR
- * NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN AND ITS LICENSORS SHALL NOT BE
- * LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING
- * OR DISTRIBUTING THE SOFTWARE OR ITS DERIVATIVES. IN NO EVENT WILL SUN OR ITS
- * LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR DATA, OR FOR DIRECT,
- * INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER
- * CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF THE USE OF
- * OR INABILITY TO USE SOFTWARE, EVEN IF SUN HAS BEEN ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGES.
- *
- * You acknowledge that Software is not designed,licensed or intended for use in
- * the design, construction, operation or maintenance of any nuclear facility.
- */
 package org.j3d.terrain.roam;
 
 // Standard imports
@@ -54,6 +20,14 @@ import org.j3d.terrain.TerrainData;
 
 /**
  * Represents a single node of the triangle mesh of the patch.
+ * <p>
+ *
+ * A triangle is represented by the three sides described as left, right and
+ * base. This triangle is connected to neighbour triangles through these
+ * references and form part of the ROAM code. A triangle is defined in terms
+ * of an apex coordinate and left and right then based on the coordinates
+ * supplied. left and right do not necessarily correspond to real world
+ * left/right as you look down on the terrain.
  *
  * @author  Paul Byrne, Justin Couch
  * @version
@@ -134,6 +108,20 @@ class TreeNode extends QueueItem
     /**
      * Used to populate a node retrieved from the TreeNodeCache
      * setting the same state as creating a new TreeNode would.
+     *
+     * @param leftX X grid coordinate of the left side vertex
+     * @param leftY Y grid coordinate of the left side vertex
+     * @param rightX X grid coordinate of the right side vertex
+     * @param rightY Y grid coordinate of the right side vertex
+     * @param apexX X grid coordinate of the apex vertex
+     * @param apexY Y grid coordinate of the apex vertex
+     * @param node How far down the split heirarchy from the patch
+     * @param terrainData The source place for data
+     * @param frustum The view frustum to use
+     * @param parentVisible Flag to describe the current visibilty state
+     *   of the parent triangle
+     * @param depth How far down the split heirarchy from the patch
+     * @param varianceTree Variance information to feed from
      */
     void newNode(int leftX,
                  int leftY,
@@ -228,39 +216,21 @@ class TreeNode extends QueueItem
     }
 
     /**
-     * Request the recomputation of the variance of this node and place the
-     * node on the queue ready for processing.
+     * Request the recomputation of the variance of this node.
      *
-     * @param position The location to compute the value from
-     * @param queueManager The queue to place the node on
+     * @param position The position for the computation
      */
-    void computeVariance(Tuple3f position, QueueManager queueManager)
+    void computeVariance(Tuple3f position)
     {
-        computeVariance(position);
+        float center_x = (p1X + p2X) * 0.5f;
+        float center_z = -(p1Y + p2Y) * 0.5f;
+        float pos_x = (position.x - center_x) * (position.x - center_x);
+        float pos_z = (position.z - center_z) * (position.z - center_z);
+        float distance = (float)Math.sqrt(pos_x + pos_z);
 
-        queueManager.addTriangle(this);
-    }
+        float angle = varianceTree.getVariance(node) / distance;
 
-    /**
-     * If this triangle was half of a diamond then remove the
-     * diamond from the diamondQueue
-     *
-     * @param queueManager The queue to remove the node from
-     */
-    void removeDiamond(QueueManager queueManager)
-    {
-        if(diamond)
-        {
-            queueManager.removeDiamond(this);
-            diamondVariance = 0f;
-            diamond = false;
-        }
-        else if(baseNeighbour != null && baseNeighbour.diamond)
-        {
-            queueManager.removeDiamond(baseNeighbour);
-            baseNeighbour.diamondVariance = 0f;
-            baseNeighbour.diamond = false;
-        }
+        variance = (float)Math.abs(Math.atan(angle));
     }
 
     /**
@@ -271,15 +241,14 @@ class TreeNode extends QueueItem
      * @param newNeighbour The neighbour node to match up with
      * @param orientation One of the directions to look at the split
      * @param position The current view location
-     * @param frustum The view information
-     * @param queueManager The queue to place newly generated items on
+     * @param queue The queue to place newly generated items on
      * @return The number of triangles generated as a result
      */
     int edgeSplit(TreeNode newNeighbour,
                   int orientation,
                   Tuple3f position,
                   ViewFrustum frustum,
-                  QueueManager queueManager)
+                  QueueManager queue)
     {
         // If the new neighbour triangle is not split, don't go any further
         if(newNeighbour.leftChild == null)
@@ -291,26 +260,26 @@ class TreeNode extends QueueItem
         // way to start splitting the new set of code.
         if(leftChild == null)
         {
-            splitTriangle(position, frustum, queueManager);
+            forceSplit(position, frustum, queue);
             tri_count = 2;
         }
 
         switch(orientation)
         {
             case LEFT_TO_RIGHT:
-                tri_count += leftChild.edgeSplit(newNeighbour.rightChild,
-                                                 BASE_TO_BASE,
-                                                 position,
-                                                 frustum,
-                                                 queueManager);
-                break;
-
-            case RIGHT_TO_LEFT:
                 tri_count += rightChild.edgeSplit(newNeighbour.leftChild,
                                                   BASE_TO_BASE,
                                                   position,
                                                   frustum,
-                                                  queueManager);
+                                                  queue);
+                break;
+
+            case RIGHT_TO_LEFT:
+                tri_count += leftChild.edgeSplit(newNeighbour.rightChild,
+                                                 BASE_TO_BASE,
+                                                 position,
+                                                 frustum,
+                                                 queue);
                 break;
 
             case BASE_TO_BASE:
@@ -318,101 +287,154 @@ class TreeNode extends QueueItem
                                                   LEFT_TO_RIGHT,
                                                   position,
                                                   frustum,
-                                                  queueManager);
+                                                  queue);
                 tri_count += leftChild.edgeSplit(newNeighbour.rightChild,
                                                  RIGHT_TO_LEFT,
                                                  position,
                                                  frustum,
-                                                 queueManager);
+                                                 queue);
         }
 
         return tri_count;
     }
 
     /**
-     * Split this tree node into two smaller triangle tree nodes.
+     * Force split this tree node into two smaller triangle tree nodes.
      *
      * @param position The current view location
      * @param frustum The view information
-     * @param queueManager The queue to place newly generated items on
+     * @param queue The queue to place newly generated items on
      * @return The number of triangles generated as a result
      */
-    int split(Tuple3f position,
-              ViewFrustum frustum,
-              QueueManager queueManager)
+    void forceSplit(Tuple3f position, ViewFrustum frustum, QueueManager queue)
     {
-        int tri_count = 0;
-
-        if(leftChild != null || rightChild != null)
-            throw new RuntimeException(" Triangle already split "+ hashCode());
-
         if(baseNeighbour != null)
         {
+            // If the base neighbour is not us then it is not at the same
+            // level as this node so split it before this gets split otherwise
+            // the level constraint is broken
             if(baseNeighbour.baseNeighbour != this)
             {
-                tri_count += baseNeighbour.split(position,
-                                                frustum,
-                                                queueManager);
+                baseNeighbour.forceSplit(position, frustum, queue);
             }
 
-            split2(position, frustum, queueManager);
-            tri_count++;
-            baseNeighbour.split2(position, frustum, queueManager);
-            tri_count++;
+            queue.removeTriangle(this);
+            queue.removeTriangle(baseNeighbour);
+
+            if(parent != null && isDiamond(parent))
+                queue.removeDiamond(parent);
+
+            if(baseNeighbour.parent != null && isDiamond(baseNeighbour))
+                queue.removeDiamond(baseNeighbour.parent);
+
+            split(position, frustum, queue);
+            baseNeighbour.split(position, frustum, queue);
 
             leftChild.rightNeighbour = baseNeighbour.rightChild;
             rightChild.leftNeighbour = baseNeighbour.leftChild;
             baseNeighbour.leftChild.rightNeighbour = rightChild;
             baseNeighbour.rightChild.leftNeighbour = leftChild;
 
-            diamondVariance = Math.max(variance, baseNeighbour.variance);
-            diamond = true;
-            queueManager.addDiamond(this);
+            queue.addTriangle(leftChild);
+            queue.addTriangle(rightChild);
+            queue.addTriangle(baseNeighbour.leftChild);
+            queue.addTriangle(baseNeighbour.rightChild);
+
+            queue.addDiamond(this);
         }
         else
         {
-            split2(position, frustum, queueManager);
-            tri_count++;
+            if(parent != null && isDiamond(parent))
+                queue.removeDiamond(parent);
 
-            diamondVariance = variance;
-            diamond = true;
-            queueManager.addDiamond(this);
+            queue.removeTriangle(this);
+
+            split(position, frustum, queue);
+
+            leftChild.rightNeighbour = null;
+            rightChild.leftNeighbour = null;
+
+            queue.addTriangle(leftChild);
+            queue.addTriangle(rightChild);
         }
-
-        return tri_count;
     }
 
     /**
-     * Merge the children nodes of this node into a single triangle.
+     * Do a normal split of this triangle and turns it into two triangles.
      *
-     * @param queueManager The queue to put the merged node on
-     * @return The number of triangles that were reduced as a result
+     * @param position The current view location
+     * @param frustum The view information
+     * @param queue The queue manager to place newly generated items on
      */
-    int merge(QueueManager queueManager)
+    void split(Tuple3f position,
+               ViewFrustum frustum,
+               QueueManager queue)
     {
-        int trisRemoved = 0;
+        initChildren(frustum);
 
-        if(baseNeighbour != null && baseNeighbour.baseNeighbour != this)
+        leftChild.leftNeighbour = rightChild;
+        rightChild.rightNeighbour = leftChild;
+        leftChild.baseNeighbour = leftNeighbour;
+
+        if(leftNeighbour != null)
         {
-            throw new RuntimeException("Illegal merge");
+            if(leftNeighbour.baseNeighbour == this)
+                leftNeighbour.baseNeighbour = leftChild;
+            else
+            {
+                if(leftNeighbour.leftNeighbour == this)
+                    leftNeighbour.leftNeighbour = leftChild;
+                else
+                    leftNeighbour.rightNeighbour = leftChild;
+            }
         }
 
-        merge(this, queueManager);
-        trisRemoved++;
-        checkForNewDiamond(parent, queueManager);
+        rightChild.baseNeighbour = rightNeighbour;
 
-        if(baseNeighbour != null)
+        if(rightNeighbour != null)
         {
-            merge(baseNeighbour, queueManager);
-            trisRemoved++;
-            checkForNewDiamond(baseNeighbour.parent, queueManager);
+            if(rightNeighbour.baseNeighbour == this)
+                rightNeighbour.baseNeighbour = rightChild;
+            else
+            {
+                if(rightNeighbour.rightNeighbour == this)
+                    rightNeighbour.rightNeighbour = rightChild;
+                else
+                    rightNeighbour.leftNeighbour = rightChild;
+            }
         }
 
-        queueManager.removeDiamond(this);
-        diamond = false;
-        diamondVariance = 0;
+        if(depth + 1 < varianceTree.getMaxDepth() &&
+           visible != ViewFrustum.OUT)
+        {
+            rightChild.computeVariance(position);
+            leftChild.computeVariance(position);
+        }
+    }
 
-        return trisRemoved;
+    /**
+     * Perform a merge operation on this tree node.
+     */
+    int merge(QueueManager queue)
+    {
+        int num_tris;
+
+        queue.removeDiamond(this);
+
+        num_tris = internalMerge(queue);
+        num_tris += baseNeighbour.internalMerge(queue);
+
+        if(parent != null && isDiamond(parent))
+            queue.addDiamond(parent);
+
+        if(baseNeighbour.parent != null &&
+           isDiamond(baseNeighbour.parent))
+            queue.addDiamond(baseNeighbour.parent);
+
+        queue.addTriangle(this);
+        queue.addTriangle(this.baseNeighbour);
+
+        return num_tris;
     }
 
     /**
@@ -493,20 +515,20 @@ class TreeNode extends QueueItem
      * @param varianceTree Nested set of variances for each level
      * @param parentVisible Flag about the visibility state of the parent
      *    tree node
-     * @param queueManager The queue to put the merged node on
+     * @param queue The queue to put the merged node on
      */
     void updateTree(Tuple3f position,
                     ViewFrustum frustum,
                     VarianceTree varianceTree,
                     int parentVisible,
-                    QueueManager queueManager)
+                    QueueManager queue)
     {
         if(parentVisible == UNDEFINED ||
            parentVisible == ViewFrustum.CLIPPED)
         {
             visible = frustum.isTriangleInFrustum(p1X, p1Y, p1Z,
-                                                        p2X, p2Y, p2Z,
-                                                        p3X, p3Y, p3Z);
+                                                  p2X, p2Y, p2Z,
+                                                  p3X, p3Y, p3Z);
         }
         else
             visible = parentVisible;
@@ -518,45 +540,22 @@ class TreeNode extends QueueItem
         {
             computeVariance(position);
 
-            queueManager.addTriangle(this);
+            queue.addTriangle(this);
         }
-        else
+        else if(leftChild != null)
         {
-            if(leftChild != null)
-                leftChild.updateTree(position,
-                                     frustum,
-                                     varianceTree,
-                                     visible,
-                                     queueManager);
+            // If we have children, continue to refine
+            leftChild.updateTree(position,
+                                 frustum,
+                                 varianceTree,
+                                 visible,
+                                 queue);
 
-            if(rightChild != null)
-                rightChild.updateTree(position,
-                                      frustum,
-                                      varianceTree,
-                                      visible,
-                                      queueManager);
-
-            if(diamond)
-            {
-// BUG Here, baseNeighbour may not have had it's variance updated
-// for the new position
-                if(visible != ViewFrustum.OUT)
-                {
-                    computeVariance(position);
-
-                    if(baseNeighbour != null)
-                        diamondVariance = Math.max(variance,
-                                                   baseNeighbour.variance);
-                    else
-                        diamondVariance = variance;
-                }
-                else
-                {
-                    diamondVariance = Float.MIN_VALUE;
-                }
-
-                queueManager.addDiamond(this);
-            }
+            rightChild.updateTree(position,
+                                  frustum,
+                                  varianceTree,
+                                  visible,
+                                  queue);
         }
     }
 
@@ -720,39 +719,97 @@ class TreeNode extends QueueItem
     }
 
     /**
-     * Compute the variance variable value.
+     * Merge the children nodes of this node into a single triangle.
      *
-     * @param position The position for the computation
+     * @param queue The queue to put the merged node on
+     * @return The number of triangles that were reduced as a result
      */
-    private void computeVariance(Tuple3f position)
+    private int internalMerge(QueueManager queue)
     {
-        float center_x = (p1X + p2X) * 0.5f;
-        float center_z = -(p1Y + p2Y) * 0.5f;
-        float pos_x = (position.x - center_x) * (position.x - center_x);
-        float pos_z = (position.z - center_z) * (position.z - center_z);
-        float distance = (float)Math.sqrt(pos_x + pos_z);
+        TreeNode new_left = leftChild.baseNeighbour;
+        TreeNode new_right = rightChild.baseNeighbour;
 
-        float angle = varianceTree.getVariance(node) / distance;
+        leftNeighbour = new_left;
+        rightNeighbour = new_right;
 
-        variance = (float)Math.abs(Math.atan(angle));
+        if(new_left != null)
+        {
+            if(new_left.baseNeighbour == leftChild)
+               new_left.baseNeighbour = this;
+            else
+            {
+                if(new_left.leftNeighbour == leftChild)
+                    new_left.leftNeighbour = this;
+                else
+                    new_left.rightNeighbour = this;
+            }
+        }
+
+        if(new_right != null)
+        {
+            if(new_right.baseNeighbour == rightChild)
+                new_right.baseNeighbour = this;
+            else
+            {
+                if(new_right.rightNeighbour == rightChild)
+                    new_right.rightNeighbour = this;
+                else
+                    new_right.leftNeighbour = this;
+            }
+        }
+
+        queue.removeTriangle(leftChild);
+        queue.removeTriangle(rightChild);
+
+        leftChild.freeNode();
+        rightChild.freeNode();
+
+        leftChild = null;
+        rightChild = null;
+        diamond = true;
+
+        return 2;
     }
 
     /**
-     * Forceful split of this triangle and turns it into two triangles.
-     *
-     * @param position The current view location
-     * @param frustum The view information
-     * @param queueManager The queue to place newly generated items on
+     * Convenience method to see if the given triangle forms one half of a
+     * diamond.
      */
-    private void splitTriangle(Tuple3f position,
-                               ViewFrustum frustum,
-                               QueueManager queueManager)
+    private boolean isDiamond(TreeNode node)
     {
-        int splitX = (leftX + rightX)/2;
-        int splitY = (leftY + rightY)/2;
+        return node.isDiamond() && node.baseNeighbour.isDiamond();
+    }
 
-        if(parent != null)
-            parent.removeDiamond(queueManager);
+    /**
+     * Check if the tree node forms a diamond.
+     *
+     * @return true if this is a part of a diamond
+     */
+    private boolean isDiamond()
+    {
+        if(baseNeighbour == null)
+            diamond = false;
+        else
+            diamond = baseNeighbour.baseNeighbour == this &&
+                      leftChild != null &&
+                      baseNeighbour.leftChild != null &&
+                      leftChild.leftChild == null &&
+                      rightChild.leftChild == null &&
+                      baseNeighbour.leftChild.leftChild == null &&
+                      baseNeighbour.rightChild.leftChild == null;
+
+        return diamond;
+    }
+
+    /**
+     * Convenience method to create and initialise a new pair of tree node
+     * children for this tree node.
+     */
+    private void initChildren(ViewFrustum frustum)
+    {
+        // Calc split coordinate - half way between the two.
+        int splitX = (leftX + rightX) >> 1;
+        int splitY = (leftY + rightY) >> 1;
 
         leftChild = getTreeNode();
         rightChild = getTreeNode();
@@ -779,166 +836,5 @@ class TreeNode extends QueueItem
 
         leftChild.parent = this;
         rightChild.parent = this;
-
-        if(depth + 1 < varianceTree.getMaxDepth() &&
-           visible != ViewFrustum.OUT)
-        {
-            rightChild.computeVariance(position, queueManager);
-            leftChild.computeVariance(position, queueManager);
-        }
-    }
-
-    /**
-     * No idea what this does.
-     *
-     * @param position The current view location
-     * @param frustum The view information
-     * @param queueManager The queue to place newly generated items on
-     * @return The number of triangles generated as a result
-     */
-    private void split2(Tuple3f position,
-                        ViewFrustum frustum,
-                        QueueManager queueManager)
-    {
-        splitTriangle(position, frustum, queueManager);
-
-        queueManager.removeTriangle(this);
-
-        leftChild.leftNeighbour = rightChild;
-        rightChild.rightNeighbour = leftChild;
-        leftChild.baseNeighbour = leftNeighbour;
-
-        if(leftNeighbour != null)
-        {
-            if(leftNeighbour.baseNeighbour == this)
-                leftNeighbour.baseNeighbour = leftChild;
-            else
-            {
-                if(leftNeighbour.leftNeighbour == this)
-                    leftNeighbour.leftNeighbour = leftChild;
-                else
-                    leftNeighbour.rightNeighbour = leftChild;
-            }
-        }
-
-        rightChild.baseNeighbour = rightNeighbour;
-
-        if(rightNeighbour != null)
-        {
-            if(rightNeighbour.baseNeighbour == this)
-                rightNeighbour.baseNeighbour = rightChild;
-            else
-            {
-                if(rightNeighbour.rightNeighbour == this)
-                    rightNeighbour.rightNeighbour = rightChild;
-                else
-                    rightNeighbour.leftNeighbour = rightChild;
-            }
-        }
-    }
-
-    /**
-     * Merge this node with the given node and place them into the diamond
-     * queue.
-     *
-     * @param mergeNode The node to merge with this one
-     * @param queueManager The queue to place newly generated items on
-     * @return The number of triangles generated as a result
-     */
-    private void merge(TreeNode mergeNode, QueueManager queueManager)
-    {
-        if(mergeNode.leftChild == null ||
-           mergeNode.rightChild == null ||
-           !mergeNode.leftChild.isLeaf() ||
-           !mergeNode.rightChild.isLeaf())
-        {
-            throw new RuntimeException("Illegal merge");
-        }
-
-        if(mergeNode.leftNeighbour != null)
-        {
-            if(mergeNode.leftNeighbour.baseNeighbour == mergeNode.leftChild)
-               mergeNode.leftNeighbour.baseNeighbour = mergeNode;
-            else
-            {
-                if(mergeNode.leftNeighbour.leftNeighbour == mergeNode.leftChild)
-                    mergeNode.leftNeighbour.leftNeighbour = mergeNode;
-                else
-                    mergeNode.leftNeighbour.rightNeighbour = mergeNode;
-            }
-        }
-
-        if(mergeNode.rightNeighbour != null)
-        {
-            if(mergeNode.rightNeighbour.baseNeighbour == mergeNode.rightChild)
-                mergeNode.rightNeighbour.baseNeighbour = mergeNode;
-            else
-            {
-                if(mergeNode.rightNeighbour.rightNeighbour == mergeNode.rightChild)
-                    mergeNode.rightNeighbour.rightNeighbour = mergeNode;
-                else
-                    mergeNode.rightNeighbour.leftNeighbour = mergeNode;
-            }
-        }
-
-        if(mergeNode.leftChild.baseNeighbour != null &&
-           mergeNode.leftChild.baseNeighbour.baseNeighbour == mergeNode.leftChild)
-        {
-            mergeNode.leftChild.baseNeighbour.baseNeighbour = mergeNode;
-        }
-
-        if(mergeNode.rightChild.baseNeighbour != null &&
-           mergeNode.rightChild.baseNeighbour.baseNeighbour == mergeNode.rightChild)
-        {
-           mergeNode.rightChild.baseNeighbour.baseNeighbour = mergeNode;
-        }
-
-        mergeNode.leftNeighbour = mergeNode.leftChild.baseNeighbour;
-        mergeNode.rightNeighbour = mergeNode.rightChild.baseNeighbour;
-
-        if(mergeNode.visible != ViewFrustum.OUT)
-            queueManager.addTriangle(mergeNode);
-
-        queueManager.removeTriangle(mergeNode.leftChild);
-        queueManager.removeTriangle(mergeNode.rightChild);
-
-        mergeNode.leftChild.freeNode();
-        mergeNode.leftChild = null;
-        mergeNode.rightChild.freeNode();
-        mergeNode.rightChild = null;
-    }
-
-    /**
-     * Check if the tree node forms a diamond.
-     *
-     * @param tn The tree node to check
-     * @param queueManager The queue for nodes
-     */
-    private void checkForNewDiamond(TreeNode tn, QueueManager queueManager)
-    {
-        if(tn == null)
-            return;
-
-        if(tn.leftChild.isLeaf() && tn.rightChild.isLeaf() &&
-           (tn.baseNeighbour == null ||
-            tn.baseNeighbour.leftChild == null ||
-            (tn.baseNeighbour.leftChild.isLeaf() &&
-             tn.baseNeighbour.rightChild.isLeaf())))
-        {
-            tn.diamond = true;
-
-            if(tn.visible != ViewFrustum.OUT)
-            {
-                if(tn.baseNeighbour != null)
-                    tn.diamondVariance = Math.max(tn.variance,
-                                                  tn.baseNeighbour.variance);
-                else
-                    tn.diamondVariance = tn.variance;
-            }
-            else
-                tn.diamondVariance = Float.MIN_VALUE;
-
-            queueManager.addDiamond(tn);
-        }
     }
 }
