@@ -71,7 +71,7 @@ import javax.vecmath.Matrix4d;
  * The frustum is for the previous Java3D frame that has just been rendered.
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ViewFrustum
 {
@@ -139,14 +139,15 @@ public class ViewFrustum
      */
     public void viewingPlatformMoved()
     {
-        for(int i=0; i<canvases.length; i++)
+        for(int i = 0; i < canvases.length; i++)
             computeFrustumPlanes(i);
     }
 
     /**
      * Manually re-orient the view frustum by this given matrix. This is used
      * for doing predictive work about where the user will be in the next
-     * rendered frame.
+     * rendered frame. This assumes that you have called the
+     * {@link viewingPlatformMoved()} method first for this frame.
      *
      * @param tx The transform used to modify the points with
      */
@@ -160,6 +161,9 @@ public class ViewFrustum
         tx.transform(frustumPoints[5]);
         tx.transform(frustumPoints[6]);
         tx.transform(frustumPoints[7]);
+
+        for(int i = 0; i < canvases.length; i++)
+            updatePlanes(i);
     }
 
     /**
@@ -343,6 +347,14 @@ public class ViewFrustum
             frustumPoints[i].z *= w_inv;
         }
 
+        updatePlanes(canvasId);
+    }
+
+    /**
+     * Update the plane equations for the current points.
+     */
+    private void updatePlanes(int canvasId)
+    {
         // Now compute the 6 plane equations
         // left
         computePlaneEq(frustumPoints[0],
