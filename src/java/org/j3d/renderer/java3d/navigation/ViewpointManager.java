@@ -21,6 +21,7 @@ import javax.media.j3d.View;
 import org.j3d.util.ImageLoader;
 import org.j3d.ui.navigation.ViewpointSelectionListener;
 import org.j3d.ui.navigation.ViewpointData;
+import org.j3d.ui.navigation.ViewpointToolbar;
 
 /**
  * A handler for viewpoint information for a given canvas.
