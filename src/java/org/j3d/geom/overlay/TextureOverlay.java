@@ -42,7 +42,7 @@ import javax.vecmath.Vector3d;
  * </pre>
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class TextureOverlay implements Overlay, ComponentListener
 {
@@ -110,6 +110,12 @@ public class TextureOverlay implements Overlay, ComponentListener
     /** Rendering attributes to allow the visibility state to change */
     private RenderingAttributes renderAttributes;
 
+    /** Transparency attributes to allow the mode state to change */
+    private TransparencyAttributes transAttr;
+
+    /** The current transparency mode mode in use */
+    private int transMode;
+
     /**
      * Flag indicating whether this is a fixed size or resizable overlay. Fixed
      * size is when the user gives us bounds. Resizable when they don't and we
@@ -138,7 +144,7 @@ public class TextureOverlay implements Overlay, ComponentListener
      */
     public TextureOverlay(Canvas3D canvas, Dimension size)
     {
-        this(canvas, size, true, false, null, null);
+        this(canvas, size, true, null, null);
     }
 
     /**
@@ -156,7 +162,7 @@ public class TextureOverlay implements Overlay, ComponentListener
                           Dimension size,
                           Texture2D texture)
     {
-        this(canvas, size, true, false, null, texture);
+        this(canvas, size, true, null, texture);
     }
 
     /**
@@ -167,8 +173,7 @@ public class TextureOverlay implements Overlay, ComponentListener
      *
      * @param canvas The canvas the overlay is drawn on
      * @param size The size of the overlay in pixels
-     * @param clipAlpha Should the polygon clip where alpha is zero
-     * @param blendAlpha Should we blend to background where alpha is < 1
+     * @param hasAlpha True if the texture has an alpha component
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      * @param The texture to be displayed. May be null
@@ -176,8 +181,7 @@ public class TextureOverlay implements Overlay, ComponentListener
      */
     public TextureOverlay(Canvas3D canvas,
                           Dimension size,
-                          boolean clipAlpha,
-                          boolean blendAlpha,
+                          boolean hasAlpha,
                           UpdateManager updateManager,
                           Texture2D texture)
     {
@@ -225,7 +229,6 @@ public class TextureOverlay implements Overlay, ComponentListener
 
         visible = true;
         antialiased = true;
-        boolean hasAlpha = clipAlpha || blendAlpha;
 
         if(!fixedSize || (canvas3D != null))
             canvas3D.addComponentListener(this);
@@ -266,8 +269,21 @@ public class TextureOverlay implements Overlay, ComponentListener
         ta.setTextureBlendColor(new Color4f(0, 0, 0, 1));
 
         // Set up the blend to support transparency
-        TransparencyAttributes trans =
-            new TransparencyAttributes(TransparencyAttributes.BLENDED, 1.0f);
+        if(texture != null)
+        {
+            transMode = (texture.getFormat() == Texture.RGBA) ?
+                        TransparencyAttributes.BLENDED :
+                        TransparencyAttributes.NONE;
+        }
+        else
+        {
+            transMode = hasAlpha ?
+                        TransparencyAttributes.BLENDED :
+                        TransparencyAttributes.NONE;
+        }
+
+        transAttr = new TransparencyAttributes(transMode, 1.0f);
+        transAttr.setCapability(TransparencyAttributes.ALLOW_MODE_WRITE);
 
         // Now let's construct the geometry to match
         appearance = new Appearance();
@@ -275,7 +291,7 @@ public class TextureOverlay implements Overlay, ComponentListener
         appearance.setPolygonAttributes(pa);
         appearance.setRenderingAttributes(renderAttributes);
         appearance.setTextureAttributes(ta);
-        appearance.setTransparencyAttributes(trans);
+        appearance.setTransparencyAttributes(transAttr);
 
         if(texture != null)
             appearance.setTexture(texture);
@@ -557,13 +573,27 @@ public class TextureOverlay implements Overlay, ComponentListener
     /**
      * Change the texture to the new version. If the constructor set a bounds
      * then the texture will be sized to fit that. If no bounds were set then
-     * the object will be resized to fit the texture's new size.
+     * the object will be resized to fit the texture's new size. Note that if
+     * you are calling this method when the scene graph is live, you must have
+     * ALLOW_FORMAT_READ capability set.
      *
      * @param tex The new texture object to use
      */
-    public void setTexture(Texture tex)
+    public void setTexture(Texture2D tex)
     {
         appearance.setTexture(tex);
+
+        int format = tex.getFormat();
+        int mode = TransparencyAttributes.BLENDED;
+
+        if(format == Texture.RGB)
+            mode = TransparencyAttributes.NONE;
+
+        if(mode != transMode)
+        {
+            transMode = mode;
+            transAttr.setTransparencyMode(mode);
+        }
     }
 
     /**
