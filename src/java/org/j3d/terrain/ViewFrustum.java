@@ -71,7 +71,7 @@ import javax.vecmath.Matrix4d;
  * The frustum is for the previous Java3D frame that has just been rendered.
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ViewFrustum
 {
@@ -94,6 +94,10 @@ public class ViewFrustum
     private Vector3d tVec3;
     private Matrix4d tMatrix;
 
+    private Point3d tmpP1 = new Point3d();
+    private Point3d tmpP2 = new Point3d();
+    private Point3d tmpP3 = new Point3d();
+
     /** The geometry is in the view frustum, either partially or completely */
     public static final int IN = Canvas3DFrustum.IN;
 
@@ -104,6 +108,19 @@ public class ViewFrustum
     public static final int CLIPPED = Canvas3DFrustum.CLIPPED;
 
     /**
+     * Create a new instance that operates on just a single canvas.
+     *
+     * @param canvas The canvas to use for this frustum
+     */
+    public ViewFrustum(Canvas3D canvas)
+    {
+        canvases = new Canvas3D[1];
+        canvases[0] = canvas;
+
+        init();
+    }
+
+    /**
      * Creates new ViewFrustum that represents the collection of all canvases.
      *
      * @param canvasList The list of canvases to view
@@ -111,10 +128,116 @@ public class ViewFrustum
     public ViewFrustum(Canvas3D[] canvasList)
     {
         canvases = canvasList;
+
+        init();
+    }
+
+    /**
+     * This method must be called when the view platform transform group
+     * has been updated. Until this method is called the frustum will
+     * not be valid
+     */
+    public void viewingPlatformMoved()
+    {
+        for(int i=0; i<canvases.length; i++)
+            computeFrustumPlanes(i);
+    }
+
+    /**
+     * Determines if the triangle defined by the 3 points is visible
+     * in the view frustum.
+     * <p>
+     * IN is returned for any triangle which is partially or completely in
+     * the view frustum. OUT is returned if the triangle is outside the
+     * frustum.
+     * <p>
+     * In some cases triangles which are not visible will be reported as IN,
+     * however the converse is not true. All triangles which have any part
+     * in the frustum will be reported as IN.
+     *
+     * @param p1X The x component of the first point of the triangle
+     * @param p1Y The y component of the first point of the triangle
+     * @param p1Z The z component of the first point of the triangle
+     * @param p2X The x component of the second point of the triangle
+     * @param p2Y The y component of the second point of the triangle
+     * @param p2Z The z component of the second point of the triangle
+     * @param p3X The x component of the third point of the triangle
+     * @param p3Y The y component of the third point of the triangle
+     * @param p3Z The z component of the third point of the triangle
+     * @returns IN, OUT indicating triangle is visible in the View Frustum
+     */
+    public int isTriangleInFrustum(float p1X, float p1Y, float p1Z,
+                                   float p2X, float p2Y, float p2Z,
+                                   float p3X, float p3Y, float p3Z)
+    {
+        tmpP1.set(p1X, p1Y, p1Z);
+        tmpP2.set(p2X, p2Y, p2Z);
+        tmpP3.set(p3X, p3Y, p3Z);
+
+        return isTriangleInFrustum(tmpP1, tmpP2, tmpP3);
+    }
+
+    /**
+     * Determines if the triangle defined by the 3 points is visible
+     * in the view frustum.
+     * <p>
+     * IN is returned for any triangle which is partially or completely in
+     * the view frustum. OUT is returned if the triangle is outside the
+     * frustum.
+     * <p>
+     * In some cases triangles which are not visible will be reported as IN,
+     * however the converse is not true. All triangles which have any part
+     * in the frustum will be reported as IN.
+     *
+     * @param p1 The first point of the triangle
+     * @param p2 The first point of the triangle
+     * @param p3 The first point of the triangle
+     * @returns IN, OUT indicating triangle is visible in the View Frustum
+     */
+    public int isTriangleInFrustum(Point3d p1, Point3d p2, Point3d p3)
+    {
+        for(int i=0; i<frustums.length; i++)
+        {
+            if(frustums[i].isTriangleInFrustum(p1, p2, p3) != OUT)
+                return IN;
+        }
+        return OUT;
+    }
+
+    /**
+      * Checks if the point is inside the view frustum.
+      *
+      * @returns IN, OUT indicating point is inside or outside the View Frustum
+      */
+    public int isPointInFrustum(Point3d p1)
+    {
+        for(int i=0; i<frustums.length; i++)
+        {
+            if (frustums[i].isPointInFrustum(p1))
+                return IN;
+        }
+
+        return OUT;
+    }
+
+    //----------------------------------------------------------
+    // Local convenience methods
+    //----------------------------------------------------------
+
+    /**
+     * Perform common initialisation routines.
+     */
+    private void init()
+    {
         tMatrix = new Matrix4d();
         tVec1 = new Vector3d();
         tVec2 = new Vector3d();
         tVec3 = new Vector3d();
+
+        tmpP1 = new Point3d();
+        tmpP2 = new Point3d();
+        tmpP3 = new Point3d();
+
         leftInverseProjection = new Transform3D();
         rightInverseProjection = new Transform3D();
 
@@ -135,57 +258,6 @@ public class ViewFrustum
     }
 
     /**
-     * This method must be called when the view platform transform group
-     * has been updated. Until this method is called the frustum will
-     * not be valid
-     */
-    public void viewingPlatformMoved()
-    {
-        for(int i=0; i<canvases.length; i++)
-            computeFrustumPlanes(i);
-    }
-
-    /**
-      * Determines if the triangle defined by the 3 points is visible
-      * in the view frustum.
-      *
-      * IN is returned for any triangle which is partially or completely in
-      * the view frustum. OUT is returned if the triangle is outside the
-      * frustum.
-      *
-      * In some cases triangles which are not visible will be reported as IN,
-      * however the converse is not true. All triangles which have any part
-      * in the frustum will be reported as IN.
-      *
-      * @returns IN, OUT indicating triangle is visible in the View Frustum
-      */
-    public int isTriangleInFrustum( Point3d p1, Point3d p2, Point3d p3 )
-    {
-        for(int i=0; i<frustums.length; i++)
-        {
-            if(frustums[i].isTriangleInFrustum( p1, p2, p3 ) != OUT)
-                return IN;
-        }
-        return OUT;
-    }
-
-    /**
-      * Checks if the point is inside the view frustum.
-      *
-      * @returns IN, OUT indicating point is inside or outside the View Frustum
-      */
-    public int isPointInFrustum( Point3d p1 )
-    {
-        for(int i=0; i<frustums.length; i++)
-        {
-            if (frustums[i].isPointInFrustum( p1 ))
-                return IN;
-        }
-
-        return OUT;
-    }
-
-    /**
      * Compute the frustum planes for the specified canvas.
      *
      * @param canvasId The array index of the canvas to work on
@@ -195,12 +267,12 @@ public class ViewFrustum
 
         frustumPoints[0].set(-1.0, -1.0,  1.0, 1.0);  // lower-left-front
         frustumPoints[1].set(-1.0,  1.0,  1.0, 1.0);  // upper-left-front
-        frustumPoints[2].set( 1.0,  1.0,  1.0, 1.0);  // upper-right-front
-        frustumPoints[3].set( 1.0, -1.0,  1.0, 1.0);  // lower-right-front
+        frustumPoints[2].set(1.0,  1.0,  1.0, 1.0);  // upper-right-front
+        frustumPoints[3].set(1.0, -1.0,  1.0, 1.0);  // lower-right-front
         frustumPoints[4].set(-1.0, -1.0, -1.0, 1.0);  // lower-left-back
         frustumPoints[5].set(-1.0,  1.0, -1.0, 1.0);  // upper-left-back
-        frustumPoints[6].set( 1.0,  1.0, -1.0, 1.0);  // upper-right-back
-        frustumPoints[7].set( 1.0, -1.0, -1.0, 1.0);  // lower-right-back
+        frustumPoints[6].set(1.0,  1.0, -1.0, 1.0);  // upper-right-back
+        frustumPoints[7].set(1.0, -1.0, -1.0, 1.0);  // lower-right-back
 
         //ccToVworld.get(tMatrix);
         canvases[canvasId].getInverseVworldProjection(leftInverseProjection,
