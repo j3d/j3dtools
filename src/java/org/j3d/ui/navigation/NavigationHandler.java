@@ -44,8 +44,9 @@ import org.j3d.util.UserSupplementData;
  * The class works like a standard VRML browser type navigation system. Press
  * the mouse button and drag to get the viewpoint moving. The more you drag
  * the button away from the start point, the faster the movement. The handler
- * does not recognize the use of the Shift key as a modifier to produce an * accelarated movement.
- * <p>n
+ * does not recognize the use of the Shift key as a modifier to produce an
+ * accelerated movement.
+ * <p>
  *
  * This class will not change the cursor on the canvas in response to the
  * current mouse and navigation state. It will only notify the state change
@@ -58,8 +59,7 @@ import org.j3d.util.UserSupplementData;
  * the state for each button to get them to work.
  * <p>
  *
- * The handler does not currently implement the Walk mode as it requires
- * picking handling for gravity and collision detection.
+ * The handler does not currently implement the Examine mode.
  * <p>
  *
  * <b>Terrain Following</b>
@@ -144,7 +144,7 @@ import org.j3d.util.UserSupplementData;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision $
+ * @version $Revision: 1.18 $
  */
 public class NavigationHandler
 {
@@ -329,105 +329,54 @@ public class NavigationHandler
     private long startFrameDurationCalc;
 
     /**
-     * Inner class that replaces the old timer based event processing.
+     * Working variable that is used to track the duration it took to render
+     * the last frame so we can compensate for this frame.
+     */
+    private long frameDuration;
+
+    /**
+     * Inner class that provides an internally driven frame timer loop if there
+     * is no external driver for the navigation system.
      * This behavior drives the updates of the screen and assures that no
      * new frame is rendered before the previous one is finished.
      */
     private class FrameTimerBehavior extends Behavior
     {
-        protected WakeupCondition FPSCriterion;
-        protected long  frameDuration = 0;
+        /** The criteria used to wake up the behaviour */
+        private WakeupCondition fpsCriterion;
 
+        /**
+         * Construct a new default instance of the behaviour.
+         */
         public FrameTimerBehavior()
         {
-            super();
+            fpsCriterion = new WakeupOnElapsedFrames(0, false);
         }
 
         /**
-        * Initialise this behavior to wake up on each frame that has elapsed.
-        */
+         * Initialise this behavior to wake up on each frame that has elapsed.
+         */
         public void initialize()
         {
-            FPSCriterion = new WakeupOnElapsedFrames(0, false);
-
-            wakeupOn(FPSCriterion);
+            wakeupOn(fpsCriterion);
         }
 
         public void processStimulus( Enumeration criteria )
         {
             frameDuration = System.currentTimeMillis() - startFrameDurationCalc;
-            double motionDelay = 0.000005 * frameDuration;
 
             // Hack to cover up lost mouseRel events
-            if (getEnable() == false) {
+            if(getEnable() == false)
+            {
                 startFrameDurationCalc = System.currentTimeMillis();
-                wakeupOn( FPSCriterion );
+                wakeupOn(fpsCriterion);
 
                 return;
             }
-            oneFrameRotation.rotX(inputRotationX * motionDelay);
-            viewTx.mul(oneFrameRotation);
 
-            //  RotateY:
-            oneFrameRotation.rotY(inputRotationY * motionDelay);
-            viewTx.mul(oneFrameRotation);
+            processClockTick();
 
-            //  Translation:
-            oneFrameTranslation.set(dragTranslationAmt);
-            oneFrameTranslation.scale(motionDelay);
-
-            viewTx.transform(oneFrameTranslation);
-
-            boolean collision = false;
-
-            // If we allow collisions, adjust it for the collision amount
-            if(allowCollisions)
-                collision = !checkCollisions();
-
-            if(allowTerrainFollowing && !collision)
-                collision = !checkTerrainFollowing();
-
-            if(collision)
-            {
-                if(collisionListener != null)
-                    collisionListener.avatarCollision();
-
-                oneFrameTranslation.z = 0;
-            }
-
-            // Now set the translation amounts that have been adjusted by any
-            // collisions.
-            viewTranslation.add(oneFrameTranslation);
-            viewTx.setTranslation(viewTranslation);
-
-            try
-            {
-                viewTg.setTransform(viewTx);
-            }
-            catch(Exception e)
-            {
-                //check for bad transform:
-                viewTx.rotX(0);
-                viewTg.setTransform(viewTx);
-                // e.printStackTrace();
-            }
-
-            startFrameDurationCalc = System.currentTimeMillis();
-
-            if(updateListener != null)
-            {
-                try
-                {
-                    updateListener.viewerPositionUpdated(viewTx);
-                }
-                catch(Exception e)
-                {
-                    System.out.println("Error sending frame update message");
-                    e.printStackTrace();
-                }
-            }
-
-            wakeupOn( FPSCriterion );
+            wakeupOn( fpsCriterion );
         }
     }
 
@@ -486,25 +435,34 @@ public class NavigationHandler
         avatarStep = DEFAULT_STEP_HEIGHT;
         lastTerrainHeight = 0;
         speed = 0;
-
-        BoundingSphere sched = new BoundingSphere();
-        sched.setRadius(Double.POSITIVE_INFINITY);
-
-        frameTimer = new FrameTimerBehavior();
-        frameTimer.setSchedulingBounds(sched);
-        frameTimer.setEnable(false);
     }
 
     /**
      * Fetch the behaviour used to do the timer management for scenegraph
-     * updates during navigation. If this behavior is not fetched and added
-     * to a live scene graph, navigation will not happen! A single instance
+     * updates during navigation. This behaviour is needed if you want to have
+     * automatic navigation from the mouse input. If you wish to do your own
+     * management of when to update the navigation, then you should not call
+     * this method, and instead call the processNewFrame() method.
+     * <p>
+     *
+     * If this behavior is not fetched and you do want automatic handling of
+     * navigation, navigation will not happen! A single instance
      * of the behaviour is used during the entire lifetime of this instance.
      *
      * @return The behavior used to control updates
      */
     public Behavior getTimerBehavior()
     {
+        if(frameTimer == null)
+        {
+            BoundingSphere sched = new BoundingSphere();
+            sched.setRadius(Double.POSITIVE_INFINITY);
+
+            frameTimer = new FrameTimerBehavior();
+            frameTimer.setSchedulingBounds(sched);
+            frameTimer.setEnable(false);
+        }
+
         return frameTimer;
     }
 
@@ -526,11 +484,6 @@ public class NavigationHandler
            ((view == null) && (tg != null)))
             throw new IllegalArgumentException("View or TG is null when " +
                                                "the other isn't");
-
-        // Hack to cover over lost mouseRel events
-        if(frameTimer.getEnable()) {
-            frameTimer.setEnable(false);
-        }
 
         this.view = view;
         this.viewTg = tg;
@@ -671,6 +624,22 @@ public class NavigationHandler
         return navigationState;
     }
 
+    /**
+     * Call to update the user position now based on the difference in time
+     * between the last call and this call. This is to be called when the user
+     * wishes to manually control the navigation process rather than relying on
+     * the inbuilt timer. The user should not be using both mechanisms at the
+     * same time although the code takes no steps to enforce this. If you do
+     * try to do manual updates while also having the automated system, the
+     * results are undefined.
+     */
+    public void processNextFrame()
+    {
+        frameDuration = System.currentTimeMillis() - startFrameDurationCalc;
+
+        processClockTick();
+    }
+
     //----------------------------------------------------------
     // Methods required by the MouseMotionListener
     //----------------------------------------------------------
@@ -786,11 +755,14 @@ public class NavigationHandler
         startFrameDurationCalc = System.currentTimeMillis();
 
         //enable the behavior that controls navigation
-        frameTimer.setEnable(true);
+        if(frameTimer != null)
+            frameTimer.setEnable(true);
 
         if((navigationState == NavigationState.WALK_STATE) &&
            allowTerrainFollowing)
+        {
             setInitialTerrainHeight();
+        }
     }
 
     /**
@@ -818,7 +790,8 @@ public class NavigationHandler
         allowTerrainFollowing = false;
 
         //disable behavior that controls navigation
-        frameTimer.setEnable(false);
+        if(frameTimer != null)
+            frameTimer.setEnable(false);
 
         viewTx.normalize();
 
@@ -1384,6 +1357,77 @@ public class NavigationHandler
         // pretend there was nothing below us
         if(shortest_length != -1)
             lastTerrainHeight = (float)intersectionPoint.y;
+    }
+
+    /**
+     * Internal processing method for the per-frame update behaviour. Assumes
+     * that the frameDuration has been calculated before calling this method.
+     */
+    private void processClockTick()
+    {
+        double motionDelay = 0.000005 * frameDuration;
+
+        oneFrameRotation.rotX(inputRotationX * motionDelay);
+        viewTx.mul(oneFrameRotation);
+
+        //  RotateY:
+        oneFrameRotation.rotY(inputRotationY * motionDelay);
+        viewTx.mul(oneFrameRotation);
+
+        //  Translation:
+        oneFrameTranslation.set(dragTranslationAmt);
+        oneFrameTranslation.scale(motionDelay);
+
+        viewTx.transform(oneFrameTranslation);
+
+        boolean collision = false;
+
+        // If we allow collisions, adjust it for the collision amount
+        if(allowCollisions)
+            collision = !checkCollisions();
+
+        if(allowTerrainFollowing && !collision)
+            collision = !checkTerrainFollowing();
+
+        if(collision)
+        {
+            if(collisionListener != null)
+                collisionListener.avatarCollision();
+
+            oneFrameTranslation.z = 0;
+        }
+
+        // Now set the translation amounts that have been adjusted by any
+        // collisions.
+        viewTranslation.add(oneFrameTranslation);
+        viewTx.setTranslation(viewTranslation);
+
+        try
+        {
+            viewTg.setTransform(viewTx);
+        }
+        catch(Exception e)
+        {
+            //check for bad transform:
+            viewTx.rotX(0);
+            viewTg.setTransform(viewTx);
+            // e.printStackTrace();
+        }
+
+        startFrameDurationCalc = System.currentTimeMillis();
+
+        if(updateListener != null)
+        {
+            try
+            {
+                updateListener.viewerPositionUpdated(viewTx);
+            }
+            catch(Exception e)
+            {
+                System.out.println("Error sending frame update message");
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
