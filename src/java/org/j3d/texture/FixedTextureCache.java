@@ -17,10 +17,15 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageProducer;
 import java.net.URL;
+import java.io.IOException;
 import java.util.HashMap;
 
 import javax.media.j3d.ImageComponent;
+import javax.media.j3d.ImageComponent2D;
+import javax.media.j3d.ImageComponent3D;
 import javax.media.j3d.Texture;
+import javax.media.j3d.Texture2D;
+import javax.media.j3d.Texture3D;
 
 // Application specific imports
 import org.j3d.util.ImageUtils;
@@ -31,24 +36,20 @@ import org.j3d.util.ImageUtils;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-class FixedTextureCache implements TextureCache
+class FixedTextureCache extends AbstractTextureCache
 {
-    private HashMap urlTextureMap;
-    private HashMap urlComponentMap;
-    private HashMap fileTextureMap;
-    private HashMap fileComponentMap;
+    private HashMap textureMap;
+    private HashMap componentMap;
 
     /**
      * Construct a new instance of the empty cache.
      */
     FixedTextureCache()
     {
-        urlTextureMap = new HashMap();
-        urlComponentMap = new HashMap();
-        fileTextureMap = new HashMap();
-        fileComponentMap = new HashMap();
+        textureMap = new HashMap();
+        componentMap = new HashMap();
     }
 
     /**
@@ -60,8 +61,44 @@ class FixedTextureCache implements TextureCache
      * @throws IOException An I/O error occurred during loading
      */
     public Texture fetchTexture(String filename)
+        throws IOException
     {
-        return null;
+        Texture texture = (Texture)textureMap.get(filename);
+
+        if(texture == null)
+        {
+            ImageComponent img = (ImageComponent)componentMap.get(filename);
+
+            if(img == null)
+            {
+                img = load2DImage(filename);
+                componentMap.put(filename, img);
+            }
+
+            int format = getTextureFormat(img);
+
+            if(img instanceof ImageComponent2D)
+            {
+                texture = new Texture2D(Texture.BASE_LEVEL,
+                                        format,
+                                        img.getWidth(),
+                                        img.getHeight());
+            }
+            else
+            {
+                texture = new Texture3D(Texture.BASE_LEVEL,
+                                        format,
+                                        img.getWidth(),
+                                        img.getHeight(),
+                                        ((ImageComponent3D)img).getDepth());
+            }
+
+            texture.setImage(0, img);
+
+            textureMap.put(filename, texture);
+        }
+
+        return texture;
     }
 
     /**
@@ -72,8 +109,46 @@ class FixedTextureCache implements TextureCache
      * @throws IOException An I/O error occurred during loading
      */
     public Texture fetchTexture(URL url)
+        throws IOException
     {
-        return null;
+        String file_path = url.toExternalForm();
+
+        Texture texture = (Texture)textureMap.get(file_path);
+
+        if(texture == null)
+        {
+            ImageComponent img = (ImageComponent)componentMap.get(file_path);
+
+            if(img == null)
+            {
+                img = load2DImage(file_path);
+                componentMap.put(file_path, img);
+            }
+
+            int format = getTextureFormat(img);
+
+            if(img instanceof ImageComponent2D)
+            {
+                texture = new Texture2D(Texture.BASE_LEVEL,
+                                        format,
+                                        img.getWidth(),
+                                        img.getHeight());
+            }
+            else
+            {
+                texture = new Texture3D(Texture.BASE_LEVEL,
+                                        format,
+                                        img.getWidth(),
+                                        img.getHeight(),
+                                        ((ImageComponent3D)img).getDepth());
+            }
+
+            texture.setImage(0, img);
+
+            textureMap.put(file_path, texture);
+        }
+
+        return texture;
     }
 
     /**
@@ -85,8 +160,17 @@ class FixedTextureCache implements TextureCache
      * @throws IOException An I/O error occurred during loading
      */
     public ImageComponent fetchImageComponent(String filename)
+        throws IOException
     {
-        return null;
+        ImageComponent ret_val = (ImageComponent)componentMap.get(filename);
+
+        if(ret_val == null)
+        {
+            ret_val = load2DImage(filename);
+            componentMap.put(filename, ret_val);
+        }
+
+        return ret_val;
     }
 
     /**
@@ -97,8 +181,18 @@ class FixedTextureCache implements TextureCache
      * @throws IOException An I/O error occurred during loading
      */
     public ImageComponent fetchImageComponent(URL url)
+        throws IOException
     {
-        return null;
+        String file_path = url.toExternalForm();
+        ImageComponent ret_val = (ImageComponent)componentMap.get(file_path);
+
+        if(ret_val == null)
+        {
+            ret_val = load2DImage(file_path);
+            componentMap.put(file_path, ret_val);
+        }
+
+        return ret_val;
     }
 
     /**
@@ -110,6 +204,8 @@ class FixedTextureCache implements TextureCache
      */
     public void releaseTexture(String filename)
     {
+        textureMap.remove(filename);
+        componentMap.remove(filename);
     }
 
     /**
@@ -121,6 +217,10 @@ class FixedTextureCache implements TextureCache
      */
     public void releaseTexture(URL url)
     {
+        String file_path = url.toExternalForm();
+        textureMap.remove(file_path);
+        componentMap.remove(file_path);
+
     }
 
     /**
@@ -130,5 +230,7 @@ class FixedTextureCache implements TextureCache
      */
     public void clearAll()
     {
+        textureMap.clear();
+        componentMap.clear();
     }
 }

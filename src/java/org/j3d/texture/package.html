@@ -3,7 +3,85 @@
 Generalised classes for handling of textures.
 <P>
 
-Nothing much here yet except for a cache system.
+<H3>Cache Details</H3>
+
+The texture cache system supplied here is designed to cache objects at a
+much higher level. One of the fundamental assumptions that Java3D makes is
+based on object instance references. If the internals can determine that you've
+used the same reference more than once, it can apply a lot of optimisations.
+In the case of textures, you gain great benefits because Java3D only needs to
+store one image on the video card, rather than multiple copies for every time
+you have used the image. That is, Java3D has no magic ball to work out that you
+have used a file more than once if you have created separate references to it.
+The idea of this cache system is to keep around the higher-level Java3D objects
+representing textures so that you can gain the maximum benefits from Java3D's
+performance.
+<P>
+
+The cache is based around a factory and a number of cache implementations.
+Because different applications have different caching requirements, there are
+three default cache types available and you may also register your own custom
+versions with the system. All cache implementations are represented by an
+abstract interface. Your application code never deals directly with the
+implementation classes. An implementation is fetched from the factory. It is
+guaranteed that for each cache type, there will only be one instance created
+over the lifetime of your application. Feel free to grab the cache from the
+factory and then throw the reference away immediately as the factory maintains
+everything.
+<P>
+
+For those that don't feel like having to remember cache type configurations
+all the time,  the factory also provides a way of setting a default cache.
+Once set, you can always fetch this without having to remember which type to
+use.
+
+<H4>Default Cache Implementations</H4>
+
+There are three implementations provided by default: Fixed, LRU and WeakRef.
+<P>
+
+Fixed cache never throws anything away unless you explicitly tell it to. Useful
+if you have a lot of small textures or a small amount of large ones that you
+use frequently.
+<P>
+
+WeakRef cache uses the Java weak-reference system to maintain textures. All
+textures are maintained with a weak reference. The normal rules apply. If the
+reference is garbage collected, we fetch all the object back again and put it
+back into the cache. Useful when you have a relatively small memory footprint
+or if you are using several really large images that impact memory usage
+elsewhere and you don't care if they disappear or not (that is, you access
+them infrequently and the performance penalty of having to reload them from
+disk is not an issue).
+<P>
+
+LRU cache uses the standard Least Recently Used algorithm to maintain the items
+in the cache. The most recently accessed objects are maintained and when too
+many are loaded the cache starts tossing away the ones that have not been
+accessed recently. The implementation here uses a fixed size cache (20 by
+default, but can be changed). Any more textures stored than the given number
+and the oldest items are turfed.
+
+<H4>System Properties</H4>
+
+There are two system properties that can be used with the texture caching.
+Both properties <I>must</I> be set before the texture caching system is
+started. If you set them after the first reference to the texture cache then
+the values will be ignored.
+
+<PRE>
+    org.j3d.texture.DefaultCacheType
+    org.j3d.texture.LRUSize
+</PRE>
+
+The default cache type is a string with one of the values <code>fixed</code>,
+<code>lru</code> or <code>weakref</code> (case-sensitive strings). This sets
+the type of cache to be returned if there is a request for the default cache.
+<P>
+
+The LRUSize is used to control the maximum number of items that can be stored
+in that cache implementation before items start getting removed. The value is
+an integer and the default value is 20.
 
 </BODY>
 </HTML>

@@ -3,7 +3,7 @@
 # Package makefile for the org.j3d.texture directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -13,6 +13,7 @@ PACKAGE = org.j3d.texture
 # compiled in
 SOURCE = CacheAlreadySetException.java \
 	TextureCache.java \
+	AbstractTextureCache.java \
     FixedTextureCache.java \
 	WeakRefTextureCache.java \
 	LRUTextureCache.java \
