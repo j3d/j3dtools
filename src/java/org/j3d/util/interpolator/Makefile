@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.util.Interpolator directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.5 $
+# Version: $Revision: 1.6 $
 #
 #*********************************************************************
 
@@ -20,9 +20,10 @@ SOURCE = Interpolator.java \
          RotationInterpolator.java \
          ColorInterpolator.java \
          CoordinateInterpolator.java \
+         NormalInterpolator.java \
 		 TestScalarInterpolator.java \
 		 TestPositionInterpolator.java \
-		 TestCoordinateInterpolator.java
+		 TestCoordinateInterpolator.java \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
