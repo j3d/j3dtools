@@ -43,7 +43,7 @@ import javax.vecmath.Vector3d;
  * </pre>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TextureOverlay implements Overlay, ComponentListener
 {
@@ -488,6 +488,11 @@ public class TextureOverlay implements Overlay, ComponentListener
     {
         componentSize = size;
         fieldOfView = fov;
+
+        if(fixedSize)
+            dirty(DIRTY_POSITION);
+        else
+            dirty(DIRTY_SIZE);
     }
 
     //------------------------------------------------------------------------
@@ -610,8 +615,6 @@ public class TextureOverlay implements Overlay, ComponentListener
         dirtyCheck[property] = true;
         if(updateManager != null)
             updateManager.updateRequested(this);
-        else
-            System.err.println("Null update manager in: " + this);
     }
 
     /**
