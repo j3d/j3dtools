@@ -22,13 +22,13 @@ import java.util.Map;
  *
  * <pre>
  *  <- width*2 ->
- *  2 --------- 3,5  / \
+ *  3 --------- 2,6  / \
  *   |         /|     |
  *   |       /  |     |
  *   |     +    |   height*2
  *   |   /      |     |
  *   | /        |     |
- * 1,4 -------- 6    \ /
+ * 1,4 -------- 5    \ /
  *
  * </pre>
  *
@@ -38,7 +38,7 @@ import java.util.Map;
  * Point 3 == Point 5<br>
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TriangleArrayByRefParticle extends ByRefParticle
 {
@@ -129,7 +129,7 @@ public class TriangleArrayByRefParticle extends ByRefParticle
 
     protected void updateGeometry()
     {
-        if ( renderFromPreviousPosition != false )
+        if ( renderFromPreviousPosition )
         {
             topLeft.set( position );
             topLeft.x -= width;
@@ -162,45 +162,51 @@ public class TriangleArrayByRefParticle extends ByRefParticle
 
         // point 1
         positionRefArray[startIndex + COORD_POINT_1 + X_COORD_INDEX] =
-                bottomLeft.x;
+            bottomLeft.x;
         positionRefArray[startIndex + COORD_POINT_1 + Y_COORD_INDEX] =
-                bottomLeft.y;
-        positionRefArray[startIndex + COORD_POINT_1 + Z_COORD_INDEX] = bottomLeft.z;
+            bottomLeft.y;
+        positionRefArray[startIndex + COORD_POINT_1 + Z_COORD_INDEX] = 
+            bottomLeft.z;
 
         // point 2
         positionRefArray[startIndex + COORD_POINT_2 + X_COORD_INDEX] =
-                topLeft.x;
+            topRight.x;
         positionRefArray[startIndex + COORD_POINT_2 + Y_COORD_INDEX] =
-                topLeft.y;
-        positionRefArray[startIndex + COORD_POINT_2 + Z_COORD_INDEX] = topLeft.z;
+            topRight.y;
+        positionRefArray[startIndex + COORD_POINT_2 + Z_COORD_INDEX] = 
+            topRight.z;
 
         // point 3
         positionRefArray[startIndex + COORD_POINT_3 + X_COORD_INDEX] =
-                topRight.x;
+            topLeft.x;
         positionRefArray[startIndex + COORD_POINT_3 + Y_COORD_INDEX] =
-                topRight.y;
-        positionRefArray[startIndex + COORD_POINT_3 + Z_COORD_INDEX] = topRight.z;
+            topLeft.y;
+        positionRefArray[startIndex + COORD_POINT_3 + Z_COORD_INDEX] = 
+            topLeft.z;
 
         // point 4 = point 1
         positionRefArray[startIndex + COORD_POINT_4 + X_COORD_INDEX] =
-                bottomLeft.x;
+            bottomLeft.x;
         positionRefArray[startIndex + COORD_POINT_4 + Y_COORD_INDEX] =
-                bottomLeft.y;
-        positionRefArray[startIndex + COORD_POINT_4 + Z_COORD_INDEX] = bottomLeft.z;
+            bottomLeft.y;
+        positionRefArray[startIndex + COORD_POINT_4 + Z_COORD_INDEX] = 
+            bottomLeft.z;
 
         // point 5 = point 3
         positionRefArray[startIndex + COORD_POINT_5 + X_COORD_INDEX] =
-                topRight.x;
+            bottomRight.x;
         positionRefArray[startIndex + COORD_POINT_5 + Y_COORD_INDEX] =
-                topRight.y;
-        positionRefArray[startIndex + COORD_POINT_5 + Z_COORD_INDEX] = topRight.z;
+            bottomRight.y;
+        positionRefArray[startIndex + COORD_POINT_5 + Z_COORD_INDEX] = 
+            bottomRight.z;
 
         // point 6
         positionRefArray[startIndex + COORD_POINT_6 + X_COORD_INDEX] =
-                bottomRight.x;
+            topRight.x;
         positionRefArray[startIndex + COORD_POINT_6 + Y_COORD_INDEX] =
-                bottomRight.y;
-        positionRefArray[startIndex + COORD_POINT_6 + Z_COORD_INDEX] = bottomRight.z;
+            topRight.y;
+        positionRefArray[startIndex + COORD_POINT_6 + Z_COORD_INDEX] = 
+            topRight.z;
     }
 
     private void setTextureCoordinates()
@@ -213,11 +219,11 @@ public class TriangleArrayByRefParticle extends ByRefParticle
         textureCoordRefArray[texStartIndex + TEX_POINT_1 + T_COORD_INDEX] = 0;
 
         // point 2
-        textureCoordRefArray[texStartIndex + TEX_POINT_2 + S_COORD_INDEX] = 0;
+        textureCoordRefArray[texStartIndex + TEX_POINT_2 + S_COORD_INDEX] = 1;
         textureCoordRefArray[texStartIndex + TEX_POINT_2 + T_COORD_INDEX] = 1;
 
         // point 3
-        textureCoordRefArray[texStartIndex + TEX_POINT_3 + S_COORD_INDEX] = 1;
+        textureCoordRefArray[texStartIndex + TEX_POINT_3 + S_COORD_INDEX] = 0;
         textureCoordRefArray[texStartIndex + TEX_POINT_3 + T_COORD_INDEX] = 1;
 
         // point 4 = point 1
@@ -226,11 +232,11 @@ public class TriangleArrayByRefParticle extends ByRefParticle
 
         // point 5 = point 3
         textureCoordRefArray[texStartIndex + TEX_POINT_5 + S_COORD_INDEX] = 1;
-        textureCoordRefArray[texStartIndex + TEX_POINT_5 + T_COORD_INDEX] = 1;
+        textureCoordRefArray[texStartIndex + TEX_POINT_5 + T_COORD_INDEX] = 0;
 
         // point 6
         textureCoordRefArray[texStartIndex + TEX_POINT_6 + S_COORD_INDEX] = 1;
-        textureCoordRefArray[texStartIndex + TEX_POINT_6 + T_COORD_INDEX] = 0;
+        textureCoordRefArray[texStartIndex + TEX_POINT_6 + T_COORD_INDEX] = 1;
     }
 
     private void setNormals()

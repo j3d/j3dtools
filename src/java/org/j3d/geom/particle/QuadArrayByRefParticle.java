@@ -20,19 +20,19 @@ import java.util.Map;
  *
  * <pre>
  *  <- width*2 ->
- *  1 --------- 2    / \
+ *  1 --------- 4    / \
  *   |          |     |
  *   |          |     |
  *   |     +    |   height*2
  *   |          |     |
  *   |          |     |
- *  4 --------- 3    \ /
+ *  2 --------- 3    \ /
  *
  * </pre>
  * Quad 1: 1,2,3,4
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class QuadArrayByRefParticle extends ByRefParticle
 {
@@ -99,8 +99,8 @@ public class QuadArrayByRefParticle extends ByRefParticle
         positionRefArray[startIndex + COORD_POINT_1 + Z_COORD_INDEX] = position.z;
 
         // point 2
-        positionRefArray[startIndex + COORD_POINT_2 + X_COORD_INDEX] = position.x + width;
-        positionRefArray[startIndex + COORD_POINT_2 + Y_COORD_INDEX] = position.y + height;
+        positionRefArray[startIndex + COORD_POINT_2 + X_COORD_INDEX] = position.x - width;
+        positionRefArray[startIndex + COORD_POINT_2 + Y_COORD_INDEX] = position.y - height;
         positionRefArray[startIndex + COORD_POINT_2 + Z_COORD_INDEX] = position.z;
 
         // point 3
@@ -109,8 +109,8 @@ public class QuadArrayByRefParticle extends ByRefParticle
         positionRefArray[startIndex + COORD_POINT_3 + Z_COORD_INDEX] = position.z;
 
         // point 4
-        positionRefArray[startIndex + COORD_POINT_4 + X_COORD_INDEX] = position.x - width;
-        positionRefArray[startIndex + COORD_POINT_4 + Y_COORD_INDEX] = position.y - height;
+        positionRefArray[startIndex + COORD_POINT_4 + X_COORD_INDEX] = position.x + width;
+        positionRefArray[startIndex + COORD_POINT_4 + Y_COORD_INDEX] = position.y + height;
         positionRefArray[startIndex + COORD_POINT_4 + Z_COORD_INDEX] = position.z;
     }
 
@@ -123,16 +123,16 @@ public class QuadArrayByRefParticle extends ByRefParticle
         textureCoordRefArray[texStartIndex + TEX_POINT_1 + T_COORD_INDEX] = 0;
 
         // point 2
-        textureCoordRefArray[texStartIndex + TEX_POINT_2 + S_COORD_INDEX] = 1;
-        textureCoordRefArray[texStartIndex + TEX_POINT_2 + T_COORD_INDEX] = 1;
+        textureCoordRefArray[texStartIndex + TEX_POINT_2 + S_COORD_INDEX] = 0;
+        textureCoordRefArray[texStartIndex + TEX_POINT_2 + T_COORD_INDEX] = 0;
 
         // point 3
         textureCoordRefArray[texStartIndex + TEX_POINT_3 + S_COORD_INDEX] = 0;
         textureCoordRefArray[texStartIndex + TEX_POINT_3 + T_COORD_INDEX] = 1;
 
         // point 4 = point 1
-        textureCoordRefArray[texStartIndex + TEX_POINT_4 + S_COORD_INDEX] = 0;
-        textureCoordRefArray[texStartIndex + TEX_POINT_4 + T_COORD_INDEX] = 0;
+        textureCoordRefArray[texStartIndex + TEX_POINT_4 + S_COORD_INDEX] = 1;
+        textureCoordRefArray[texStartIndex + TEX_POINT_4 + T_COORD_INDEX] = 1;
     }
 
     private void setNormals()
