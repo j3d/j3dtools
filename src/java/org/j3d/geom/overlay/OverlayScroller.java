@@ -49,7 +49,7 @@ public class OverlayScroller implements Overlay, UpdateManager {
     public static final int BORDER_RIGHT = 1;
     public static final int BORDER_TOP = 2;
     public static final int BORDER_BOTTOM = 3;
-    
+
     private Rectangle bounds;
     private Insets margin;
     private int[] relativePosition = {Overlay.PLACE_LEFT, Overlay.PLACE_TOP};
@@ -61,184 +61,211 @@ public class OverlayScroller implements Overlay, UpdateManager {
     private int backgroundMode;
     private boolean antialiased = true;
     private Canvas3D canvas3D;
-    
+
     // title overlays
     private OverlayBase[] border;
     private Overlay[] line;
-    
+
     // On an update each property is checked to see if it is dirty,
     //  if it is an appropriate update is made
-
-    private final static int VISIBLE =                 Integer.parseInt("1", 2);
-    private final static int ORDER =                   Integer.parseInt("10", 2);
-    private final static int LINE_POSITION =           Integer.parseInt("100", 2);
-    private final static int BORDER_POSITION =         Integer.parseInt("1000", 2);
-    private final static int BORDER_BACKGROUND_IMAGE = Integer.parseInt("10000", 2);
-    private final static int BORDER_BACKGROUND_COLOR = Integer.parseInt("100000", 2);
-    private final static int BACKGROUND_MODE =         Integer.parseInt("1000000", 2);
-    private final static int ANTIALIASED =             Integer.parseInt("10000000", 2);
-    private final static int ITEM =                    Integer.parseInt("100000000", 2);
+    private final static int VISIBLE = 0x01;
+    private final static int ORDER = 0x02;
+    private final static int LINE_POSITION = 0x04;
+    private final static int BORDER_POSITION = 0x10;
+    private final static int BORDER_BACKGROUND_IMAGE = 0x20;
+    private final static int BORDER_BACKGROUND_COLOR = 0x40;
+    private final static int BACKGROUND_MODE = 0x100;
+    private final static int ANTIALIASED = 0x200;
+    private final static int ITEM = 0x400;
 
     private int dirtyCheck = 0;
-    
+
     UpdateManager updateManager;
 
     private EventListenerList listeners = new EventListenerList();  // Set of ScrollEventListeners
+
     private BranchGroup consoleBranchGroup;                         // branch group for overlay
-    
-    public OverlayScroller( Canvas3D canvas3D, Overlay[] line, Insets margin ) {
-	this(canvas3D, new Dimension(), null, line, margin);
+
+    public OverlayScroller( Canvas3D canvas3D, Overlay[] line, Insets margin )
+    {
+        this(canvas3D, new Dimension(), null, line, margin);
     }
 
-    public OverlayScroller( Canvas3D canvas3D, Dimension offset, Overlay[] line, Insets margin ) {
-	this(canvas3D, offset, null, line, margin);
+    public OverlayScroller(Canvas3D canvas3D,
+                           Dimension offset,
+                           Overlay[] line,
+                           Insets margin )
+    {
+        this(canvas3D, offset, null, line, margin);
     }
 
-    public OverlayScroller( Canvas3D canvas3D, UpdateManager manager,
-			     Overlay[] line, Insets margin ) {
-	this(canvas3D, true, false, new Dimension(), manager, line, margin);
+    public OverlayScroller(Canvas3D canvas3D,
+                           UpdateManager manager,
+                           Overlay[] line,
+                           Insets margin)
+    {
+        this(canvas3D, true, false, new Dimension(), manager, line, margin);
     }
 
-    public OverlayScroller( Canvas3D canvas3D, Dimension offset,
-			     UpdateManager manager,
-			     Overlay[] line, Insets margin ) {
-	this(canvas3D, true, false, offset, manager, line, margin);
+    public OverlayScroller(Canvas3D canvas3D,
+                           Dimension offset,
+                           UpdateManager manager,
+                           Overlay[] line,
+                           Insets margin )
+    {
+        this(canvas3D, true, false, offset, manager, line, margin);
     }
 
     public OverlayScroller( Canvas3D canvas3D,
-			     boolean clipAlpha, boolean blendAlpha,
-			     Dimension offset,
-			     UpdateManager manager,
-			     Overlay[] line, Insets margin) {
-	this.canvas3D = canvas3D;
-	this.margin = margin;
-	this.line = line;
-	this.offset = offset;
+                 boolean clipAlpha, boolean blendAlpha,
+                 Dimension offset,
+                 UpdateManager manager,
+                 Overlay[] line, Insets margin)
+    {
+        this.canvas3D = canvas3D;
+        this.margin = margin;
+        this.line = line;
+        this.offset = offset;
 
-	canvas3D.addComponentListener(new ComponentAdapter() {
-                public void componentResized(ComponentEvent e) {
-                    dirty(LINE_POSITION | BORDER_POSITION);
-                }
-            });
+        canvas3D.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
+                dirty(LINE_POSITION | BORDER_POSITION);
+            }
+        });
 
-	Dimension internalSize = new Dimension();
-	for(int i = 0; i < line.length; i++) {
-	    internalSize.width = Math.max(internalSize.width, line[i].getBounds().width);
-	    internalSize.height += line[i].getBounds().height;
-	}
-	    
-	bounds = new Rectangle(offset.width, offset.height,
-			      margin.left + internalSize.width + margin.right,
-			      margin.top + internalSize.height + margin.bottom);
-	
-	Rectangle borderBounds = null;
-	border = new OverlayBase[4];
-	for(int i = 0; i < border.length; i++) {
-	    switch (i) {
-	    case BORDER_LEFT:
-		borderBounds = new Rectangle(0, 0, margin.left, internalSize.height);
-		break;
-	    case BORDER_RIGHT:
-		borderBounds = new Rectangle(0, 0, margin.right, internalSize.height);
-		break;
-	    case BORDER_TOP:
-		borderBounds = new Rectangle(0, 0, bounds.width, margin.top);
-		break;
-	    case BORDER_BOTTOM:
-		borderBounds = new Rectangle(0, 0, bounds.width, margin.bottom);
-		break;
-	    }
-	    border[i] = new OverlayBase(canvas3D, borderBounds, clipAlpha, blendAlpha);
-	}
-	
-	consoleBranchGroup = new BranchGroup();
-	
-	if(updateManager == null) {
-	    UpdateControlBehavior updateBehavior = new UpdateControlBehavior(this);
-            updateBehavior.setSchedulingBounds(new BoundingSphere());
-            consoleBranchGroup.addChild(updateBehavior);
-	    updateManager = updateBehavior;
-	}
+        Dimension internalSize = new Dimension();
+        for(int i = 0; i < line.length; i++) {
+            internalSize.width = Math.max(internalSize.width, line[i].getBounds().width);
+            internalSize.height += line[i].getBounds().height;
+        }
 
-	for (int i = line.length - 1; i >= 0; i--) {
-	    consoleBranchGroup.addChild(line[i].getRoot());
-	    line[i].setUpdateManager(this);
-	}
-	
-	for (int i = border.length - 1; i >= 0; i--) {
-	    consoleBranchGroup.addChild(border[i].getRoot());
-	    border[i].setUpdateManager(this);
-	}
-	
-	initialize();
-	
-	dirtyCheck = Integer.parseInt("111111111111111111", 2); // Just has to be > 12
-	                                                        //  to dirty everything
+        bounds = new Rectangle(offset.width, offset.height,
+                               margin.left + internalSize.width + margin.right,
+                               margin.top + internalSize.height + margin.bottom);
+
+        Rectangle borderBounds = null;
+        border = new OverlayBase[4];
+        for(int i = 0; i < border.length; i++) {
+            switch (i) {
+                case BORDER_LEFT:
+                    borderBounds = new Rectangle(0, 0, margin.left, internalSize.height);
+                    break;
+                case BORDER_RIGHT:
+                    borderBounds = new Rectangle(0, 0, margin.right, internalSize.height);
+                    break;
+                case BORDER_TOP:
+                    borderBounds = new Rectangle(0, 0, bounds.width, margin.top);
+                    break;
+                case BORDER_BOTTOM:
+                    borderBounds = new Rectangle(0, 0, bounds.width, margin.bottom);
+                    break;
+            }
+            border[i] = new OverlayBase(canvas3D, borderBounds, clipAlpha, blendAlpha);
+        }
+
+        consoleBranchGroup = new BranchGroup();
+
+        if(updateManager == null) {
+            UpdateControlBehavior updateBehavior = new UpdateControlBehavior(this);
+                updateBehavior.setSchedulingBounds(new BoundingSphere());
+                consoleBranchGroup.addChild(updateBehavior);
+            updateManager = updateBehavior;
+        }
+
+        for (int i = line.length - 1; i >= 0; i--) {
+            consoleBranchGroup.addChild(line[i].getRoot());
+            line[i].setUpdateManager(this);
+        }
+
+        for (int i = border.length - 1; i >= 0; i--) {
+            consoleBranchGroup.addChild(border[i].getRoot());
+            border[i].setUpdateManager(this);
+        }
+
+        initialize();
+
+        dirtyCheck = 0xFFFF; // Just has to be > 12  to dirty everything
     }
 
     /**
      * Implement this to do extra initialization before the node goes live
      */
-    public void initialize() {
+    public void initialize()
+    {
     }
 
-    public Rectangle getBounds() {
-	return bounds;
+    public Rectangle getBounds()
+    {
+        return bounds;
     }
 
-    public Canvas3D getCanvas() {
-	return canvas3D;
+    public Canvas3D getCanvas()
+    {
+        return canvas3D;
     }
 
-    public BranchGroup getRoot() {
-	return consoleBranchGroup;
-    }
-    
-    public OverlayBase getBorder(int index) {
-	return border[index];
+    public BranchGroup getRoot()
+    {
+        return consoleBranchGroup;
     }
 
-    public void setAntialiased(boolean antialiased) {
-	if (this.antialiased != antialiased) {
-	    this.antialiased = antialiased;
-	    dirty(ANTIALIASED);
-	}
-    }
-    
-    public boolean isAntialiased() {
-	return antialiased;
+    public OverlayBase getBorder(int index)
+    {
+        return border[index];
     }
 
-    public UpdateManager getUpdateManager() {
-	return updateManager;
+    public void setAntialiased(boolean antialiased)
+    {
+        if (this.antialiased != antialiased)
+        {
+            this.antialiased = antialiased;
+            dirty(ANTIALIASED);
+        }
     }
 
-    public void setUpdateManager(UpdateManager updateManager) {
-	if (this.updateManager != updateManager) {
-	    this.updateManager = updateManager;
-	    updateManager.updateRequested();
-	}
+    public boolean isAntialiased()
+    {
+        return antialiased;
     }
 
-    public boolean isUpdating() {
-	return updateManager.isUpdating();
+    public UpdateManager getUpdateManager()
+    {
+        return updateManager;
     }
 
-    public void setUpdating(boolean updating) {
-	updateManager.setUpdating(updating);
+    public void setUpdateManager(UpdateManager updateManager)
+    {
+        if (this.updateManager != updateManager)
+        {
+            this.updateManager = updateManager;
+            updateManager.updateRequested();
+        }
+    }
+
+    public boolean isUpdating()
+    {
+        return updateManager.isUpdating();
+    }
+
+    public void setUpdating(boolean updating)
+    {
+        updateManager.setUpdating(updating);
     }
 
     /**
      * Returns the number of lines
      */
-    public int getNumLines() {
-	return line.length;
+    public int getNumLines()
+    {
+        return line.length;
     }
 
-    public Overlay getLine(int index) {
-	synchronized(line) {
-	    return line[index];
-	}
+    public Overlay getLine(int index)
+    {
+        synchronized(line)
+        {
+            return line[index];
+        }
     }
 
     /**
@@ -248,15 +275,18 @@ public class OverlayScroller implements Overlay, UpdateManager {
      *
      * TODO: Make thread safe
      */
-    public void setVisible(boolean visible) {
-	if(this.visible != visible) {
-	    this.visible = visible;
-	    dirty(VISIBLE);
-	}
+    public void setVisible(boolean visible)
+    {
+        if(this.visible != visible)
+        {
+            this.visible = visible;
+            dirty(VISIBLE);
+        }
     }
 
-    public boolean isVisible() {
-	return visible;
+    public boolean isVisible()
+    {
+        return visible;
     }
 
     /**
@@ -268,40 +298,55 @@ public class OverlayScroller implements Overlay, UpdateManager {
      *
      * This will be updated in the next frame
      */
-    public void scroll(int startLine, int scrollDistance) {
+    public void scroll(int startLine, int scrollDistance)
+    {
         int i = 0, j = 0;
-        if(scrollDistance > 0) {
-	    Overlay[] holder = new Overlay[scrollDistance];
-	    int max = line.length - 1;
-            for (i = 0; i < scrollDistance; i++) {
+        if(scrollDistance > 0)
+        {
+            Overlay[] holder = new Overlay[scrollDistance];
+            int max = line.length - 1;
+            for (i = 0; i < scrollDistance; i++)
+            {
                 holder[i] = line[max - i];
             }
-	    synchronized(line) {
-		for (i = max, j = max - scrollDistance; j >= startLine; i--, j--) {
-		    line[i] = line[j];
-		}
-		for (j = 0; i >= startLine; i--, j++) {
-		    line[i] = holder[j];
-		    fireItemScrolled(new ScrollEvent(this, line[i], ScrollEvent.SCROLLED_UP));
-		}
-		dirty(LINE_POSITION);
-	    }
-        } else if(scrollDistance < 0) {
-	    scrollDistance *= -1;
-	    Overlay[] holder = new Overlay[scrollDistance];
-            for (i = scrollDistance - 1; i >= 0; i--) {
+
+            synchronized(line)
+            {
+                for (i = max, j = max - scrollDistance; j >= startLine; i--, j--)
+                {
+                    line[i] = line[j];
+                }
+                for (j = 0; i >= startLine; i--, j++)
+                {
+                    line[i] = holder[j];
+                    fireItemScrolled(new ScrollEvent(this, line[i], ScrollEvent.SCROLLED_UP));
+                }
+
+                dirty(LINE_POSITION);
+            }
+        }
+        else if(scrollDistance < 0)
+        {
+            scrollDistance *= -1;
+            Overlay[] holder = new Overlay[scrollDistance];
+            for (i = scrollDistance - 1; i >= 0; i--)
+            {
                 holder[i] = line[i];
             }
-	    synchronized(line) {
-		for (i = 0, j = scrollDistance; j <= startLine; i++, j++) {
-		    line[i] = line[j];
-		}
-		for (j = 0; i <= startLine; i++, j++) {
-		    line[i] = holder[j];
-		    fireItemScrolled(new ScrollEvent(this, line[i], ScrollEvent.SCROLLED_DOWN));
-		}
-		dirty(LINE_POSITION);
-	    }
+
+            synchronized(line)
+            {
+                for (i = 0, j = scrollDistance; j <= startLine; i++, j++)
+                {
+                    line[i] = line[j];
+                }
+                for (j = 0; i <= startLine; i++, j++)
+                {
+                    line[i] = holder[j];
+                    fireItemScrolled(new ScrollEvent(this, line[i], ScrollEvent.SCROLLED_DOWN));
+                }
+                dirty(LINE_POSITION);
+            }
         }
     }
 
@@ -312,7 +357,8 @@ public class OverlayScroller implements Overlay, UpdateManager {
      * @param relativePosition[Y_PLACEMENT] May be PLACE_TOP, PLACE_BOTTOM, or PLACE_CENTER
      */
     public void setRelativePosition(int[] relativePositon) {
-        setRelativePosition(relativePosition[X_PLACEMENT], relativePosition[Y_PLACEMENT]);
+        setRelativePosition(relativePosition[X_PLACEMENT],
+                            relativePosition[Y_PLACEMENT]);
     }
 
     /**
@@ -322,15 +368,18 @@ public class OverlayScroller implements Overlay, UpdateManager {
      *       otherwise they flip over when put on the bottom and mess up
      *       completely in the center.
      */
-    public void setRelativePosition(int xType, int yType) {
-	if(relativePosition[Overlay.X_PLACEMENT] != xType 
-	   || relativePosition[Overlay.Y_PLACEMENT] != yType) {
-	    synchronized(relativePosition) {
-		relativePosition[Overlay.X_PLACEMENT] = xType;
-		relativePosition[Overlay.Y_PLACEMENT] = yType;
-		dirty(LINE_POSITION | BORDER_POSITION);
-	    }
-	}
+    public void setRelativePosition(int xType, int yType)
+    {
+        if(relativePosition[Overlay.X_PLACEMENT] != xType
+           || relativePosition[Overlay.Y_PLACEMENT] != yType)
+        {
+            synchronized(relativePosition)
+            {
+                relativePosition[Overlay.X_PLACEMENT] = xType;
+                relativePosition[Overlay.Y_PLACEMENT] = yType;
+                dirty(LINE_POSITION | BORDER_POSITION);
+            }
+        }
     }
 
     /**
@@ -338,8 +387,9 @@ public class OverlayScroller implements Overlay, UpdateManager {
      *
      * This will be updated in the next frame
      */
-    public void setOffset(Dimension offset) {
-	setOffset(offset.width, offset.height);
+    public void setOffset(Dimension offset)
+    {
+        setOffset(offset.width, offset.height);
     }
 
     /**
@@ -347,65 +397,68 @@ public class OverlayScroller implements Overlay, UpdateManager {
      *
      * This will be updated in the next frame
      */
-    public void setOffset(int width, int height) {
-	if(offset.height != width || offset.height != height) {
-	    synchronized(bounds) {
-		offset.width = width;
-		offset.height = height;
-		dirty(BORDER_POSITION | LINE_POSITION);
-	    }
-	}
+    public void setOffset(int width, int height)
+    {
+        if(offset.height != width || offset.height != height)
+        {
+            synchronized(bounds) {
+                offset.width = width;
+                offset.height = height;
+                dirty(BORDER_POSITION | LINE_POSITION);
+            }
+        }
     }
 
     /**
      * Sets the border positions according to the current position.
      */
-    private void syncBorderPositions() {
-	synchronized(offset) {
-	    OverlayUtilities.repositonBounds(bounds, relativePosition, canvas3D.getSize(), offset);
+    private void syncBorderPositions()
+    {
+        synchronized(offset) {
+            OverlayUtilities.repositonBounds(bounds, relativePosition, canvas3D.getSize(), offset);
 
-	    Dimension borderOffset = new Dimension();
-	    for(int i = 0; i < border.length; i++) {
-		switch(i) {
-		case BORDER_TOP:
-		    borderOffset.width = bounds.x;
-		    borderOffset.height = bounds.y;
-		    break;
-		case BORDER_BOTTOM:
-		    borderOffset.width = bounds.x;
-		    borderOffset.height = bounds.y + bounds.height - margin.bottom;
-		    break;
-		case BORDER_LEFT:
-		    borderOffset.width = bounds.x;
-		    borderOffset.height = bounds.y + margin.top;
-		    break;
-		case BORDER_RIGHT:
-		    borderOffset.width = bounds.x + bounds.width - margin.left;
-		    borderOffset.height = bounds.y + margin.top;
-		    break;
-		}
-		border[i].setOffset(borderOffset);
-	    }
-	    clean(BORDER_POSITION);
-	}
+            Dimension borderOffset = new Dimension();
+            for(int i = 0; i < border.length; i++) {
+                switch(i) {
+                    case BORDER_TOP:
+                        borderOffset.width = bounds.x;
+                        borderOffset.height = bounds.y;
+                        break;
+                    case BORDER_BOTTOM:
+                        borderOffset.width = bounds.x;
+                        borderOffset.height = bounds.y + bounds.height - margin.bottom;
+                        break;
+                    case BORDER_LEFT:
+                        borderOffset.width = bounds.x;
+                        borderOffset.height = bounds.y + margin.top;
+                        break;
+                    case BORDER_RIGHT:
+                        borderOffset.width = bounds.x + bounds.width - margin.left;
+                        borderOffset.height = bounds.y + margin.top;
+                        break;
+                }
+                border[i].setOffset(borderOffset);
+            }
+            clean(BORDER_POSITION);
+        }
     }
 
     /**
      * Sets all the lines into position according to the array order.
      */
     private void syncLinePositions() {
-	synchronized(line) {
-	    OverlayUtilities.repositonBounds(bounds, relativePosition, canvas3D.getSize(), offset);
+        synchronized(line) {
+            OverlayUtilities.repositonBounds(bounds, relativePosition, canvas3D.getSize(), offset);
 
-	    Dimension currentOffset = new Dimension(bounds.x + margin.left,
-						    bounds.y + bounds.height - margin.top);
-	    
-	    for (int i = 0; i < line.length; i++) {
-		currentOffset.height -= line[i].getBounds().height;
-		line[i].setOffset(currentOffset);
-	    }
-	    clean(LINE_POSITION);
-	}
+            Dimension currentOffset = new Dimension(bounds.x + margin.left,
+                                bounds.y + bounds.height - margin.top);
+
+            for (int i = 0; i < line.length; i++) {
+            currentOffset.height -= line[i].getBounds().height;
+            line[i].setOffset(currentOffset);
+            }
+            clean(LINE_POSITION);
+        }
     }
 
     /**
@@ -414,58 +467,58 @@ public class OverlayScroller implements Overlay, UpdateManager {
      * TODO: Make thread safe
      */
     private void syncVisible() {
-	for (int i = border.length - 1; i >= 0; i--) {
-	    border[i].setVisible(visible);
-	}
-	for (int i = line.length - 1; i >= 0; i--) {
-	    line[i].setVisible(visible);
-	}
-	clean(VISIBLE);
+    for (int i = border.length - 1; i >= 0; i--) {
+        border[i].setVisible(visible);
+    }
+    for (int i = line.length - 1; i >= 0; i--) {
+        line[i].setVisible(visible);
+    }
+    clean(VISIBLE);
     }
 
     /**
      * Sets the color on the background.
      */
     private void syncBorderBackgroundColor() {
-	if (borderBackgroundColor != null) {
-	    synchronized(borderBackgroundColor) {
-		for(int i = border.length - 1; i >= 0; i--) {
-		    border[i].setBackgroundColor(borderBackgroundColor);
-		}
-		clean(BORDER_BACKGROUND_COLOR);
-	    }
-	}
+    if (borderBackgroundColor != null) {
+        synchronized(borderBackgroundColor) {
+        for(int i = border.length - 1; i >= 0; i--) {
+            border[i].setBackgroundColor(borderBackgroundColor);
+        }
+        clean(BORDER_BACKGROUND_COLOR);
+        }
+    }
     }
 
     /**
      * Sets the image on the background.
      */
     private void syncBorderBackgroundImage() {
-	if (borderBackgroundImage != null) {
-	    synchronized(borderBackgroundImage) {
-		for(int i = border.length - 1; i >= 0; i--) {
-		    border[i].setBackgroundImage(borderBackgroundImage);
-		}
-		clean(BORDER_BACKGROUND_IMAGE);
-	    }
-	}
+    if (borderBackgroundImage != null) {
+        synchronized(borderBackgroundImage) {
+        for(int i = border.length - 1; i >= 0; i--) {
+            border[i].setBackgroundImage(borderBackgroundImage);
+        }
+        clean(BORDER_BACKGROUND_IMAGE);
+        }
+    }
     }
 
     public void dirty(int property) {
-	dirtyCheck |= property;
-	if(updateManager != null) {
-	    updateManager.updateRequested();
-	} else {
-	    System.err.println("Null update manager in " + this);
-	}
+    dirtyCheck |= property;
+    if(updateManager != null) {
+        updateManager.updateRequested();
+    } else {
+        System.err.println("Null update manager in " + this);
+    }
     }
 
     public void clean(int property) {
-	dirtyCheck &= ~property;
+    dirtyCheck &= ~property;
     }
 
     public void updateRequested() {
-	dirty(ITEM);
+    dirty(ITEM);
     }
 
     /**
@@ -473,51 +526,51 @@ public class OverlayScroller implements Overlay, UpdateManager {
      * from within a behavior guarantees that all changes will happen in one frame.
      */
     public void update() {
-	if ((dirtyCheck & BORDER_POSITION) != 0) {
-	    syncBorderPositions();
-	}
+    if ((dirtyCheck & BORDER_POSITION) != 0) {
+        syncBorderPositions();
+    }
 
-	if ((dirtyCheck & LINE_POSITION ) != 0) {
-	    syncLinePositions();
-	}
-	
-	if ((dirtyCheck & VISIBLE) != 0) {
-	    syncVisible();
-	}
+    if ((dirtyCheck & LINE_POSITION ) != 0) {
+        syncLinePositions();
+    }
 
-	if ((dirtyCheck & BORDER_BACKGROUND_COLOR) != 0) {
-	    syncBorderBackgroundColor();
-	}
+    if ((dirtyCheck & VISIBLE) != 0) {
+        syncVisible();
+    }
 
-	if ((dirtyCheck & BORDER_BACKGROUND_IMAGE) != 0) {
-	    syncBorderBackgroundImage();
-	}
+    if ((dirtyCheck & BORDER_BACKGROUND_COLOR) != 0) {
+        syncBorderBackgroundColor();
+    }
 
-	if ((dirtyCheck & ITEM) != 0) {
-	    for (int i = line.length - 1; i >= 0; i--) {
-		line[i].update();
-	    }
-	    for (int i = border.length - 1; i >= 0; i--) {
+    if ((dirtyCheck & BORDER_BACKGROUND_IMAGE) != 0) {
+        syncBorderBackgroundImage();
+    }
+
+    if ((dirtyCheck & ITEM) != 0) {
+        for (int i = line.length - 1; i >= 0; i--) {
+        line[i].update();
+        }
+        for (int i = border.length - 1; i >= 0; i--) {
                 border[i].update();
             }
-	    clean(ITEM);
-	}
+        clean(ITEM);
+    }
     }
 
     public void addScrollEventListener(ScrollEventListener listener) {
-	listeners.add(ScrollEventListener.class, listener);
+    listeners.add(ScrollEventListener.class, listener);
     }
 
     public void removeScrollEventListener(ScrollEventListener listener) {
-	listeners.remove(ScrollEventListener.class, listener);
+    listeners.remove(ScrollEventListener.class, listener);
     }
 
     public void fireItemScrolled(ScrollEvent e) {
-	Object[] listeners = this.listeners.getListenerList();
-	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-	    if (listeners[i] == ScrollEventListener.class) {
-		((ScrollEventListener)listeners[i + 1]).itemScrolled(e);
-	    }
-	}
+    Object[] listeners = this.listeners.getListenerList();
+    for (int i = listeners.length - 2; i >= 0; i -= 2) {
+        if (listeners[i] == ScrollEventListener.class) {
+        ((ScrollEventListener)listeners[i + 1]).itemScrolled(e);
+        }
+    }
     }
 }

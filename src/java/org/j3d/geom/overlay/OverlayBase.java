@@ -15,7 +15,6 @@ import javax.media.j3d.*;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.MouseListener;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
@@ -34,7 +33,7 @@ import javax.vecmath.Vector3d;
  *
  * The implementation uses textured objects that are mapped to screen space
  * coordinates. This can be both good and bad. The overlay can operate in
- * one of two modes - fixed size or dynamic size according to the canvas.
+ * one of two modes - fixed size, dynamic size according to the canvas.
  * <P>
  * <B>Fixed Size Overlays</B>
  * <P>
@@ -44,6 +43,11 @@ import javax.vecmath.Vector3d;
  * pieces are then subdivided into lots that are power of two. The minimum size
  * of one of these pieces is 16 pixels. If you have an odd size, sich as 55
  * pixels, then you get weird artifacts appearing on screen.
+ * <p>
+ * A fixed size overlay may operate without being given a canvas to work with.
+ * This would be used when you are using an overlay manager to work with the
+ * overlay instance.
+ *
  * <P>
  * <B>Resizable Overlays</B>
  * <P>
@@ -62,7 +66,7 @@ import javax.vecmath.Vector3d;
  *
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class OverlayBase
     implements Overlay,
@@ -89,6 +93,12 @@ public class OverlayBase
 
     /** Canvas bounds occupied by this overlay. */
     protected Rectangle overlayBounds;
+
+    /** The bounds of the Canvas3D this overlay is rendered in */
+    protected Dimension componentSize;
+
+    /** The field of view for the canvas */
+    protected double fieldOfView;
 
     /** Offset in screen coordinates */
     private Dimension offset;
@@ -167,6 +177,7 @@ public class OverlayBase
      *
      * @param canvas Canvas being drawn onto
      * @param bounds Bounds on the canvas covered by the overlay
+     * @throws IllegalArgumentException Both the canvas and bounds are null
      */
     public OverlayBase(Canvas3D canvas, Rectangle bounds)
     {
@@ -183,6 +194,7 @@ public class OverlayBase
      * @param bounds The part of the canvas covered by the overlay
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
+     * @throws IllegalArgumentException Both the canvas and bounds are null
      */
     public OverlayBase(Canvas3D canvas, Rectangle bounds, UpdateManager manager)
     {
@@ -199,6 +211,7 @@ public class OverlayBase
      * @param bounds The part of the canvas covered by the overlay
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
+     * @throws IllegalArgumentException Both the canvas and bounds are null
      */
     public OverlayBase(Canvas3D canvas,
                        Rectangle bounds,
@@ -220,6 +233,7 @@ public class OverlayBase
      * @param blendAlpha Should we blend to background where alpha is < 1
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
+     * @throws IllegalArgumentException Both the canvas and bounds are null
      */
     public OverlayBase(Canvas3D canvas,
                        Rectangle bounds,
@@ -243,6 +257,7 @@ public class OverlayBase
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      * @param numBuffers The number of buffers to generate, the default is two
+     * @throws IllegalArgumentException Both the canvas and bounds are null
      */
     public OverlayBase(Canvas3D canvas,
                        Rectangle bounds,
@@ -251,6 +266,9 @@ public class OverlayBase
                        UpdateManager updateManager,
                        int numBuffers)
     {
+        if(canvas == null && bounds == null)
+            throw new IllegalArgumentException("Both canvas and bounds null");
+
         this.numBuffers = numBuffers;
 
         initComplete = false;
@@ -259,6 +277,14 @@ public class OverlayBase
         if(bounds == null)
         {
             overlayBounds = canvas.getBounds();
+            componentSize = canvas.getSize();
+            View v = canvas.getView();
+
+            if(v == null)
+                fieldOfView = 0.785398;  // PI / 4 == 45 deg
+            else
+                fieldOfView = v.getFieldOfView();
+
             fixedSize = false;
             minDivSize = 1;
         }
@@ -267,6 +293,23 @@ public class OverlayBase
             overlayBounds = bounds;
             fixedSize = true;
             minDivSize = 8;
+
+            if(canvas3D != null)
+            {
+                componentSize = canvas.getSize();
+                View v = canvas.getView();
+
+                if(v == null)
+                    fieldOfView = 0.785398;  // PI / 4 == 45 deg
+                else
+                    fieldOfView = v.getFieldOfView();
+            }
+            else
+            {
+                componentSize = new Dimension(bounds.width, bounds.height);
+                fieldOfView = 0.785398;  // PI / 4 == 45 deg
+            }
+
         }
 
         visible = true;
@@ -281,7 +324,8 @@ public class OverlayBase
                                                      hasAlpha);
         }
 
-        canvas3D.addComponentListener(this);
+        if(!fixedSize || (canvas3D != null))
+            canvas3D.addComponentListener(this);
 
         // define the branch group where we are putting all the sub-overlays
 
@@ -334,7 +378,9 @@ public class OverlayBase
         }
 
         List overlays =
-            OverlayUtilities.subdivide(overlayBounds.getSize(), minDivSize, 256);
+            OverlayUtilities.subdivide(overlayBounds.getSize(),
+                                       minDivSize,
+                                       256);
 
         subOverlay = new SubOverlay[overlays.size()];
         int n = overlays.size();
@@ -357,6 +403,38 @@ public class OverlayBase
         dirtyCheck[DIRTY_VISIBLE] = true;
         dirtyCheck[DIRTY_POSITION] = true;
         dirtyCheck[DIRTY_ACTIVE_BUFFER] = true;
+    }
+
+    //------------------------------------------------------------------------
+    // Methods from the Overlay interface
+    //------------------------------------------------------------------------
+
+    /**
+     * Empty method that can be used to provide post construction
+     * initialisation.
+     */
+    public void initialize()
+    {
+        initComplete = true;
+    }
+
+    /**
+     * Update the canvas component details of size and field of view settings.
+     * This is mainly called when the overlay is part of a larger management
+     * system and it needs to inform the overlay of new screen information.
+     *
+     * @param size The new dimensions of the component
+     * @param fov The new field of view for the current view
+     */
+    public void setComponentDetails(Dimension size, double fov)
+    {
+        componentSize = size;
+        fieldOfView = fov;
+
+        if(fixedSize)
+            dirty(DIRTY_POSITION);
+        else
+            dirty(DIRTY_SIZE);
     }
 
     /**
@@ -454,16 +532,6 @@ public class OverlayBase
     }
 
     /**
-     * Returns the canvas being drawn on.
-     *
-     * @return The current canvas instance
-     */
-    public Canvas3D getCanvas()
-    {
-        return canvas3D;
-    }
-
-    /**
      * Changes the visibility of the overlay.
      *
      * @param visible The new visibility state
@@ -505,38 +573,6 @@ public class OverlayBase
             return;
 
         updateBackgroundColor();
-    }
-
-    /**
-     * Returns the background for the overlay. Updates to this image will not
-     * be shown in the overlay until repaint()is called.
-     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
-     *
-     * @return The image used as the background
-     */
-    public BufferedImage getBackgroundImage()
-    {
-        if(backgroundImage == null)
-        {
-            backgroundImage =
-                OverlayUtilities.createBufferedImage(overlayBounds.getSize(),
-                                                     hasAlpha);
-        }
-        return backgroundImage;
-    }
-
-    /**
-     * Sets the background image to the one specified.  It does not have to be
-     * the same size as the overlay but the it should be at least as big.
-     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
-     */
-    public void setBackgroundImage(BufferedImage img)
-    {
-        if(backgroundImage != img)
-        {
-            backgroundImage = img;
-            repaint();
-        }
     }
 
     /**
@@ -639,6 +675,15 @@ public class OverlayBase
      */
     public void componentResized(ComponentEvent e)
     {
+        if(canvas3D != null)
+        {
+            componentSize = canvas3D.getSize();
+            View v = canvas3D.getView();
+
+            if(v != null)
+                fieldOfView = v.getFieldOfView();
+        }
+
         if(fixedSize)
             dirty(DIRTY_POSITION);
         else
@@ -676,16 +721,39 @@ public class OverlayBase
     }
 
     //------------------------------------------------------------------------
-    // Local convenience methods
+    // Local utility methods
     //------------------------------------------------------------------------
 
     /**
-     * Empty method that can be used to provide post construction
-     * initialisation.
+     * Returns the background for the overlay. Updates to this image will not
+     * be shown in the overlay until repaint()is called.
+     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
+     *
+     * @return The image used as the background
      */
-    public void initialize()
+    public BufferedImage getBackgroundImage()
     {
-        initComplete = true;
+        if(backgroundImage == null)
+        {
+            backgroundImage =
+                OverlayUtilities.createBufferedImage(overlayBounds.getSize(),
+                                                     hasAlpha);
+        }
+        return backgroundImage;
+    }
+
+    /**
+     * Sets the background image to the one specified.  It does not have to be
+     * the same size as the overlay but the it should be at least as big.
+     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
+     */
+    public void setBackgroundImage(BufferedImage img)
+    {
+        if(backgroundImage != img)
+        {
+            backgroundImage = img;
+            repaint();
+        }
     }
 
     /**
@@ -794,6 +862,10 @@ public class OverlayBase
         }
     }
 
+    //------------------------------------------------------------------------
+    // Local convenience methods
+    //------------------------------------------------------------------------
+
     /**
      * Update the background colour on the drawn image now.
      */
@@ -850,9 +922,7 @@ public class OverlayBase
     {
         synchronized(overlayBounds)
         {
-            Dimension canvas_size = canvas3D.getSize();
-
-            if(canvas_size.width == 0 || canvas_size.height == 0)
+            if(componentSize.width == 0 || componentSize.height == 0)
                 return;
 
             if(canvas == null)
@@ -864,37 +934,31 @@ public class OverlayBase
 
             OverlayUtilities.repositonBounds(overlayBounds,
                                              relativePosition,
-                                             canvas_size,
+                                             componentSize,
                                              offset);
 
             // get the field of view and then calculate the width in meters of the
             // screen
-
-            double fov = canvas3D.getView().getFieldOfView();
-            double c_width = 2 * CONSOLE_Z * Math.tan(fov / 2.0);
+            double c_width = 2 * CONSOLE_Z * Math.tan(fieldOfView * 0.5);
 
             // calculate the ratio between the canvas in pixels and the screen in
             // meters and use that to find the height of the screen in meters
-
-            double scale = c_width / canvas_size.getWidth();
-            double c_height = canvas_size.getHeight()* scale;
+            double scale = c_width / componentSize.width;
+            double c_height = componentSize.height * scale;
 
             // The texture is upside down relative to the canvas so this has to
             // be flipped to be in the right place. bounds needs to have the correct
             // value to be used in Overlays that relay on it to know their position
             // like mouseovers
-
-            Point flipped_pt=
-                new Point(overlayBounds.x,
-                          canvas_size.height - overlayBounds.height - overlayBounds.y);
+            float flipped_x = overlayBounds.x;
+            float flipped_y = componentSize.height - overlayBounds.height -
+                              overlayBounds.y;
 
             // build the plane offset
-
             Transform3D plane_offset = new Transform3D();
-            Vector3d loc =
-                new Vector3d(-c_width / 2 + flipped_pt.x * scale,
-                             -c_height / 2 + flipped_pt.y * scale,
-                             -CONSOLE_Z);
+            Vector3d loc = new Vector3d(-c_width / 2 + flipped_x * scale,
+                                        -c_height / 2 + flipped_y * scale,
+                                        -CONSOLE_Z);
 
             plane_offset.setTranslation(loc);
             plane_offset.setScale(scale);

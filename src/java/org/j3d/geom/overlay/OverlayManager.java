@@ -14,7 +14,8 @@ import javax.media.j3d.*;
 
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.event.MouseEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
 import java.util.ArrayList;
 
@@ -25,14 +26,18 @@ import javax.vecmath.Vector3d;
 
 /**
  * The overlay manager keeps track of all the overlay's on the screen and
- * makes sure they are updated with the view transform once a frame.  The
- * Overlay manager should be placed into the scenegraph where the view
- * transform is.
+ * makes sure they are updated with the view transform once a frame.
+ * <p>
+ * The Overlay manager should be placed into the scenegraph where the view
+ * transform is. It also assumes that none of the child overlays set have
+ * the Canvas3D reference set and so manages that all for them.
+ *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class OverlayManager extends BranchGroup
+    implements ComponentListener
 {
     /** I do not undersand what this is for */
     private static double CONSOLE_Z = 20f;
@@ -94,6 +99,8 @@ public class OverlayManager extends BranchGroup
     {
         canvas3D = canvas;
 
+        canvas.addComponentListener(this);
+
         BoundingSphere sched_bounds = new BoundingSphere();
         sched_bounds.setRadius(Float.POSITIVE_INFINITY);
 
@@ -135,6 +142,77 @@ public class OverlayManager extends BranchGroup
         windows.setCapability(OrderedGroup.ALLOW_CHILDREN_EXTEND);
         windows.setCapability(OrderedGroup.ALLOW_CHILDREN_WRITE);
         consoleTG.addChild(windows);
+    }
+
+    //------------------------------------------------------------------------
+    // Methods from the ComponentListener interface
+    //------------------------------------------------------------------------
+
+    /**
+     * Notification that the component has been resized.
+     *
+     * @param e The event that caused this method to be called
+     */
+    public void componentResized(ComponentEvent e)
+    {
+        Dimension size = canvas3D.getSize();
+        View v = canvas3D.getView();
+        double fov = (v != null) ? v.getFieldOfView() : 0.785398;
+
+        int num_overlays = overlays.size();
+
+        for(int i = 0; i < num_overlays; i++)
+        {
+            Overlay o = (Overlay)overlays.get(i);
+            o.setComponentDetails(size, fov);
+        }
+    }
+
+    /**
+     * Notification that the component has been moved.
+     *
+     * @param e The event that caused this method to be called
+     */
+    public void componentMoved(ComponentEvent e)
+    {
+    }
+
+    /**
+     * Notification that the component has been shown. This is the component
+     * being shown, not the window that it is contained in.
+     *
+     * @param e The event that caused this method to be called
+     */
+    public void componentShown(ComponentEvent e)
+    {
+    }
+
+    /**
+     * Notification that the component has been hidden.
+     *
+     * @param e The event that caused this method to be called
+     */
+    public void componentHidden(ComponentEvent e)
+    {
+    }
+
+    //------------------------------------------------------------------------
+    // Local utility methods
+    //------------------------------------------------------------------------
+
+    /**
+     * Initialise the manager, which in turn initializes all the managed
+     * overlays.
+     */
+    public void initialize()
+    {
+        int num_overlays = overlays.size();
+
+        for(int i = 0; i < num_overlays; i++)
+        {
+            Overlay o = (Overlay)overlays.get(i);
+            o.initialize();
+        }
     }
 
     /**
@@ -194,7 +272,12 @@ public class OverlayManager extends BranchGroup
      */
     public void addOverlay(Overlay overlay)
     {
+        Dimension size = canvas3D.getSize();
+        View v = canvas3D.getView();
+        double fov = (v != null) ? v.getFieldOfView() : 0.785398;
+
         overlay.setUpdateManager(updateManager);
+        overlay.setComponentDetails(size, fov);
 
         if(overlay instanceof InteractiveOverlay)
         {

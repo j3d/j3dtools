@@ -74,10 +74,10 @@ import javax.media.j3d.Canvas3D;
  * the alpha channel.
  *
  * @author David Yazel, Will Holcomb
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
-public interface Overlay extends UpdatableEntity {
-
+public interface Overlay extends UpdatableEntity
+{
     /** This mode prevents the background from being drawn */
     public static final int BACKGROUND_NONE = 0;
 
@@ -117,6 +117,15 @@ public interface Overlay extends UpdatableEntity {
      * overlay instance.
      */
     public void initialize();
+
+    /**
+     * Return the root of the Overlay so it can be added to
+     * the scene graph. This should be added to the view transform
+     * group of the parent application.
+     *
+     * A branch group representing the overlay
+     */
+    public BranchGroup getRoot();
 
     /**
      * Returns the rectangular portion of the canvas that this overlay covers.
@@ -184,15 +193,6 @@ public interface Overlay extends UpdatableEntity {
     public void setRelativePosition(int[] relativePositon);
 
     /**
-     * Return the root of the Overlay so it can be added to
-     * the scene graph. This should be added to the view transform
-     * group of the parent application.
-     *
-     * A branch group representing the overlay
-     */
-    public BranchGroup getRoot();
-
-    /**
      * Sets whether drawing onto this Overlay is anialiased. If called after
      * the overlay has gone live, it will have no effect.
      *
@@ -206,13 +206,6 @@ public interface Overlay extends UpdatableEntity {
      * @return true if the overlay is antialiased
      */
     public boolean isAntialiased();
-
-    /**
-     * Returns the canvas being drawn on.
-     *
-     * @return The canvas instance
-     */
-    public Canvas3D getCanvas();
 
     /**
      * Changes the visibility of the Overlay.
@@ -236,4 +229,14 @@ public interface Overlay extends UpdatableEntity {
      * called frequently, since you could always paint it inside the paint() method.
      */
     public void setBackgroundColor(Color color);
+
+    /**
+     * Update the canvas component details of size and field of view settings.
+     * This is mainly called when the overlay is part of a larger management
+     * system and it needs to inform the overlay of new screen information.
+     *
+     * @param size The new dimensions of the component
+     * @param fov The new field of view for the current view
+     */
+    public void setComponentDetails(Dimension size, double fov);
 }

@@ -36,7 +36,7 @@ import javax.media.j3d.Canvas3D;
  * the image will not change for that particular action.
  *
  * @author Will Holcomb, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ImageButtonOverlay extends MouseOverlay
 {
@@ -117,7 +117,6 @@ public class ImageButtonOverlay extends MouseOverlay
         for(int i = 0; i < images.length; i++)
         {
             hasImage[i] = images[i] != null;
-System.out.println("hasImage " + hasImage[i]);
 
             if(hasImage[i])
                 updateBuffer(images[i], i);
