@@ -17,6 +17,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.geom.terrain \
 	org.j3d.geom.particle \
 	org.j3d.geom.spline \
+	org.j3d.geom.spring \
 	org.j3d.ui \
 	org.j3d.ui.image \
 	org.j3d.ui.navigation \
@@ -28,6 +29,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.loaders.stl \
 	org.j3d.loaders.vterrain \
 	org.j3d.loaders.dem \
+	org.j3d.loaders.discreet
 
 #	org.j3d.loaders.ac3d.util \
 #	org.j3d.loaders.ac3d.models \
@@ -52,6 +54,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.geom.terrain \
 	org.j3d.geom.particle \
 	org.j3d.geom.spline \
+	org.j3d.geom.spring \
 	org.j3d.ui \
 	org.j3d.ui.image \
 	org.j3d.ui.navigation \
@@ -59,7 +62,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.terrain.roam \
 	org.j3d.texture \
 	org.j3d.loaders \
-	org.j3d.loaders.ac3d \
+	org.j3d.loaders.discreet \
 	org.j3d.loaders.stl \
 	org.j3d.loaders.vterrain \
 	org.j3d.loaders.dem \
