@@ -24,10 +24,10 @@ import org.j3d.geom.UnsupportedTypeException;
  * <P>
  *
  * Bezier curves of all orders are permitted. Order information is derived
- * from the provided knot coordinates.
+ * from the provided controlPoint coordinates.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BezierGenerator extends GeometryGenerator
 {
@@ -41,7 +41,10 @@ public class BezierGenerator extends GeometryGenerator
     private int facetCount;
 
     /** Knot values used to generate patches in flat array */
-    private float[] knotCoordinates;
+    private float[] controlPointCoordinates;
+
+    /** The number of know values */
+    private int numControlPoints;
 
     /** Coordinates of the generated curve */
     private float[] curveCoordinates;
@@ -58,6 +61,7 @@ public class BezierGenerator extends GeometryGenerator
      */
     public BezierGenerator()
     {
+        this(DEFAULT_FACETS);
     }
 
     /**
@@ -74,6 +78,12 @@ public class BezierGenerator extends GeometryGenerator
 
         curveChanged = true;
         facetCount = facets;
+        numControlPoints = 0;
+        numCurveValues = 0;
+
+        // Assume a basic bezier with only 3 control points;
+        controlPointCoordinates = new float[9];
+        curveCoordinates = new float[(facets + 1) * 3];
     }
 
     /**
@@ -96,32 +106,31 @@ public class BezierGenerator extends GeometryGenerator
     }
 
     /**
-     * Set the bezier curve knots. The array is presented with the coordinates
+     * Set the bezier curve controlPoints. The array is presented with the coordinates
      * flattened as [Xn, Yn, Zn] in the width array. The order of the patch is
      * determined by the passed array. If the arrays are not of minimum length
      * 3 and equal length an exception is generated.
      *
-     * @param knots The knot coordinate values
+     * @param controlPoints The controlPoint coordinate values
      */
-    public void setKnots(float[] knots)
+    public void setControlPoints(float[] controlPoints)
     {
-        if(knots.length < 3)
+        if(controlPoints.length < 3)
             throw new IllegalArgumentException("Depth patch size < 3");
 
         // second check for consistent lengths of the width patches
         int i;
 
-        if(knots.length != knotCoordinates.length)
+        if(controlPoints.length > controlPointCoordinates.length)
+            controlPointCoordinates = new float[controlPoints.length];
 
-        {
-            knotCoordinates = new float[knots.length];
-        }
+        System.arraycopy(controlPoints,
+                         0,
+                         controlPointCoordinates,
+                         0,
+                         controlPoints.length);
 
-        System.arraycopy(knots,
-                         0,
-                         knotCoordinates,
-                         0,
-                         knots.length);
+        numControlPoints = controlPoints.length / 3;
 
         curveChanged = true;
     }
@@ -142,7 +151,7 @@ public class BezierGenerator extends GeometryGenerator
         switch(data.geometryType)
         {
             case GeometryData.LINES:
-                ret_val = facetCount * 2;
+                ret_val = (facetCount + 1) * 2;
                 break;
             case GeometryData.LINE_STRIPS:
             case GeometryData.INDEXED_LINES:
@@ -375,7 +384,7 @@ public class BezierGenerator extends GeometryGenerator
         int vtx = 0;
         int c_count = 0;
 
-        for(int i = 0; i < vtx_cnt; i++)
+        for(int i = 0; i < facetCount; i++)
         {
             coords[vtx] = curveCoordinates[c_count];
             vtx++;
@@ -389,6 +398,7 @@ public class BezierGenerator extends GeometryGenerator
             coords[vtx] = curveCoordinates[c_count + 4];
             vtx++;
             coords[vtx] = curveCoordinates[c_count + 5];
+            vtx++;
 
             c_count += 3;
         }
@@ -555,95 +565,71 @@ public class BezierGenerator extends GeometryGenerator
             curveCoordinates = new float[numCurveValues];
         }
 
-        int icount = 0;
-        int jcount = 0;
-        float t = 0;
-        float step = 1 / ((float)(knotCoordinates.length - 1));
-        int num_vertex = facetCount + 1;
+        int coord = 0;
+        float div = 1 / (float)facetCount;
 
-        // Iterate through all the points, but instead of being recursive,
-        // use a loop.
-        for(int i1 = 1; i1 <= knotCoordinates.length; i1++)
+        for(int i = 0; i < facetCount; i++)
         {
+            calcSinglePoint(i * div, coord);
+            coord += 3;
+        }
 
-            // Smooth out the last point to make it exact.
-            if((1.0f - t) < 5e-6)
-                t = 1.0f;
+        int ncp = numControlPoints * 3;
 
-            for(int j = 1; j <= 3; j++)
-            { // generate a point on the curve
-                jcount = j;
-                curveCoordinates[icount + j] = 0;
+        curveCoordinates[numCurveValues - 3] = controlPointCoordinates[ncp - 3];
+        curveCoordinates[numCurveValues - 2] = controlPointCoordinates[ncp - 2];
+        curveCoordinates[numCurveValues - 1] = controlPointCoordinates[ncp - 1];
+    }
 
-                for(int i = 1; i <= num_vertex; i++)
+    /**
+     * Calculate a single point along the bezier curve and place it into
+     * the point array.
+     */
+    private void calcSinglePoint(float mu, int out)
+    {
+        int k, kn, nn, nkn;
+        double blend, muk, munk;
+        float x = 0;
+        float y = 0;
+        float z = 0;
+
+        muk = 1;
+        munk = Math.pow(1 - mu, (numControlPoints - 1));
+
+        for(k = 0; k < numControlPoints; k++)
+        {
+            nn = numControlPoints - 1;
+            kn = k;
+            nkn = numControlPoints - 1 - k;
+            blend = muk * munk;
+            muk *= mu;
+            munk /= (1 - mu);
+
+            while(nn >= 1)
+            {
+                blend *= nn;
+                nn--;
+
+                if(kn > 1)
                 {
-                    // Do x,y,z components */
-                    curveCoordinates[icount + j] = curveCoordinates[icount + j] +
-                                                   calcBasis(num_vertex -1, i - 1, t) *
-                                                   knotCoordinates[jcount];
-                    jcount = jcount + 3;
+                    blend /= (double)kn;
+                    kn--;
+                }
+
+                if(nkn > 1)
+                {
+                    blend /= (double)nkn;
+                    nkn--;
                 }
             }
 
-            icount = icount + 3;
-            t = t + step;
-        }
-    }
-
-    /**
-     * Evaluate the Bernstein basis function.
-     */
-    private float calcBasis(int n, int i, float t)
-    {
-        // Special case handling with Math.pow
-
-        // t^i
-        float ti = (t == 0. && i == 0) ? 1 : (float)Math.pow(t, i);
-
-        // (1 - t)^i
-        float tni = (n == i && t == 1) ? 1 : (float)Math.pow((1 - t), (n - i));
-
-        // n! / (i! * (n - i)!)
-        float ni = factorial(n) / (float)(factorial(i) * factorial(n - i));
-
-        // Calculate Bernstein basis function as the return value
-        return ni * ti * tni;
-    }
-
-    /**
-     * Calculate the factorial value for the given value ie n!
-     *
-     * @param n The value to calculate n! for
-     * @return the value of n!
-     */
-    private int factorial(int n)
-    {
-        int ret_val = 0;
-
-        // look for a precalculated value first. If none, calculate as needed
-        if(n < FACTORIALS.length)
-        {
-            ret_val = FACTORIALS[n];
-        }
-        else
-        {
-            int cnt = FACTORIALS.length;
-
-            // if used heavily, this may cause an issue with multithreading.
-            // May need to put into a mutex block.
-            int[] tmp = new int[n + 1];
-            System.arraycopy(FACTORIALS, 0, tmp, 0, FACTORIALS.length);
-            FACTORIALS = tmp;
-
-            while(cnt <= n)
-            {
-                FACTORIALS[cnt] = FACTORIALS[cnt - 1] * cnt;
-                cnt++;
-            }
-
-            ret_val = FACTORIALS[n];
+            x += controlPointCoordinates[k * 3] * blend;
+            y += controlPointCoordinates[k * 3 + 1] * blend;
+            z += controlPointCoordinates[k * 3 + 2] * blend;
         }
 
-        return ret_val;
+        curveCoordinates[out] = x;
+        curveCoordinates[out + 1] = y;
+        curveCoordinates[out + 2] = z;
     }
 }
