@@ -34,7 +34,7 @@ import org.j3d.ui.navigation.MouseViewHandler;
  * TriangleArray in BY_REFERENCE mode.
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ParticleTest extends DemoFrame
 {
@@ -145,7 +145,7 @@ public class ParticleTest extends DemoFrame
            1, 1, 0, 1
         };
 
-        int particleCount = 1000;
+        int particleCount = 10000;
         float[] position = {0, -0.5f, -20};
         float[] direction = {0, 0, 0};
 
@@ -172,7 +172,7 @@ public class ParticleTest extends DemoFrame
                                    0,
                                    0.25f);
 */
-
+/*
            new ExplosionPointEmitter(10000,
                                      particleCount,
                                      position,
@@ -180,7 +180,7 @@ public class ParticleTest extends DemoFrame
                                      1,
                                      0.25f);
 
-/*
+*/
             new PolylineEmitter(10000,
                                 particleCount,
                                 line,
@@ -189,15 +189,16 @@ public class ParticleTest extends DemoFrame
                                 velocity,
                                 0.25f);
 
-  */
+
 
         // create a "smoke" particle system with 1000 particles
         // the properties for each particle are loaded from a
         // property file ("smoke" is used as a key)
         ParticleSystem smoke_system =
-//           new PointArrayByRefParticleSystem("smoke", particleCount);
+           new PointArrayByRefParticleSystem("smoke", particleCount);
 //           new LineArrayByRefParticleSystem("smoke", particleCount, false);
-           new TriangleArrayByRefParticleSystem("smoke", particleCount, false);
+//           new TriangleArrayByRefParticleSystem("smoke", particleCount, false);
+//           new TriangleFanByRefParticleSystem("smoke", particleCount, false);
 //           new QuadArrayByRefParticleSystem("smoke", particleCount, false);
         smoke_system.setParticleInitializer(emitter);
 
@@ -236,8 +237,8 @@ public class ParticleTest extends DemoFrame
         Point3d b_max = new Point3d(size, size, size);
         BoundingBox particle_bounds = new BoundingBox(b_min, b_max);
 
-//        smoke_system.addParticleFunction(
-//            new BoundingBoxParticleFunction(particle_bounds));
+        smoke_system.addParticleFunction(
+            new BoundingBoxParticleFunction(particle_bounds));
 
         smoke_system.initialize();
 
