@@ -50,6 +50,8 @@ import java.util.TreeSet;
 // none
 
 /**
+ * A queue manager implementation that uses sorted TreeSets to manage the
+ * queue.
  *
  * @author  Paul Byrne, Justin Couch
  * @version
@@ -68,7 +70,12 @@ class TreeQueueManager implements QueueManager
         diamondQueue = new TreeSet(new DiamondComparator());
     }
 
-    public void addTriangle(Object node)
+    /**
+     * Add a new triangle to the queue.
+     *
+     * @param node The new node to add
+     */
+    public void addTriangle(QueueItem node)
     {
         if(!(node instanceof TreeNode))
             throw new RuntimeException("Not a TreeNode");
@@ -76,7 +83,12 @@ class TreeQueueManager implements QueueManager
         triQueue.add(node);
     }
 
-    public void removeTriangle(Object node)
+    /**
+     * Remove the given triangle the queue.
+     *
+     * @param node The new node to remove
+     */
+    public void removeTriangle(QueueItem node)
     {
         if(!(node instanceof TreeNode))
             throw new RuntimeException("Not a TreeNode");
@@ -84,7 +96,12 @@ class TreeQueueManager implements QueueManager
         triQueue.remove(node);
     }
 
-    public void addDiamond(Object node)
+    /**
+     * Add a new triangle to the queue.
+     *
+     * @param node The new node to add
+     */
+    public void addDiamond(QueueItem node)
     {
         if(!(node instanceof TreeNode))
             throw new RuntimeException("Not a TreeNode");
@@ -92,7 +109,12 @@ class TreeQueueManager implements QueueManager
         diamondQueue.add(node);
     }
 
-    public void removeDiamond(Object node)
+    /**
+     * Remove the given diamond from the queue.
+     *
+     * @param node The new node to remove
+     */
+    public void removeDiamond(QueueItem node)
     {
         if(!(node instanceof TreeNode))
             throw new RuntimeException("Not a TreeNode");
@@ -100,6 +122,9 @@ class TreeQueueManager implements QueueManager
         diamondQueue.remove(node);
     }
 
+    /**
+     * Clear everything from the queue.
+     */
     public void clear()
     {
         triQueue.clear();
