@@ -1,12 +1,12 @@
 #*********************************************************************
 #
-#  (C) 2001 Web3d Consortium
-#    http://www.web3d.org/
+#                         (C) 2001-02 j3d.org
+#                         http://code.j3d.org/
 #
-# Makefile rules and useful functions for wide use for Java specific tasks
-#
+# Lowest level common makefile for both native and Java code
+# 
 # Author: Justin Couch
-# Version: $Revision: 1.6 $
+# Version: $Revision: 1.7 $
 #
 #*********************************************************************
 
@@ -20,8 +20,11 @@ JAVA_DEV_ROOT = $(SRC_DIR)
 CLASS_DIR     = $(PROJECT_ROOT)/classes
 JAVADOC_DIR   = $(DOCS_DIR)/javadoc
 JAR_DIR       = $(PROJECT_ROOT)/jars
+JAR_MAKE_DIR  = $(MAKE_DIR)/jar
 JAVA_SRC_DIR  = $(JAVA_DEV_ROOT)
 DESTINATION   = $(PROJECT_ROOT)/classes
+JAR_TMP_DIR   = $(PROJECT_ROOT)/.jar_tmp
+MANIFEST_DIR  = $(MAKE_DIR)/manifest
 
 #
 # Built up tool information
@@ -43,7 +46,7 @@ SPACE         = $(EMPTY) $(EMPTY)
 ifeq ("cygwin", "$(strip $(OSTYPE))")
   PATH_SEP=";"
 else
-  PATH_SEP=":"
+  PATH_SEP=";"
 endif
 
 ifdef JARS
@@ -102,7 +105,11 @@ CLASS_FILES     = $(JAVA_FILES:%.java=$(PACKAGE_DIR)/%.class)
 OTHER_FILES     = $(EXTRA:%=$(PACKAGE_DIR)/%)
 JNI_CLASS_FILES = $(JNI_SOURCE:%.java=$(PACKAGE_DIR)/%.class)
 JNI_HEADERS     = $(JNI_SOURCE:%.java=%.h)
-JAR_CONTENT_CMD = $(patsubst %, -C $(CLASS_DIR) %, $(JAR_CONTENT))
+JAR_CLASS_FILES = $(patsubst %, %/*.*, $(JAR_CONTENT))
+
+#JAR_EXTRA_FILES = $(EXTRA_FILES:%=$(JAVA_SRC_DIR)/%)
+
+JAR_CONTENT_CMD = -C $(JAR_TMP_DIR) . $(patsubst %, -C $(JAVA_SRC_DIR) %, $(EXTRA_FILES))
 LINK_FILES      = $(patsubst %, -link %,$(LINK_URLS))
 
 # Make a list of all packages involved
@@ -124,7 +131,7 @@ JAVAH_OPTIONS = -d $(INCLUDE_DIR) -classpath $(CLASSPATH)
 
 ifdef MANIFEST
   JAR_OPTIONS = -cvmf
-  JAR_MANIFEST = $(JAVA_SRC_DIR)/$(MANIFEST)
+  JAR_MANIFEST = $(MANIFEST_DIR)/$(MANIFEST)
 else
   JAR_OPTIONS = -cvf
 endif
@@ -225,18 +232,26 @@ clean : $(PLIST_CLEAN)
 #
 
 # Rule 13. Build a jar file. $* strips the last phony .JAR extension.
+# Copy all the required directories to a temp dir and then build the 
+# JAR from that. The -C option on the jar command recurses all the
+# directories, which we don't want because we want to control the 
+# packaging structure. 
 %.JAR :
-	@ $(MAKEDIR) $(JAR_DIR)
+	@ $(MAKEDIR) $(JAR_DIR) $(JAR_TMP_DIR)
 	$(PRINT) Deleting the old JAR file
 	@ $(DELETE) $(JAR_DIR)/$*
 	$(PRINT) Building the new JAR file $*
-	@ $(JAR) $(JAR_OPTIONS) $(JAR_MANIFEST) $(JAR_DIR)/$* $(JAR_CONTENT_CMD)
+	@ $(RMDIR) $(JAR_TMP_DIR)/*
+	$(CD) $(CLASS_DIR) && $(COPY_PATH) $(JAR_CLASS_FILES) $(JAR_TMP_DIR)
+	$(JAR) $(JAR_OPTIONS) $(JAR_MANIFEST) $(JAR_DIR)/$* $(JAR_CONTENT_CMD)
 
 # Rule 13. Create given jar file by invoking its Makefile which triggers
 # rule 12
 %.jar :
 	$(PRINT) Building JAR file $@
-	@ $(MAKE) -k -f $(patsubst %,$(MAKE_DIR)/Makefile.$*,$@) $@.JAR
+	@ $(MAKE) -k -f $(patsubst %,$(JAR_MAKE_DIR)/Makefile.$*,$@) $@.JAR
+	$(PRINT) Cleaning up
+	@ $(RMDIR) $(JAR_TMP_DIR)
 
 
 # Rule 14. Create all jar files by invoking rule 13

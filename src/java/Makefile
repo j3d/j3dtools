@@ -59,7 +59,20 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.loaders.dem \
 
 # Names of JAR files we want to create
-JARS = j3d-org.jar
+JARS = j3d-org-util.jar \
+	j3d-org-geom-core.jar \
+	j3d-org-geom-overlay.jar \
+	j3d-org-geom-particle.jar \
+	j3d-org-geom-terrain.jar \
+	j3d-org-inputdevice.jar \
+	j3d-org-loader-core.jar \
+	j3d-org-loader-ac3d.jar \
+	j3d-org-loader-dem.jar \
+	j3d-org-loader-stl.jar \
+	j3d-org-loader-vterrain.jar \
+	j3d-org-navigation.jar \
+	j3d-org-terrain.jar \
+	j3d-org-texture.jar \
 
 # 3rd party libraries that need including.
 JARS_3RDPARTY=

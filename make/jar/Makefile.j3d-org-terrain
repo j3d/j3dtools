@@ -1,0 +1,21 @@
+#*********************************************************************
+#
+#                         (C) 2001-02 j3d.org
+#                         http://code.j3d.org/
+#
+# Package makefile producing j3d-org-terrain.jar
+# 
+# Author: Justin Couch
+# Version: $Revision: 1.1 $
+#
+#*********************************************************************
+
+# No need to put in subdirs here. We only do that if we want to explicitly
+# exclude some directory and then we name everything around it.
+JAR_CONTENT= org/j3d/terrain \
+	org/j3d/terrain/roam
+
+# Manifest file name. Stored in the make/manifest directory
+MANIFEST=terrain.mf
+
+include ${PROJECT_ROOT}/make/Makefile.jav
