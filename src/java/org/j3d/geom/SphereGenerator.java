@@ -39,7 +39,7 @@ import javax.vecmath.Vector3f;
  * that the normal points directly away from the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class SphereGenerator extends GeometryGenerator
 {
@@ -720,7 +720,6 @@ public class SphereGenerator extends GeometryGenerator
 
         recalculateQuadSphere();
 
-        // quad torus generates coordinates at facetCount * 3 indexes apart.
         // Go around and build coordinate arrays from this.
         int half = facetCount / 4;
         int i, k;
@@ -742,13 +741,13 @@ public class SphereGenerator extends GeometryGenerator
                 coords[count++] = quadCoordinates[pos + facet_inc + 1];
                 coords[count++] = quadCoordinates[pos + facet_inc + 2];
 
-                coords[count++] = quadCoordinates[pos];
-                coords[count++] = quadCoordinates[pos + 1];
-                coords[count++] = quadCoordinates[pos + 2];
-
                 coords[count++] = quadCoordinates[pos + 3];
                 coords[count++] = quadCoordinates[pos + 4];
                 coords[count++] = quadCoordinates[pos + 5];
+
+                coords[count++] = quadCoordinates[pos];
+                coords[count++] = quadCoordinates[pos + 1];
+                coords[count++] = quadCoordinates[pos + 2];
 
                 // triangle 2
                 coords[count++] = quadCoordinates[pos + 3];
@@ -1560,7 +1559,7 @@ public class SphereGenerator extends GeometryGenerator
         // the 3D coordinates.
         facetsChanged = false;
 
-        int vtx_count = (facetCount - 2) * (facetCount + 1);
+        int vtx_count = facetCount * (facetCount + 1);
 
         if(useHalf)
             vtx_count /= 2;
