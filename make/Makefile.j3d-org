@@ -1,0 +1,16 @@
+#
+# Makefile for producing the JAR file used by this library
+#
+
+# No need to put in subdirs here. We only do that if we want to explicitly
+# exclude some directory and then we name everything around it.
+JAR_CONTENT= org/j3d/util \
+	     org/j3d/util/device \
+	     org/j3d/ui \
+	     org/j3d/ui/image \
+    	     org/j3d/geom
+
+# Manifest file name. Stored in the code/java directory
+MANIFEST=
+
+include ${PROJECT_ROOT}/make/Makefile.jav
