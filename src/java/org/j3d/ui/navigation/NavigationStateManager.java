@@ -71,6 +71,9 @@ public class NavigationStateManager
     /** The mouse view handler for mouse events */
     private NavigationToolbar toolbarHandler;
 
+    /** An observer for navigation state change information */
+    private NavigationStateListener navigationListener;
+
     //----------------------------------------------------------
     // Inner class definitions
     //----------------------------------------------------------
@@ -111,7 +114,11 @@ public class NavigationStateManager
                     break;
             }
 
-            mouseHandler.setNavigationState(state);
+            if(mouseHandler != null)
+                mouseHandler.setNavigationState(state);
+
+            if(navigationListener != null)
+                navigationListener.setNavigationState(state);
         }
 
         /**
@@ -157,7 +164,11 @@ public class NavigationStateManager
                     break;
             }
 
-            toolbarHandler.setNavigationState(state);
+            if(toolbarHandler != null)
+                toolbarHandler.setNavigationState(state);
+
+            if(navigationListener != null)
+                navigationListener.setNavigationState(state);
         }
 
         /**
@@ -233,6 +244,18 @@ public class NavigationStateManager
         }
     }
 
+
+    /**
+     * Set the listener for navigation state change notifications. By setting
+     * a value of null it will clear the currently set instance
+     *
+     * @param l The listener to use for change updates
+     */
+    public void setNavigationStateListener(NavigationStateListener l)
+    {
+        navigationListener = l;
+    }
+
     /**
      * Notification that the panning state has changed to the new state.
      *
@@ -258,8 +281,14 @@ public class NavigationStateManager
                 break;
         }
 
-        toolbarHandler.setNavigationState(state);
-        mouseHandler.setNavigationState(state);
+        if(toolbarHandler != null)
+            toolbarHandler.setNavigationState(state);
+
+        if(mouseHandler != null)
+            mouseHandler.setNavigationState(state);
+
+        if(navigationListener != null)
+            navigationListener.setNavigationState(state);
     }
 
     /**
@@ -282,25 +311,47 @@ public class NavigationStateManager
         Image img = ImageLoader.loadImage(PAN_CURSOR);
         Point center = new Point();
 
-        center.x = img.getWidth(null) / 2;
-        center.y = img.getHeight(null) / 2;
+        if(img != null)
+        {
+            center.x = img.getWidth(null) / 2;
+            center.y = img.getHeight(null) / 2;
 
-        panCursor = tk.createCustomCursor(img, center ,null);
+            panCursor = tk.createCustomCursor(img, center ,null);
+        }
+        else
+        {
+            System.out.println("Unable to load pan cursor image");
+        }
+
 
         img = ImageLoader.loadImage(WALK_CURSOR);
         center = new Point();
 
-        center.x = img.getWidth(null) / 2;
-        center.y = img.getHeight(null) / 2;
+        if(img != null)
+        {
+            center.x = img.getWidth(null) / 2;
+            center.y = img.getHeight(null) / 2;
 
-        walkCursor = tk.createCustomCursor(img, center ,null);
+            walkCursor = tk.createCustomCursor(img, center ,null);
+        }
+        else
+        {
+            System.out.println("Unable to load walk cursor image");
+        }
 
         img = ImageLoader.loadImage(TILT_CURSOR);
         center = new Point();
 
-        center.x = img.getWidth(null) / 2;
-        center.y = img.getHeight(null) / 2;
+        if(img != null)
+        {
+            center.x = img.getWidth(null) / 2;
+            center.y = img.getHeight(null) / 2;
 
-        tiltCursor = tk.createCustomCursor(img, center ,null);
+            tiltCursor = tk.createCustomCursor(img, center ,null);
+        }
+        else
+        {
+            System.out.println("Unable to load tilt cursor image");
+        }
     }
 }
