@@ -34,7 +34,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {
@@ -701,7 +701,6 @@ public class CylinderGenerator extends GeometryGenerator
                                                 num_strips);
 
         data.stripCounts[0] = (1 + facetCount) * 2;
-System.out.println("num_strips; " + num_strips + " useBottom: " + useBottom);
 
         int scnt=1;
 
@@ -2145,7 +2144,6 @@ System.out.println("num_strips; " + num_strips + " useBottom: " + useBottom);
 
         recalc2DTexture();
 
-System.out.println("data: " + data.textureCoordinates.length + " texs: " + texCoordinates2D.length);
         System.arraycopy(texCoordinates2D, 0, data.textureCoordinates, 0, texCoordinates2D.length);
         float[] texCoords = data.textureCoordinates;
     }
