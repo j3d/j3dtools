@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
 
@@ -14,7 +14,9 @@ PACKAGE = org.j3d.loaders
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-SOURCE = HeightMapParser.java \
+SOURCE = BinaryLoader.java \
+	ManagedLoader.java \
+	HeightMapParser.java \
 	HeightMapLoader.java \
 	HeightMapTerrainData.java 
 
