@@ -19,11 +19,22 @@ package org.j3d.loaders.discreet;
  * Representation of a single camera and its paramaters needed for rendering.
  * <p>
  *
- * Cameras are described using the 0x4700 series of parameters. Not all of them
- * are mapped here currently.
+ * Cameras are described using the 0x4700 series of parameters.
+ * <p>
+ *
+ * The block is defined as:
+ * <pre>
+ * N_CAMERA 0x4700
+ *    point         (camera position)
+ *    point         (camera target)
+ *    float         (camera bank angle)
+ *    float         (camera focal length in mm)
+ *    CAM_SEE_CONE  0x4710
+ *    CAM_RANGES    0x4720
+ * </pre>
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class CameraBlock
 {
@@ -33,7 +44,10 @@ public class CameraBlock
     /** The location the camera is pointing at */
     public float[] target;
 
-    /** The rotation angle (relative to the local Y axis?) for the camera */
+    /**
+     * The rotation angle in degrees (relative to the local Y axis?) for the
+     * camera.
+     */
     public float bankAngle;
 
     /** The focus distance for the camera (in millimetres) */
@@ -44,7 +58,7 @@ public class CameraBlock
 
     /**
      * Atmospheric effect ranges for the camera. Null if not set. Length 2 if
-     * set. [0] is near raidsu of effect. [0] is far radius of effect. Both
+     * set. [0] is near raidus of effect. [0] is far radius of effect. Both
      * must be greater than or equal to zero.
      */
     public float[] ranges;
