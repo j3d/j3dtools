@@ -31,7 +31,7 @@ import javax.vecmath.AxisAngle4f;
  *
  *
  * @author Jason Taylor, based on the work by Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class Axis extends Group
 {
@@ -140,7 +140,7 @@ public class Axis extends Group
         Appearance z_app = new Appearance();
         z_app.setMaterial(blue_material);
 
-        if(transparent != 1)
+        if(transparency != 1)
         {
             TransparencyAttributes attr =
                 new TransparencyAttributes(TransparencyAttributes.FASTEST,
