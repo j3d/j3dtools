@@ -15,7 +15,7 @@ import java.awt.Rectangle;
 import javax.media.j3d.Texture;
 
 // Application specific imports
-import org.j3d.ui.navigation.HeightDataSource;
+// none
 
 /**
  * Representatoin of data source that holds its data in tiles.
@@ -45,7 +45,7 @@ import org.j3d.ui.navigation.HeightDataSource;
  * {@link TerrainData#TILED_DATA}.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface TiledTerrainData extends TerrainData
 {
@@ -85,7 +85,7 @@ public interface TiledTerrainData extends TerrainData
      * @param bounds The bounds of the available data, to be filled in by the
      *    implementation of this class
      */
-    public int getTilesAvailableBounds(Rectangle bounds);
+    public void getTilesAvailableBounds(Rectangle bounds);
 
     /**
      * Set the bounding information, in number of tiles, of the area that the
