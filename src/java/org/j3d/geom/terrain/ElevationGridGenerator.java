@@ -35,11 +35,11 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * Points are defined in the height arrays in width first order. Normals, are
  * always smooth blended.
  *
- * Alan: There are some cases where texture generation is not complete.  
+ * Alan: There are some cases where texture generation is not complete.
  * Especially in regards to 3D textures.
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ElevationGridGenerator extends GeometryGenerator
 {
@@ -462,7 +462,7 @@ public class ElevationGridGenerator extends GeometryGenerator
             generateTriTexture3D(data);
 
         // now let's do the index list
-        int index_size = data.vertexCount * 4;
+        int index_size = (facetCount * facetCount) * 4;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -477,7 +477,7 @@ public class ElevationGridGenerator extends GeometryGenerator
         int vtx = 0;
 
         // each face consists of an anti-clockwise
-        for(int i = facetCount; --i >= 0; )
+        for(int i = (facetCount * facetCount); --i >= 0; )
         {
             indexes[idx++] = vtx;
             indexes[idx++] = vtx + widthPoints;
@@ -512,7 +512,7 @@ public class ElevationGridGenerator extends GeometryGenerator
             generateTriTexture3D(data);
 
         // now let's do the index list
-        int index_size = data.vertexCount * 6;
+        int index_size = (facetCount * facetCount) * 6;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -527,7 +527,7 @@ public class ElevationGridGenerator extends GeometryGenerator
         int vtx = 0;
 
         // each face consists of an anti-clockwise
-        for(int i = facetCount; --i >= 0; )
+        for(int i = (facetCount * facetCount); --i >= 0; )
         {
             // triangle 1
             indexes[idx++] = vtx;
@@ -975,21 +975,7 @@ public class ElevationGridGenerator extends GeometryGenerator
             coords[count++] = terrainCoordinates[base_count + 3];
             coords[count++] = terrainCoordinates[base_count + 4];
             coords[count++] = terrainCoordinates[base_count + 5];
-/*
-System.out.println("Base count is " + base_count + " " + widthPoints);
-System.out.println(coords[count - 12] + " " + coords[count - 11] + " " + coords[count - 10]);
-System.out.println(coords[count - 9] + " " + coords[count - 8] + " " + coords[count - 7]);
-System.out.println(coords[count - 6] + " " + coords[count - 5] + " " + coords[count - 4]);
-System.out.println(coords[count - 3] + " " + coords[count - 2] + " " + coords[count - 1]);
-System.out.println();
 
-System.out.println("There are " + num_strips);
-System.out.println("vertex count " + data.vertexCount);
-System.out.println("Alt count " + getVertexCount(data));
-System.out.println("index size " + index_size);
-System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
-
-*/
             base_count += 3;
 
             if((i % (widthPoints - 1)) == 0)
@@ -1260,21 +1246,7 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
             normals[count++] = terrainNormals[base_count + 3];
             normals[count++] = terrainNormals[base_count + 4];
             normals[count++] = terrainNormals[base_count + 5];
-/*
-System.out.println("Base count is " + base_count + " " + widthPoints);
-System.out.println(normals[count - 12] + " " + normals[count - 11] + " " + normals[count - 10]);
-System.out.println(normals[count - 9] + " " + normals[count - 8] + " " + normals[count - 7]);
-System.out.println(normals[count - 6] + " " + normals[count - 5] + " " + normals[count - 4]);
-System.out.println(normals[count - 3] + " " + normals[count - 2] + " " + normals[count - 1]);
-System.out.println();
 
-System.out.println("There are " + num_strips);
-System.out.println("vertex count " + data.vertexCount);
-System.out.println("Alt count " + getVertexCount(data));
-System.out.println("index size " + index_size);
-System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
-
-*/
             base_count += 3;
 
             if((i % (widthPoints - 1)) == 0)
@@ -1314,7 +1286,7 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
     // Texture coordinate generation routines
     //------------------------------------------------------------------------
     /**
-     * Generates new set of unindexed texture coordinates for triangles strips. 
+     * Generates new set of unindexed texture coordinates for triangles strips.
      * The array consists of one strip per width row.
      *
      * @param data The data to base the calculations on
@@ -1358,7 +1330,7 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
     }
 
     /**
-     * Generates new set of unindexed texture coordinates for quads. The array 
+     * Generates new set of unindexed texture coordinates for quads. The array
      * consists of one strip per width row.
      *
      * @param data The data to base the calculations on
@@ -1408,7 +1380,7 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
     }
 
     /**
-     * Generate a new set of texCoords for a set of unindexed points. 
+     * Generate a new set of texCoords for a set of unindexed points.
      * <p>
      * This must always be called after the coordinate generation.
      *
@@ -1435,7 +1407,7 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
     }
 
     /**
-     * Generate a new set of texCoords for a set of unindexed points. 
+     * Generate a new set of texCoords for a set of unindexed points.
      * <p>
      * This must always be called after the coordinate generation.
      *
@@ -1785,7 +1757,7 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
     }
 
     /**
-     * Regenerate the texture coordinate points. 
+     * Regenerate the texture coordinate points.
      * Assumes regenerateBase has been called before this
      */
     private final void regenerateTexcoords()
