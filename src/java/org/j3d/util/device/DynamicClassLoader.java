@@ -165,20 +165,22 @@ class DynamicClassLoader
       throw new NullPointerException(NULL_BASE_MSG);
 
     Object ret_val = null;
+    boolean check_ok = true;
 
     try
     {
       Class new_class = Class.forName(name);
 
-      if(backgroundChecks(new_class, base))
+      if(check_ok = backgroundChecks(new_class, base))
         ret_val = new_class.newInstance();
-      else
-        throw new InvalidClassException(BACKGROUND_MSG);
     }
     catch(Exception e)
     {
       throw new InvalidClassException(INIT_MSG);
     }
+
+    if(!check_ok)
+      throw new InvalidClassException(BACKGROUND_MSG);
 
     return ret_val;
   }
@@ -197,33 +199,15 @@ class DynamicClassLoader
   {
     boolean ret_val = false;
 
-    // If the source class is an interface, only check the interfaces of
-    // the current class. If not, just check current for a match
-    if(source.isInterface())
-    {
-      Class[] interfaces = current.getInterfaces();
+    ret_val = source.isAssignableFrom(current);
 
-      for(int i = 0; i < interfaces.length; i++)
-      {
-        if(interfaces[i].isInstance(source))
-        {
-          ret_val = true;
-          break;
-        }
-      }
-    }
-    else
+    // if this is not an instance of the source class then let's check
+    // the base class (if it has one) for a match.
+    if(!ret_val)
     {
-       ret_val = source.isInstance(current);
-
-       // if this is not an instance of the source class then let's check
-       // the base class (if it has one) for a match.
-       if(!ret_val)
-       {
-         Class base = current.getSuperclass();
-         if(base != null)
-           ret_val = backgroundChecks(base, source);
-       }
+      Class base = current.getSuperclass();
+      if(base != null)
+       ret_val = backgroundChecks(base, source);
     }
 
     return ret_val;
