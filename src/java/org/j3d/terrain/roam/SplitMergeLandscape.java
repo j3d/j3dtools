@@ -7,40 +7,6 @@
  *
  ****************************************************************************/
 
-/*
- * @(#)SplitMergeLandscape.java 1.1 02/01/10 09:27:31
- *
- * Copyright (c) 2000-2002 Sun Microsystems, Inc.  All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *    -Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *    -Redistribution in binary form must reproduct the above copyright notice,
- *     this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- * Neither the name of Sun Microsystems, Inc. or the names of contributors may
- * be used to endorse or promote products derived from this software without
- * specific prior written permission.
- *
- * This software is provided "AS IS," without a warranty of any kind. ALL
- * EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY
- * IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR
- * NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN AND ITS LICENSORS SHALL NOT BE
- * LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING
- * OR DISTRIBUTING THE SOFTWARE OR ITS DERIVATIVES. IN NO EVENT WILL SUN OR ITS
- * LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR DATA, OR FOR DIRECT,
- * INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER
- * CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF THE USE OF
- * OR INABILITY TO USE SOFTWARE, EVEN IF SUN HAS BEEN ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGES.
- *
- * You acknowledge that Software is not designed,licensed or intended for use in
- * the design, construction, operation or maintenance of any nuclear facility.
- */
 package org.j3d.terrain.roam;
 
 // Standard imports
@@ -49,6 +15,7 @@ import javax.media.j3d.*;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
@@ -67,7 +34,7 @@ import org.j3d.terrain.*;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class SplitMergeLandscape extends Landscape
 {
@@ -97,6 +64,9 @@ public class SplitMergeLandscape extends Landscape
     /** The terrain data size */
     private final int terrainDataType;
 
+    /** The accuracy for the varianace that we want */
+    private final float accuracy;
+
     /** The collection of all patches in this landscape */
     private ArrayList patches = new ArrayList();
 
@@ -109,11 +79,26 @@ public class SplitMergeLandscape extends Landscape
     /** The default generator if none are supplied */
     private AppearanceGenerator defaultAppGenerator;
 
+    // Stuff Only instanced if the terrain type is Tiled.
+
     /** Maximum bounding point of the view frustum. Used as a working var. */
     private Point3d maxViewBound;
 
     /** Minimum bounding point of the view frustum. Used as a working var. */
     private Point3d minViewBound;
+
+    /** The set of tile bounds for the last time the position changed. */
+    private Rectangle oldTileBounds;
+
+    /** Working var to fetch the required bounds this frame */
+    private Rectangle reqdBounds;
+
+    /**
+     * The list of patches not currently in use. Per instance because a cleared
+     * patch is still part of the scene graph and can't be shared between
+     * multiples of them.
+     */
+    private LinkedList freePatchList;
 
     /**
      * Creates new Landscape based on the view information and the terrain
@@ -129,6 +114,7 @@ public class SplitMergeLandscape extends Landscape
         super(view, data);
 
         terrainDataType = data.getSourceDataType();
+        accuracy = (float)Math.toRadians(0.1);
 
         this.patchSize = init(data, DEFAULT_PATCH_SIZE);
     }
@@ -159,6 +145,7 @@ public class SplitMergeLandscape extends Landscape
             throw new IllegalArgumentException(NOT_POW2_MSG);
 
         terrainDataType = data.getSourceDataType();
+        accuracy = (float)Math.toRadians(0.1);
 
         this.patchSize = init(data, patchSize);
     }
@@ -181,6 +168,7 @@ public class SplitMergeLandscape extends Landscape
         super(view, data, gen);
 
         terrainDataType = data.getSourceDataType();
+        accuracy = (float)Math.toRadians(0.1);
 
         this.patchSize = init(data, DEFAULT_PATCH_SIZE);
     }
@@ -211,6 +199,7 @@ public class SplitMergeLandscape extends Landscape
             throw new IllegalArgumentException(NOT_POW2_MSG);
 
         terrainDataType = data.getSourceDataType();
+        accuracy = (float)Math.toRadians(0.1);
 
         this.patchSize = init(data, patchSize);
     }
@@ -227,9 +216,6 @@ public class SplitMergeLandscape extends Landscape
      */
     public void initialize(Tuple3f position, Vector3f direction)
     {
-        minViewBound = new Point3d();
-        maxViewBound = new Point3d();
-
         switch(terrainDataType)
         {
             case TerrainData.STATIC_DATA:
@@ -237,6 +223,12 @@ public class SplitMergeLandscape extends Landscape
                 break;
 
             case TerrainData.TILED_DATA:
+                minViewBound = new Point3d();
+                maxViewBound = new Point3d();
+                reqdBounds = new Rectangle();
+                oldTileBounds = new Rectangle();
+                freePatchList = new LinkedList();
+
                 createTiledPatches(position, direction);
                 break;
 
@@ -260,7 +252,6 @@ public class SplitMergeLandscape extends Landscape
     {
         queueManager.clear();
         landscapeView.viewingPlatformMoved();
-        float accuracy = (float)Math.toRadians(0.1);
         TreeNode splitCandidate;
         TreeNode mergeCandidate;
         boolean done;
@@ -268,13 +259,14 @@ public class SplitMergeLandscape extends Landscape
 
 // Does not handle the various terrain types yet....
 
+        // Firstly set up the queue of triangles that need merging or splitting
         for(int i = 0; i < size; i++)
         {
             Patch p = (Patch)patches.get(i);
-
             p.setView(position, landscapeView, queueManager);
         }
 
+        // ROAM away!
         done = false;
 
         while(!done)
@@ -291,7 +283,7 @@ public class SplitMergeLandscape extends Landscape
                 else
                     done = true;
             }
-            else if(mergeCandidate!=null && splitCandidate == null)
+            else if(mergeCandidate != null && splitCandidate == null)
             {
                 if(mergeCandidate.diamondVariance < accuracy)
                 {
@@ -320,11 +312,10 @@ public class SplitMergeLandscape extends Landscape
             }
         }
 
-
+        // Finally, tell the geometry to be updated at the Java3D level.
         for(int i = 0; i < size; i++)
         {
             Patch p = (Patch)patches.get(i);
-
             p.updateGeometry();
         }
 
@@ -381,7 +372,8 @@ public class SplitMergeLandscape extends Landscape
     }
 
     /**
-     * Create patches for a tiled terrain.
+     * Create patches for a tiled terrain. Assumes all the working vars have
+     * been instantiated before calling.
      *
      * @param position The position of the camera
      * @param direction The direction the camera is looking
@@ -389,7 +381,6 @@ public class SplitMergeLandscape extends Landscape
     private void createTiledPatches(Tuple3f position, Vector3f direction)
     {
         TiledTerrainData t_data = (TiledTerrainData)terrainData;
-        Rectangle reqd_bounds = new Rectangle();
 
         double x_spacing = t_data.getGridXStep();
         double y_spacing = t_data.getGridYStep();
@@ -401,19 +392,20 @@ public class SplitMergeLandscape extends Landscape
         double min_tile_x = minViewBound.x / (x_spacing * tile_size);
         double min_tile_y = minViewBound.z / (y_spacing * tile_size);
 
-        reqd_bounds.x = (int)Math.floor(min_tile_x);
-        reqd_bounds.y = (int)Math.floor(min_tile_y);
+        reqdBounds.x = (int)Math.floor(min_tile_x);
+        reqdBounds.y = (int)Math.floor(min_tile_y);
 
         double max_tile_x = maxViewBound.x / (x_spacing * tile_size);
         double max_tile_y = maxViewBound.z / (y_spacing * tile_size);
 
-        reqd_bounds.width = reqd_bounds.x + (int)Math.ceil(max_tile_x);
-        reqd_bounds.height = reqd_bounds.y + (int)Math.ceil(max_tile_y);
+        reqdBounds.width = reqdBounds.x + (int)Math.ceil(max_tile_x);
+        reqdBounds.height = reqdBounds.y + (int)Math.ceil(max_tile_y);
 
         // request the bounds be set to the minimum required
-        t_data.setActiveBounds(reqd_bounds);
+        t_data.setActiveBounds(reqdBounds);
+        oldTileBounds.setBounds(reqdBounds);
 
-        Patch[] westPatchNeighbour = new Patch[reqd_bounds.width];
+        Patch[] westPatchNeighbour = new Patch[reqdBounds.width];
         Patch southPatchNeighbour = null;
         Patch p = null;
 
@@ -422,14 +414,14 @@ public class SplitMergeLandscape extends Landscape
 
         float patch_1 = 1 / (float)patchSize;
         int east = (int)Math.floor(min_tile_x);
-        int y_tile = reqd_bounds.y;
+        int y_tile = reqdBounds.y;
 
-        for( ; east <= reqd_bounds.width; east += patchSize)
+        for( ; east <= reqdBounds.width; east += patchSize)
         {
             int north = (int)Math.floor(min_tile_y);
-            int x_tile = reqd_bounds.x;
+            int x_tile = reqdBounds.x;
 
-            for(; north <= reqd_bounds.height; north += patchSize)
+            for(; north <= reqdBounds.height; north += patchSize)
             {
                 app = app_gen.createAppearance();
                 app.setTexture(t_data.getTexture(x_tile, y_tile));
@@ -584,6 +576,62 @@ System.out.println("Free-form terrain not implemented yet");
         int val = size - 1;
 
         return ((val % ps) == 0);
+    }
+
+    /**
+     * Calculate the current required bounds for the viewpoint
+     */
+    private void calculateViewTileBounds()
+    {
+        TiledTerrainData t_data = (TiledTerrainData)terrainData;
+
+        double x_spacing = t_data.getGridXStep();
+        double y_spacing = t_data.getGridYStep();
+        int tile_size = t_data.getTileSize();
+
+        landscapeView.getBounds(minViewBound, maxViewBound);
+
+        // calc the tile that the current viewpoint is in
+        double min_tile_x = minViewBound.x / (x_spacing * tile_size);
+        double min_tile_y = minViewBound.z / (y_spacing * tile_size);
+
+        reqdBounds.x = (int)Math.floor(min_tile_x);
+        reqdBounds.y = (int)Math.floor(min_tile_y);
+
+        double max_tile_x = maxViewBound.x / (x_spacing * tile_size);
+        double max_tile_y = maxViewBound.z / (y_spacing * tile_size);
+
+        reqdBounds.width = reqdBounds.x + (int)Math.ceil(max_tile_x);
+        reqdBounds.height = reqdBounds.y + (int)Math.ceil(max_tile_y);
+    }
+
+    /**
+     * Clean out the patches that are not needed any more due to a move in the
+     * viewpoint and tiling patch list. Should be called after the tiled
+     * view bounds have been recalculated.
+     */
+    private void clearOldTiledPatches()
+    {
+        int size = patches.size();
+
+        for(int i = 0; i < size; i++)
+        {
+            Patch p = (Patch)patches.get(i);
+
+            if(!reqdBounds.contains(p.getTileOrigin()))
+            {
+                p.clear();
+                freePatchList.add(p);
+            }
+        }
+    }
+
+    /**
+     * Load new tiles into the system for the areas that are not accounted
+     * for.
+     */
+    private void loadNewTiles()
+    {
     }
 
     /**
