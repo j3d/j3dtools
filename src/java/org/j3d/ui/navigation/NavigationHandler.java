@@ -358,6 +358,13 @@ public class NavigationHandler
             frameDuration = System.currentTimeMillis() - startFrameDurationCalc;
             double motionDelay = 0.000005 * frameDuration;
 
+            // Hack to cover up lost mouseRel events
+            if (getEnable() == false) {
+                startFrameDurationCalc = System.currentTimeMillis();
+                wakeupOn( FPSCriterion );
+
+                return;
+            }
             oneFrameRotation.rotX(inputRotationX * motionDelay);
             viewTx.mul(oneFrameRotation);
 
@@ -520,11 +527,18 @@ public class NavigationHandler
             throw new IllegalArgumentException("View or TG is null when " +
                                                "the other isn't");
 
+        // Hack to cover over lost mouseRel events
+        if(frameTimer.getEnable()) {
+            frameTimer.setEnable(false);
+        }
+
         this.view = view;
         this.viewTg = tg;
 
         if(tg == null)
             return;
+
+        viewTg.getTransform(viewTx);
 
         if(tg.isLive())
         {
@@ -716,6 +730,7 @@ public class NavigationHandler
                 // do nothing
                 allowCollisions = (collidables != null);
                 allowTerrainFollowing = (terrain != null);
+
                 break;
 
             case NavigationState.EXAMINE_STATE:
@@ -814,7 +829,6 @@ public class NavigationHandler
         dragTranslationAmt.scale(0);
 
         viewTg.getTransform(viewTx);
-
         navigationState = previousState;
 
         if(navigationListener != null)
