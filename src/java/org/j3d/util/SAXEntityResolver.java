@@ -38,7 +38,7 @@ import org.xml.sax.InputSource;
  * The current implementation ignores the publicId information.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class SAXEntityResolver implements EntityResolver
 {
@@ -79,6 +79,7 @@ System.out.println(" systemID: " + systemId);
      *
      * @param uri The DTD uri to resolve
      * @return An input stream to the entity or null if not handled
+     * @throws IOException An error reading the stream
      */
     private InputStream resolveDTD(String uri) throws IOException
     {
