@@ -31,10 +31,16 @@ import org.j3d.util.ImageLoader;
  * panel also implements the state listener, these will change in response to
  * the mouse changing. Clicking these buttons will send the appropriate event
  * back to it's registered listener.
+ * <p>
+ *
+ * Using the default images, the toolbar looks like this:
+ * <p>
+ * <img src="doc-files/nav_toolbar.png" width="410" height="55">
+ * </p>
  *
  * @author <a href="http://www.geocities.com/seregi/index.html">Laszlo Seregi</a><br>
  *    Updated for j3d.org by Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class NavigationToolbar extends JPanel
     implements ActionListener, NavigationStateListener
