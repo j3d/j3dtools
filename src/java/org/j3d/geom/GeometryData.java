@@ -29,7 +29,7 @@ package org.j3d.geom;
  * generate 2D values if asked.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class GeometryData
 {
@@ -116,4 +116,10 @@ public class GeometryData
      * For 3D coordinates it is stores as [r1, s1, t1, r2, s2, t2,...]
      */
     public float[] textureCoordinates;
+
+    /**
+     * Colour values if using per-vertex coloring. This array will be identical
+     * in length to the coordinate array and index values match etc.
+     */
+    public float[] colors;
 }
