@@ -10,6 +10,7 @@ PACKAGES = org.j3d.util \
 	   org.j3d.device.input \
 	   org.j3d.ui \
 	   org.j3d.ui.image \
+	   org.j3d.ui.navigation \
        org.j3d.geom
 
 NODOC_PACKAGES = \
@@ -34,5 +35,16 @@ HEADER      = 'j3d.org Code Repository API'
 BOTTOM      = '<font size=2>Copyright &copy; 2001 - \
 		       <a href=\"http://www.j3d.org\">j3d.org</a> \
                </font>'
+
+# A list of the local directories that contain other Javadoc that we want
+# to link to. For example we link to the JDK, JAXP, SAI and JUnit Javadocs
+# here. Note that these *must* be full URLs and not just local directory 
+# references. If your directory path contains a space in it, you may be in
+# trouble. We haven't tested it with that. Try using double quotes inside
+# the single quotes to get the space treated in the file name
+LINK_URLS   = 'file:///c:/java/jaxp-1.1/docs/api/' \
+              'file:///c:/java/junit3.5/javadoc/' \
+			  'file:///c:/jdk1.3/docs/api/' \
+			  'file:///c:/java/j3d/1.2.1/html/'
 
 include $(PROJECT_ROOT)/make/Makefile.jav 
