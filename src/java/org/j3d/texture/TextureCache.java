@@ -16,9 +16,6 @@ package org.j3d.texture;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.media.j3d.ImageComponent;
-import javax.media.j3d.Texture;
-
 // Application specific imports
 // None
 
@@ -26,12 +23,9 @@ import javax.media.j3d.Texture;
  * A representation of global cache for texture instance management.
  * <p>
  *
- * The cache works at the Java3D Texture or ImageComponent instance level
- * rather than down at the individual images. This allows the VM to discard
- * the lower level image instances if needed, allowing Java3D to do its own
- * management. In addition, it benefits runtime performance of the Java3D
- * scene graph by allowing textures instances to be shared, rather than
- * duplicated.
+ * This is the abstract representation of the cache functionality, which may be
+ * used across different renderer types. Look in the renderer-specific packages
+ * for details on the specific renderer API calls.
  * <p>
  *
  * Different types of cache implementations are allowed (ie different ways of
@@ -50,52 +44,10 @@ import javax.media.j3d.Texture;
  * using the utilities of this class.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface TextureCache
 {
-    /**
-     * Fetch the texture named by the filename. The filename may be
-     * either absolute or relative to the classpath.
-     *
-     * @param filename The filename to fetch
-     * @return The texture instance for that filename
-     * @throws IOException An I/O error occurred during loading
-     */
-    public Texture fetchTexture(String filename)
-        throws IOException;
-
-    /**
-     * Fetch the texture named by the URL.
-     *
-     * @param url The URL to read data from
-     * @return The texture instance for that URL
-     * @throws IOException An I/O error occurred during loading
-     */
-    public Texture fetchTexture(URL url)
-        throws IOException;
-
-    /**
-     * Param fetch the imagecomponent named by the filename. The filename may
-     * be either absolute or relative to the classpath.
-     *
-     * @param filename The filename to fetch
-     * @return The ImageComponent instance for that filename
-     * @throws IOException An I/O error occurred during loading
-     */
-    public ImageComponent fetchImageComponent(String filename)
-        throws IOException;
-
-    /**
-     * Fetch the image component named by the URL.
-     *
-     * @param url The URL to read data from
-     * @return The ImageComponent instance for that URL
-     * @throws IOException An I/O error occurred during loading
-     */
-    public ImageComponent fetchImageComponent(URL url)
-        throws IOException;
-
     /**
      * Explicitly remove the named texture and image component from the cache.
      * If the objects have already been freed according to the rules of the
@@ -128,29 +80,4 @@ public interface TextureCache
      * @return Whether the filename is cached as a Texture
      */
     public boolean checkTexture(String filename);
-
-    /**
-     * Check to see if a filename is cached for an ImageComponent.
-     *
-     * @param filename The filename loaded
-     * @return Whether the filename is cached as an ImageComponent
-     */
-    public boolean checkImageComponent(String filename);
-
-    /**
-     * Register a texture with the cache assigned to a filename.
-     *
-     * @param texture The texture to store
-     * @param filename The filename to register
-     */
-    public void registerTexture(Texture texture, String filename);
-
-    /**
-     * Register an imagecomponent with the cache assigned to a filename.
-     *
-     * @param texture The texture to store
-     * @param filename The filename to register
-     */
-    public void registerImageComponent(ImageComponent component, String filename);
-
 }

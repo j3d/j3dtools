@@ -1,9 +1,12 @@
+#*********************************************************************
+#
+#  (C) 2001-2003 J3d.org
 #    http://code.j3d.org/
 # 
 # Package makefile for the org.j3d.texture directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.3 $
+# Version: $Revision: 1.4 $
 #
 #*********************************************************************
 
@@ -12,12 +15,8 @@ PACKAGE = org.j3d.texture
 # The source files to compile. These are declared in order that they must be
 # compiled in
 SOURCE = CacheAlreadySetException.java \
-	TextureCache.java \
-	AbstractTextureCache.java \
-    FixedTextureCache.java \
-	WeakRefTextureCache.java \
-	LRUTextureCache.java \
-	TextureCacheFactory.java 
+    TextureCache.java \
+    TextureCacheFactory.java 
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
