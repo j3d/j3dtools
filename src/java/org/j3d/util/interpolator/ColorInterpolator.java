@@ -29,11 +29,11 @@ import javax.vecmath.Color4f;
  * <p>
  *
  * The RGB<->HSV color space conversions have been taken from Foley & van Dam
- * <i>Computer Graphics Principles and Practice, 2nd Edition<i>, Addison
+ * <i>Computer Graphics Principles and Practice, 2nd Edition</i>, Addison
  * Wesley, 1990.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ColorInterpolator extends Interpolator
 {
@@ -534,7 +534,7 @@ public class ColorInterpolator extends Interpolator
         new_val[0] = x;
         new_val[1] = y;
         new_val[2] = z;
-        new_val[2] = a;
+        new_val[3] = a;
 
         keys[loc] = key;
         currentSize++;
