@@ -39,7 +39,7 @@ import javax.vecmath.Vector3d;
  * f = m * delta v / t<br>
  *
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class PhysicsFunction implements ParticleFunction
 {
@@ -57,7 +57,7 @@ public class PhysicsFunction implements ParticleFunction
     private double frictionVelocity = 0.95;
 
     private long startTime;
-    private static final int recalculateInterval = 256;
+    private static final int recalculateInterval = 50;
     private static long invokeCount = 0;
 
     /** Flag to say whether or not this function is disabled or not */
@@ -133,7 +133,6 @@ public class PhysicsFunction implements ParticleFunction
     public boolean apply(Particle particle)
     {
         acceleration.set(particle.resultantForce);
-
         // get the change in velocity
         acceleration.scale(deltaTime / particle.mass);
         particle.velocity.add(acceleration);
