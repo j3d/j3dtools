@@ -28,7 +28,7 @@ import org.j3d.util.ObjectArray;
  * <a href="http://www.mema.ucl.ac.be/~wu/FSA2716-2002/project.html">here</a>.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TriangulationUtils
 {
@@ -558,11 +558,22 @@ public class TriangulationUtils
     {
         // Now do the real triangulation algorithm.
         int output_index = 0;
+        int cnt=0;
+        // The maximum times we should go through this loop before error
+        int maxCnt = (coordOutput.length / 3) * (coordOutput.length / 3) ;
 
         PolyVertex current = first.next.next;
         while(current != first)
         {
+
             PolyVertex prev_vtx = current.prev;
+
+            cnt++;
+
+            if (cnt > maxCnt) {
+                System.out.println("Endless loop in Triangulation detected");
+                return output_index / 3;
+            }
 
             if(isEar(prev_vtx) && !isTriangle(current))
             {
@@ -602,6 +613,7 @@ public class TriangulationUtils
 
                 // Check this line. Algo says to remove current.prev, not
                 // current from the concave list, but I think that's wrong.
+
                 if(concaveVertices.contains(current) &&
                    isConvexVertex(current.prev, current, current.next))
                     concaveVertices.remove(current);
@@ -642,8 +654,9 @@ public class TriangulationUtils
 
                 break;
             }
-            else
+            else {
                 current = current.next;
+            }
         }
 
         return (output_index / 3);
@@ -665,7 +678,8 @@ public class TriangulationUtils
         {
             // copy out the values from the convex array and test to see
             // if any of them lie inside the triangle
-            concaveVertices.toArray(tmpArray);
+            tmpArray = (PolyVertex[]) concaveVertices.toArray(tmpArray);
+
             boolean found_vertex = false;
             for(int i = 0; i < num_concaves; i++)
             {
