@@ -23,6 +23,7 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Matrix3d;
+import javax.vecmath.Vector3f;
 
 // Application specific imports
 import org.j3d.geom.GeometryData;
@@ -183,10 +184,19 @@ import org.j3d.util.UserSupplementData;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class NavigationProcessor
 {
+    /** The avatar representation is a floating eyeball */
+    public static final int AVATAR_POINT = 1;
+
+    /** The avatar representation is a cylinder */
+    public static final int AVATAR_CYLINDER = 2;
+
+    /** The avatar representation is two shoulder rays */
+    public static final int AVATAR_SHOULDERS = 3;
+
      /** The default height of the avatar */
     private static final float DEFAULT_AVATAR_HEIGHT = 1.8f;
 
@@ -261,7 +271,7 @@ public class NavigationProcessor
     private PickRay terrainPicker;
 
     /** Pick shape for collision detection */
-    private PickSegment collisionPicker;
+    private PickShape collisionPicker;
 
     /** The local down direction for the terrain picking */
     private Vector3d downVector;
@@ -274,6 +284,9 @@ public class NavigationProcessor
 
     /** Orientation of the user's gaze */
     private Vector3d lookDirection;
+
+    /** Last frames look Direction */
+    private Vector3d lastLookDirection;
 
     /** An observer for information about updates for this transition */
     private FrameUpdateListener updateListener;
@@ -298,6 +311,9 @@ public class NavigationProcessor
 
     /** Point 3D use to calculate the end point for collisions per frame */
     private Point3d locationEndPoint;
+
+    /** Point 3D use to calculate the knee points for collisions per frame */
+    private Point3d kneePoint;
 
     /** A point that we use for working calculations (coord transforms) */
     private Point3d wkPoint;
@@ -375,6 +391,9 @@ public class NavigationProcessor
     /** Temp placeholder of the object that has just been collided with */
     private SceneGraphPath collidedObject;
 
+    /** The avatar representation to use */
+    private int avatarRep;
+
     /**
      * Inner class that provides an internally driven frame timer loop if there
      * is no external driver for the navigation system.
@@ -444,18 +463,33 @@ public class NavigationProcessor
 
         movementDirection = new Vector3d();
         lookDirection = new Vector3d();
+        lastLookDirection = new Vector3d();
+        lastLookDirection.x = 0;
+        lastLookDirection.y = 0;
+        lastLookDirection.z = 0;
 
         centerOfRotation = new Point3d();
         collisionVector = new Vector3d();
-        collisionPicker = new PickSegment();
         intersectionPoint = new Point3d();
         wkPoint = new Point3d();
         diffVec = new Vector3d();
+
+//        avatarRep = AVATAR_SHOULDERS;
+        avatarRep = AVATAR_POINT;
+
+        if (avatarRep == AVATAR_POINT) {
+            collisionPicker = new PickSegment();
+        } else if (avatarRep == AVATAR_CYLINDER) {
+            collisionPicker = new PickCylinderSegment();
+        } else if (avatarRep == AVATAR_SHOULDERS) {
+            collisionPicker = new PickCylinderSegment();
+        }
 
 
         locationVector = new Vector3d();
         locationPoint = new Point3d();
         locationEndPoint = new Point3d();
+        kneePoint = new Point3d();
 
         dragTranslationAmt = new Vector3d();
         oneFrameTranslation = new Vector3d();
@@ -631,7 +665,6 @@ public class NavigationProcessor
     public void setNavigationSpeed(float newSpeed) {
         if(newSpeed < 0)
             throw new IllegalArgumentException("Negative speed value");
-
         speed = newSpeed;
     }
 
@@ -732,6 +765,39 @@ public class NavigationProcessor
         //enable the behavior that controls navigation
         if(frameTimer != null)
             frameTimer.setEnable(true);
+
+        switch(navigationState)
+        {
+            case NavigationState.FLY_STATE:
+                allowCollisions = (collidables != null);
+                allowTerrainFollowing = false;
+                break;
+
+            case NavigationState.PAN_STATE:
+                allowCollisions = false;
+                allowTerrainFollowing = false;
+                break;
+
+            case NavigationState.TILT_STATE:
+                allowCollisions = false;
+                allowTerrainFollowing = false;
+                break;
+
+            case NavigationState.WALK_STATE:
+                allowCollisions = (collidables != null);
+                allowTerrainFollowing = (terrain != null);
+                break;
+
+            case NavigationState.EXAMINE_STATE:
+                allowCollisions = false;
+                allowTerrainFollowing = false;
+                break;
+
+            case NavigationState.NO_STATE:
+                allowCollisions = false;
+                allowTerrainFollowing = false;
+                break;
+        }
 
         if((navigationState == NavigationState.WALK_STATE) &&
            allowTerrainFollowing)
@@ -879,6 +945,18 @@ public class NavigationProcessor
         lookDirection.x = direction[0];
         lookDirection.y = direction[1];
         lookDirection.z = direction[2];
+
+        viewTg.getTransform(viewTx);
+        viewTx.get(viewTranslation);
+
+        inputRotationY = 0;
+        inputRotationX = 0;
+
+        oneFrameRotation.setIdentity();
+        dragTranslationAmt.scale(0);
+
+        frameDuration = 0;
+        processClockTick();
     }
 
     //----------------------------------------------------------
@@ -971,7 +1049,6 @@ public class NavigationProcessor
 
             viewTx.lookAt(locationPoint, centerOfRotation, Y_UP);
             viewTx.invert();
-
             viewTg.setTransform(viewTx);
         }
 
@@ -1000,6 +1077,14 @@ public class NavigationProcessor
         double motionDelay = 0.005 * frameDuration;
 
         viewTg.getTransform(viewTx);
+
+        // Remove last lookDirection
+        if (!(lastLookDirection.x == 0 && lastLookDirection.y == 0
+            && lastLookDirection.z == 0)) {
+            oneFrameRotation.setEuler(lastLookDirection);
+            viewTx.mul(oneFrameRotation);
+        }
+
         oneFrameRotation.rotX(inputRotationX * motionDelay);
         viewTx.mul(oneFrameRotation);
 
@@ -1028,13 +1113,28 @@ public class NavigationProcessor
                 collisionListener.avatarCollision(collidedObject);
 
             collidedObject = null;
+
+            // Z doesn't always stop the user, must clear all
             oneFrameTranslation.z = 0;
+
+            oneFrameTranslation.x = 0;
+            oneFrameTranslation.y = 0;
+
         }
 
         // Now set the translation amounts that have been adjusted by any
         // collisions.
         viewTranslation.add(oneFrameTranslation);
         viewTx.setTranslation(viewTranslation);
+
+        if (!(lookDirection.x == 0 && lookDirection.y == 0 &&
+            lookDirection.z == 0)) {
+            oneFrameRotation.setEuler(lookDirection);
+            lastLookDirection.x = -lookDirection.x;
+            lastLookDirection.y = -lookDirection.y;
+            lastLookDirection.z = -lookDirection.z;
+            viewTx.mul(oneFrameRotation);
+        }
 
         try
         {
@@ -1245,7 +1345,6 @@ public class NavigationProcessor
                         if(intersect)
                         {
                             diffVec.sub(locationPoint, wkPoint);
-
                             if((shortest_length == -1) ||
                                (diffVec.lengthSquared() < shortest_length))
                             {
@@ -1258,7 +1357,6 @@ public class NavigationProcessor
                 }
             }
         }
-
         // No intersection!!!! How did that happen? Well, just exit and
         // pretend there was nothing below us
         if(shortest_length == -1)
@@ -1271,6 +1369,7 @@ public class NavigationProcessor
         // the translation to nothing in the Z direction.
         double terrain_step = intersectionPoint.y - lastTerrainHeight;
         double height_above_terrain = locationPoint.y - intersectionPoint.y;
+
 
         // Do we need to adjust the height? If so the check if the height is a
         // step that is too high or not
@@ -1291,6 +1390,9 @@ public class NavigationProcessor
             {
                 // prevent it. Set the transform to 0.
                 ret_val = false;
+
+                // Don't let lastTerrainHeight get set
+                return ret_val;
             }
         }
 
@@ -1321,9 +1423,22 @@ public class NavigationProcessor
         worldEyeTransform.get(locationVector);
         locationPoint.set(locationVector);
 
+/*
         // Where are we going to be soon?
         worldEyeTransform.transform(COLLISION_DIRECTION, collisionVector);
 
+        collisionVector.scale(avatarSize);
+
+        locationEndPoint.add(locationVector, collisionVector);
+        locationEndPoint.add(oneFrameTranslation);
+*/
+
+        // TODO: Look in the direction of movement.  Still not sure this is right
+
+        collisionVector.x = oneFrameTranslation.x;
+        collisionVector.y = oneFrameTranslation.y;
+        collisionVector.z = oneFrameTranslation.z;
+        collisionVector.normalize();
         collisionVector.scale(avatarSize);
 
         locationEndPoint.add(locationVector, collisionVector);
@@ -1332,7 +1447,34 @@ public class NavigationProcessor
         // We need to transform the end point to the direction that we are
         // currently travelling. At the moment, this always points forward
         // in the same direction as the viewpoint.
-        collisionPicker.set(locationPoint, locationEndPoint);
+        switch(avatarRep) {
+            case AVATAR_POINT:
+                ((PickSegment)collisionPicker).set(locationPoint, locationEndPoint);
+                break;
+            case AVATAR_CYLINDER:
+                kneePoint.x = locationEndPoint.x;
+
+                // Not good for stepHeights > avatarSize
+                kneePoint.y = locationEndPoint.y - avatarHeight + avatarStep;
+                kneePoint.z = locationEndPoint.z;
+
+                ((PickCylinderSegment)collisionPicker).set(locationEndPoint,kneePoint, avatarSize);
+                break;
+            case AVATAR_SHOULDERS:
+                double center;
+
+                center = locationPoint.x;
+
+                locationPoint.x -= avatarSize;
+                // A small shoulder cone
+                kneePoint.x = center + avatarSize;
+
+                kneePoint.y = locationEndPoint.y - avatarSize / 2;
+                kneePoint.z = locationEndPoint.z;
+
+                ((PickCylinderSegment)collisionPicker).set(locationEndPoint,kneePoint, avatarSize);
+                break;
+        }
 
         SceneGraphPath[] closest = collidables.pickAllSorted(collisionPicker);
 
@@ -1411,6 +1553,38 @@ public class NavigationProcessor
                                                            local_tx,
                                                            wkPoint,
                                                            true);
+
+                        if (real_collision)
+                            System.out.println("head collided:  dir: " + collisionVector + " cpnt: " + wkPoint);
+
+                    // Fake CylinderSegment test with a second ray at kneePnt
+                    if (!real_collision && avatarRep == AVATAR_CYLINDER) {
+                        real_collision =
+                            terrainIntersect.rayUnknownGeometry(kneePoint,
+                                                               collisionVector,
+                                                               length,
+                                                               geom_data,
+                                                               local_tx,
+                                                               wkPoint,
+                                                               true);
+                        if (real_collision)
+                            System.out.println("knee collided");
+                    }
+
+                    if (!real_collision && avatarRep == AVATAR_SHOULDERS) {
+                        // Test second shoulder
+                        real_collision =
+                            terrainIntersect.rayUnknownGeometry(kneePoint,
+                                                               collisionVector,
+                                                               length,
+                                                               geom_data,
+                                                               local_tx,
+                                                               wkPoint,
+                                                               true);
+                        if (real_collision)
+                            System.out.println("right shoulder collided");
+                    }
+
                 }
                 else
                 {
@@ -1422,6 +1596,38 @@ public class NavigationProcessor
                                                            local_tx,
                                                            wkPoint,
                                                            true);
+
+                        if (real_collision)
+                            System.out.println("head collided");
+
+                    // Fake CylinderSegment test with a second ray at kneePnt
+                    if (!real_collision && avatarRep == AVATAR_CYLINDER) {
+                        real_collision =
+                            terrainIntersect.rayUnknownGeometry(kneePoint,
+                                                               collisionVector,
+                                                               length,
+                                                               geom,
+                                                               local_tx,
+                                                               wkPoint,
+                                                               true);
+                        if (real_collision)
+                            System.out.println("knee collided");
+                    }
+
+                    if (!real_collision && avatarRep == AVATAR_SHOULDERS) {
+                        // Test second shoulder
+                        real_collision =
+                            terrainIntersect.rayUnknownGeometry(kneePoint,
+                                                               collisionVector,
+                                                               length,
+                                                               geom,
+                                                               local_tx,
+                                                               wkPoint,
+                                                               true);
+                        if (real_collision)
+                            System.out.println("right shoulder collided");
+                    }
+
                 }
             }
 
