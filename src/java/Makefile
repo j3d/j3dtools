@@ -10,6 +10,9 @@ BUILD_ORDER = org.j3d.util \
 	   org.j3d.util.device \
 	   org.j3d.util.interpolator \
 	   org.j3d.device.input \
+	   org.j3d.device.input.spaceball.transformation \
+	   org.j3d.device.input.spaceball.driver \
+	   org.j3d.device.input.spaceball \
 	   org.j3d.texture \
        org.j3d.geom \
        org.j3d.geom.terrain \
@@ -31,7 +34,8 @@ BUILD_ORDER = org.j3d.util \
 JAVADOC_PACKAGES = org.j3d.util \
 	   org.j3d.util.device \
 	   org.j3d.util.interpolator \
-	   org.j3d.device.input \
+	   org.j3d.device.input.spaceball \
+	   org.j3d.device.input.spaceball.transformation \
 	   org.j3d.texture \
        org.j3d.geom \
        org.j3d.geom.terrain \
