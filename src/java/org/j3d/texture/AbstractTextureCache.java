@@ -40,7 +40,7 @@ import org.j3d.util.ImageUtils;
  * methods that most implementations will find useful.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class AbstractTextureCache implements TextureCache
 {
@@ -167,40 +167,12 @@ public abstract class AbstractTextureCache implements TextureCache
 
         int format = ImageComponent2D.FORMAT_RGBA;
 
-System.out.println("Image details = " + image);
-
-switch(image.getColorModel().getTransferType())
-{
-    case DataBuffer.TYPE_BYTE:
-        System.out.println("Byte data type");
-        break;
-    case DataBuffer.TYPE_DOUBLE:
-        System.out.println("Double data type");
-        break;
-    case DataBuffer.TYPE_FLOAT:
-        System.out.println("Float data type");
-        break;
-    case DataBuffer.TYPE_INT:
-        System.out.println("Int data type");
-        break;
-    case DataBuffer.TYPE_SHORT:
-        System.out.println("Short data type");
-        break;
-    case DataBuffer.TYPE_UNDEFINED:
-        System.out.println("Undefined data type");
-        break;
-    case DataBuffer.TYPE_USHORT:
-        System.out.println("UShort data type");
-        break;
-}
-
         switch(image.getType())
         {
             case BufferedImage.TYPE_3BYTE_BGR:
             case BufferedImage.TYPE_BYTE_BINARY:
             case BufferedImage.TYPE_INT_BGR:
             case BufferedImage.TYPE_INT_RGB:
-System.out.println("3 component image");
                 format = ImageComponent2D.FORMAT_RGB;
                 break;
 
@@ -210,28 +182,23 @@ System.out.println("3 component image");
             case BufferedImage.TYPE_INT_ARGB_PRE:
             case BufferedImage.TYPE_4BYTE_ABGR:
             case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-System.out.println("4 component image");
                 format = ImageComponent2D.FORMAT_RGBA;
                 break;
 
             case BufferedImage.TYPE_BYTE_GRAY:
             case BufferedImage.TYPE_USHORT_GRAY:
-System.out.println("greyscale");
                 format = ImageComponent2D.FORMAT_CHANNEL8;
                 break;
 
             case BufferedImage.TYPE_BYTE_INDEXED:
-System.out.println("byte index");
                 format = ImageComponent2D.FORMAT_R3_G3_B2;
                 break;
 
             case BufferedImage.TYPE_USHORT_555_RGB:
-System.out.println("15 bit");
                 format = ImageComponent2D.FORMAT_RGB5;
                 break;
 
             case BufferedImage.TYPE_USHORT_565_RGB:
-System.out.println("16 bit");
                 format = ImageComponent2D.FORMAT_RGB5;
                 break;
         }
