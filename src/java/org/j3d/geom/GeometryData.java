@@ -30,7 +30,7 @@ package org.j3d.geom;
  * generate 2D values if asked.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class GeometryData
 {
@@ -115,7 +115,7 @@ public class GeometryData
     /** The number of items stored in the indexes array */
     public int indexesCount;
 
-    /** Storage for index information if the shape type requires it. */
+    /** Storage for coordinate index information if the shape type requires it. */
     public int[] indexes;
 
     /** The number of items stored in the strip counts */
@@ -136,4 +136,23 @@ public class GeometryData
      * in length to the coordinate array and index values match etc.
      */
     public float[] colors;
+
+    /**
+     * Storage for normal index information if the shape type requires it. Not
+     * used by the geometry generation classes, but may be by 3rd party software.
+     */
+    public int[] normalIndexes;
+
+    /**
+     * Storage for texture coordinate index information if the shape type
+     * requires it. Not used by the geometry generation classes, but may be by
+     * 3rd party software.
+     */
+    public int[] texCoordIndexes;
+
+    /**
+     * Storage for color index information if the shape type requires it. Not
+     * used by the geometry generation classes, but may be by 3rd party software.
+     */
+    public int[] colorIndexes;
 }
