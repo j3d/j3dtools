@@ -30,7 +30,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BezierPatchGenerator extends PatchGenerator
 {
@@ -381,7 +381,6 @@ public class BezierPatchGenerator extends PatchGenerator
                 cnt += 3;
             }
         }
-
     }
 
     /**
@@ -449,6 +448,45 @@ public class BezierPatchGenerator extends PatchGenerator
             throw new InvalidArraySizeException("Normals",
                                                 data.normals.length,
                                                 vtx_cnt);
+
+        regenerateNormals();
+
+        float[] normals = data.normals;
+        int cnt;
+        int vtx = 0;
+        for(int i = 0; i < facetCount; i++)
+        {
+            cnt = 0;
+            for(int j = 0; j < facetCount; j++)
+            {
+                normals[vtx++] = patchNormals[i][cnt + 3];
+                normals[vtx++] = patchNormals[i][cnt + 4];
+                normals[vtx++] = patchNormals[i][cnt + 5];
+
+                normals[vtx++] = patchNormals[i][cnt];
+                normals[vtx++] = patchNormals[i][cnt + 1];
+                normals[vtx++] = patchNormals[i][cnt + 2];
+
+                normals[vtx++] = patchNormals[i + 1][cnt];
+                normals[vtx++] = patchNormals[i + 1][cnt + 1];
+                normals[vtx++] = patchNormals[i + 1][cnt + 2];
+
+                // Now the second triangle for the upper half
+                normals[vtx++] = patchNormals[i + 1][cnt];
+                normals[vtx++] = patchNormals[i + 1][cnt + 1];
+                normals[vtx++] = patchNormals[i + 1][cnt + 2];
+
+                normals[vtx++] = patchNormals[i + 1][cnt + 3];
+                normals[vtx++] = patchNormals[i + 1][cnt + 4];
+                normals[vtx++] = patchNormals[i + 1][cnt + 5];
+
+                normals[vtx++] = patchNormals[i][cnt + 3];
+                normals[vtx++] = patchNormals[i][cnt + 4];
+                normals[vtx++] = patchNormals[i][cnt + 5];
+
+                cnt += 3;
+            }
+        }
     }
 
     /**
@@ -474,6 +512,37 @@ public class BezierPatchGenerator extends PatchGenerator
             throw new InvalidArraySizeException("Normals",
                                                 data.normals.length,
                                                 vtx_cnt);
+
+        regeneratePatch();
+
+        // now just build a grid of coordinates
+        float[] normals = data.normals;
+        int cnt;
+        int vtx = 0;
+        for(int i = 0; i < facetCount; i++)
+        {
+            cnt = 0;
+            for(int j = 0; j < facetCount; j++)
+            {
+                normals[vtx++] = patchNormals[i][cnt + 3];
+                normals[vtx++] = patchNormals[i][cnt + 4];
+                normals[vtx++] = patchNormals[i][cnt + 5];
+
+                normals[vtx++] = patchNormals[i][cnt];
+                normals[vtx++] = patchNormals[i][cnt + 1];
+                normals[vtx++] = patchNormals[i][cnt + 2];
+
+                normals[vtx++] = patchNormals[i + 1][cnt];
+                normals[vtx++] = patchNormals[i + 1][cnt + 1];
+                normals[vtx++] = patchNormals[i + 1][cnt + 2];
+
+                normals[vtx++] = patchNormals[i + 1][cnt + 3];
+                normals[vtx++] = patchNormals[i + 1][cnt + 4];
+                normals[vtx++] = patchNormals[i + 1][cnt + 5];
+
+                cnt += 3;
+            }
+        }
     }
 
     /**
