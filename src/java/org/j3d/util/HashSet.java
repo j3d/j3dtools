@@ -36,7 +36,7 @@ import java.util.Iterator;
  * java.util.HashSet, except we leave out garbage generating methods like iterator().
  *
  * @author Rob Nielsen
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class HashSet
 {
@@ -242,9 +242,11 @@ public class HashSet
             for(int i = 0; i < table.length; i++)
             {
                 Entry e = table[i];
+
                 while (e != null)
                 {
                     Entry next = e.next;
+
                     if(!set.contains(e.value))
                     {
                         diff.add(e.value);
@@ -292,6 +294,7 @@ public class HashSet
         e.set(hash, o, tab[index]);
         tab[index] = e;
         count++;
+
         return true;
     }
 
@@ -355,7 +358,7 @@ public class HashSet
                 e = n;
             }
 
-            releaseEntry(tab[index]);
+            //releaseEntry(tab[index]);
             tab[index] = null;
         }
 
