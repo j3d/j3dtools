@@ -50,15 +50,18 @@ package org.j3d.terrain.roam;
  * The data held is coordinate, texture coordinate and vertex colours
  *
  * @author  Paul Byrne
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class VertexData
 {
-    private float coords[];
-    private byte colors[];
-    private float textureCoords[];
-    private int index=0;
-    private int texIndex = 0;
+    private float[] coords;
+    private byte[] colors;
+    private float[] textureCoords;
+    private int index;
+    private int texIndex;
+
+    /** Flag indicating if this data has a texture */
+    boolean textured;
 
     /**
      * Creates new VertexData that represents a fixed number of vertices.
@@ -67,72 +70,109 @@ class VertexData
      *
      * @param patchSize The number of points on a side
      */
-    public VertexData(int patchSize)
+    VertexData(int patchSize, boolean hasTexture)
     {
         coords = new float[patchSize * patchSize * 2 * 3 * 3];
-        textureCoords = new float[patchSize * patchSize*2 * 3 * 2];
-        colors = new byte[coords.length];
+
+        if(hasTexture)
+            textureCoords = new float[patchSize * patchSize*2 * 3 * 2];
+        else
+            colors = new byte[coords.length];
+
+        textured = hasTexture;
     }
 
-    public float[] getCoords()
+    float[] getCoords()
     {
         return coords;
     }
 
-    public byte[] getColors()
+    byte[] getColors()
     {
         return colors;
     }
 
-    public float[] getTextureCoords()
+    float[] getTextureCoords()
     {
         return textureCoords;
     }
 
-    public void addVertex(float x, float y, float z)
+    /**
+     * Add a vertext, but don't include any color or texture coordinate
+     * information.
+     */
+    void addVertex(float x, float y, float z)
     {
         coords[index] = x;
-        coords[index+1] = y;
-        coords[index+2] = z;
+        coords[index + 1] = y;
+        coords[index + 2] = z;
 
         index += 3;
     }
 
-    public void addVertex(float x, float y, float z,
-                          byte clrR, byte clrG, byte clrB)
+    /**
+     * Add a vertex with color information as bytes.
+     */
+    void addVertex(float x, float y, float z,
+                   byte clrR, byte clrG, byte clrB)
     {
         coords[index] = x;
-        coords[index+1] = y;
-        coords[index+2] = z;
+        coords[index + 1] = y;
+        coords[index + 2] = z;
 
         //System.out.println( x+" "+y+" "+z );
-
-        colors[index] = clrR;
-        colors[index+1] = clrG;
-        colors[index+2] = clrB;
+        if(textured)
+            System.out.println("Setting color on a textured object");
+        else
+        {
+            colors[index] = clrR;
+            colors[index + 1] = clrG;
+            colors[index + 2] = clrB;
+        }
 
         index += 3;
     }
 
-    public void addVertex(float x, float y, float z,
-                          float textureS, float textureT)
+    /**
+     * Add a vertex with color information as floats.
+     */
+    void addVertex(float x, float y, float z,
+                   float r, float g, float b)
+    {
+        byte r_tmp = (byte)(r * 255);
+        byte g_tmp = (byte)(g * 255);
+        byte b_tmp = (byte)(b * 255);
+
+        addVertex(x, y, z, r_tmp, g_tmp, b_tmp);
+    }
+
+    /**
+     * Add a vertex with texture coordinate information.
+     */
+    void addVertex(float x, float y, float z,
+                   float textureS, float textureT)
     {
         coords[index] = x;
-        coords[index+1] = y;
-        coords[index+2] = z;
+        coords[index + 1] = y;
+        coords[index + 2] = z;
 
-        textureCoords[texIndex++] = textureS;
-        textureCoords[texIndex++] = textureT;
+        if(!textured)
+            System.out.println("Setting texture coords in coloured object");
+        else
+        {
+            textureCoords[texIndex++] = textureS;
+            textureCoords[texIndex++] = textureT;
+        }
 
         index += 3;
     }
 
-    public int getVertexCount()
+    int getVertexCount()
     {
         return index / 3;
     }
 
-    public void reset()
+    void reset()
     {
         index = 0;
         texIndex = 0;

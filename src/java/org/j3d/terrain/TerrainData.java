@@ -60,7 +60,7 @@ import org.j3d.ui.navigation.HeightDataSource;
  * 3D graphics convention of X-Z.
  *
  * @author  Paul Byrne, Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface TerrainData extends HeightDataSource
 {
@@ -74,12 +74,10 @@ public interface TerrainData extends HeightDataSource
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
-    public abstract void getCoordinateFromGrid(float[] coord,
-                                               int gridX,
-                                               int gridY);
+    public void getCoordinate(float[] coord, int gridX, int gridY);
 
     /**
-     * Get the coordinate of the point and correspond texture coordinate in
+     * Get the coordinate of the point and corresponding texture coordinate in
      * the grid. Assumes that the grid covers a single large texture rather
      * than multiple smaller textures. This should translate between the grid
      * position (x,y) and the 3D axis system (x,y,z), which don't use the same
@@ -87,14 +85,38 @@ public interface TerrainData extends HeightDataSource
      *
      * @param coord he x, y, and z coordinates will be placed in the first
      *   three elements of the array.
-     * @param textureCoord 2D coordinates are placed in the first two elements
+     * @param tex 2D coordinates are placed in the first two elements
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
-    public abstract void getCoordinateFromGrid(float[] coord,
-                                               float[] textureCoord,
-                                               int gridX,
-                                               int gridY);
+    public void getCoordinateWithTexture(float[] coord,
+                                         float[] tex,
+                                         int gridX,
+                                         int gridY);
+
+    /**
+     * Get the coordinate of the point and the corresponding color value in
+     * the grid. Color values are used when there is no texture supplied, so
+     * this should always provide something useful.
+     *
+     * @param coord he x, y, and z coordinates will be placed in the first
+     *   three elements of the array.
+     * @param color 3 component colors are placed in the first 3 elements
+     * @param gridX The X coordinate of the position in the grid
+     * @param gridY The Y coordinate of the position in the grid
+     */
+    public void getCoordinateWithColor(float[] coord,
+                                       float[] color,
+                                       int gridX,
+                                       int gridY);
+
+    /**
+     * Check to see if this terrain data has any texturing at all - either
+     * tiled or simple.
+     *
+     * @return true If a texture is available
+     */
+    public boolean hasTexture();
 
     /**
      * Notify the terrain data handler that when generating texture coordinates
@@ -121,7 +143,7 @@ public interface TerrainData extends HeightDataSource
      *
      * @return The texture instance to use or null
      */
-    public abstract Texture getTexture();
+    public Texture getTexture();
 
     /**
      * Fetch the texture or part of a texture that can be applied to the
@@ -132,7 +154,7 @@ public interface TerrainData extends HeightDataSource
      * @param bounds The bounds of the region based on the grid positions
      * @return The texture object suitable for that bounds or null
      */
-    public abstract Texture getTexture(Rectangle bounds);
+    public Texture getTexture(Rectangle bounds);
 
     /**
      * Get the height at the specified grid position.
@@ -141,33 +163,33 @@ public interface TerrainData extends HeightDataSource
      * @param gridY The Y coordinate of the position in the grid
      * @return The height at the given grid position
      */
-    public abstract float getHeightFromGrid(int gridX, int gridY);
+    public float getHeightFromGrid(int gridX, int gridY);
 
     /**
      * Get the width (number of points on the Y axis) of the grid.
      *
      * @return The number of points in the width if the grid
      */
-    public abstract int getGridWidth();
+    public int getGridWidth();
 
     /**
      * Get the depth (number of points on the X axis) of the grid.
      *
      * @return The number of points in the depth of the grid
      */
-    public abstract int getGridDepth();
+    public int getGridDepth();
 
     /**
      * Get the real world distance between consecutive X values in the grid.
      *
      * @return The distance between each step of the grid
      */
-    public abstract double getGridXStep();
+    public double getGridXStep();
 
     /**
      * Get the real world distance between consecutive Y values in the grid.
      *
      * @return The distance between each step of the grid
      */
-    public abstract double getGridYStep();
+    public double getGridYStep();
 }

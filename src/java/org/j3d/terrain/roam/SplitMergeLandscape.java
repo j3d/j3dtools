@@ -44,15 +44,12 @@
 package org.j3d.terrain.roam;
 
 // Standard imports
+import javax.media.j3d.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import javax.media.j3d.Appearance;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Canvas3D;
-import javax.media.j3d.PolygonAttributes;
-import javax.media.j3d.Shape3D;
-
+import javax.vecmath.Color3f;
 import javax.vecmath.Tuple3f;
 import javax.vecmath.Vector3f;
 
@@ -70,7 +67,7 @@ import org.j3d.terrain.TerrainData;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class SplitMergeLandscape extends Landscape
 {
@@ -188,11 +185,17 @@ public class SplitMergeLandscape extends Landscape
 
         Appearance app = new Appearance();
 
-//        app.setTexture(terrainData.getTexture());
-        PolygonAttributes polyAttr = new PolygonAttributes();
-        polyAttr.setPolygonMode(PolygonAttributes.POLYGON_LINE);
+        app.setTexture(terrainData.getTexture());
+
+        Material mat = new Material();
+        mat.setLightingEnable(true);
+
+        app.setMaterial(mat);
+
+//        PolygonAttributes polyAttr = new PolygonAttributes();
+//        polyAttr.setPolygonMode(PolygonAttributes.POLYGON_LINE);
 //        polyAttr.setCullFace(PolygonAttributes.CULL_NONE);
-        app.setPolygonAttributes(polyAttr);
+//        app.setPolygonAttributes(polyAttr);
 
         Patch[] westPatchNeighbour = new Patch[width];
         Patch southPatchNeighbour = null;

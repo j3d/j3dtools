@@ -141,20 +141,28 @@ class Patch implements GeometryUpdater
         this.westPatchNeighbour = westPatchNeighbour;
         this.southPatchNeighbour = southPatchNeighbour;
 
-        vertexData = new VertexData(PATCH_SIZE);
+        boolean has_texture = (app.getTexture() != null);
+
+        vertexData = new VertexData(PATCH_SIZE, has_texture);
 
         int format = TriangleArray.COORDINATES |
-                     TriangleArray.COLOR_3 |
-                     TriangleArray.BY_REFERENCE |
-                     TriangleArray.TEXTURE_COORDINATE_2;
+                     TriangleArray.BY_REFERENCE;
+
+        if(has_texture)
+            format |= TriangleArray.TEXTURE_COORDINATE_2;
+        else
+            format |= TriangleArray.COLOR_3;
 
         geom = new TriangleArray(PATCH_SIZE * PATCH_SIZE * 2 * 3, format);
 
         geom.setCapability(TriangleArray.ALLOW_REF_DATA_WRITE);
         geom.setCapability(TriangleArray.ALLOW_COUNT_WRITE);
         geom.setCoordRefFloat(vertexData.getCoords());
-        geom.setTexCoordRefFloat(0, vertexData.getTextureCoords());
-        geom.setColorRefByte(vertexData.getColors());
+
+        if(has_texture)
+            geom.setTexCoordRefFloat(0, vertexData.getTextureCoords());
+        else
+            geom.setColorRefByte(vertexData.getColors());
 
         NWVariance = new VarianceTree(terrainData,
                                        PATCH_SIZE,

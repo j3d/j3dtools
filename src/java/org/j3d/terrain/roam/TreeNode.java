@@ -46,7 +46,6 @@ package org.j3d.terrain.roam;
 // Standard imports
 import java.util.LinkedList;
 
-import javax.vecmath.Color3f;
 import javax.vecmath.Tuple3f;
 
 // Application specific imports
@@ -83,13 +82,15 @@ class TreeNode
 
     int visible = UNDEFINED;
 
-    private float p1X, p1Y, p1Z;    // The three corners of the triangle
+    // The three corners of the triangle
+    private float p1X, p1Y, p1Z;
     private float p2X, p2Y, p2Z;
     private float p3X, p3Y, p3Z;
 
-    private float p1tS, p1tT;       // Texture coordinates
-    private float p2tS, p2tT;       // Texture coordinates
-    private float p3tS, p3tT;       // Texture coordinates
+    // Texture coordinates or colour values
+    private float p1tS, p1tT, p1tR;
+    private float p2tS, p2tT, p2tR;
+    private float p3tS, p3tT, p3tR;
 
     private TerrainData terrainData;
     private VarianceTree varianceTree;
@@ -97,9 +98,9 @@ class TreeNode
     float variance = 0f;
     float diamondVariance = 0f;
 
-    private boolean error = false;
-
     boolean diamond = false;
+
+    private boolean textured;
 
     /**
      * A cache of instances of ourselves to help avoid too much object
@@ -107,9 +108,6 @@ class TreeNode
      */
     private static LinkedList nodeCache = new LinkedList();
 
-
-    //boolean splitThisFrame = false;
-    //boolean mergedThisFrame = false;
 
     /**
      * Default constructor for use by TreeNodeCache.
@@ -175,6 +173,7 @@ class TreeNode
         this.terrainData = terrainData;
         this.depth = depth;
         this.varianceTree = varianceTree;
+
 
         init(landscapeView, parentVisible);
     }
@@ -303,12 +302,7 @@ class TreeNode
 
         if(leftChild != null || rightChild != null)
         {
-            System.out.println("ERROR tri is already split");
-            printNode(this);
             throw new RuntimeException(" Triangle is already split "+node);
-            //error = true;
-            //queueManager.removeTriangle(this);
-            //return 0;
         }
 
         if(baseNeighbour != null)
@@ -366,8 +360,6 @@ class TreeNode
         if(baseNeighbour != null && baseNeighbour.baseNeighbour != this)
         {
             System.out.println("++++++++++++ Illegal merge *********************************");
-            printNode(this);
-            error = true;
             queueManager.removeDiamond(this);
             diamond = false;
             diamondVariance = 0f;
@@ -397,96 +389,29 @@ class TreeNode
      */
     void getTriangles(VertexData vertexData)
     {
-        // Not sure this needs to be here
-        if(error)
-        {
-System.out.println("In error area");
-            byte clrR;
-            byte clrG;
-            byte clrB;
-            clrR = clrG = 0;
-            clrB = (byte)255;
-            vertexData.addVertex(p1X, p1Y+2f, p1Z,
-                                  clrR, clrG, clrB);
-            vertexData.addVertex(p2X, p2Y+2f, p2Z,
-                                  clrR, clrG, clrB);
-            vertexData.addVertex(p3X, p3Y+2f, p3Z,
-                                  clrR, clrG, clrB);
-        }
-
         if(leftChild == null)
         {
-            byte clrR;
-            byte clrG;
-            byte clrB;
-
-            if(visible == ViewFrustum.OUT)
+            if((visible != ViewFrustum.OUT) && (visible != UNDEFINED))
             {
-                clrR = clrG = clrB = (byte)(255*0.3f);
-            }
-            else
-            {
-                clrR = clrB = 0;
-                clrG = (byte)255;
-            }
-
-            /*
-            if(error || parent!=null && (parent.diamond || (parent.baseNeighbour!=null && parent.baseNeighbour.diamond))) {
-                clrR = (byte)255;
-                clrG = clrB = (byte)0;
-                if(error) {
-                    clrR = clrG = 0;
-                    clrB = (byte)255;
-                }
-                vertexData.addVertex(p1X, p1Y+2f, p1Z,
-                                      clrR, clrG, clrB);
-                vertexData.addVertex(p2X, p2Y+2f, p2Z,
-                                      clrR, clrG, clrB);
-                vertexData.addVertex(p3X, p3Y+2f, p3Z,
-                                      clrR, clrG, clrB);
-            }
-             */
-
-            if((visible == ViewFrustum.OUT) || (visible == UNDEFINED))
-            {
-                /*
-                vertexData.addVertex(p1X, p1Y-20f, p1Z,
-                                      clrR, clrG, clrB);
-                vertexData.addVertex(p2X, p2Y-20f, p2Z,
-                                      clrR, clrG, clrB);
-                vertexData.addVertex(p3X, p3Y-20f, p3Z,
-                                      clrR, clrG, clrB);
-                 */
-            }
-            else
-            {
-// how is this set?
-                boolean textured = false;
-
-                if(textured)
+                if(vertexData.textured)
                 {
                     vertexData.addVertex(p1X, p1Y, p1Z,
-                                          p1tS, p1tT);
+                                         p1tS, p1tT);
                     vertexData.addVertex(p2X, p2Y, p2Z,
-                                          p2tS, p2tT);
+                                         p2tS, p2tT);
                     vertexData.addVertex(p3X, p3Y, p3Z,
-                                          p3tS, p3tT);
+                                         p3tS, p3tT);
                 }
                 else
                 {
                     vertexData.addVertex(p1X, p1Y, p1Z,
-                                          clrR, clrG, clrB);
+                                         p1tS, p1tT, p1tR);
                     vertexData.addVertex(p2X, p2Y, p2Z,
-                                          clrR, clrG, clrB);
+                                         p2tS, p2tT, p2tR);
                     vertexData.addVertex(p3X, p3Y, p3Z,
-                                          clrR, clrG, clrB);
+                                         p3tS, p3tT, p3tR);
                 }
             }
-
-
-            //System.out.println(leftX+"  "+leftY);
-            //System.out.println(rightX+"  "+rightY);
-            //System.out.println(apexX+"  "+apexY);
         }
         else
         {
@@ -562,23 +487,7 @@ System.out.println("In error area");
 
     public String toString()
     {
-        //return Integer.toString(hashCode());
         return Integer.toString(node);
-    }
-
-    public static void printNode(TreeNode tn) {
-        System.out.println("Node "+tn+"  "+tn.hashCode());
-        System.out.print("  Children "+tn.leftChild+" "+ tn.rightChild);
-        System.out.print("  Nhbrs "+tn.baseNeighbour+" "+tn.leftNeighbour+" "+tn.rightNeighbour);
-
-        System.out.print("  Parent "+ tn.parent);
-        System.out.print("  PBase ");
-        if(tn.parent!=null) {
-            System.out.print(tn.parent.baseNeighbour);
-            System.out.print("  PChldrn "+tn.parent.leftChild+" "+tn.parent.rightChild);
-        }
-
-        System.out.println();
     }
 
     //----------------------------------------------------------
@@ -594,44 +503,49 @@ System.out.println("In error area");
      */
     private void init(ViewFrustum landscapeView, int parentVisible)
     {
-        float tmp[] = new float[3];
-        float texTmp[] = new float[2];
+        float[] tmp = new float[3];
+        float[] texTmp = new float[3];
 
-        terrainData.getCoordinateFromGrid(tmp, texTmp, leftX, leftY);
+        boolean textured = terrainData.hasTexture();
+
+        if(textured)
+            terrainData.getCoordinateWithTexture(tmp, texTmp, leftX, leftY);
+        else
+            terrainData.getCoordinateWithColor(tmp, texTmp, leftX, leftY);
+
         p1X = tmp[0];
         p1Y = tmp[1];
         p1Z = tmp[2];
 
         p1tS = texTmp[0];
         p1tT = texTmp[1];
+        p1tR = texTmp[2];
 
-        terrainData.getCoordinateFromGrid(tmp, texTmp, rightX, rightY);
+        if(textured)
+            terrainData.getCoordinateWithTexture(tmp, texTmp, rightX, rightY);
+        else
+            terrainData.getCoordinateWithColor(tmp, texTmp, rightX, rightY);
+
         p2X = tmp[0];
         p2Y = tmp[1];
         p2Z = tmp[2];
 
         p2tS = texTmp[0];
         p2tT = texTmp[1];
+        p2tR = texTmp[2];
 
-        terrainData.getCoordinateFromGrid(tmp, texTmp, apexX, apexY);
+        if(textured)
+            terrainData.getCoordinateWithTexture(tmp, texTmp, apexX, apexY);
+        else
+            terrainData.getCoordinateWithColor(tmp, texTmp, apexX, apexY);
+
         p3X = tmp[0];
         p3Y = tmp[1];
         p3Z = tmp[2];
 
         p3tS = texTmp[0];
         p3tT = texTmp[1];
-
-        /*
-        p1X = (float)leftX*scale;
-        p1Y = heightMap[leftX][leftY];
-        p1Z = (float)-leftY*scale;
-        p2X = (float)rightX*scale;
-        p2Y = heightMap[rightX][rightY];
-        p2Z = (float)-rightY*scale;
-        p3X = (float)apexX*scale;
-        p3Y = heightMap[apexX][apexY];
-        p3Z = (float)-apexY*scale;
-         */
+        p3tR = texTmp[2];
 
         // Check the visibility of this triangle
         if(parentVisible == UNDEFINED ||
@@ -759,8 +673,6 @@ System.out.println("In error area");
            !mergeNode.leftChild.isLeaf() ||
            !mergeNode.rightChild.isLeaf())
         {
-            System.out.print("ILLEGAL merge of ");
-            printNode(mergeNode);
             throw new RuntimeException("Illegal merge");
         }
 

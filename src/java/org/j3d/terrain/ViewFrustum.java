@@ -71,7 +71,7 @@ import javax.vecmath.Matrix4d;
  * The frustum is for the previous Java3D frame that has just been rendered.
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ViewFrustum
 {
@@ -164,7 +164,7 @@ public class ViewFrustum
      * @param p3X The x component of the third point of the triangle
      * @param p3Y The y component of the third point of the triangle
      * @param p3Z The z component of the third point of the triangle
-     * @returns IN, OUT indicating triangle is visible in the View Frustum
+     * @return IN, OUT indicating triangle is visible in the View Frustum
      */
     public int isTriangleInFrustum(float p1X, float p1Y, float p1Z,
                                    float p2X, float p2Y, float p2Z,
@@ -192,7 +192,7 @@ public class ViewFrustum
      * @param p1 The first point of the triangle
      * @param p2 The first point of the triangle
      * @param p3 The first point of the triangle
-     * @returns IN, OUT indicating triangle is visible in the View Frustum
+     * @return IN, OUT indicating triangle is visible in the View Frustum
      */
     public int isTriangleInFrustum(Point3d p1, Point3d p2, Point3d p3)
     {
@@ -207,7 +207,7 @@ public class ViewFrustum
     /**
       * Checks if the point is inside the view frustum.
       *
-      * @returns IN, OUT indicating point is inside or outside the View Frustum
+      * @return IN, OUT indicating point is inside or outside the View Frustum
       */
     public int isPointInFrustum(Point3d p1)
     {

@@ -37,15 +37,15 @@ import org.j3d.terrain.TerrainData;
  * The basic implementation here does not support a texture. If an application
  * wishes to use a texture, they should extend this class and override the
  * {@link #getTexture()} method. If you wish to provide a pre-loaded texture,
- * then you can use the {@link #setTexture()} method of this class to place
- * one here.
+ * then you can use the {@link #setTexture(Texture)} method of this class to
+ * place one here.
  * <p>
  *
  * Tiled textures are not supported and requests for this just return the
  * entire texture.
  *
  * @author  Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class HeightMapTerrainData implements TerrainData
 {
@@ -196,7 +196,7 @@ public class HeightMapTerrainData implements TerrainData
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
-    public void getCoordinateFromGrid( float[] coord, int gridX, int gridY )
+    public void getCoordinate(float[] coord, int gridX, int gridY)
     {
         coord[0] = gridX * (float)gridStep.x;
         coord[1] = heightMap[gridX][gridY];
@@ -214,10 +214,10 @@ public class HeightMapTerrainData implements TerrainData
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
-    public void getCoordinateFromGrid(float[] coord,
-                                      float[] textureCoord,
-                                      int gridX,
-                                      int gridY)
+    public void getCoordinateWithTexture(float[] coord,
+                                         float[] textureCoord,
+                                         int gridX,
+                                         int gridY)
     {
         coord[0] = gridX * (float)gridStep.x;
         coord[1] = heightMap[gridX][gridY];
@@ -232,6 +232,42 @@ public class HeightMapTerrainData implements TerrainData
         {
             // do something here.
         }
+    }
+
+    /**
+     * Get the coordinate of the point and the corresponding color value in
+     * the grid. Color values are used when there is no texture supplied, so
+     * this should always provide something useful.
+     *
+     * @param coord he x, y, and z coordinates will be placed in the first
+     *   three elements of the array.
+     * @param color 3 component colors are placed in the first 3 elements
+     * @param gridX The X coordinate of the position in the grid
+     * @param gridY The Y coordinate of the position in the grid
+     */
+    public void getCoordinateWithColor(float[] coord,
+                                       float[] color,
+                                       int gridX,
+                                       int gridY)
+    {
+        coord[0] = gridX * (float)gridStep.x;
+        coord[1] = heightMap[gridX][gridY];
+        coord[2] = -gridY * (float)gridStep.y;
+
+        color[0] = 0;
+        color[1] = 0.5f;
+        color[2] = 0;
+    }
+
+    /**
+     * Check to see if this terrain data has any texturing at all - either
+     * tiled or simple.
+     *
+     * @return true If a texture is available
+     */
+    public boolean hasTexture()
+    {
+        return (texture != null);
     }
 
     /**

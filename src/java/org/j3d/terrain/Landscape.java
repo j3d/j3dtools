@@ -56,7 +56,7 @@ import org.j3d.ui.navigation.HeightMapGeometry;
  * the third-party code to make it so via calls to the appropriate methods.
  *
  * @author Justin Couch, based on original ideas from Paul Byrne
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class Landscape extends javax.media.j3d.BranchGroup
     implements FrameUpdateListener, HeightMapGeometry
@@ -121,6 +121,7 @@ public abstract class Landscape extends javax.media.j3d.BranchGroup
      */
     public void transitionEnded(Transform3D t3d)
     {
+        landscapeView.viewingPlatformMoved();
         setView(t3d);
     }
 
@@ -132,6 +133,7 @@ public abstract class Landscape extends javax.media.j3d.BranchGroup
      */
     public void viewerPositionUpdated(Transform3D t3d)
     {
+        landscapeView.viewingPlatformMoved();
         setView(t3d);
     }
 
