@@ -38,13 +38,21 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * Values outside the range provided are clamped.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ColorRampGenerator
 {
     /** Error message for different array lengths */
     private static final String LENGTH_MSG =
         "Ramp and height arrays not same length";
+
+    /** Error message for different array lengths */
+    private static final String HEIGHT_LENGTH_MSG =
+        "Height array length is smaller than the given size";
+
+    /** Error message for different array lengths */
+    private static final String RAMP_LENGTH_MSG =
+        "Ramp array length is smaller than the given size";
 
     /** The colour interpolator we are using */
     private ColorInterpolator interpolator;
@@ -97,6 +105,38 @@ public class ColorRampGenerator
     }
 
     /**
+     * Create a new colour ramp generator that uses the given heights and
+     * colour values for that height for the interpolation. To determine if
+     * an alpha channel is used, the first index of the array's length is
+     * checked. If length is 3 then no alpha channel is used, otherwise it
+     * is assumed.
+     *
+     * @param heights The array of heights for each color
+     * @param ramp The color values at each height
+     * @throws IllegalArgumentException The two arrays have differet length
+     */
+    public ColorRampGenerator(float[] heights, float[][] ramp)
+    {
+        setColorRamp(heights, ramp);
+    }
+
+    /**
+     * Create a new colour ramp generator that uses the given heights and
+     * colour values for that height for the interpolation. To determine if
+     * an alpha channel is used, the first index of the array's length is
+     * checked. If length is 3 then no alpha channel is used, otherwise it
+     * is assumed.
+     *
+     * @param heights The array of heights for each color
+     * @param ramp The color values at each height
+     * @throws IllegalArgumentException The two arrays have differet length
+     */
+    public ColorRampGenerator(float[] heights, float[] ramp, boolean hasAlpha)
+    {
+        setColorRamp(heights, ramp, hasAlpha);
+    }
+
+    /**
      * Set the color data for the ramp to the new 3 component values.
      *
      * @param heights The array of heights for each color
@@ -143,6 +183,148 @@ public class ColorRampGenerator
                                         ramp[i].y,
                                         ramp[i].z,
                                         ramp[i].w);
+        }
+    }
+
+    /**
+     * Set the color data for the ramp to the new 3 or 4 component values.
+     * To determine if an alpha channel is used, the first index of the
+     * array's length is checked. If length is 3 then no alpha channel is
+     * used, otherwise it is assumed.
+     *
+     * @param heights The array of heights for each color
+     * @param ramp The color values at each height
+     * @throws IllegalArgumentException The two arrays have differet length
+     */
+    public void setColorRamp(float[] heights, float[][] ramp)
+    {
+        if(heights.length != ramp.length)
+            throw new IllegalArgumentException(LENGTH_MSG);
+
+        setColorRamp(heights, ramp, heights.length);
+    }
+
+    /**
+     * Set the color data for the ramp to the new 3 or 4 component values.
+     * To determine if an alpha channel is used, the first index of the
+     * array's length is checked. If length is 3 then no alpha channel is
+     * used, otherwise it is assumed.
+     *
+     * @param heights The array of heights for each color
+     * @param ramp The color values at each height
+     * @param size The number of values to read from the two inputs
+     * @throws IllegalArgumentException The two arrays have differet length
+     */
+    public void setColorRamp(float[] heights, float[][] ramp, int size)
+    {
+        if(heights.length < size)
+            throw new IllegalArgumentException(HEIGHT_LENGTH_MSG);
+
+        if(ramp.length < size)
+            throw new IllegalArgumentException(RAMP_LENGTH_MSG);
+
+        hasAlpha = (ramp[0].length != 3);
+        interpolator = new ColorInterpolator(size);
+
+        if(hasAlpha)
+        {
+            for(int i = 0; i < size; i++)
+            {
+                interpolator.addRGBKeyFrame(heights[i],
+                                            ramp[i][0],
+                                            ramp[i][1],
+                                            ramp[i][2],
+                                            ramp[i][3]);
+            }
+        }
+        else
+        {
+            for(int i = 0; i < size; i++)
+            {
+                interpolator.addRGBKeyFrame(heights[i],
+                                            ramp[i][0],
+                                            ramp[i][1],
+                                            ramp[i][2],
+                                            0);
+            }
+        }
+    }
+
+
+    /**
+     * Set the color data for the ramp to the new 3 or 4 component values.
+     * To determine if an alpha channel is used, the first index of the
+     * array's length is checked. If length is 3 then no alpha channel is
+     * used, otherwise it is assumed.
+     *
+     * @param heights The array of heights for each color
+     * @param ramp The color values at each height
+     * @throws IllegalArgumentException The two arrays have differet length
+     */
+    public void setColorRamp(float[] heights, float[] ramp, boolean hasAlpha)
+    {
+        if(hasAlpha)
+        {
+            if(heights.length != (ramp.length / 4))
+                throw new IllegalArgumentException(LENGTH_MSG);
+        }
+        else
+        {
+            if(heights.length != (ramp.length / 3))
+                throw new IllegalArgumentException(LENGTH_MSG);
+        }
+
+        setColorRamp(heights, ramp, heights.length, hasAlpha);
+    }
+
+    /**
+     * Set the color data for the ramp to the new 3 or 4 component values.
+     * To determine if an alpha channel is used, the first index of the
+     * array's length is checked. If length is 3 then no alpha channel is
+     * used, otherwise it is assumed.
+     *
+     * @param heights The array of heights for each color
+     * @param ramp The color values at each height
+     * @throws IllegalArgumentException The two arrays have differet length
+     */
+    public void setColorRamp(float[] heights,
+                             float[] ramp,
+                             int size,
+                             boolean hasAlpha)
+    {
+
+        if(heights.length < size)
+            throw new IllegalArgumentException(HEIGHT_LENGTH_MSG);
+
+        if(((hasAlpha && (ramp.length / 4) < size)) ||
+           ((!hasAlpha && (ramp.length / 3) < size)))
+            throw new IllegalArgumentException(RAMP_LENGTH_MSG);
+
+        this.hasAlpha = hasAlpha;
+        interpolator = new ColorInterpolator(heights.length);
+
+        int idx = 0;
+        if(hasAlpha)
+        {
+            for(int i = 0; i < size; i++)
+            {
+                interpolator.addRGBKeyFrame(heights[i],
+                                            ramp[idx++],
+                                            ramp[idx++],
+                                            ramp[idx++],
+                                            ramp[idx++]);
+            }
+        }
+        else
+        {
+            for(int i = 0; i < size; i++)
+            {
+                interpolator.addRGBKeyFrame(heights[i],
+                                            ramp[idx++],
+                                            ramp[idx++],
+                                            ramp[idx++],
+                                            0);
+            }
         }
     }
 
