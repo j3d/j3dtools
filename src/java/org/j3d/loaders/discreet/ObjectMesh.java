@@ -24,7 +24,7 @@ package org.j3d.loaders.discreet;
  * information, such as vertices, materials etc.
  *
  * @author  Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ObjectMesh
 {
@@ -51,6 +51,9 @@ public class ObjectMesh
 
     /** The number of valid keyframe blocks available */
     public int numKeyframes;
+
+    /** Ambient light setting. Null if not set */
+    public float[] ambientLight;
 
     /**
      * Construct a new instance with blocks initialised to a size of 8.
