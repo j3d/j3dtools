@@ -30,7 +30,7 @@ import java.text.NumberFormat;
  * generate 2D values if asked.
  *
  * @author Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class GeometryData implements Cloneable
 {
@@ -174,7 +174,7 @@ public class GeometryData implements Cloneable
         for(int i = 0; i < vertexCount; i++)
         {
             System.out.print(i);
-            System.out.print("v: ");
+            System.out.print(" v: ");
             System.out.print(format.format(coordinates[i * 3]));
             System.out.print(' ');
             System.out.print(format.format(coordinates[i * 3 + 1]));
@@ -189,6 +189,16 @@ public class GeometryData implements Cloneable
                 System.out.print(format.format(normals[i * 3 + 1]));
                 System.out.print(' ');
                 System.out.print(format.format(normals[i * 3 + 2]));
+            }
+
+            if(colors != null)
+            {
+                System.out.print(", c: ");
+                System.out.print(format.format(colors[i * 3]));
+                System.out.print(' ');
+                System.out.print(format.format(colors[i * 3 + 1]));
+                System.out.print(' ');
+                System.out.print(format.format(colors[i * 3 + 2]));
             }
 
             if(textureCoordinates != null)
