@@ -33,7 +33,7 @@ import javax.vecmath.Color4f;
  * Wesley, 1990.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ColorUtils
 {
@@ -74,7 +74,7 @@ public class ColorUtils
         max = (max > b) ? max : b;
 
         float min = (r < g) ? r : g;
-        min = (min < b) ? max : b;
+        min = (min < b) ? min : b;
 
         v = max;    // this is the value v
 
