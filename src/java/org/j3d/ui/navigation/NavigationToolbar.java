@@ -38,9 +38,9 @@ import org.j3d.util.ImageLoader;
  * <img src="doc-files/nav_toolbar.png" width="410" height="55">
  * </p>
  *
- * @author <a href="http://www.geocities.com/seregi/index.html">Laszlo Seregi</a><br>
+ * @author <a href="http://www.ife.org/vr/">Halden VR Centre, Institute for Energy Technology</a><br>
  *    Updated for j3d.org by Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class NavigationToolbar extends JPanel
     implements ActionListener, NavigationStateListener

@@ -87,7 +87,7 @@ import org.j3d.geom.IntersectionUtils;
  * backwards through objects when we shouldn't.
  *
  * @author per-frame movement algorithms by
- *   <a href="http://www.geocities.com/seregi/index.html">Laszlo Seregi</a><br>
+ *   <a href="http://www.ife.org/vr/">Halden VR Centre, Institute for Energy Technology</a><br>
  *   Terrain/Collision implementation by Justin Couch
  * @version $Revision $
  */
