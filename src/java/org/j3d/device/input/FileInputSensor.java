@@ -26,21 +26,33 @@ import javax.vecmath.Vector3f;
  * There is no implementation at the moment. A work in progress.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class FileInputSensor extends Sensor
 {
     /** Default number of SensorRead objects to keep around */
     private static final int NUM_SENSOR_READS = 5;
 
+    /**
+     * Construct a default Sensor implementation. This has no buttons and the
+     * default sensor read size set by the base class
+     *
+     * @param dev The device that this sensor belongs to
+     */
     FileInputSensor(InputDevice dev)
     {
         super(dev);
     }
 
+    /**
+     * Construct a sensor that has the given number of buttons. The sensor
+     * read count is set to the internal default size: 5
+     *
+     * @param dev The device that this sensor belongs to
+     * @param buttons The number of buttons this holds
+     */
     FileInputSensor(InputDevice dev, int buttons)
     {
         super(dev, NUM_SENSOR_READS, buttons);
     }
-
 }
