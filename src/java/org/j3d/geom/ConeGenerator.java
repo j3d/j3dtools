@@ -36,7 +36,7 @@ import javax.vecmath.Vector3f;
  * geometry type, but is supported non-the-less for completeness.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ConeGenerator extends GeometryGenerator
 {
@@ -1164,14 +1164,18 @@ public class ConeGenerator extends GeometryGenerator
         bottom_s[facetCount] = bottom_s[0];
         bottom_t[facetCount] = bottom_t[0];
 
-        // bottom is a flat square that is based with the centre at
-        // the centre of the cone. Start with the centre point first
-        texCoordinates2D[count++] = 0.5f;
-        texCoordinates2D[count++] = 0.5f;
+        if(useBottom)
+        {
+            // bottom is a flat square that is based with the centre at
+            // the centre of the cone. Start with the centre point first
+            texCoordinates2D[count++] = 0.5f;
+            texCoordinates2D[count++] = 0.5f;
 
-        for(i = 0; i <= facetCount; i++) {
-            texCoordinates2D[count++] = bottom_s[i];
-            texCoordinates2D[count++] = bottom_t[i];
+            for(i = 0; i <= facetCount; i++)
+            {
+                texCoordinates2D[count++] = bottom_s[i];
+                texCoordinates2D[count++] = bottom_t[i];
+            }
         }
 
         numTexCoords2D = count;
