@@ -34,7 +34,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {
@@ -65,8 +65,31 @@ public class CylinderGenerator extends GeometryGenerator
     /** The number of values used in the base coordinate array */
     private int numBaseValues;
 
+    /**
+     * The 2D texture coordinates for the sphere. These match the order of
+     * vertex declaration in the quadCoordinates field thus making life
+     * easy for dealing with half spheres
+     */
+    private float[] texCoordinates2D;
+
+    /** The number of values used in the 2D tex coord array */
+    private int numTexCoords2D;
+
+    /**
+     * The 3D texture coordinates for the sphere. These match the order of
+     * vertex declaration in the quadCoordinates field thus making life
+     * easy for dealing with half spheres
+     */
+    private float[] texCoordinates3D;
+
+    /** The number of values used in the 2D tex coord array */
+    private int numTexCoords3D;
+
     /** Flag indicating base values have changed */
     private boolean baseChanged;
+
+    /** Flag to indicate the facet count or half settings have changed */
+    private boolean facetsChanged;
 
     /** Working values for the normal generation */
     private Vector3f normal;
@@ -182,6 +205,7 @@ public class CylinderGenerator extends GeometryGenerator
         this.radius = radius;
         useEnds = ends;
         baseChanged = true;
+        facetsChanged = true;
         normal = new Vector3f();
     }
 
@@ -225,6 +249,9 @@ public class CylinderGenerator extends GeometryGenerator
             this.radius = radius;
         }
 
+        if(useEnds != ends)
+            facetsChanged = true;
+
         useEnds = ends;
     }
 
@@ -243,6 +270,7 @@ public class CylinderGenerator extends GeometryGenerator
 
         facetCount = facets;
         baseChanged = true;
+        facetsChanged = true;
     }
 
     /**
@@ -373,7 +401,6 @@ public class CylinderGenerator extends GeometryGenerator
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
     }
-
 
     /**
      * Generate a new set of points for an unindexed quad array
@@ -2030,6 +2057,78 @@ public class CylinderGenerator extends GeometryGenerator
             baseCoordinates[count++] = x;
             baseCoordinates[count++] = z;
         }
+    }
+
+    /**
+     * Recalculate the 2D texture coordinates IAW the coordinate values. This
+     * starts by using the circumference as a T value of 0.5 to indicate it is
+     * halfway through the texture (we are starting at the middle of the
+     * sphere!). Then, if we have a bottom, we calculate the T from 0 to 0.5.
+     * thus the coordinates are for the top half of the sphere, followed by
+     * the bottom half.
+     */
+    private void recalc2DTexture()
+    {
+        if(!facetsChanged)
+            return;
+
+        // not a good idea because we should also leave this set to recalc
+        // the 3D coordinates.
+        facetsChanged = false;
+
+        int vtx_count = (facetCount + 1) << 2;
+
+        if((texCoordinates2D == null) ||
+           (vtx_count * 2 > texCoordinates2D.length))
+        {
+            texCoordinates2D = new float[vtx_count * 2];
+        }
+
+        // local constant to make math calcs faster
+        float segment_angle = 1 / (float)facetCount;
+        float angle = (float)(2.0 * Math.PI / facetCount);
+
+        int count = 0;
+        int i, k;
+        float s, a;
+        float[] bottom_s = new float[facetCount + 1];
+        float[] bottom_t = new float[facetCount + 1];
+
+        for(i = 0; i < facetCount; i++)
+        {
+            s = i * segment_angle;
+
+            texCoordinates2D[count++] = s;
+            texCoordinates2D[count++] = 1;
+
+            texCoordinates2D[count++] = s;
+            texCoordinates2D[count++] = 0;
+
+            a = i * angle;
+            bottom_s[i] = (float)(0.5f - radius * Math.cos(a) / 2);
+            bottom_t[i] = (float)(0.5f - radius * Math.sin(a) / 2);
+        }
+
+        texCoordinates2D[count++] = 1;
+        texCoordinates2D[count++] = 1;
+
+        texCoordinates2D[count++] = 1;
+        texCoordinates2D[count++] = 0;
+
+        bottom_s[facetCount] = bottom_s[0];
+        bottom_t[facetCount] = bottom_t[0];
+
+        // bottom is a flat square that is based with the centre at
+        // the centre of the cone. Start with the centre point first
+        texCoordinates2D[count++] = 0.5f;
+        texCoordinates2D[count++] = 0.5f;
+
+        for(i = 0; i <= facetCount; i++) {
+            texCoordinates2D[count++] = bottom_s[i];
+            texCoordinates2D[count++] = bottom_t[i];
+        }
+
+        numTexCoords2D = count;
     }
 
     /**
