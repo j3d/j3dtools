@@ -31,7 +31,7 @@ import javax.vecmath.AxisAngle4f;
  *
  *
  * @author Jason Taylor, based on the work by Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class Axis extends Group
 {
@@ -93,7 +93,7 @@ public class Axis extends Group
         axis_array.setCoordinates(0, data.coordinates);
         axis_array.setNormals(0, data.normals);
 
-        ConeGenerator cone_gen = new ConeGenerator(X_SIZE * 4, X_SIZE * 2);
+        ConeGenerator cone_gen = new ConeGenerator(X_SIZE * 4, X_SIZE * 2, 4);
         data.geometryType = GeometryData.INDEXED_TRIANGLE_FANS;
         data.vertexCount = 0;
         data.coordinates = null;
@@ -103,7 +103,11 @@ public class Axis extends Group
         cone_gen.generate(data);
 
         CoordinateUtils cu = new CoordinateUtils();
-        cu.translate(data.coordinates, data.vertexCount, 0, length * 0.5f, 0);
+        cu.translate(data.coordinates,
+                     data.vertexCount,
+                     0,
+                     length * 0.5f + (X_SIZE * 2),
+                     0);
 
         IndexedTriangleStripArray cone_array =
             new IndexedTriangleStripArray(data.vertexCount,
