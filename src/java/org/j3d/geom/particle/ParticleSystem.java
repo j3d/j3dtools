@@ -36,10 +36,13 @@ import org.j3d.texture.TextureCacheFactory;
  * <p>
  *
  * @author Justin Couch, based on code by Daniel Selman
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
+    /** The initial number of functions to assume just for initialisation */
+    private static final int NUM_INIT_FUNCTIONS = 5;
+
     /** * Identifier for this particle system type. */
     private String systemName;
 
@@ -63,7 +66,13 @@ public abstract class ParticleSystem implements ParticleFactory
     private ArrayList particleFunctions;
 
     /** The cache of currently dead particles */
-    private ArrayList deadParticles;
+    private Particle[] deadParticles;
+
+    /** List of active functions for this frame */
+    private ParticleFunction[] activeFunctions;
+
+    /** The number of active functions in the above array */
+    private int numActiveFunctions;
 
     /** The number of dead particles currently */
     private int numDeadParticles;
@@ -83,13 +92,16 @@ public abstract class ParticleSystem implements ParticleFactory
     public ParticleSystem(String name, int maxParticleCount)
     {
         systemName = name;
-        particleFunctions = new ArrayList();
+        particleFunctions = new ArrayList(NUM_INIT_FUNCTIONS);
         particleList = new ParticleList();
-        deadParticles = new ArrayList(maxParticleCount);
+        deadParticles = new Particle[maxParticleCount];
 
         this.maxParticleCount = maxParticleCount;
         numDeadParticles = 0;
         frameTime = -1;
+
+        numActiveFunctions = 0;
+        activeFunctions = new ParticleFunction[NUM_INIT_FUNCTIONS];
     }
 
     /**
@@ -147,6 +159,9 @@ public abstract class ParticleSystem implements ParticleFactory
     {
         if(function != null)
             particleFunctions.add(function);
+
+        if(activeFunctions.length < particleFunctions.size())
+            activeFunctions = new ParticleFunction[particleFunctions.size()];
     }
 
     /**
@@ -161,10 +176,15 @@ public abstract class ParticleSystem implements ParticleFactory
     {
         if(function != null)
         {
-            if(index > particleFunctions.size())
+            int num_functions = particleFunctions.size();
+
+            if(index > num_functions)
                 particleFunctions.add(function);
             else
                 particleFunctions.add(index, function);
+
+            if(activeFunctions.length < num_functions)
+                activeFunctions = new ParticleFunction[num_functions];
         }
     }
 
@@ -276,13 +296,19 @@ public abstract class ParticleSystem implements ParticleFactory
     private void updateParticleFunctions()
     {
         ParticleFunction function;
+        int func_idx = 0;
 
-        for (int n = particleFunctions.size() - 1; n >= 0; n--)
+        for(int n = particleFunctions.size(); --n >= 0; )
         {
             function = (ParticleFunction)particleFunctions.get(n);
             if(function.isEnabled())
+            {
+                activeFunctions[func_idx++] = function;
                 function.newFrame();
+            }
         }
+
+        numActiveFunctions = func_idx;
     }
 
     /**
@@ -296,28 +322,25 @@ public abstract class ParticleSystem implements ParticleFactory
 
         int num_functions = particleFunctions.size();
         ParticleFunction function;
+        int num_particles = particleList.size();
 
-        for(int i = 0; i < num_functions; i++)
+        for(int j = 0; j < num_particles; j++)
         {
-            function = (ParticleFunction)particleFunctions.get(i);
+            Particle p = particleList.next();
 
-            if(function.isEnabled())
+            for(int i = 0; i < numActiveFunctions; i++)
             {
-                int num_particles = particleList.size();
-                for(int j = 0; j < num_particles; j++)
+                if(!activeFunctions[i].apply(p))
                 {
-                    Particle p = particleList.next();
-                    if(!function.apply(p))
-                    {
-                        particleList.remove();
-                        releaseParticle(p);
-                        particleCount--;
-                    }
+                    particleList.remove();
+                    releaseParticle(p);
+                    particleCount--;
+                    break;
                 }
-
-                particleList.reset();
             }
         }
+
+        particleList.reset();
     }
 
     /**
@@ -367,7 +390,8 @@ public abstract class ParticleSystem implements ParticleFactory
 
         if(numDeadParticles != 0)
         {
-             ret_val  = (Particle)deadParticles.remove(numDeadParticles - 1);
+             ret_val  = deadParticles[numDeadParticles - 1];
+             deadParticles[numDeadParticles - 1] = null;
              numDeadParticles--;
         }
         else
@@ -383,7 +407,7 @@ public abstract class ParticleSystem implements ParticleFactory
      */
     private void releaseParticle(Particle p)
     {
-        deadParticles.add(p);
+        deadParticles[numDeadParticles] = p;
         numDeadParticles++;
     }
 }
