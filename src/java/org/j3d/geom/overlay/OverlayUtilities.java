@@ -36,10 +36,15 @@ import java.util.List;
  * users too.
  *
  * @author David Yazel
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class OverlayUtilities
 {
+    /** bit definitions for 3-component images */
+    private static final int[] BITS_3COMP = {8, 8, 8};
+
+    /** bit definitions for 4-component images */
+    private static final int[] BITS_4COMP = {8, 8, 8, 8};
 
     /**
      * Create a buffered image that uses a 3 component colour model with the
@@ -55,9 +60,19 @@ public class OverlayUtilities
         int transparency = hasAlpha ?
                            Transparency.TRANSLUCENT :
                            Transparency.OPAQUE;
+        int[] bits = hasAlpha ? BITS_4COMP : BITS_3COMP;
 
         ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_sRGB);
 
+        ColorModel colorModel =
+            new ComponentColorModel(colorSpace,            // Color space
+                                    bits,                  // Number of bits per component
+                                    hasAlpha,              // Has alpha
+                                    false,                 // Alpha premultiplied
+                                    transparency,          // Transparency type
+                                    DataBuffer.TYPE_BYTE); // Type of transfer buffer
+
+ /* Use this version when JDK 1.4 becomes more popular
         ColorModel colorModel =
             new ComponentColorModel(colorSpace,            // Color space
                                     hasAlpha,              // Has alpha
@@ -65,6 +80,7 @@ public class OverlayUtilities
                                     transparency,          // Transparency type
                                     DataBuffer.TYPE_BYTE); // Type of transfer buffer
 
+*/
         WritableRaster raster =
             colorModel.createCompatibleWritableRaster(size.width, size.height);
 
