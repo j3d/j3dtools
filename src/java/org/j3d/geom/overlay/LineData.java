@@ -19,7 +19,7 @@ package org.j3d.geom.overlay;
  * Internal data holder class that holds points for a single line.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class LineData
 {
@@ -45,6 +45,7 @@ class LineData
     {
         xPoints = new int[DEFAULT_SIZE];
         yPoints = new int[DEFAULT_SIZE];
+        numPoints = 0;
     }
 
     /**
