@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.9 $
+# Version: $Revision: 1.10 $
 #
 #*********************************************************************
 
@@ -18,6 +18,7 @@ SOURCE = GeometryData.java \
   UnsupportedTypeException.java \
   InvalidArraySizeException.java \
   CoordinateUtils.java \
+  NormalUtils.java \
   GeometryGenerator.java \
   BoxGenerator.java \
   ConeGenerator.java \
