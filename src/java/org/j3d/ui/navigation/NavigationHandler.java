@@ -51,13 +51,9 @@ import org.j3d.geom.IntersectionUtils;
  * <p>
  *
  * Separate states are allowed to be set for each button. Once one button is
- * pressed, all the other button presses are ignored. By default, all the
- * buttons start with no state set. The user will have to explicitly set
+ * pressed, all the other button presses are ignored. By default, <i>all the
+ * buttons start with no state set</i>. The user will have to explicitly set
  * the state for each button to get them to work.
- * <p>
- *
- * The handler does not currently implement the Walk mode as it requires
- * picking handling for gravity and collision detection.
  * <p>
  *
  * <b>Terrain Following</b>
@@ -96,6 +92,10 @@ import org.j3d.geom.IntersectionUtils;
  * <p>
  *
  * <b>Navigation Modes</b>
+ * <p>
+ *
+ * These navigation mode constants can be found in the {@link NavigationState}
+ * interface.
  * <p>
  *
  * NONE: All navigation is disabled. We ignore any requests from mouse or
