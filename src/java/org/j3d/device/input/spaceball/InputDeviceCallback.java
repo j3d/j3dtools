@@ -20,12 +20,14 @@ package org.j3d.device.input.spaceball;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 
+import org.j3d.device.input.spaceball.transformation.Manipulator;
+
 /**
  * Interface for notification if the transformation of a
  * <code>TransformGroup</code> is updated.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version 5. May 2001
+ * @version 7. Jun. 2001
  * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
  */
 public interface InputDeviceCallback
@@ -33,23 +35,29 @@ public interface InputDeviceCallback
     /**
      * Called if a new transformation was calculated from the input of an
      * input device. The implementation of the method is responsible to set
-     * the new transformation to the <code>TransformGroup</code> !
+     * the new transformation to <code>tg</code> !
      * @param tg <code>TransformGroup</code> to be updated, still containing
-     *      the last transformation.
+     *      the last transformation. <code>tg</code> may be <code>null</code> !
      * @param newTransform Updated transformation to be applied to
      *      <code>tg</code>.
      * @param deltaTransform Delta transformation between the new transformation
      *      and the old transformation in <code>tg</code>.
+     * @param localToVWorldTransform Transformation from the coordinate system
+     *      in which the transformation shall be done to the virtual coordinate
+     *      system. Identity transformation if the transformation shall
+     *      be done in the virtual world coordinate system.
+     * @param manipulator type of transformation
      * @param buttonValues Last button values read from the input device's
      *      sensor.Size of array is the number of available buttons of the
      *      input device.
      */
     public void sensorRead
     (
-        InputDeviceBehavior behavior,
         TransformGroup      tg,
         Transform3D         newTransform,
         Transform3D         deltaTransform,
+        Transform3D         localToVWorldTransform,
+        Manipulator         manipulator,
         int[ ]              buttonValues
     );
 }

@@ -11,7 +11,7 @@
  * facility. Licensee represents and warrants that it will not use or
  * redistribute the Software for such purposes.
  *
- * Copyright (c) 2001 Dipl. Ing. P. Szawlowski
+ * Copyright (c) 2002 Dipl. Ing. P. Szawlowski
  * University of Vienna, Dept. of Medical Computer Sciences
  ****************************************************************************/
 
@@ -35,7 +35,7 @@ import org.j3d.device.input.spaceball.transformation.DefaultManipulator;
  * <code>TransformGroup</code> !<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version 25. Oct. 2001
+ * @version 7. Jun. 2002
  * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
  */
 public class InputDeviceBehavior extends Behavior
@@ -51,6 +51,8 @@ public class InputDeviceBehavior extends Behavior
 
     private final Transform3D       itsDeltaTransform = new Transform3D( );
     private final Transform3D       itsLocalToVWorldTransform =
+            new Transform3D( );
+    private final Transform3D       itsTempLocalToVWorldTransform =
             new Transform3D( );
     private final Transform3D       itsCurrentTransform = new Transform3D( );
     private final Transform3D       itsNewTransform = new Transform3D( );
@@ -150,6 +152,10 @@ public class InputDeviceBehavior extends Behavior
         {
             itsLocalToVWorldTransform.setIdentity( );
         }
+        else
+        {
+            node.getLocalToVworld( itsLocalToVWorldTransform );
+        }
     }
 
     /**
@@ -168,13 +174,12 @@ public class InputDeviceBehavior extends Behavior
     public void processStimulus( Enumeration criteria )
     {
         final TransformGroup tg;
-        final Node localCoordSystem;
         final Manipulator manipulator;
         final InputDeviceCallback listener;
         synchronized( this )
         {
             tg = itsTransformGroup;
-            localCoordSystem = itsLocalCoordinateSystemNode;
+            itsTempLocalToVWorldTransform.set( itsLocalToVWorldTransform );
             manipulator = itsManipulator;
             listener = itsListener;
         }
@@ -182,17 +187,13 @@ public class InputDeviceBehavior extends Behavior
         itsSensor.lastButtons( itsButtonValues );
         if( tg != null )
         {
-            if( localCoordSystem != null )
-            {
-                localCoordSystem.getLocalToVworld( itsLocalToVWorldTransform );
-            }
             tg.getTransform( itsCurrentTransform );
             manipulator.calculateTransform
             (
                 itsNewTransform,
                 itsCurrentTransform,
                 itsDeltaTransform,
-                itsLocalToVWorldTransform
+                itsTempLocalToVWorldTransform
             );
         }
 
@@ -200,10 +201,11 @@ public class InputDeviceBehavior extends Behavior
         {
             listener.sensorRead
             (
-                this,
                 tg,
                 itsNewTransform,
                 itsDeltaTransform,
+                itsTempLocalToVWorldTransform,
+                manipulator,
                 itsButtonValues
             );
         }
