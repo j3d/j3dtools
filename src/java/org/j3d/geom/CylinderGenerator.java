@@ -28,7 +28,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {
@@ -2143,7 +2143,7 @@ public class CylinderGenerator extends GeometryGenerator
 
         recalc2DTexture();
 
-        System.arraycopy(texCoordinates2D, 0, data.textureCoordinates, 0, texCoordinates2D.length);
+        System.arraycopy(texCoordinates2D, 0, data.textureCoordinates, 0, vtx_cnt);
         float[] texCoords = data.textureCoordinates;
     }
 
