@@ -6,7 +6,7 @@
 # Package makefile producing j3d-org-util.jar
 #
 # Author: Justin Couch
-# Version: $Revision: 1.9 $
+# Version: $Revision: 1.10 $
 #
 #*********************************************************************
 
@@ -16,6 +16,9 @@ JAR_CONTENT= org/j3d/util \
     org/j3d/util/device \
     org/j3d/util/interpolator \
     org/j3d/util/frustum \
+    org/j3d/device/input/spaceball \
+    org/j3d/device/input/vfx \
+    org/j3d/device/input/polhemus \    
     org/j3d/device/output/elumens \
     org/j3d/texture \
     org/j3d/terrain \
