@@ -27,7 +27,7 @@ import junit.textui.TestRunner;
  * performed by the example code.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TestSpringGenerator extends TestCase
 {
@@ -92,14 +92,19 @@ public class TestSpringGenerator extends TestCase
      */
     public void testCreate()
     {
-        // test the default sphere is 1 outer radius. This should give
+        // test the default spring is 1 outer radius. This should give
         // sides: 16 facets * 16 facets * 4 vertex per facet * 4 loops
         // total => 4096 vertices
         generator = new SpringGenerator();
 
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.QUADS;
+
+        generator.generate(data);
+
         assertEquals("Default spring vertex count",
                      4096,
-                     generator.getVertexCount());
+                     data.vertexCount);
 
         float[] dimensions = generator.getDimensions();
 
@@ -111,9 +116,12 @@ public class TestSpringGenerator extends TestCase
         // Now test changing the dimension on an existing spring
         generator.setDimensions(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
+        data.coordinates = null;
+        generator.generate(data);
+
         assertEquals("Dimensioned vertex count",
                      4096,
-                     generator.getVertexCount());
+                     data.vertexCount);
 
         dimensions = generator.getDimensions();
 
@@ -133,9 +141,12 @@ public class TestSpringGenerator extends TestCase
         // total => 7168 vertices
         generator.setLoopDimensions(TEST_LOOP_SPACING, TEST_LOOP_COUNT);
 
+        data.coordinates = null;
+        generator.generate(data);
+
         assertEquals("Looped spring vertex count is wrong",
                      7168,
-                     generator.getVertexCount());
+                     data.vertexCount);
 
         dimensions = generator.getDimensions();
 
@@ -159,9 +170,12 @@ public class TestSpringGenerator extends TestCase
                                         TEST_LOOP_SPACING,
                                         TEST_LOOP_COUNT);
 
+        data.coordinates = null;
+        generator.generate(data);
+
         assertEquals("Test spring vertex count is wrong",
                      7168,
-                     generator.getVertexCount());
+                     data.vertexCount);
 
         dimensions = generator.getDimensions();
 
@@ -190,9 +204,13 @@ public class TestSpringGenerator extends TestCase
         // test the default spring is
         generator = new SpringGenerator();
 
-        int vertices = generator.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.QUADS;
 
-        float[] coords = generator.generateUnindexedCoordinates();
+        generator.generate(data);
+
+        int vertices = data.vertexCount;
+        float[] coords = data.coordinates;
 
         assertEquals("Default spring coordinate length wrong",
                      vertices * 3,
@@ -200,8 +218,11 @@ public class TestSpringGenerator extends TestCase
 
         generator.setDimensions(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("Dimensioned spring coordinate length wrong",
                      vertices * 3,
@@ -209,8 +230,11 @@ public class TestSpringGenerator extends TestCase
 
         generator = new SpringGenerator(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("Test spring coordinate length wrong",
                      vertices * 3,
@@ -227,9 +251,14 @@ public class TestSpringGenerator extends TestCase
         // test the default spring is 2, 2, 2
         generator = new SpringGenerator();
 
-        int vertices = generator.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.QUADS;
+        data.geometryComponents = GeometryData.NORMAL_DATA;
 
-        float[] coords = generator.generateUnindexedNormals();
+        generator.generate(data);
+
+        int vertices = data.vertexCount;
+        float[] coords = data.normals;
 
         assertEquals("Default spring normal length wrong",
                      vertices * 3,
@@ -238,8 +267,11 @@ public class TestSpringGenerator extends TestCase
 
         generator.setDimensions(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("Dimensioned spring normal length wrong",
                      vertices * 3,
@@ -247,8 +279,11 @@ public class TestSpringGenerator extends TestCase
 
         generator = new SpringGenerator(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("Test spring normal length wrong",
                      vertices * 3,
@@ -330,6 +365,12 @@ public class TestSpringGenerator extends TestCase
         int vtx_count;
         float[] coords;
 
+        generator = new SpringGenerator();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.QUADS;
+
+        generator.generate(data);
+
         assertEquals("Valid inner & outer facet lengths",
                      VALID_INNER_FACETS.length,
                      VALID_OUTER_FACETS.length);
@@ -343,7 +384,10 @@ public class TestSpringGenerator extends TestCase
             // Facet counts * 4 vertex per facet * 4 loops
             reqd_count = VALID_INNER_FACETS[i] * VALID_OUTER_FACETS[i] * 16;
 
-            vtx_count = generator.getVertexCount();
+            data.coordinates = null;
+            generator.generate(data);
+
+            vtx_count = data.vertexCount;
             assertEquals("Construct vertex count for inner facet " +
                            VALID_INNER_FACETS[i],
                          reqd_count,
@@ -351,7 +395,7 @@ public class TestSpringGenerator extends TestCase
 
             // Now generate the vertices and look at the array
             reqd_count = reqd_count * 3;
-            coords = generator.generateUnindexedCoordinates();
+            coords = data.coordinates;
             assertEquals("Generated initial vertex count for inner facet " +
                            VALID_INNER_FACETS[i],
                          reqd_count,
@@ -367,9 +411,12 @@ public class TestSpringGenerator extends TestCase
             generator.setFacetCount(VALID_INNER_FACETS[i],
                                     VALID_OUTER_FACETS[i]);
             // Facet counts * 4 vertex per facet * 4 loops
-            reqd_count = VALID_INNER_FACETS[i] * VALID_OUTER_FACETS[i] * 16;
 
-            vtx_count = generator.getVertexCount();
+            reqd_count = VALID_INNER_FACETS[i] * VALID_OUTER_FACETS[i] * 16;
+            data.coordinates = null;
+            generator.generate(data);
+
+            vtx_count = data.vertexCount;
             assertEquals("Construct vertex count for inner facet" +
                            VALID_INNER_FACETS[i],
                          reqd_count,
@@ -377,7 +424,7 @@ public class TestSpringGenerator extends TestCase
 
             // Now generate the vertices and look at the array
             reqd_count = reqd_count * 3;
-            coords = generator.generateUnindexedCoordinates();
+            coords = data.coordinates;
             assertEquals("Generated initial vertex count for inner facet" +
                            VALID_INNER_FACETS[i],
                          reqd_count,

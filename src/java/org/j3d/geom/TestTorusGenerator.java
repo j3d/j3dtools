@@ -27,7 +27,7 @@ import junit.textui.TestRunner;
  * performed by the example code.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TestTorusGenerator extends TestCase
 {
@@ -44,7 +44,7 @@ public class TestTorusGenerator extends TestCase
     private static final int[] VALID_OUTER_FACETS = { 10, 20, 32 };
 
     /** A list of invalid facet counts to make sure it generates exceptions */
-    private static final int[] INVALID_INNER_FACETS = { -5, 0, 2, 10 };
+    private static final int[] INVALID_INNER_FACETS = { -5, 0, 2, 11 };
 
     /** A list of invalid facet counts to make sure it generates exceptions */
     private static final int[] INVALID_OUTER_FACETS = { -5, 0, 2};
@@ -91,9 +91,14 @@ public class TestTorusGenerator extends TestCase
         // total => 1024 vertices
         generator = new TorusGenerator();
 
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.QUADS;
+
+        generator.generate(data);
+
         assertEquals("Default torus vertex count",
                      1024,
-                     generator.getVertexCount());
+                     data.vertexCount);
 
         float[] dimensions = generator.getDimensions();
 
@@ -103,9 +108,12 @@ public class TestTorusGenerator extends TestCase
         // Now test changing the dimension on an existing torus
         generator.setDimensions(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
+        data.coordinates = null;
+        generator.generate(data);
+
         assertEquals("Dimensioned vertex count is wrong",
                      1024,
-                     generator.getVertexCount());
+                     data.vertexCount);
 
         dimensions = generator.getDimensions();
 
@@ -121,9 +129,12 @@ public class TestTorusGenerator extends TestCase
         // test the default torus is 2, 2, 2
         generator = new TorusGenerator(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
+        data.coordinates = null;
+        generator.generate(data);
+
         assertEquals("Test torus vertex count is wrong",
                      1024,
-                     generator.getVertexCount());
+                     data.vertexCount);
 
         dimensions = generator.getDimensions();
 
@@ -147,9 +158,13 @@ public class TestTorusGenerator extends TestCase
         // test the default torus is
         generator = new TorusGenerator();
 
-        int vertices = generator.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.QUADS;
 
-        float[] coords = generator.generateUnindexedCoordinates();
+        generator.generate(data);
+
+        int vertices = data.vertexCount;
+        float[] coords = data.coordinates;
 
         assertEquals("Default torus coordinate length wrong",
                      vertices * 3,
@@ -157,8 +172,11 @@ public class TestTorusGenerator extends TestCase
 
         generator.setDimensions(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("Dimensioned torus coordinate length wrong",
                      vertices * 3,
@@ -166,8 +184,11 @@ public class TestTorusGenerator extends TestCase
 
         generator = new TorusGenerator(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("Test torus coordinate length wrong",
                      vertices * 3,
@@ -184,9 +205,14 @@ public class TestTorusGenerator extends TestCase
         // test the default torus is 2, 2, 2
         generator = new TorusGenerator();
 
-        int vertices = generator.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.QUADS;
+        data.geometryComponents = GeometryData.NORMAL_DATA;
 
-        float[] coords = generator.generateUnindexedNormals();
+        generator.generate(data);
+
+        int vertices = data.vertexCount;
+        float[] coords = data.normals;
 
         assertEquals("Default torus normal length wrong",
                      vertices * 3,
@@ -195,8 +221,11 @@ public class TestTorusGenerator extends TestCase
 
         generator.setDimensions(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("Dimensioned torus normal length wrong",
                      vertices * 3,
@@ -204,8 +233,11 @@ public class TestTorusGenerator extends TestCase
 
         generator = new TorusGenerator(TEST_INNER_RADIUS, TEST_OUTER_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("Test torus normal length wrong",
                      vertices * 3,
@@ -219,6 +251,7 @@ public class TestTorusGenerator extends TestCase
     public void testInvalidFacets()
     {
         int i;
+
         // Test with a negative value, zero and value less than 3. All should
         // generate exceptions.
         for(i = 0; i < INVALID_INNER_FACETS.length; i++)
@@ -291,15 +324,22 @@ public class TestTorusGenerator extends TestCase
                      VALID_INNER_FACETS.length,
                      VALID_OUTER_FACETS.length);
 
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.QUADS;
+
         // Test with a negative value, zero and value less than 3. All should
         // generate exceptions.
         for(i = 0; i < VALID_INNER_FACETS.length; i++)
         {
             generator = new TorusGenerator(VALID_INNER_FACETS[i],
                                            VALID_OUTER_FACETS[i]);
+
+            data.coordinates = null;
+            generator.generate(data);
+
             reqd_count = VALID_INNER_FACETS[i] * VALID_OUTER_FACETS[i] * 4;
 
-            vtx_count = generator.getVertexCount();
+            vtx_count = data.vertexCount;
             assertEquals("Construct vertex count for inner facet" +
                            VALID_INNER_FACETS[i],
                          reqd_count,
@@ -307,7 +347,7 @@ public class TestTorusGenerator extends TestCase
 
             // Now generate the vertices and look at the array
             reqd_count = reqd_count * 3;
-            coords = generator.generateUnindexedCoordinates();
+            coords = data.coordinates;
             assertEquals("Generated initial vertex count for inner facet" +
                            VALID_INNER_FACETS[i],
                          reqd_count,
@@ -324,7 +364,10 @@ public class TestTorusGenerator extends TestCase
                                     VALID_OUTER_FACETS[i]);
             reqd_count = VALID_INNER_FACETS[i] * VALID_OUTER_FACETS[i] * 4;
 
-            vtx_count = generator.getVertexCount();
+            data.coordinates = null;
+            generator.generate(data);
+
+            vtx_count = data.vertexCount;
             assertEquals("Construct vertex count for inner facet" +
                            VALID_INNER_FACETS[i],
                          reqd_count,
@@ -332,7 +375,7 @@ public class TestTorusGenerator extends TestCase
 
             // Now generate the vertices and look at the array
             reqd_count = reqd_count * 3;
-            coords = generator.generateUnindexedCoordinates();
+            coords = data.coordinates;
             assertEquals("Generated initial vertex count for inner facet" +
                            VALID_INNER_FACETS[i],
                          reqd_count,
