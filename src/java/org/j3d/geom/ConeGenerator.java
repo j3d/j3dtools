@@ -36,7 +36,7 @@ import javax.vecmath.Vector3f;
  * geometry type, but is supported non-the-less for completeness.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ConeGenerator extends GeometryGenerator
 {
@@ -125,6 +125,7 @@ public class ConeGenerator extends GeometryGenerator
      * @param facets The number of facets on the side of the cone
      * @param hasBottom  True if to generate faces for the bottom
      * @throws IllegalArgumentException The number of facets is less than 3
+     *    or the radius is not positive
      */
     public ConeGenerator(float height,
                          float radius,
@@ -133,6 +134,9 @@ public class ConeGenerator extends GeometryGenerator
     {
         if(facets < 3)
             throw new IllegalArgumentException("Number of facets is < 3");
+
+        if(radius <= 0)
+            throw new IllegalArgumentException("Radius is negative or zero");
 
         facetCount = facets;
         coneHeight = height;
@@ -171,9 +175,13 @@ public class ConeGenerator extends GeometryGenerator
      * @param height The height of the cone to generate
      * @param radius The radius of the bottom of the cone
      * @param hasBottom  True if to generate faces for the bottom
+     * @throws IllegalArgumentException The radius is not positive
      */
     public void setDimensions(float height, float radius, boolean hasBottom)
     {
+        if(radius <= 0)
+            throw new IllegalArgumentException("Radius is negative or zero");
+
         coneHeight = height;
         bottomRadius = radius;
         useBottom = hasBottom;
