@@ -21,7 +21,7 @@ import org.j3d.geom.*;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TriangulationUtilsDemo
 {
@@ -31,18 +31,18 @@ public class TriangulationUtilsDemo
 
         float[] coords =
         {
-              -2,    -1, 0,
-              -2,     1, 0,
-            0.5f,     1, 0,
-            0.5f, -0.5f, 0,
-            1.5f, -0.5f, 0,
-            1.5f,     1, 0,
-               2,     1, 0,
-               2,    -1, 0,
-           -0.5f,    -1, 0,
-           -0.5f,  0.5f, 0,
+           -1.5f,    -1, 0,
            -1.5f,  0.5f, 0,
-           -1.5f,    -1, 0
+           -0.5f,  0.5f, 0,
+           -0.5f,    -1, 0,
+               2,    -1, 0,
+               2,     1, 0,
+            1.5f,     1, 0,
+            1.5f, -0.5f, 0,
+            0.5f, -0.5f, 0,
+            0.5f,     1, 0,
+              -2,     1, 0,
+              -2,    -1, 0,
         };
 
         float[] normal = { 0, 0, 1 };

@@ -36,7 +36,7 @@ import org.j3d.ui.navigation.NavigationState;
  * of the rendering attributes like the face set.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TriangulationDemo extends DemoFrame
     implements ItemListener
@@ -278,18 +278,18 @@ public class TriangulationDemo extends DemoFrame
 
         float[] coords =
         {
-              -2,    -1, 0,
-              -2,     1, 0,
-            0.5f,     1, 0,
-            0.5f, -0.5f, 0,
-            1.5f, -0.5f, 0,
-            1.5f,     1, 0,
-               2,     1, 0,
-               2,    -1, 0,
-           -0.5f,    -1, 0,
-           -0.5f,  0.5f, 0,
+           -1.5f,    -1, 0,
            -1.5f,  0.5f, 0,
-           -1.5f,    -1, 0
+           -0.5f,  0.5f, 0,
+           -0.5f,    -1, 0,
+               2,    -1, 0,
+               2,     1, 0,
+            1.5f,     1, 0,
+            1.5f, -0.5f, 0,
+            0.5f, -0.5f, 0,
+            0.5f,     1, 0,
+              -2,     1, 0,
+              -2,    -1, 0
         };
 
         float[] normals =
@@ -310,18 +310,18 @@ public class TriangulationDemo extends DemoFrame
 
         float[] tex_coords =
         {
-            0, 0,
-            0, 1,
-            0.675f, 1,
-            0.675f, 0.25f,
-            0.875f, 0.25f,
-            0.875f, 1,
-            1, 1,
-            1, 0,
-            0.375f, 0,
-            0.375f, 0.75f,
+            0.125f, 0,
             0.125f, 0.75f,
-            0.125f, 0
+            0.375f, 0.75f,
+            0.375f, 0,
+            1, 0,
+            1, 1,
+            0.875f, 1,
+            0.875f, 0.25f,
+            0.675f, 0.25f,
+            0.675f, 1,
+            0, 1,
+            0, 0
         };
 
         float[] normal = { 0, 0, 1 };
