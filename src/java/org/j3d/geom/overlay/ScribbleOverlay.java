@@ -30,7 +30,7 @@ import javax.media.j3d.TransformGroup;
  * <P>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ScribbleOverlay extends MouseOverlay
 {
@@ -56,10 +56,11 @@ public class ScribbleOverlay extends MouseOverlay
 
     /**
      * Create a new scribble overlay that bases its size on the canvas it
-     * overlays.
+     * overlays. The default line colour is white. If the bounds are null,
+     * the overlay works for the entire canvas.
      *
      * @param canvas The canvas that is scribbled on
-     * @param viewTG The transform group holding the view
+     * @param bounds The bounds of the canvas to draw on or null
      */
     public ScribbleOverlay(Canvas3D canvas, Rectangle bounds)
     {
@@ -67,21 +68,26 @@ public class ScribbleOverlay extends MouseOverlay
     }
 
     /**
-     * Create a new scribble overlay using the default line color - white.
+     * Create a new scribble overlay using the given line color. If the bounds
+     * are null, the overlay works for the entire canvas.
+     *
+     * @param canvas The canvas that is scribbled on
+     * @param bounds The bounds of the canvas to draw on or null
+     * @param lineColor The colour to start the first line with
      */
     public ScribbleOverlay(Canvas3D canvas,
                            Rectangle bounds,
-                           Color color)
+                           Color lineColor)
     {
-        super(canvas, bounds, false, false, true, true, true);
+        super(canvas, bounds, true, true, true, true, true);
 
         lineList = new ArrayList();
         worldPoint = new Point();
 
-        currentColor = new Color(color.getRed(),
-                                 color.getGreen(),
-                                 color.getBlue(),
-                                 color.getAlpha());
+        currentColor = new Color(lineColor.getRed(),
+                                 lineColor.getGreen(),
+                                 lineColor.getBlue(),
+                                 lineColor.getAlpha());
 
         currentLineDetails = new LineDetails(currentColor);
         lineList.add(currentLineDetails);
@@ -99,7 +105,12 @@ public class ScribbleOverlay extends MouseOverlay
         int color_total = lineList.size();
         int lines_total;
 
-System.out.println("total colours " + color_total);
+        g.setColor(Color.yellow);
+        g.drawRect(0, 0, overlayBounds.width - 1, overlayBounds.height -1);
+        g.setColor(Color.blue);
+int[] xp = new int[] { 0, 30, 50, 50, 100};
+int[] yp = new int[] { 0, 30, 30, 50, 130 };
+g.drawPolyline(xp, yp, 5);
 
         for(i = 0; i < color_total; i++)
         {
@@ -107,7 +118,6 @@ System.out.println("total colours " + color_total);
             lines_total = details.lines.size();
 
             g.setColor(details.color);
-System.out.println("total lines " + lines_total + " " + details.color);
             for(j = 0; j < lines_total; j++)
             {
                 LineData data = (LineData)details.lines.get(j);
