@@ -14,6 +14,7 @@ package org.j3d.util;
 
 // Standard imports
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -35,7 +36,7 @@ import java.util.Iterator;
  * java.util.HashSet, except we leave out garbage generating methods like iterator().
  *
  * @author Rob Nielsen
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class HashSet
 {
@@ -55,6 +56,9 @@ public class HashSet
     /** The load factor for the hashtable. */
     private float loadFactor;
 
+    /** Cache of the entry instances to prevent excessive object creation */
+    private ArrayList entryCache;
+
     /**
      * Innerclass that acts as a datastructure to create a new entry in the
      * table.
@@ -66,14 +70,34 @@ public class HashSet
         Entry next;
 
         /**
+         * Create a new default entry with nothing set.
+         */
+        protected Entry()
+        {
+        }
+
+        /**
          * Create a new entry with the given values.
          *
          * @param hash The code used to hash the object with
-         * @param key The key used to enter this in the table
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
         protected Entry(int hash, Object value, Entry next)
+        {
+            this.hash = hash;
+            this.value = value;
+            this.next = next;
+        }
+
+        /**
+         * Convenience method to set the entry with the given values.
+         *
+         * @param hash The code used to hash the object with
+         * @param value The value for this key
+         * @param next A reference to the next entry in the table
+         */
+        protected void set(int hash, Object value, Entry next)
         {
             this.hash = hash;
             this.value = value;
@@ -113,6 +137,7 @@ public class HashSet
         this.loadFactor = loadFactor;
         table = new Entry[initialCapacity];
         threshold = (int)(initialCapacity * loadFactor);
+        entryCache = new ArrayList(initialCapacity);
     }
 
     /**
@@ -165,12 +190,10 @@ public class HashSet
             int hash=o.hashCode();
             Entry[] tab = table;
             int index = (hash & 0x7FFFFFFF) % tab.length;
-            for(Entry e = tab[index] ; e != null ; e = e.next)
+            for(Entry e = tab[index]; e != null; e = e.next)
             {
-                if (e.hash == hash && (o==e.value||o.equals(e.value)))
-                {
+                if(e.hash == hash && (o == e.value || o.equals(e.value)))
                     return true;
-                }
             }
             return false;
         }
@@ -247,15 +270,13 @@ public class HashSet
         if(o == null)
             return false;
 
-        int hash=o.hashCode();
+        int hash = o.hashCode();
         Entry[] tab = table;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for(Entry e = tab[index] ; e != null ; e = e.next)
+        for(Entry e = tab[index]; e != null; e = e.next)
         {
-            if (e.hash == hash && (o==e.value||o.equals(e.value)))
-            {
+            if(e.hash == hash && (o == e.value || o.equals(e.value)))
                 return false;
-            }
         }
 
         if (count >= threshold)
@@ -265,8 +286,10 @@ public class HashSet
             tab=table;
             index = (hash & 0x7FFFFFFF) % tab.length;
         }
+
         // Creates the new entry.
-        Entry e = new Entry(hash, o, tab[index]);
+        Entry e = getNewEntry();
+        e.set(hash, o, tab[index]);
         tab[index] = e;
         count++;
         return true;
@@ -280,26 +303,26 @@ public class HashSet
      */
     public boolean remove(Object o)
     {
-        if (o==null)
+        if(o == null)
             return false;
 
-        Entry tab[] = table;
+        Entry[] tab = table;
         int hash = o.hashCode();
         int index = (hash & 0x7FFFFFFF) % tab.length;
         for (Entry e = tab[index], prev = null ; e != null ; prev = e, e = e.next)
         {
-            if (e.hash == hash && (o==e.value||o.equals(e.value)))
+            if(e.hash == hash && (o==e.value||o.equals(e.value)))
             {
-                if (prev != null)
-                {
+                if(prev != null)
                     prev.next = e.next;
-                }
                 else
-                {
                     tab[index] = e.next;
-                }
+
                 count--;
                 e.value = null;
+
+                releaseEntry(e);
+
                 return true;
             }
         }
@@ -312,9 +335,30 @@ public class HashSet
      */
     public void clear()
     {
+        if(count == 0)
+            return;
+
         Entry tab[] = table;
-        for (int index = tab.length; --index >= 0; )
+        for(int index = tab.length; --index >= 0; )
+        {
+            Entry e = tab[index];
+
+            if(e == null)
+                continue;
+
+            while(e.next != null)
+            {
+                e.value = null;
+                releaseEntry(e);
+
+                Entry n = e.next;
+                e.next = null;
+                e = n;
+            }
+
             tab[index] = null;
+        }
+
         count = 0;
     }
 
@@ -363,14 +407,14 @@ public class HashSet
         boolean modified = false;
 
         Entry[] table=hs.table;
-        for(int i=0;i<table.length;i++)
+        for(int i = 0; i < table.length; i++)
         {
-            Entry e=table[i];
-            while (e!=null)
+            Entry e = table[i];
+            while(e != null)
             {
-                if (add(e.value))
-                    modified=true;
-                e=e.next;
+                if(add(e.value))
+                    modified = true;
+                e = e.next;
             }
         }
         return modified;
@@ -430,15 +474,15 @@ public class HashSet
     public boolean removeAll(HashSet hs)
     {
         boolean modified = false;
-        Entry[] table=hs.table;
+        Entry[] table = hs.table;
         for(int i=0;i<table.length;i++)
         {
-            Entry e=table[i];
-            while (e!=null)
+            Entry e = table[i];
+            while(e != null)
             {
-                if (remove(e.value))
-                    modified=true;
-                e=e.next;
+                if(remove(e.value))
+                    modified = true;
+                e = e.next;
             }
         }
         return modified;
@@ -602,11 +646,11 @@ public class HashSet
 
         for(int i=0;i<table.length;i++)
         {
-            Entry e=table[i];
-            while (e!=null)
+            Entry e = table[i];
+            while(e != null)
             {
-                h+=e.value.hashCode();
-                e=e.next;
+                h += e.value.hashCode();
+                e = e.next;
             }
         }
         return h;
@@ -682,5 +726,34 @@ public class HashSet
                 newMap[index] = e;
             }
         }
+    }
+
+    /**
+     * Grab a new entry. Check the cache first to see if one is available. If
+     * not, create a new instance.
+     *
+     * @return An instance of the Entry
+     */
+    private Entry getNewEntry()
+    {
+        Entry ret_val;
+
+        int size = entryCache.size();
+        if(size == 0)
+            ret_val = new Entry();
+        else
+            ret_val = (Entry)entryCache.remove(size - 1);
+
+        return ret_val;
+    }
+
+    /**
+     * Release an entry back into the cache.
+     *
+     * @param e The entry to put into the cache
+     */
+    private void releaseEntry(Entry e)
+    {
+        entryCache.add(e);
     }
 }
