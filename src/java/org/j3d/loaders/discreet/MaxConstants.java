@@ -25,7 +25,7 @@ package org.j3d.loaders.discreet;
  * http://www.the-labs.com/Blender/3DS-details.html</a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface MaxConstants
 {
@@ -100,7 +100,7 @@ public interface MaxConstants
     public static final int SHADOW_MAP_FILTER = 0x1450;
 
     /** The ID is for a ray bias (0x1460) */
-    public static final int _BIAS = 0x1460;
+    public static final int RAY_BIAS = 0x1460;
 
     /** The ID is for plane constants (0x1500) */
     public static final int O_CONST = 0x1500;
@@ -322,10 +322,10 @@ public interface MaxConstants
     /** The ID represents the spotlight multiplier */
     public static final int DIR_LIGHT_MULTIPLIER = 0x465b;
 
-    /** The ID represents nominal ambient light (0x4680) */
+    /** The ID represents number of ambient lights (0x4680) */
     public static final int N_AMBIENT_LIGHT = 0x4680;
 
-    /** The ID represents nominal camera (0x4700) */
+    /** The ID represents number of cameras (0x4700) */
     public static final int N_CAMERA = 0x4700;
 
     /** The ID represents the camera see view cone (0x4710) */
@@ -427,10 +427,13 @@ public interface MaxConstants
     /** ID represents the specual color (0xA030) */
     public static final int MAT_SPECULAR = 0xA030;
 
-    /** ID represents the shininess color (0xA040) */
+    /** ID represents the shininess ratio (0xA040) */
     public static final int MAT_SHININESS = 0xA040;
 
+    /** ID represents the shininess strength (0xA041) */
     public static final int MAT_SHIN2PCT = 0xA041;
+
+    /** ID represents the shininess second strength factor (0xA042) */
     public static final int MAT_SHIN3PCT = 0xA042;
 
     /** ID represents the transparency (0xA050) */
@@ -445,17 +448,26 @@ public interface MaxConstants
     /** ID represents a decalled texture (0xA082) */
     public static final int MAT_DECAL = 0xA082;
 
-    /** ID represents an additive texture (0xA083) */
+    /** ID represents an additive transparency blend (0xA083) */
     public static final int MAT_ADDITIVE = 0xA083;
 
     public static final int MAT_SELF_ILPCT = 0xA084;
-    public static final int MAT_WIRE = 0xA085;
+
+    /** ID represents the flag for rendering in wireframe */
+    public static final int MAT_WIREFRAME = 0xA085;
+
     public static final int MAT_SUPERSMP = 0xA086;
+
+    /** ID represents the wire thickness (0xA087) */
     public static final int MAT_WIRESIZE = 0xA087;
+
+
     public static final int MAT_FACEMAP = 0xA088;
     public static final int MAT_XPFALLIN = 0xA08a;
     public static final int MAT_PHONGSOFT = 0xA08c;
     public static final int MAT_WIREABS = 0xA08e;
+
+    /** ID represents the shading style */
     public static final int MAT_SHADING = 0xA100;
 
     /** ID represents the base texture map to apply (0xA200) */
@@ -477,8 +489,13 @@ public interface MaxConstants
     public static final int MAT_USE_XPFALL = 0xA240;
     public static final int MAT_USE_REFBLUR = 0xA250;
     public static final int MAT_BUMP_PERCENT = 0xA252;
+
+    /** ID represents the name of the texture file to use (0xA300) */
     public static final int MAT_MAPNAME = 0xA300;
+
+    /** ID represents automatic cube map generation (0xA3100) */
     public static final int MAT_ACUBIC = 0xA310;
+
     public static final int MAT_SXP_TEXT_DATA = 0xA320;
     public static final int MAT_SXP_TEXT2_DATA = 0xA321;
     public static final int MAT_SXP_OPAC_DATA = 0xA322;
@@ -494,8 +511,13 @@ public interface MaxConstants
     public static final int MAT_SXP_SHIN_MASKDATA = 0xA334;
     public static final int MAT_SXP_SELFI_MASKDATA = 0xA336;
     public static final int MAT_SXP_REFL_MASKDATA = 0xA338;
+
+    /** ID represents a second base material texture map (0xA33A) */
     public static final int MAT_TEX2MAP = 0xA33a;
+
+    /** ID represents the shininess map (0xA33C) */
     public static final int MAT_SHINMAP = 0xA33c;
+
     public static final int MAT_SELFIMAP= 0xA33d;
     public static final int MAT_TEXMASK = 0xA33e;
     public static final int MAT_TEX2MASK = 0xA340;
@@ -531,10 +553,19 @@ public interface MaxConstants
     /** ID represents an texture rotation angle (0xA35C) */
     public static final int MAT_MAP_ANG = 0xA35C;
 
+    /** ID represents the first blend colour for textures (0xA360) */
     public static final int MAT_MAP_COL1 = 0xA360;
+
+    /** ID represents the second blend colour for textures (0xA360) */
     public static final int MAT_MAP_COL2 = 0xA362;
+
+    /** ID represents the red blend colour for textures (0xA360) */
     public static final int MAT_MAP_RCOL = 0xA364;
+
+    /** ID represents the green blend colour for textures (0xA360) */
     public static final int MAT_MAP_GCOL = 0xA366;
+
+    /** ID represents the blue blend colour for textures (0xA360) */
     public static final int MAT_MAP_BCOL = 0xA368;
 
     /** The object ID represents a piece of material */
