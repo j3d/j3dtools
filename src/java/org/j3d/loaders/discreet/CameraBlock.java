@@ -23,7 +23,7 @@ package org.j3d.loaders.discreet;
  * are mapped here currently.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CameraBlock
 {
@@ -36,8 +36,18 @@ public class CameraBlock
     /** The rotation angle (relative to the local Y axis?) for the camera */
     public float bankAngle;
 
-    /** The focus distance for the camera */
+    /** The focus distance for the camera (in millimetres) */
     public float focus;
+
+    /** Flag indicating whether the camera view cone should be shown */
+    public boolean seeOutline;
+
+    /**
+     * Atmospheric effect ranges for the camera. Null if not set. Length 2 if
+     * set. [0] is near raidsu of effect. [0] is far radius of effect. Both
+     * must be greater than or equal to zero.
+     */
+    public float[] ranges;
 
     /**
      * Create a new camera block and set it up with basic details.
@@ -46,5 +56,6 @@ public class CameraBlock
     {
         target = new float[3];
         location = new float[3];
+        seeOutline = false;
     }
 }
