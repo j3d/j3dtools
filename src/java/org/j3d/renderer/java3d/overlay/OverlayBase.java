@@ -72,7 +72,7 @@ import javax.vecmath.Vector3d;
  * the overlays.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class OverlayBase
     implements Overlay, ScreenComponent, ComponentListener
@@ -1049,6 +1049,9 @@ public abstract class OverlayBase
                                                        minDivSize,
                                                        256);
 
+            // Since we are now a new size, remove the background image
+            // so that it gets re-generated next time it is asked for.
+            backgroundImage = null;
             subOverlay = new SubOverlay[overlays.size()];
             int n = overlays.size();
 
