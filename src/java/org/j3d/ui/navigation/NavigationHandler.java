@@ -134,6 +134,8 @@ import org.j3d.geom.IntersectionUtils;
  * The collision vector does not move according to the direction that we are
  * travelling rather than the direction we are facing. Allows us to walk
  * backwards through objects when we shouldn't.
+ * <p>
+ * Implement Examine mode handling
  *
  * @author per-frame movement algorithms by
  *   <a href="http://www.ife.no/vr/">Halden VR Centre, Institute for Energy Technology</a><br>
@@ -141,8 +143,7 @@ import org.j3d.geom.IntersectionUtils;
  * @version $Revision $
  */
 public class NavigationHandler
-    implements ActionListener,
-               NavigationStateListener
+    implements ActionListener
 {
     /** The default height of the avatar */
     private static final float DEFAULT_AVATAR_HEIGHT = 1.8f;
@@ -324,11 +325,11 @@ public class NavigationHandler
      */
     public NavigationHandler()
     {
-        navigationState = NO_STATE;
-        previousState = NO_STATE;
-        buttonOneState = NO_STATE;
-        buttonTwoState = NO_STATE;
-        buttonThreeState = NO_STATE;
+        navigationState = NavigationState.NO_STATE;
+        previousState = NavigationState.NO_STATE;
+        buttonOneState = NavigationState.NO_STATE;
+        buttonTwoState = NavigationState.NO_STATE;
+        buttonThreeState = NavigationState.NO_STATE;
         movementInProgress = false;
 
         //  Timer:
@@ -534,20 +535,6 @@ public class NavigationHandler
         collisionListener = l;
     }
 
-    //----------------------------------------------------------
-    // Methods required by the NavigationStateListener
-    //----------------------------------------------------------
-
-    /**
-     * Notification that the panning state has changed to the new state.
-     *
-     * @param state One of the state values declared here
-     */
-    public void setNavigationState(int state)
-    {
-        navigationState = state;
-    }
-
     /**
      * Callback to ask the listener what navigation state it thinks it is
      * in.
@@ -579,7 +566,7 @@ public class NavigationHandler
 
         switch(navigationState)
         {
-            case FLY_STATE:
+            case NavigationState.FLY_STATE:
                 //  Translate on Z:
                 dragTranslationAmt.set(0,0,-mouseDifference.y * speed);
 
@@ -590,7 +577,7 @@ public class NavigationHandler
                 allowTerrainFollowing = false;
                 break;
 
-            case PAN_STATE:
+            case NavigationState.PAN_STATE:
                 //  Translate on X,Y:
                 dragTranslationAmt.set(-mouseDifference.x * 2,
                                        mouseDifference.y * 2,
@@ -600,7 +587,7 @@ public class NavigationHandler
                 allowTerrainFollowing = false;
                 break;
 
-            case TILT_STATE:
+            case NavigationState.TILT_STATE:
                 //  Rotate arround X,Y:
                 mouseRotationX = mouseDifference.y;
                 mouseRotationY = mouseDifference.x;
@@ -608,7 +595,7 @@ public class NavigationHandler
                 allowTerrainFollowing = false;
                 break;
 
-            case WALK_STATE:
+            case NavigationState.WALK_STATE:
                 //  Translate on Z only
                 dragTranslationAmt.set(0,0,-mouseDifference.y * speed);
 
@@ -620,13 +607,13 @@ public class NavigationHandler
                 allowTerrainFollowing = (terrain != null);
                 break;
 
-            case EXAMINE_STATE:
+            case NavigationState.EXAMINE_STATE:
                 // do nothing
                 allowCollisions = false;
                 allowTerrainFollowing = false;
                 break;
 
-            case NO_STATE:
+            case NavigationState.NO_STATE:
                 // do nothing
                 allowCollisions = false;
                 allowTerrainFollowing = false;
@@ -661,7 +648,7 @@ public class NavigationHandler
         if(navigationListener != null)
             navigationListener.setNavigationState(navigationState);
 
-        if(navigationState == NO_STATE)
+        if(navigationState == NavigationState.NO_STATE)
             return;
 
         viewTg.getTransform(viewTx);
@@ -669,7 +656,7 @@ public class NavigationHandler
         startMousePos.set(evt.getX(), evt.getY());
         timer.start();
 
-        if(navigationState == WALK_STATE)
+        if(navigationState == NavigationState.WALK_STATE)
             setInitialTerrainHeight();
     }
 
@@ -731,6 +718,7 @@ public class NavigationHandler
     public void actionPerformed(ActionEvent actionEvent)
     {
         // Some magic numbers here that I don't know where they came from.
+        // See the j3d.org implementation docs for more details from Lazlo.
         int frameDelay = 10 + (int)(view.getLastFrameDuration() / 2.0);
         double motionDelay = 0.000005 * frameDelay;
 
@@ -989,6 +977,9 @@ public class NavigationHandler
      */
     private void setInitialTerrainHeight()
     {
+        if(terrain == null)
+            return;
+
         viewTg.getLocalToVworld(worldEyeTransform);
         worldEyeTransform.mul(viewTx);
 
