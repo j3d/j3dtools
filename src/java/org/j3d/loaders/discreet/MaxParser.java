@@ -28,7 +28,7 @@ import org.j3d.io.BlockDataInputStream;
  * http://www.spacesimulator.net/tut4_3dsloader.html
  *
  * @author  Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class MaxParser
 {
@@ -353,15 +353,15 @@ public class MaxParser
                     break;
 
                 case MaxConstants.USE_FOG:
-                    data.selectedBackground = ObjectMesh.USE_LINEAR_FOG;
+                    data.selectedFog = ObjectMesh.USE_LINEAR_FOG;
                     break;
 
                 case MaxConstants.USE_LAYER_FOG:
-                    data.selectedBackground = ObjectMesh.USE_LAYER_FOG;
+                    data.selectedFog = ObjectMesh.USE_LAYER_FOG;
                     break;
 
                 case MaxConstants.USE_DISTANCE_CUE:
-                    data.selectedBackground = ObjectMesh.USE_DISTANCE_FOG;
+                    data.selectedFog = ObjectMesh.USE_DISTANCE_FOG;
                     break;
 
                 case MaxConstants.DEFAULT_VIEW:

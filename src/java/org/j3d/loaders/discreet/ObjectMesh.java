@@ -24,7 +24,7 @@ package org.j3d.loaders.discreet;
  * information, such as vertices, materials etc.
  *
  * @author  Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ObjectMesh
 {
@@ -128,6 +128,9 @@ public class ObjectMesh
      */
     public float[] distanceFogDetails;
 
+    /** Flag which of the 3 fog structures should be used */
+    public int selectedFog;
+
     /**
      * Construct a new instance with blocks initialised to a size of 8.
      */
@@ -138,6 +141,7 @@ public class ObjectMesh
         masterScale = 1;
 
         selectedBackground = USE_SOLID_BG;
+        selectedFog = USE_LINEAR_FOG;
         fogBackground = false;
     }
 }
