@@ -3,6 +3,50 @@
 Generalised utility classes for all terrain culling algorithms.
 <P>
 
+The aim of this package is to provide an abstract representation of any
+landscape rendering system. They all operate on a set of basic principles of
+a basic change in detail dependent on the viewer position, encapsulation of
+terrain information and the view information. While this package does not
+provide any hints to the implementation of a particular algorithm, it can
+be used to represent all of them in a general sense. Each algorithm extends
+this basic package with their own specific code.
+
+<H3>Implementing a terrain rendering algorithm</H3>
+
+In order to implement a new algorithm, your attention is focussed on two
+classes in this package - {@link org.j3d.terrain.TerrainData} and
+{@link org.j3d.terrain.Landscape}. The former is used to represent the
+raw data of the terrain in a generic sense, it is based on a regular grid
+structure. The later is access point for adding the terrain into the
+scene graph. Renderable items go in here.
+<p>
+
+Raw terrain information you probably don't need to implement most of the time.
+The repository codebase also includes a number of loaders for different file
+formats as well as a generalised implementation of the <code>TerrainData</code>
+class that works with these loaders. For most simple cases, you should not
+need to do anything more. For more information on this code, have a look at the
+{@link org.j3d.loaders} package.
+<p>
+
+To implement a specific algorithm (eg ROAM) you would extend the
+<code>Landscape</code> class and implement the
+{@link Landscape#setView(Tuple3f, Vector3f)} method. Every time that the user's
+viewpoint changes, you will be notified by this method (assuming that you have
+implemented a navigation system that calls it!). That means you should perform
+any culling/LOD and update the scene graph at this point. This will be
+called at most once per frame. As this class extends the Java3D
+{@link javax.media.j3d.BranchGroup} interface, it means that all your geometry
+of the scene should be added to this class.
+<p>
+
+For convenience, this class also implements {@link FrameUpdateListener} from
+the {@link org.j3d.ui.navigation} package so that you can have fast, quick
+navigation implementation in your code. If you wish to use your own custom
+user input code, then there is no penalty for doing so. Simply call one of
+the <code>setView()</code> methods directly with the transformation
+information.
+
 <H3>Acknowledgements</H3>
 
 The code in this package is based on the original work by Paul Byrne of

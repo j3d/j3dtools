@@ -47,7 +47,7 @@ import org.j3d.ui.navigation.FrameUpdateListener;
  * information.
  *
  * @author Justin Couch, based on original ideas from Paul Byrne
- * @version
+ * @version $Revision: 1.3 $
  */
 public abstract class Landscape extends javax.media.j3d.BranchGroup
     implements FrameUpdateListener

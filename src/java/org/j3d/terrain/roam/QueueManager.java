@@ -16,11 +16,13 @@ import java.util.TreeSet;
 // none
 
 /**
+ * Abstract representation of functionality that is used to queue up tree node
+ * information for roam.
  *
  * @author  Justin Couch
- * @version
+ * @version $Revision: 1.2 $
  */
-public interface QueueManager
+interface QueueManager
 {
     public void addTriangle(Object node);
 

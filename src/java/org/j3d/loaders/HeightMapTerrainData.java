@@ -35,7 +35,7 @@ import org.j3d.terrain.TerrainData;
  * entire texture.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class HeightMapTerrainData implements TerrainData
 {
@@ -129,7 +129,13 @@ public class HeightMapTerrainData implements TerrainData
         }
 
         gridStep = new Point2d(stepDetails);
+
+        hasTiledTextures = false;
     }
+
+    //----------------------------------------------------------
+    // Methods required by TerrainData
+    //----------------------------------------------------------
 
     /**
      * Get the coordinate of the point in the grid.
@@ -173,6 +179,7 @@ public class HeightMapTerrainData implements TerrainData
         }
         else
         {
+            // do something here.
         }
     }
 
@@ -276,5 +283,20 @@ public class HeightMapTerrainData implements TerrainData
     public double getGridYStep()
     {
         return gridStep.y;
+    }
+
+    //----------------------------------------------------------
+    // Local Methods
+    //----------------------------------------------------------
+
+    /**
+     * Set the texture to the new instance. Setting a value of null will
+     * clear the existing texture.
+     *
+     * @param tex The new texture to use
+     */
+    public void setTexture(Texture tex)
+    {
+        texture = tex;
     }
 }

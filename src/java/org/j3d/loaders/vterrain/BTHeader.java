@@ -16,7 +16,7 @@ package org.j3d.loaders.vterrain;
 // none
 
 /**
- * Representation of the BT File format header information
+ * Representation of the BT File format header information.
  * <p>
  *
  * Not included in the header is data size or floating point flags as these
@@ -28,7 +28,7 @@ package org.j3d.loaders.vterrain;
  * </a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class BTHeader
 {

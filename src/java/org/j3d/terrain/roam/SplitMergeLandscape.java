@@ -70,7 +70,7 @@ import org.j3d.terrain.TerrainData;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version
+ * @version $Revision: 1.4 $
  */
 public class SplitMergeLandscape extends Landscape
 {

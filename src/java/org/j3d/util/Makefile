@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.util directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.6 $
+# Version: $Revision: 1.7 $
 #
 #*********************************************************************
 
@@ -15,6 +15,7 @@ PACKAGE = org.j3d.util
 # The source files to compile. These are declared in order that they must be
 # compiled in
 SOURCE = ErrorHandler.java \
+		 CharHashMap.java \
 		 IntHashMap.java \
 		 Queue.java \
          SAXErrorHandler.java \
