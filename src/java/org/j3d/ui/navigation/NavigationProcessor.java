@@ -183,7 +183,7 @@ import org.j3d.util.UserSupplementData;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NavigationProcessor
 {
@@ -938,7 +938,7 @@ public class NavigationProcessor
             // ms but orbit time in seconds. Speed is proportional to the amount of
             // width draging
             double local_speed = inputRotationY * scaledSpeed;
-            double theta_inc = speed * Math.PI * 2 * frameDuration / (orbitTime * 1000);
+            double theta_inc = local_speed * Math.PI * 2 * frameDuration / (orbitTime * 1000);
 
             total_theta += theta_inc;
 
