@@ -34,7 +34,7 @@ import javax.vecmath.Vector3d;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class OverlayManager extends BranchGroup
     implements ComponentListener
@@ -142,6 +142,15 @@ public class OverlayManager extends BranchGroup
         windows.setCapability(OrderedGroup.ALLOW_CHILDREN_EXTEND);
         windows.setCapability(OrderedGroup.ALLOW_CHILDREN_WRITE);
         consoleTG.addChild(windows);
+    }
+
+    /**
+     * Notification that the canvas's view has changed.
+     */
+    public void viewChanged()
+    {
+        // Handle like a resize event
+        componentResized(null);
     }
 
     //------------------------------------------------------------------------
