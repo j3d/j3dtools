@@ -1,0 +1,29 @@
+  Important info for Terrain Rendering demos
+
+Unlike most of the other examples, before you can run this code, you will
+need to do some preparation work. 
+
+The terrain rendering code loads raw data from various file formats. In the
+current code, that is the BT file format from the VTerrain Project 
+(http://www.vterrain.org). These are *big* files when uncompressed, so we 
+keep them as compressed data in the repository. You will need to uncompress
+them before running the demo program, otherwise the demo will crash. When
+you uncompress them (in GZip format) leave them in this directory and run
+the application from this directory. 
+
+The Crater example does not have a texture, so all you will see is a green-ish
+colour terrain. The alien surface does have a texture, but it is also twice
+the size of the crater example. At least on my standard setup here, it creates
+out of memory errors. That's not good and I'm working on doing some 
+optimisations to prevent this. However, if you have a lot of memory to play
+with, try setting the minimum JVM heap size to 128MB and running it. Let me 
+know if it works, because my laptop I'm developing this on croaks at having
+so much memory in use :(
+
+There's a bug in the code currently that prevents the top-down view on the
+right showing anything. I'm not sure what it is yet, but probably has 
+something to do with the height not being set correctly and the viewpoint is
+"under" the terrain so there is nothing to see. Will look into that further.
+
+Justin Couch
+Feb '02
