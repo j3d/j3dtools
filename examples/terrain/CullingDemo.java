@@ -34,7 +34,6 @@ import org.j3d.terrain.AbstractStaticTerrainData;
 import org.j3d.terrain.AppearanceGenerator;
 import org.j3d.terrain.Landscape;
 import org.j3d.terrain.TerrainData;
-import org.j3d.terrain.ViewFrustum;
 import org.j3d.terrain.roam.SplitMergeLandscape;
 
 import org.j3d.texture.TextureCache;
@@ -45,13 +44,14 @@ import org.j3d.ui.navigation.NavigationStateManager;
 import org.j3d.ui.navigation.NavigationState;
 
 import org.j3d.util.interpolator.ColorInterpolator;
+import org.j3d.util.frustum.ViewFrustum;
 
 /**
  * Demonstration of the ROAM code.
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class CullingDemo extends DemoFrame
     implements ItemListener, AppearanceGenerator
