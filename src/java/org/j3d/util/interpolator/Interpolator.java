@@ -24,7 +24,7 @@ package org.j3d.util.interpolator;
  * and compute correct values.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class Interpolator
 {
@@ -119,21 +119,22 @@ public abstract class Interpolator
         int mid = currentSize >> 1;  // identical to (start + end + 1) >> 1
 
         // Non-recursive binary search.
+        // Searches for the largest i such that keys[i]<key.
         // Differs a little from a classical binary search
         // in that we cannot discard the middle value from
-        // the search when key>keys[mid].  The new
-        // range boundaries are adjusted to include mid (start=mid)
-        // instead of excluding mid (start=mid+1).  In doing this,
-        // we must also make our mid computation round up to avoid
-        // a possible infinite loop with mid==start.
+        // the search when key>keys[mid] (because keys[mid] may
+        // turn out to be the best solution, and we cannot 
+        // terminate when key==keys[mid] (because there may be
+        // more than one i with keys[i]==key, and we must find the
+        // first one.
+        // Round up when computing the new mid value to avoid
+        // a possible infinite loop with start==mid<end.
 
         while(start < end)
         {
             float test = keys[mid];
 
-            if(test == key)
-                break;
-            else if(key <= test)
+            if(test >= key)
                 end = mid - 1;
             else
                 start = mid;     // note we don't exclude mid from range
