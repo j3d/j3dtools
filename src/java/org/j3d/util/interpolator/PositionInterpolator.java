@@ -24,50 +24,49 @@ import javax.vecmath.Point3f;
  * and compute correct values.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class PositionInterpolator
+public class PositionInterpolator extends Interpolator
 {
-    /** The default number of items in the interpolator */
-    private static final int DEFAULT_SIZE = 20;
-
-    /** The number of items to increment the array with */
-    private static final int ARRAY_INCREMENT = 5;
-
     /** Reference to the shared Point3f return value for key values */
     private Point3f sharedPoint;
 
     /** Reference to the shared float array return value for key values */
     private float[] sharedVector;
 
-    /** The current size of the array data */
-    private int allocatedSize;
-
-    /** Current total number of items in the array */
-    private int currentSize;
-
     /** The key values indexed as [index][x, y, z] */
     private float[][] keyValues;
 
-    /** The keys as a single array for fast searching */
-    private float[] keys;
-
     /**
-     * Create a new interpolator instance with the default size for the number
-     * of key values.
+     * Create a new linear interpolator instance with the default size for the
+     * number of key values.
      */
     public PositionInterpolator()
     {
-        this(DEFAULT_SIZE);
+        this(DEFAULT_SIZE, LINEAR);
     }
 
     /**
-     * Create an interpolator with the given basic size.
+     * Create an linear interpolator with the given basic size.
      *
      * @param size The starting number of items in interpolator
      */
     public PositionInterpolator(int size)
     {
+        this(size, LINEAR);
+    }
+
+    /**
+     * Create a interpolator with the given basic size using the interpolation
+     * type.
+     *
+     * @param size The starting number of items in interpolator
+     * @param type The type of interpolation scheme to use
+     */
+    public PositionInterpolator(int size, int type)
+    {
+        super(size, type);
+
         keys = new float[size];
         keyValues = new float[size][3];
 
@@ -161,25 +160,38 @@ public class PositionInterpolator
            sharedPoint.set(keyValues[currentSize - 1]);
         else
         {
-            float[] p1 = keyValues[loc + 1];
-            float[] p0 = keyValues[loc];
+            switch(interpolationType)
+            {
+                case LINEAR:
+                    float[] p1 = keyValues[loc + 1];
+                    float[] p0 = keyValues[loc];
 
-            float x_dist = p1[0] - p0[0];
-            float y_dist = p1[1] - p0[1];
-            float z_dist = p1[2] - p0[2];
+                    float x_dist = p1[0] - p0[0];
+                    float y_dist = p1[1] - p0[1];
+                    float z_dist = p1[2] - p0[2];
 
-            float fraction = 0;
+                    float fraction = 0;
 
-            // just in case we get two keys the same
-            float prev_key = keys[loc];
-            float found_key = keys[loc + 1];
+                    // just in case we get two keys the same
+                    float prev_key = keys[loc];
+                    float found_key = keys[loc + 1];
 
-            if(found_key != prev_key)
-                fraction = (key - prev_key) / (found_key - prev_key);
+                    if(found_key != prev_key)
+                        fraction = (key - prev_key) / (found_key - prev_key);
 
-            sharedPoint.x = p0[0] + fraction * x_dist;
-            sharedPoint.y = p0[1] + fraction * y_dist;
-            sharedPoint.z = p0[2] + fraction * z_dist;
+                    sharedPoint.x = p0[0] + fraction * x_dist;
+                    sharedPoint.y = p0[1] + fraction * y_dist;
+                    sharedPoint.z = p0[2] + fraction * z_dist;
+                    break;
+
+                case STEP:
+                    float[] pnt = keyValues[loc];
+
+                    sharedPoint.x = pnt[0];
+                    sharedPoint.y = pnt[1];
+                    sharedPoint.z = pnt[2];
+                    break;
+            }
         }
 
         return sharedPoint;
@@ -213,21 +225,24 @@ public class PositionInterpolator
         }
         else
         {
-            float[] p1 = keyValues[loc + 1];
-            float[] p0 = keyValues[loc];
+            switch(interpolationType)
+            {
+                case LINEAR:
+                    float[] p1 = keyValues[loc + 1];
+                    float[] p0 = keyValues[loc];
 
-            float x_dist = p1[0] - p0[0];
-            float y_dist = p1[1] - p0[1];
-            float z_dist = p1[2] - p0[2];
+                    float x_dist = p1[0] - p0[0];
+                    float y_dist = p1[1] - p0[1];
+                    float z_dist = p1[2] - p0[2];
 
-            float fraction = 0;
+                    float fraction = 0;
 
-            // just in case we get two keys the same
-            float prev_key = keys[loc];
-            float found_key = keys[loc + 1];
+                    // just in case we get two keys the same
+                    float prev_key = keys[loc];
+                    float found_key = keys[loc + 1];
 
-            if(found_key != prev_key)
-                fraction = (key - prev_key) / (found_key - prev_key);
+                    if(found_key != prev_key)
+                        fraction = (key - prev_key) / (found_key - prev_key);
 
 /*
 System.out.println("Prev key " + prev_key);
@@ -238,9 +253,18 @@ System.out.println("x " + p0[0] + " x_dist " + x_dist);
 System.out.println("y " + p0[1] + " y_dist " + y_dist);
 System.out.println("z " + p0[2] + " z_dist " + z_dist);
 */
-            sharedVector[0] = p0[0] + fraction * x_dist;
-            sharedVector[1] = p0[1] + fraction * y_dist;
-            sharedVector[2] = p0[2] + fraction * z_dist;
+                    sharedVector[0] = p0[0] + fraction * x_dist;
+                    sharedVector[1] = p0[1] + fraction * y_dist;
+                    sharedVector[2] = p0[2] + fraction * z_dist;
+                    break;
+
+                case STEP:
+                    float[] pnt = keyValues[loc];
+                    sharedVector[0] = pnt[0];
+                    sharedVector[1] = pnt[1];
+                    sharedVector[2] = pnt[2];
+                    break;
+            }
         }
 
         return sharedVector;
@@ -249,56 +273,6 @@ System.out.println("z " + p0[2] + " z_dist " + z_dist);
     //---------------------------------------------------------------
     // Misc Internal methods
     //---------------------------------------------------------------
-
-    /**
-     * Find the key in the array. Performs a fast binary search of the values
-     * to locate the right index. Most of the time the key will not be in the
-     * array so this will return the index to the key that is the least
-     * smallest of all keys compared to this key. If the key is smaller than
-     * all known keys, a value of -1 is returned. A binary search is O(log n).
-     *
-     * @param key The key to search for
-     * @return The index of the key that is just greater than this key
-     */
-    private int findKeyIndex(float key)
-    {
-        // some special case stuff - check the extents of the array to avoid
-        // the binary search
-        if((key <= keys[0]) || (currentSize == 0))
-            return -1;
-        else if(key == keys[currentSize - 1])
-            return currentSize - 1;
-        else if(key > keys[currentSize - 1])
-            return currentSize;
-
-        int start = 0;
-        int end = currentSize - 1;
-        int mid = currentSize / 2;
-
-        // basic binary search. Done without being recursive for speed.
-        while(start < end)
-        {
-            mid = ((end - start) / 2) + start;
-            float test = keys[mid];
-
-            if(test == key)
-                break;
-            else if(key < test)
-                end = mid - 1;
-            else
-                start = mid + 1;
-        }
-
-        // An adjustment for if the key is just bigger than the mid point
-        // and the tests above have accidently shifted the mid point one
-        // place too high (mid + 1) because start and end are one index apart.
-        // This normally only happens when we have an odd number of items in
-        // the array.
-        if(keys[mid] > key)
-            mid--;
-
-        return mid;
-    }
 
     /**
      * Resize the allocated space for the keyValues array if needed. Marked
