@@ -74,7 +74,7 @@ import javax.media.j3d.Canvas3D;
  * the alpha channel.
  *
  * @author David Yazel, Will Holcomb
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public interface Overlay extends UpdatableEntity
 {
@@ -140,6 +140,15 @@ public interface Overlay extends UpdatableEntity
      * @param y The y coordinate of the location
      */
     public void setLocation(int x, int y);
+
+    /**
+     * Change the size of the texture to the new size. The new size will be
+     * in pixels and must be valid >= 0.
+     *
+     * @param w The new width of the overlay
+     * @param h The new height of the overlay
+     */
+    public void setSize(int w, int h);
 
     /**
      * Sets whether drawing onto this Overlay is anialiased. If called after

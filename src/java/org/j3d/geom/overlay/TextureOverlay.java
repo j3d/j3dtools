@@ -42,7 +42,7 @@ import javax.vecmath.Vector3d;
  * </pre>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TextureOverlay implements Overlay, ComponentListener
 {
@@ -233,6 +233,7 @@ public class TextureOverlay implements Overlay, ComponentListener
         // define the branch group where we are putting all the sub-overlays
 
         consoleBG = new BranchGroup();
+        consoleBG.setCapability(BranchGroup.ALLOW_DETACH);
 
         consoleTG = new TransformGroup();
         consoleTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
@@ -299,9 +300,7 @@ public class TextureOverlay implements Overlay, ComponentListener
 
         int format = QuadArray.COORDINATES | QuadArray.TEXTURE_COORDINATE_2;
         geometry = new QuadArray(4, format);
-
-        if(!fixedSize)
-            geometry.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
+        geometry.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
 
         float[] vertices =
         {
@@ -404,12 +403,26 @@ public class TextureOverlay implements Overlay, ComponentListener
     {
         if(overlayBounds.x != x || overlayBounds.y != y)
         {
-            synchronized(overlayBounds)
-            {
-                overlayBounds.x = x;
-                overlayBounds.y = y;
-                dirty(DIRTY_POSITION);
-            }
+            overlayBounds.x = x;
+            overlayBounds.y = y;
+            dirty(DIRTY_POSITION);
+        }
+    }
+
+    /**
+     * Change the size of the texture to the new size. The new size will be
+     * in pixels and must be valid >= 0.
+     *
+     * @param w The new width of the overlay
+     * @param h The new height of the overlay
+     */
+    public void setSize(int w, int h)
+    {
+        if(overlayBounds.width != w || overlayBounds.height != h)
+        {
+            overlayBounds.width = w;
+            overlayBounds.height = h;
+            dirty(DIRTY_SIZE);
         }
     }
 

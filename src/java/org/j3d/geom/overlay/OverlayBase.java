@@ -72,7 +72,7 @@ import javax.vecmath.Vector3d;
  * the overlays.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public abstract class OverlayBase
     implements Overlay, ScreenComponent, ComponentListener
@@ -342,6 +342,7 @@ public abstract class OverlayBase
 
         consoleBG = new BranchGroup();
         consoleBG.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
+        consoleBG.setCapability(BranchGroup.ALLOW_DETACH);
 
         overlayTexGrp = new BranchGroup();
         overlayTexGrp.setCapability(BranchGroup.ALLOW_DETACH);
@@ -456,12 +457,26 @@ public abstract class OverlayBase
     {
         if(overlayBounds.x != x || overlayBounds.y != y)
         {
-            synchronized(overlayBounds)
-            {
-                overlayBounds.x = x;
-                overlayBounds.y = y;
-                dirty(DIRTY_POSITION);
-            }
+            overlayBounds.x = x;
+            overlayBounds.y = y;
+            dirty(DIRTY_POSITION);
+        }
+    }
+
+    /**
+     * Change the size of the texture to the new size. The new size will be
+     * in pixels and must be valid >= 0.
+     *
+     * @param w The new width of the overlay
+     * @param h The new height of the overlay
+     */
+    public void setSize(int w, int h)
+    {
+        if(overlayBounds.width != w || overlayBounds.height != h)
+        {
+            overlayBounds.width = w;
+            overlayBounds.height = h;
+            dirty(DIRTY_SIZE);
         }
     }
 
