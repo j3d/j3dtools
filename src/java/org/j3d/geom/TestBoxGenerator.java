@@ -27,7 +27,7 @@ import junit.textui.TestRunner;
  * performed by the example code.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TestBoxGenerator extends TestCase
 {
@@ -72,9 +72,14 @@ public class TestBoxGenerator extends TestCase
         // test the default box is 2, 2, 2
         generator = new BoxGenerator();
 
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
+
+        generator.generate(data);
+
         assertEquals("Default box vertex count is wrong",
-                     24,
-                     generator.getVertexCount());
+                     36,
+                     data.vertexCount);
 
         float[] dimensions = generator.getDimensions();
 
@@ -84,10 +89,12 @@ public class TestBoxGenerator extends TestCase
 
         // Now test changing the dimension on an existing box
         generator.setDimensions(TEST_BOX[0], TEST_BOX[1], TEST_BOX[2]);
+        data.coordinates = null;
+        generator.generate(data);
 
         assertEquals("Dimensions vertex count is wrong",
-                     24 ,
-                     generator.getVertexCount());
+                     36,
+                     data.vertexCount);
 
         dimensions = generator.getDimensions();
 
@@ -97,10 +104,11 @@ public class TestBoxGenerator extends TestCase
 
         // test the default box is 2, 2, 2
         generator = new BoxGenerator(TEST_BOX[0], TEST_BOX[1], TEST_BOX[2]);
+        generator.generate(data);
 
         assertEquals("Test box vertex count is wrong",
-                     24 ,
-                     generator.getVertexCount());
+                     36,
+                     data.vertexCount);
 
         dimensions = generator.getDimensions();
 
@@ -119,9 +127,13 @@ public class TestBoxGenerator extends TestCase
         // test the default box is 2, 2, 2
         generator = new BoxGenerator();
 
-        int vertices = generator.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
 
-        float[] coords = generator.generateUnindexedCoordinates();
+        generator.generate(data);
+
+        int vertices = data.vertexCount;
+        float[] coords = data.coordinates;
 
         assertEquals("Default box coordinate length wrong",
                      vertices * 3,
@@ -130,8 +142,12 @@ public class TestBoxGenerator extends TestCase
 
         generator.setDimensions(TEST_BOX[0], TEST_BOX[1], TEST_BOX[2]);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("Dimensioned box coordinate length wrong",
                      vertices * 3,
@@ -139,8 +155,12 @@ public class TestBoxGenerator extends TestCase
 
         generator = new BoxGenerator(TEST_BOX[0], TEST_BOX[1], TEST_BOX[2]);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("Test box coordinate length wrong",
                      vertices * 3,
@@ -157,9 +177,14 @@ public class TestBoxGenerator extends TestCase
         // test the default box is 2, 2, 2
         generator = new BoxGenerator();
 
-        int vertices = generator.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
+        data.geometryComponents = GeometryData.NORMAL_DATA;
 
-        float[] coords = generator.generateUnindexedNormals();
+        generator.generate(data);
+
+        int vertices = data.vertexCount;
+        float[] coords = data.normals;
 
         assertEquals("Default box normal length wrong",
                      vertices * 3,
@@ -168,8 +193,12 @@ public class TestBoxGenerator extends TestCase
 
         generator.setDimensions(TEST_BOX[0], TEST_BOX[1], TEST_BOX[2]);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("Dimensioned box normal length wrong",
                      vertices * 3,
@@ -177,8 +206,12 @@ public class TestBoxGenerator extends TestCase
 
         generator = new BoxGenerator(TEST_BOX[0], TEST_BOX[1], TEST_BOX[2]);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("Test box normal length wrong",
                      vertices * 3,

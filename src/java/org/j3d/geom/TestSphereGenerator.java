@@ -27,7 +27,7 @@ import junit.textui.TestRunner;
  * performed by the example code.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TestSphereGenerator extends TestCase
 {
@@ -78,14 +78,19 @@ public class TestSphereGenerator extends TestCase
     public void testCreate()
     {
         // test the default sphere is 1 radius. This should give
-        // sides: 16 facets * 16 facets * 4 vertex per facet
+        // sides: 16 facets * 16 facets * 6 vertex per facet
         // total => 1024 vertices
         generator = new SphereGenerator();
 
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
+
+        generator.generate(data);
+
         assert("Default sphere is missing the bottom", !generator.isHalf());
         assertEquals("Default sphere vertex count is wrong",
-                     1024,
-                     generator.getVertexCount());
+                     1536,
+                     data.vertexCount);
 
         float radius = generator.getDimension();
 
@@ -93,12 +98,14 @@ public class TestSphereGenerator extends TestCase
 
         // Now test changing the dimension on an existing sphere
         generator.setDimensions(TEST_RADIUS, false);
+        data.coordinates = null;
+        generator.generate(data);
 
         assert("Dimensioned sphere is missing the bottom",
                !generator.isHalf());
         assertEquals("Dimensioned vertex count is wrong",
-                     1024,
-                     generator.getVertexCount());
+                     1536,
+                     data.vertexCount);
 
         radius = generator.getDimension();
 
@@ -115,11 +122,13 @@ public class TestSphereGenerator extends TestCase
 
         // test the sphere is radius 0.5
         generator = new SphereGenerator(TEST_RADIUS);
+        data.coordinates = null;
+        generator.generate(data);
 
         assert("Test sphere is missing the bottom", !generator.isHalf());
         assertEquals("Test sphere vertex count is wrong",
-                     1024,
-                     generator.getVertexCount());
+                     1536,
+                     data.vertexCount);
 
         radius = generator.getDimension();
 
@@ -139,9 +148,13 @@ public class TestSphereGenerator extends TestCase
         // test the default sphere is radius 1
         generator = new SphereGenerator();
 
-        int vertices = generator.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
 
-        float[] coords = generator.generateUnindexedCoordinates();
+        generator.generate(data);
+
+        int vertices = data.vertexCount;
+        float[] coords = data.coordinates;
 
         assertEquals("Default sphere coordinate length wrong",
                      vertices * 3,
@@ -149,8 +162,12 @@ public class TestSphereGenerator extends TestCase
 
         generator.setDimensions(TEST_RADIUS, false);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("Dimensioned sphere coordinate length wrong",
                      vertices * 3,
@@ -158,8 +175,12 @@ public class TestSphereGenerator extends TestCase
 
         generator = new SphereGenerator(TEST_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("Test sphere coordinate length wrong",
                      vertices * 3,
@@ -170,8 +191,12 @@ public class TestSphereGenerator extends TestCase
 
         int old_vertices = vertices;
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("No-bottom sphere vertex count wrong",
                      old_vertices / 2,
@@ -192,9 +217,14 @@ public class TestSphereGenerator extends TestCase
         // test the default sphere is 2, 2, 2
         generator = new SphereGenerator();
 
-        int vertices = generator.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
+        data.geometryComponents = GeometryData.NORMAL_DATA;
 
-        float[] coords = generator.generateUnindexedNormals();
+        generator.generate(data);
+
+        int vertices = data.vertexCount;
+        float[] coords = data.normals;
 
         assertEquals("Default sphere normal length wrong",
                      vertices * 3,
@@ -203,8 +233,12 @@ public class TestSphereGenerator extends TestCase
 
         generator.setDimensions(TEST_RADIUS, false);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("Dimensioned sphere normal length wrong",
                      vertices * 3,
@@ -212,8 +246,12 @@ public class TestSphereGenerator extends TestCase
 
         generator = new SphereGenerator(TEST_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("Test sphere normal length wrong",
                      vertices * 3,
@@ -224,14 +262,18 @@ public class TestSphereGenerator extends TestCase
 
         int old_vertices = vertices;
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
 
-        assertEquals("No-bottom sphere vertex count wrong",
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
+
+        assertEquals("No-bottom sphere normal vertex count wrong",
                      old_vertices / 2,
                      vertices);
 
-        assertEquals("No-bottom sphere coordinate length wrong",
+        assertEquals("No-bottom sphere normal length wrong",
                      vertices * 3,
                      coords.length);
     }
@@ -284,27 +326,30 @@ public class TestSphereGenerator extends TestCase
         int i;
         int reqd_count;
         int vtx_count;
-        float[] coords;
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
 
         // Test with a negative value, zero and value less than 3. All should
         // generate exceptions.
         for(i = 0; i < VALID_FACETS.length; i++)
         {
             generator = new SphereGenerator(1, VALID_FACETS[i]);
-            reqd_count = VALID_FACETS[i] * VALID_FACETS[i] * 4;
+            reqd_count = VALID_FACETS[i] * VALID_FACETS[i] * 6;
 
-            vtx_count = generator.getVertexCount();
+            data.coordinates = null;
+            generator.generate(data);
+
+            vtx_count = data.vertexCount;
             assertEquals("Construct vertex count wrong for " + VALID_FACETS[i],
                          reqd_count,
                          vtx_count);
 
             // Now generate the vertices and look at the array
             reqd_count = reqd_count * 3;
-            coords = generator.generateUnindexedCoordinates();
             assertEquals("Generated initial vertex count wrong for " +
-                           VALID_FACETS[i],
+                         VALID_FACETS[i],
                          reqd_count,
-                         coords.length);
+                         data.coordinates.length);
 
         }
 
@@ -314,18 +359,20 @@ public class TestSphereGenerator extends TestCase
         for(i = 0; i < VALID_FACETS.length; i++)
         {
             generator.setFacetCount(VALID_FACETS[i]);
-            reqd_count = VALID_FACETS[i] * VALID_FACETS[i] * 4;
-            vtx_count = generator.getVertexCount();
+            reqd_count = VALID_FACETS[i] * VALID_FACETS[i] * 6;
+            data.coordinates = null;
+            generator.generate(data);
+
+            vtx_count = data.vertexCount;
             assertEquals("Set vertex count wrong for " + VALID_FACETS[i],
                          reqd_count,
                          vtx_count);
 
             reqd_count = reqd_count * 3;
-            coords = generator.generateUnindexedCoordinates();
             assertEquals("Generated set vertex count wrong for " +
-                           VALID_FACETS[i],
+                         VALID_FACETS[i],
                          reqd_count,
-                         coords.length);
+                         data.coordinates.length);
         }
     }
 

@@ -27,7 +27,7 @@ import junit.textui.TestRunner;
  * performed by the example code.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TestConeGenerator extends TestCase
 {
@@ -84,10 +84,15 @@ public class TestConeGenerator extends TestCase
         // 16 facets * 3 vertex per face * 2 (top + bottom) = 96 vertices.
         generator = new ConeGenerator();
 
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
+
+        generator.generate(data);
+
         assert("Default cone is missing the bottom", generator.hasBottom());
         assertEquals("Default cone vertex count is wrong",
                      96,
-                     generator.getVertexCount());
+                     data.vertexCount);
 
         float[] dimensions = generator.getDimensions();
 
@@ -97,11 +102,15 @@ public class TestConeGenerator extends TestCase
         // Now test changing the dimension on an existing cone
         generator.setDimensions(TEST_HEIGHT, TEST_RADIUS, true);
 
+        data.coordinates = null;
+        generator.generate(data);
+
         assert("Dimensioned cone is missing the bottom",
                generator.hasBottom());
+
         assertEquals("Dimensioned vertex count is wrong",
                      96,
-                     generator.getVertexCount());
+                     data.vertexCount);
 
         dimensions = generator.getDimensions();
 
@@ -123,10 +132,14 @@ public class TestConeGenerator extends TestCase
         // test the default cone is 2, 2, 2
         generator = new ConeGenerator(TEST_HEIGHT, TEST_RADIUS);
 
+        data.coordinates = null;
+        generator.generate(data);
+
+
         assert("Test cone is missing the bottom", generator.hasBottom());
         assertEquals("Test cone vertex count is wrong",
                      96,
-                     generator.getVertexCount());
+                     data.vertexCount);
 
         dimensions = generator.getDimensions();
 
@@ -150,9 +163,13 @@ public class TestConeGenerator extends TestCase
         // test the default cone is 2, 2, 2
         generator = new ConeGenerator();
 
-        int vertices = generator.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
 
-        float[] coords = generator.generateUnindexedCoordinates();
+        generator.generate(data);
+
+        int vertices = data.vertexCount;
+        float[] coords = data.coordinates;
 
         assertEquals("Default cone coordinate length wrong",
                      vertices * 3,
@@ -160,8 +177,12 @@ public class TestConeGenerator extends TestCase
 
         generator.setDimensions(TEST_HEIGHT, TEST_RADIUS, true);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("Dimensioned cone coordinate length wrong",
                      vertices * 3,
@@ -169,20 +190,27 @@ public class TestConeGenerator extends TestCase
 
         generator = new ConeGenerator(TEST_HEIGHT, TEST_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        data.coordinates = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("Test cone coordinate length wrong",
                      vertices * 3,
                      coords.length);
 
         // Now check the same things again, but without the bottom
+        int old_vertices = vertices;
         generator = new ConeGenerator(TEST_HEIGHT, TEST_RADIUS, false);
 
-        int old_vertices = vertices;
+        data.coordinates = null;
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedCoordinates();
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.coordinates;
 
         assertEquals("No-bottom code vertex count wrong",
                      old_vertices / 2,
@@ -203,9 +231,14 @@ public class TestConeGenerator extends TestCase
         // test the default cone is 2, 2, 2
         generator = new ConeGenerator();
 
-        int vertices = generator.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
+        data.geometryComponents = GeometryData.NORMAL_DATA;
 
-        float[] coords = generator.generateUnindexedNormals();
+        generator.generate(data);
+
+        int vertices = data.vertexCount;
+        float[] coords = data.normals;
 
         assertEquals("Default cone normal length wrong",
                      vertices * 3,
@@ -214,8 +247,12 @@ public class TestConeGenerator extends TestCase
 
         generator.setDimensions(TEST_HEIGHT, TEST_RADIUS, true);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("Dimensioned cone normal length wrong",
                      vertices * 3,
@@ -223,8 +260,12 @@ public class TestConeGenerator extends TestCase
 
         generator = new ConeGenerator(TEST_HEIGHT, TEST_RADIUS);
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("Test cone normal length wrong",
                      vertices * 3,
@@ -235,8 +276,12 @@ public class TestConeGenerator extends TestCase
 
         int old_vertices = vertices;
 
-        vertices = generator.getVertexCount();
-        coords = generator.generateUnindexedNormals();
+        data.normals = null;
+
+        generator.generate(data);
+
+        vertices = data.vertexCount;
+        coords = data.normals;
 
         assertEquals("No-bottom code vertex count wrong",
                      old_vertices / 2,
@@ -295,7 +340,8 @@ public class TestConeGenerator extends TestCase
         int i;
         int reqd_count;
         int vtx_count;
-        float[] coords;
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLES;
 
         // Test with a negative value, zero and value less than 3. All should
         // generate exceptions.
@@ -304,18 +350,21 @@ public class TestConeGenerator extends TestCase
             generator = new ConeGenerator(2, 1, VALID_FACETS[i]);
             reqd_count = VALID_FACETS[i] * 6;
 
-            vtx_count = generator.getVertexCount();
+            data.coordinates = null;
+            generator.generate(data);
+
+            vtx_count = data.vertexCount;
             assertEquals("Construct vertex count wrong for " + VALID_FACETS[i],
                          reqd_count,
                          vtx_count);
 
             // Now generate the vertices and look at the array
             reqd_count = reqd_count * 3;
-            coords = generator.generateUnindexedCoordinates();
+
             assertEquals("Generated initial vertex count wrong for " +
-                           VALID_FACETS[i],
+                         VALID_FACETS[i],
                          reqd_count,
-                         coords.length);
+                         data.coordinates.length);
 
         }
 
@@ -326,17 +375,19 @@ public class TestConeGenerator extends TestCase
         {
             generator.setFacetCount(VALID_FACETS[i]);
             reqd_count = VALID_FACETS[i] * 6;
-            vtx_count = generator.getVertexCount();
+            data.coordinates = null;
+            generator.generate(data);
+
+            vtx_count = data.vertexCount;
             assertEquals("Set vertex count wrong for " + VALID_FACETS[i],
                          reqd_count,
                          vtx_count);
 
             reqd_count = reqd_count * 3;
-            coords = generator.generateUnindexedCoordinates();
             assertEquals("Generated set vertex count wrong for " +
-                           VALID_FACETS[i],
+                         VALID_FACETS[i],
                          reqd_count,
-                         coords.length);
+                         data.coordinates.length);
         }
     }
 
