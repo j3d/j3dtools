@@ -43,7 +43,7 @@ import java.util.Random;
  * direction of the wind force.
  *
  * @author Justin Couch
- * @version $Revision: 2.0 $
+ * @version $Revision: 2.1 $
  */
 public class WindParticleFunction implements ParticleFunction
 {
@@ -120,6 +120,7 @@ public class WindParticleFunction implements ParticleFunction
 
         randomiser = new Random();
 
+        enabled = true;
         recalculatePressure();
     }
 
@@ -302,5 +303,4 @@ public class WindParticleFunction implements ParticleFunction
     {
         pressure = (float)(Math.pow(10, 2 * Math.log(speed)) * 0.64615);
     }
-
 }
