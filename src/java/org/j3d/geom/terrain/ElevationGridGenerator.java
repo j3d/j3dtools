@@ -39,7 +39,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * Especially in regards to 3D textures.
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class ElevationGridGenerator extends GeometryGenerator
 {
@@ -643,6 +643,7 @@ public class ElevationGridGenerator extends GeometryGenerator
             generateTriTexture3D(data);
 
         int num_strips = depthPoints - 1;
+        data.numStrips = num_strips;
 
         if(data.stripCounts == null)
             data.stripCounts = new int[num_strips];
