@@ -26,9 +26,15 @@ import org.j3d.util.ObjectArray;
  * complex to implement Seidel's Algorithm. A summary of the implementation can
  * be found
  * <a href="http://www.mema.ucl.ac.be/~wu/FSA2716-2002/project.html">here</a>.
+ * <p>
+ * If at any time an error is detected in the input geometry, the return value
+ * of the triangulation methods will be a negative value. The number will still
+ * indicate the number of triangles successfully created for the return, but the
+ * negative is used to indicate an error occurred that could not allow for any
+ * more triangulation to take place.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class TriangulationUtils
 {
@@ -89,7 +95,9 @@ public class TriangulationUtils
      * start index is the index into the indexArray for the first vertex of the
      * polygon. The coordinates are not required to be a closed polygon as the
      * algorithm will automatically close it. The output array is the new indexes
-     * to use
+     * to use.
+     * <p>
+     * If an error occurs, the result will be negative number of triangles.
      *
      * @param coords The coordinates of the face
      * @param startIndex The index of the first coordinate in the face
@@ -128,6 +136,8 @@ public class TriangulationUtils
      * polygon. The coordinates are not required to be a closed polygon as the
      * algorithm will automatically close it. The output array is the new indexes
      * to use
+     * <p>
+     * If an error occurs, the result will be negative number of triangles.
      *
      * @param coords The coordinates of the face
      * @param startIndex The index of the first coordinate in the face
@@ -277,7 +287,7 @@ public class TriangulationUtils
         if(normalIndex != null)
             last.normalIndex = normalIndex[firstNormalIndex + numVertex - 1];
 
-        if(texCoordIndex != null);
+        if(texCoordIndex != null)
             last.texCoordIndex = texCoordIndex[firstTexCoordIndex + numVertex - 1];
 
         if(!isConvexVertex(coords,
@@ -292,6 +302,16 @@ public class TriangulationUtils
         last.prev = current;
         current.next = last;
 
+/*
+System.out.println("vertices : num " + numVertex + " start " + startIndex);
+PolyVertex tmp = first.next;
+System.out.println(first.toString());
+while(tmp != first)
+{
+    System.out.println(tmp.toString());
+    tmp = tmp.next;
+}
+*/
         return triangulate(first,
                            coordOutput,
                            normalOutput,
@@ -308,6 +328,8 @@ public class TriangulationUtils
      * will automatically close it. The output array is indexes into the
      * original array (including compensating for the 3 index values per
      * coordinate)
+     * <p>
+     * If an error occurs, the result will be negative number of triangles.
      *
      * @param coords The coordinates of the face
      * @param startIndex The index of the first coordinate in the face
@@ -344,6 +366,8 @@ public class TriangulationUtils
      * will automatically close it. The output array is indexes into the
      * original array (including compensating for the 3 index values per
      * coordinate)
+     * <p>
+     * If an error occurs, the result will be negative number of triangles.
      *
      * @param coords The coordinates of the face
      * @param startIndex The index of the first coordinate in the face
@@ -560,23 +584,37 @@ public class TriangulationUtils
         int output_index = 0;
         int cnt=0;
         // The maximum times we should go through this loop before error
-        int maxCnt = (coordOutput.length / 3) * (coordOutput.length / 3) ;
+        int maxCnt = (coordOutput.length / 3);
+        maxCnt *= maxCnt;
 
         PolyVertex current = first.next.next;
         while(current != first)
         {
 
             PolyVertex prev_vtx = current.prev;
+            boolean is_tri = false;
 
             cnt++;
 
-            if (cnt > maxCnt) {
+            if(cnt > maxCnt)
+            {
                 System.out.println("Endless loop in Triangulation detected");
-                return output_index / 3;
+                System.out.println("Possible causes: ");
+                System.out.println("  The normals are not correct");
+                System.out.println("  Non-planar polygons");
+                System.out.println("  Self-intersecting polygons");
+                System.out.println("  Degenerate polygons with all coincident vertices");
+
+                concaveVertices.clear();
+
+                // Negate the output as per documentation
+                return -output_index / 3;
             }
 
-            if(isEar(prev_vtx) && !isTriangle(current))
+            if(isEar(prev_vtx) && !(is_tri = isTriangle(current)))
             {
+
+//System.out.println("Have ear " + prev_vtx);
                 // Add the triangle to the output
                 coordOutput[output_index] = current.prev.prev.vertexIndex;
                 coordOutput[output_index + 1] = current.prev.vertexIndex;
@@ -585,22 +623,22 @@ public class TriangulationUtils
                 if(normalOutput != null)
                 {
                     normalOutput[output_index] = current.prev.prev.normalIndex;
-                    normalOutput[output_index] = current.prev.normalIndex;
-                    normalOutput[output_index] = current.normalIndex;
+                    normalOutput[output_index + 1] = current.prev.normalIndex;
+                    normalOutput[output_index + 2] = current.normalIndex;
                 }
 
                 if(colorOutput != null)
                 {
                     colorOutput[output_index] = current.prev.prev.colorIndex;
-                    colorOutput[output_index] = current.prev.colorIndex;
-                    colorOutput[output_index] = current.colorIndex;
+                    colorOutput[output_index + 1] = current.prev.colorIndex;
+                    colorOutput[output_index + 2] = current.colorIndex;
                 }
 
                 if(texCoordOutput != null)
                 {
                     texCoordOutput[output_index] = current.prev.prev.texCoordIndex;
-                    texCoordOutput[output_index] = current.prev.texCoordIndex;
-                    texCoordOutput[output_index] = current.texCoordIndex;
+                    texCoordOutput[output_index + 1] = current.prev.texCoordIndex;
+                    texCoordOutput[output_index + 2] = current.texCoordIndex;
                 }
 
                 output_index += 3;
@@ -631,8 +669,38 @@ public class TriangulationUtils
                 prev_vtx.prev = null;
                 freeVertex(prev_vtx);
             }
-            else if(isTriangle(current))
+            else if(is_tri)
             {
+                // This is the last bit, and a triangle, so put in all the
+                // data structures and then clean up.
+                // Add the triangle to the output
+                coordOutput[output_index] = current.prev.prev.vertexIndex;
+                coordOutput[output_index + 1] = current.prev.vertexIndex;
+                coordOutput[output_index + 2] = current.vertexIndex;
+
+                if(normalOutput != null)
+                {
+                    normalOutput[output_index] = current.prev.prev.normalIndex;
+                    normalOutput[output_index + 1] = current.prev.normalIndex;
+                    normalOutput[output_index + 2] = current.normalIndex;
+                }
+
+                if(colorOutput != null)
+                {
+                    colorOutput[output_index] = current.prev.prev.colorIndex;
+                    colorOutput[output_index + 1] = current.prev.colorIndex;
+                    colorOutput[output_index + 2] = current.colorIndex;
+                }
+
+                if(texCoordOutput != null)
+                {
+                    texCoordOutput[output_index] = current.prev.prev.texCoordIndex;
+                    texCoordOutput[output_index + 1] = current.prev.texCoordIndex;
+                    texCoordOutput[output_index + 2] = current.texCoordIndex;
+                }
+
+                output_index += 3;
+
                 // Clean up the last of the vertex structures
                 PolyVertex p = current.next;
                 if(p.next != current)
@@ -659,6 +727,28 @@ public class TriangulationUtils
             }
         }
 
+/*
+System.out.println("output ");
+for(int i = 0; i < output_index; i += 3)
+{
+    System.out.print(coordOutput[i] + " " +
+                     coordOutput[i + 1] + " " +
+                     coordOutput[i + 2] + " n ");
+
+    System.out.print(normalOutput[i] + " " +
+                     normalOutput[i + 1] + " " +
+                     normalOutput[i + 2] + " c ");
+
+    System.out.print(colorOutput[i] + " " +
+                     colorOutput[i + 1] + " " +
+                     colorOutput[i + 2] + " ");
+
+    System.out.println();
+}
+*/
+
+// System.out.println("convcaves left " + concaveVertices.size());
+        concaveVertices.clear();
         return (output_index / 3);
     }
 
@@ -707,7 +797,7 @@ public class TriangulationUtils
      */
     private boolean isTriangle(PolyVertex p)
     {
-        return (p.next == p) || (p.next.next == p);
+        return (p.next == p) || (p.next.next == p) || (p.next.next.next == p);
     }
 
     /**
@@ -727,13 +817,13 @@ public class TriangulationUtils
     {
         // If is concave in a right-handed system when the cross product is
         // negative. Positive means it is convex.
-        float x1 =  p.x -  p0.x;
-        float y1 =  p.y -  p0.y;
-        float z1 =  p.z -  p0.z;
+        float x1 =  p.x - p0.x;
+        float y1 =  p.y - p0.y;
+        float z1 =  p.z - p0.z;
 
-        float x2 =  p1.x -  p.x;
-        float y2 =  p1.y -  p.y;
-        float z2 =  p1.z -  p.z;
+        float x2 =  p1.x - p.x;
+        float y2 =  p1.y - p.y;
+        float z2 =  p1.z - p.z;
 
         float cross_x = y1 * z2 - z1 * y2;
         float cross_y = z1 * x2 - x1 * z2;
@@ -904,11 +994,18 @@ public class TriangulationUtils
      *
      * @return an available entry object
      */
-    private synchronized static PolyVertex newVertex()
+    private static PolyVertex newVertex()
     {
-        return (vertexCache.size() == 0) ?
+        PolyVertex ret_val = null;
+
+        synchronized(vertexCache) {
+
+            ret_val = (vertexCache.size() == 0) ?
                new PolyVertex() :
                (PolyVertex)vertexCache.remove(0);
+        }
+
+        return ret_val;
     }
 
     /**
@@ -919,6 +1016,8 @@ public class TriangulationUtils
      */
     private static void freeVertex(PolyVertex e)
     {
-        vertexCache.add(e);
+        synchronized(vertexCache) {
+            vertexCache.add(e);
+        }
     }
 }
