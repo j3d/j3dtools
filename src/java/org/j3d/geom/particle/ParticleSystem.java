@@ -29,7 +29,7 @@ import org.j3d.util.ErrorReporter;
  * <p>
  *
  * @author Justin Couch, based on code by Daniel Selman
- * @version $Revision: 2.1 $
+ * @version $Revision: 2.2 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
@@ -449,7 +449,8 @@ public abstract class ParticleSystem implements ParticleFactory
         ParticleFunction function;
         int func_idx = 0;
 
-        for(int n = particleFunctions.size(); --n >= 0; )
+        int size = particleFunctions.size();
+        for(int n = 0; n < size; n++)
         {
             function = (ParticleFunction)particleFunctions.get(n);
             if(function.isEnabled())
@@ -478,6 +479,7 @@ public abstract class ParticleSystem implements ParticleFactory
         for(int j = 0; j < num_particles; j++)
         {
             Particle p = particleList.next();
+            p.resultantForce.set(0, 0, 0);
 
             for(int i = 0; i < numActiveFunctions; i++)
             {
