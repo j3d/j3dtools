@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.util directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.12 $
+# Version: $Revision: 1.13 $
 #
 #*********************************************************************
 
@@ -31,6 +31,7 @@ SOURCE = ErrorHandler.java \
     ImageUtils.java \
     UserSupplementData.java \
     DynamicClassLoader.java \
+    MatrixUtils.java
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
