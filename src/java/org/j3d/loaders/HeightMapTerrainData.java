@@ -46,7 +46,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * terrain (unless set by some implementing class).
  *
  * @author  Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class HeightMapTerrainData extends AbstractStaticTerrainData
 {
@@ -218,8 +218,8 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
         coord[1] = height;
         coord[2] = -gridY * (float)gridStepY;
 
-        tex[0] = ((float)gridX) / gridWidth;
-        tex[1] = ((float)gridY) / gridDepth;
+        tex[0] = ((float)gridX) / (gridWidth - 1);
+        tex[1] = ((float)gridY) / (gridDepth - 1);
 
         float[] rgb = colorInterp.floatRGBValue(height);
         color[0] = rgb[0];
@@ -247,8 +247,8 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
         coord[1] = heightMap[gridX][gridY];
         coord[2] = -gridY * (float)gridStepY;
 
-        textureCoord[0] = ((float)gridX) / gridWidth;
-        textureCoord[1] = ((float)gridY) / gridDepth;
+        textureCoord[0] = ((float)gridX) / (gridWidth - 1);
+        textureCoord[1] = ((float)gridY) / (gridDepth - 1);
     }
 
     /**
