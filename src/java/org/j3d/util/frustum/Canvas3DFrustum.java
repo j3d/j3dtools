@@ -51,8 +51,6 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Vector4d;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Matrix4d;
-import javax.media.j3d.Transform3D;
-import javax.media.j3d.Canvas3D;
 
 /**
  * ViewFrustum planes for a single Canvas3D and determining if
@@ -62,7 +60,7 @@ import javax.media.j3d.Canvas3D;
  * The frustum is for the previous Java3D frame that has just been rendered.
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class Canvas3DFrustum
 {

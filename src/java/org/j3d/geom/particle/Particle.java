@@ -11,9 +11,6 @@ package org.j3d.geom.particle;
 
 import java.util.Map;
 
-import javax.media.j3d.BoundingBox;
-import javax.media.j3d.Bounds;
-
 import javax.vecmath.Color4f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Tuple3d;
@@ -30,7 +27,7 @@ import javax.vecmath.Vector3d;
  * area as well as a total age and a cyclable age.
  *
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class Particle
 {
@@ -67,7 +64,7 @@ public abstract class Particle
     protected Point3f previousPosition;
 
     /** bounding box for the particle */
-    protected BoundingBox boundingBox;
+    protected float[] boundingBox;
 
     /** color of the particle */
     protected Color4f color;
@@ -123,14 +120,18 @@ public abstract class Particle
         previousPosition.set(position);
     }
 
-    public void getPosition(Tuple3d newPosition)
+    public void getPosition(float[] newPosition)
     {
-        newPosition.set(this.position);
+        newPosition[0] = position.x;
+        newPosition[1] = position.y;
+        newPosition[2] = position.z;
     }
 
-    public void getPreviousPosition(Tuple3d position)
+    public void getPreviousPosition(float[] position)
     {
-        position.set(previousPosition);
+        position[0] = previousPosition.x;
+        position[1] = previousPosition.y;
+        position[2] = previousPosition.z;
     }
 
     public float getPositionX()
@@ -184,20 +185,27 @@ public abstract class Particle
     }
 
 
-    public Bounds getBounds()
+    /**
+     * Retrieve the bounds of this particle in local coordinate space.
+     * They are widht, height, depth in order, first for lower bounds and upper
+     * bounds
+     *
+     * @return The array of bounding information
+     */
+    public float[] getBounds()
     {
         // we don't expect this to be called all that often so don't initialize
         // like all the others in the constructor. Do it on-demand.
         if(boundingBox == null)
-            boundingBox = new BoundingBox();
+            boundingBox = new float[6];
 
-        boundingBox.setLower(position.x - width,
-                             position.y - height,
-                             position.z - depth);
+        boundingBox[0] = position.x - width;
+        boundingBox[1] = position.y - height;
+        boundingBox[2] = position.z - depth;
 
-        boundingBox.setUpper(position.x + width,
-                             position.y + height,
-                             position.z + depth);
+        boundingBox[0] = position.x + width;
+        boundingBox[1] = position.y + height;
+        boundingBox[2] = position.z + depth;;
 
         return boundingBox;
     }
@@ -270,7 +278,8 @@ public abstract class Particle
     }
 
     /**
-     * Gets the resultantForce.
+     * Gets the resultantForce applied to a particle.
+     *
      * @return Returns a Vector3d
      */
     public Vector3d getResultantForce()
@@ -279,7 +288,8 @@ public abstract class Particle
     }
 
     /**
-     * Sets the resultantForce.
+     * Sets the resultantForce applied to a particle.
+     *
      * @param resultantForce The resultantForce to set
      */
     public void setResultantForce(Vector3d resultantForce)
@@ -288,7 +298,8 @@ public abstract class Particle
     }
 
     /**
-     * Gets the surfaceArea.
+     * Gets the surfaceArea of the particle.
+     *
      * @return Returns a double
      */
     public double getSurfaceArea()
@@ -298,6 +309,7 @@ public abstract class Particle
 
     /**
      * Sets the surfaceArea.
+     *
      * @param surfaceArea The surfaceArea to set
      */
     public void setSurfaceArea(double surfaceArea)
@@ -306,7 +318,8 @@ public abstract class Particle
     }
 
     /**
-     * Gets the velocity.
+     * Gets the current velocity  of the particle.
+     *
      * @return Returns a Vector3d
      */
     public Vector3d getVelocity()
@@ -315,7 +328,8 @@ public abstract class Particle
     }
 
     /**
-     * Sets the velocity.
+     * Sets the velocity of the particle.
+     *
      * @param velocity The velocity to set
      */
     public void setVelocity(Vector3d velocity)
@@ -324,7 +338,8 @@ public abstract class Particle
     }
 
     /**
-     * Sets the depth.
+     * Sets the depth of the particle.
+     *
      * @param depth The depth to set
      */
     public void setDepth(float depth)
@@ -333,7 +348,8 @@ public abstract class Particle
     }
 
     /**
-     * Sets the height.
+     * Sets the height of the particle.
+     *
      * @param height The height to set
      */
     public void setHeight(float height)
@@ -342,7 +358,8 @@ public abstract class Particle
     }
 
     /**
-     * Sets the width.
+     * Sets the width of the particle.
+     *
      * @param width The width to set
      */
     public void setWidth(float width)
@@ -350,16 +367,31 @@ public abstract class Particle
         this.width = width;
     }
 
+    /**
+     * Get the current width of the particle.
+     *
+     * @ return The current width value
+     */
     public float getWidth()
     {
         return width;
     }
 
+    /**
+     * Get the current height of the particle.
+     *
+     * @ return The current height value
+     */
     public float getHeight()
     {
         return height;
     }
 
+    /**
+     * Get the current depth of the particle.
+     *
+     * @ return The current depth value
+     */
     public float getDepth()
     {
         return depth;

@@ -12,8 +12,6 @@ package org.j3d.terrain;
 // Standard imports
 import java.awt.Rectangle;
 
-import javax.media.j3d.Texture;
-
 // Application specific imports
 import org.j3d.ui.navigation.HeightDataSource;
 
@@ -34,7 +32,7 @@ import org.j3d.ui.navigation.HeightDataSource;
  * always be used.
  *
  * @author  Justin Couch based on original ideas of Paul Byrne
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public interface TerrainData extends HeightDataSource
 {

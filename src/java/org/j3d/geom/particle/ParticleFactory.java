@@ -9,7 +9,11 @@
 
 package org.j3d.geom.particle;
 
+// Standard imports
 import java.util.Map;
+
+// Application specific imports
+// None
 
 /**
  * Abstract representation of a mechanism to create instances of Particles.
@@ -19,7 +23,7 @@ import java.util.Map;
  * modelled (rain, dust, stones etc)
  *
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface ParticleFactory
 {

@@ -11,8 +11,7 @@ package org.j3d.loaders;
 
 // Standard imports
 import java.awt.Rectangle;
-
-import javax.media.j3d.Texture;
+import java.awt.image.BufferedImage;
 
 import javax.vecmath.Point2d;
 
@@ -37,8 +36,8 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * <p>
  * The basic implementation here does not support a texture. If an application
  * wishes to use a texture, they should extend this class and override the
- * {@link #getTexture()} method. If you wish to provide a pre-loaded texture,
- * then you can use the {@link #setTexture(Texture)} method of this class to
+ * {@link #getBufferedImage()} method. If you wish to provide a pre-loaded texture,
+ * then you can use the {@link #setBufferedImage(BufferedImage)} method of this class to
  * place one here.
  * <p>
  *
@@ -46,7 +45,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * terrain (unless set by some implementing class).
  *
  * @author  Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class HeightMapTerrainData extends AbstractStaticTerrainData
 {
@@ -67,7 +66,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
     private float[][] heightMap;
 
     /** The texture to supply to the user of this class */
-    private Texture texture = null;
+    private BufferedImage texture = null;
 
     /** The colour interpolator used by this class */
     private ColorInterpolator colorInterp;
@@ -79,32 +78,13 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      *
      * @param loader The loader to source the data from
      */
-    public HeightMapTerrainData(HeightMapParser parser)
+    public HeightMapTerrainData(HeightMapSource source)
     {
-        heightMap = parser.getHeights();
-        Point2d steps = parser.getGridStep();
+        heightMap = source.getHeights();
+        float[] steps = source.getGridStep();
 
-        gridStepX = steps.x;
-        gridStepY = steps.y;
-
-        gridDepth = heightMap.length;
-        gridWidth = heightMap[0].length;
-    }
-
-    /**
-     * Create a new instance that sources the data from the given loader.
-     * It assumes that the loader has already loaded the data from the
-     * underlying source.
-     *
-     * @param loader The loader to source the data from
-     */
-    public HeightMapTerrainData(HeightMapLoader loader)
-    {
-        heightMap = loader.getHeights();
-        Point2d steps = loader.getGridStep();
-
-        gridStepX = steps.x;
-        gridStepY = steps.y;
+        gridStepX = steps[0];
+        gridStepY = steps[1];
 
         gridDepth = heightMap.length;
         gridWidth = heightMap[0].length;
@@ -301,13 +281,13 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
     }
 
     /**
-     * Fetch the Texture that is used to cover the entire terrain. If no
+     * Fetch the BufferedImage that is used to cover the entire terrain. If no
      * texture is used, then return null. Assumes a single large texture for
      * the entire terrain.
      *
      * @return The texture instance to use or null
      */
-    public Texture getTexture()
+    public BufferedImage getTexture()
     {
         return texture;
     }
@@ -334,7 +314,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      *
      * @param tex The new texture to use
      */
-    public void setTexture(Texture tex)
+    public void setTexture(BufferedImage tex)
     {
         texture = tex;
 

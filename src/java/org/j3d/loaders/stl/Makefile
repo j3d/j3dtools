@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders.stl directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
 
@@ -19,7 +19,6 @@ SOURCE = LittleEndianConverter.java \
   STLASCIIParser.java \
   STLBinaryParser.java \
   STLFileReader.java  \
-  STLLoader.java
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

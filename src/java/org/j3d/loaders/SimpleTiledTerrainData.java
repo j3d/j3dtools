@@ -11,8 +11,7 @@ package org.j3d.loaders;
 
 // Standard imports
 import java.awt.Rectangle;
-
-import javax.media.j3d.Texture;
+import java.awt.image.BufferedImage;
 
 import javax.vecmath.Point2d;
 
@@ -35,7 +34,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * terrain (unless set by some implementing class).
  *
  * @author  Justin Couch, Alan Hudson
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class SimpleTiledTerrainData extends AbstractTiledTerrainData
 {
@@ -75,36 +74,15 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
      * Assumes that the parser has already fetched its information and has
      * the height-grid available for use.
      *
-     * @param loader The loader to source the data from
+     * @param source The place to source the data from
      */
-    public SimpleTiledTerrainData(HeightMapParser parser)
+    public SimpleTiledTerrainData(HeightMapSource source)
     {
-        heightMap = parser.getHeights();
-        Point2d steps = parser.getGridStep();
+        heightMap = source.getHeights();
+        float[] steps = source.getGridStep();
 
-        gridStepX = steps.x;
-        gridStepY = steps.y;
-
-        gridDepth = heightMap.length;
-        gridWidth = heightMap[0].length;
-
-        calcTileSize();
-    }
-
-    /**
-     * Create a new instance that sources the data from the given loader.
-     * It assumes that the loader has already loaded the data from the
-     * underlying source.
-     *
-     * @param loader The loader to source the data from
-     */
-    public SimpleTiledTerrainData(HeightMapLoader loader)
-    {
-        heightMap = loader.getHeights();
-        Point2d steps = loader.getGridStep();
-
-        gridStepX = steps.x;
-        gridStepY = steps.y;
+        gridStepX = steps[0];
+        gridStepY = steps[1];
 
         gridDepth = heightMap.length;
         gridWidth = heightMap[0].length;

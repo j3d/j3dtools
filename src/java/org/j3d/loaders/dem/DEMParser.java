@@ -18,10 +18,8 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import javax.vecmath.Point2d;
-
 // Application specific parser
-import org.j3d.loaders.HeightMapParser;
+import org.j3d.loaders.HeightMapSource;
 import org.j3d.util.CharHashMap;
 
 /**
@@ -38,9 +36,9 @@ import org.j3d.util.CharHashMap;
  * </a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class DEMParser implements HeightMapParser
+public class DEMParser implements HeightMapSource
 {
     /** Map of the process code character to the value */
     private static CharHashMap processCodes;
@@ -81,7 +79,7 @@ public class DEMParser implements HeightMapParser
     private DEMTypeCRecord statistics;
 
     /** Grid information about the file. */
-    private Point2d gridStepData;
+    private float[] gridStepData;
 
     /** Flag to say we've already read the stream */
     private boolean dataReady;
@@ -127,6 +125,7 @@ public class DEMParser implements HeightMapParser
     public DEMParser()
     {
         buffer = new byte[1024];
+        gridStepData = new float[2];
         dataReady = false;
         stringBuffer = new StringBuffer();
     }
@@ -268,7 +267,7 @@ public class DEMParser implements HeightMapParser
      *
      * @return The stepping information for width and depth
      */
-    public Point2d getGridStep()
+    public float[] getGridStep()
     {
         return gridStepData;
     }
@@ -299,8 +298,8 @@ public class DEMParser implements HeightMapParser
             ret_val = convertHeights();
         }
 
-        gridStepData = new Point2d(header.spatialResolution[DEMRecord.X],
-                                   header.spatialResolution[DEMRecord.Y]);
+        gridStepData[0] = header.spatialResolution[DEMRecord.X];
+        gridStepData[1] = header.spatialResolution[DEMRecord.Y];
 
 
         dataReady = true;

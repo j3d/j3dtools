@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.12 $
+# Version: $Revision: 1.13 $
 #
 #*********************************************************************
 
@@ -27,32 +27,8 @@ SOURCE = GeometryData.java \
   TorusGenerator.java \
   SpringGenerator.java \
   SuperShapeGenerator.java \
-  IntersectionUtils.java \
   PolyVertex.java \
   TriangulationUtils.java \
-  Axis.java \
-  Box.java \
-  Cone.java \
-  Cylinder.java \
-  Sphere.java \
-  Spring.java \
-  Torus.java \
-  RasterTextLabel.java \
-  TestBoxGenerator.java \
-  TestConeGenerator.java \
-  TestCylinderGenerator.java \
-  TestSphereGenerator.java \
-  TestTorusGenerator.java \
-  TestSpringGenerator.java \
-
-#         GIODThickCylinder.java \
-#         Knot.java \
-#         Mobius.java \
-#         Shell.java \
-#         SpiralTorus.java \
-#		 MobiusGenerator.java \
-
-#         Torus.java	\
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

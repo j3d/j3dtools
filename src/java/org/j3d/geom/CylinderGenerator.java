@@ -10,12 +10,6 @@
 package org.j3d.geom;
 
 // Standard imports
-//import java.lang.Math.*;
-
-import javax.media.j3d.Appearance;
-import javax.media.j3d.Shape3D;
-import javax.media.j3d.QuadArray;
-
 import javax.vecmath.Vector3f;
 
 // Application specific imports
@@ -34,7 +28,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {

@@ -9,7 +9,11 @@
 
 package org.j3d.device.input.vfx;
 
-import javax.media.j3d.*;
+// Standard imports
+// None
+
+// Application specific imports
+// None
 
 /**
  * Class which implements a global driver interface for the VFX3D handling.
@@ -32,7 +36,7 @@ import javax.media.j3d.*;
  * asynchronous handling.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class VFXDriver
 {

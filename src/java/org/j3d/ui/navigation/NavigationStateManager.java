@@ -13,13 +13,13 @@
 package org.j3d.ui.navigation;
 
 // Standard imports
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 
-import javax.media.j3d.Canvas3D;
 
 // Application specific imports
 import org.j3d.util.ImageLoader;
@@ -61,7 +61,7 @@ public class NavigationStateManager
 
 
     /** The canvas this handler is operating on */
-    private Canvas3D canvas;
+    private Component canvas;
 
     /** Cursor used to represent the pan state */
     private Cursor panCursor = null;
@@ -85,7 +85,7 @@ public class NavigationStateManager
     private int navigationState;
 
     /** The mouse view handler for mouse events */
-    private NavigationHandler mouseHandler;
+    private NavigationMouseProcessor mouseHandler;
 
     /** The mouse view handler for mouse events */
     private NavigationToolbar toolbarHandler;
@@ -247,7 +247,7 @@ public class NavigationStateManager
      *
      * @param canvas The canvas to use
      */
-    public NavigationStateManager(Canvas3D canvas)
+    public NavigationStateManager(Component canvas)
     {
         if(canvas == null)
             throw new IllegalArgumentException("Null canvas provided");
@@ -285,7 +285,7 @@ public class NavigationStateManager
      *
      * @param tbr The new toolbar instance to use
      */
-    public void setMouseHandler(NavigationHandler view)
+    public void setMouseHandler(NavigationMouseProcessor view)
     {
         if(mouseHandler != null)
             mouseHandler.setNavigationStateListener(null);

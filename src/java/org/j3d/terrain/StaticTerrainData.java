@@ -11,8 +11,7 @@ package org.j3d.terrain;
 
 // Standard imports
 import java.awt.Rectangle;
-
-import javax.media.j3d.Texture;
+import java.awt.image.BufferedImage;
 
 // Application specific imports
 // none
@@ -34,7 +33,7 @@ import javax.media.j3d.Texture;
  * {@link TerrainData#STATIC_DATA}.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface StaticTerrainData extends TerrainData
 {
@@ -45,7 +44,7 @@ public interface StaticTerrainData extends TerrainData
      *
      * @return The texture instance to use or null
      */
-    public Texture getTexture();
+    public BufferedImage getTexture();
 
     /**
      * Get the width (number of points on the Y axis) of the grid.

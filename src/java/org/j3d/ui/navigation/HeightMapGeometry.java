@@ -25,21 +25,17 @@ package org.j3d.ui.navigation;
  * <p>
  *
  * This implementation is used to mark any geometry items that exists in the
- * scene and extends one of the standard Java3D nodes, such as
- * {@link javax.media.j3d.BranchGroup}. The interface is used by the navigation
- * code to help simplify the calculations needed to follow terrain. When the
- * navigation code does the picking for terrain following and collision
- * detection, it is returned a list of {@link javax.media.j3d.Node}
- * instances. With these, a check is made for the J3D node to be an instance of
- * this interface. If it is, it will ignore any other detail intersection calcs
- * an immediately ask this for resolution of the height for the given X,Z
- * location (it will have previously transformed into the correct coordinate
- * systems so you don't need to worry about that). You return it the height
- * (which may have to be interpolated from your underlying data) at that
- * position.
+ * scene The interface is used by the navigation code to help simplify the
+ * calculations needed to follow terrain. Picking is performed on the scene
+ * graph and checks are made for user data being available. If it is, it
+ * will ignore any other detail intersection calcs an immediately ask this
+ * for resolution of the height for the given X,Z location (it will have
+ * previously transformed into the correct coordinate systems so you don't
+ * need to worry about that). You return it the height (which may have to
+ * be interpolated from your underlying data) at that position.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface HeightMapGeometry extends HeightDataSource
 {

@@ -11,11 +11,16 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.util.device \
 	org.j3d.util.interpolator \
 	org.j3d.util.frustum \
+	org.j3d.device.input \
+	org.j3d.device.input.spaceball.transformation \
+	org.j3d.device.input.spaceball.driver \
 	org.j3d.device.input.spaceball \
 	org.j3d.device.input.vfx \
 	org.j3d.device.input.polhemus \
+	org.j3d.texture \
 	org.j3d.geom \
 	org.j3d.geom.terrain \
+	org.j3d.geom.overlay \
 	org.j3d.geom.particle \
 	org.j3d.geom.spline \
 	org.j3d.ui \
@@ -24,16 +29,16 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.terrain \
 	org.j3d.terrain.roam \
 	org.j3d.loaders \
+	org.j3d.loaders.ac3d.util \
+	org.j3d.loaders.ac3d.models \
+	org.j3d.loaders.ac3d.parser.exceptions \
+	org.j3d.loaders.ac3d.parser \
+	org.j3d.loaders.ac3d.parser.handlers \
+	org.j3d.loaders.ac3d \
 	org.j3d.loaders.stl \
 	org.j3d.loaders.vterrain \
 	org.j3d.loaders.dem \
 
-#	org.j3d.loaders.ac3d.util \
-#	org.j3d.loaders.ac3d.models \
-#	org.j3d.loaders.ac3d.parser.exceptions \
-#	org.j3d.loaders.ac3d.parser \
-#	org.j3d.loaders.ac3d.parser.handlers \
-#	org.j3d.loaders.ac3d \
 
 
 # Names of packages that we want included in the javadoc

@@ -12,8 +12,7 @@ package org.j3d.terrain;
 // Standard imports
 import java.awt.Dimension;
 import java.awt.Rectangle;
-
-import javax.media.j3d.Texture;
+import java.awt.image.BufferedImage;
 
 // Application specific imports
 // none
@@ -26,7 +25,7 @@ import javax.media.j3d.Texture;
  * of texture information.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractFreeFormTerrainData extends AbstractTerrainData
     implements FreeFormTerrainData
@@ -97,7 +96,7 @@ public abstract class AbstractFreeFormTerrainData extends AbstractTerrainData
      * @param bounds The bounds of the region based on the grid positions
      * @return The texture object suitable for that bounds or null
      */
-    public Texture getTexture(Rectangle bounds)
+    public BufferedImage getTexture(Rectangle bounds)
     {
         pixelBounds.x = bounds.x * widthPixelsPerGridStep;
         pixelBounds.y = bounds.y * depthPixelsPerGridStep;
@@ -105,7 +104,7 @@ public abstract class AbstractFreeFormTerrainData extends AbstractTerrainData
         pixelBounds.width = bounds.width * widthPixelsPerGridStep;
         pixelBounds.height = bounds.height * depthPixelsPerGridStep;
 
-        Texture ret_val = null;
+        BufferedImage ret_val = null;
 
         if(tileGenerator != null)
             ret_val = tileGenerator.getTextureTile(pixelBounds);

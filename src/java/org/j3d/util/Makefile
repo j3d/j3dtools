@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.util directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.10 $
+# Version: $Revision: 1.11 $
 #
 #*********************************************************************
 
@@ -15,21 +15,22 @@ PACKAGE = org.j3d.util
 # The source files to compile. These are declared in order that they must be
 # compiled in
 SOURCE = ErrorHandler.java \
-		 HashSet.java \
-		 CharHashMap.java \
-		 IntHashMap.java \
-		 FloatHashMap.java \
-		 DoubleHashMap.java \
-		 ObjectArray.java \
-		 CircularList.java \
-		 Queue.java \
-         SAXErrorHandler.java \
-         SAXEntityResolver.java	\
-		 ImageLoader.java \
-		 ColorUtils.java \
-		 ImageGenerator.java \
-		 ImageUtils.java \
-		 UserSupplementData.java \
+    HashSet.java \
+    CharHashMap.java \
+    IntHashMap.java \
+    FloatHashMap.java \
+    DoubleHashMap.java \
+    ObjectArray.java \
+    CircularList.java \
+    Queue.java \
+    SAXErrorHandler.java \
+    SAXEntityResolver.java	\
+    ImageLoader.java \
+    ColorUtils.java \
+    ImageGenerator.java \
+    ImageUtils.java \
+    UserSupplementData.java \
+    DynamicClassLoader.java 
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

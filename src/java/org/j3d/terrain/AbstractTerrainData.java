@@ -13,8 +13,6 @@ package org.j3d.terrain;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 
-import javax.media.j3d.Texture;
-
 // Application specific imports
 // none
 
@@ -29,7 +27,7 @@ import javax.media.j3d.Texture;
  * functionality that is extended by the more derived versions.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractTerrainData implements TerrainData
 {

@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.device.input.spaceball directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -19,8 +19,6 @@ SOURCE = SerialPortDevice.java \
     IS300.java \
     Fastrak.java \
     Isotrak2.java \
-    PolhemusInputDevice.java \
-    SensorBehavior.java 
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

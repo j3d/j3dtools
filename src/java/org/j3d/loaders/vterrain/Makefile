@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders.vterrain directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
 
@@ -16,7 +16,6 @@ PACKAGE = org.j3d.loaders.vterrain
 # compiled in
 SOURCE = BTHeader.java \
     BTParser.java \
-	BTLoader.java \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

@@ -12,8 +12,7 @@ package org.j3d.terrain;
 // Standard imports
 import java.awt.Dimension;
 import java.awt.Rectangle;
-
-import javax.media.j3d.Texture;
+import java.awt.image.BufferedImage;
 
 // Application specific imports
 // none
@@ -27,7 +26,7 @@ import javax.media.j3d.Texture;
  * implementations will require. Good to save you typing.
  *
  * @author  Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class AbstractTiledTerrainData extends AbstractTerrainData
     implements TiledTerrainData
@@ -83,9 +82,9 @@ public abstract class AbstractTiledTerrainData extends AbstractTerrainData
      * @param tileY the y coordinate of the tile number for the texture
      * @return The texture object suitable for that bounds or null
      */
-    public Texture getTexture(int tileX, int tileY)
+    public BufferedImage getTexture(int tileX, int tileY)
     {
-        Texture ret_val = null;
+        BufferedImage ret_val = null;
 
         if(tileGenerator != null)
         {

@@ -12,8 +12,7 @@ package org.j3d.terrain;
 // Standard imports
 import java.awt.Dimension;
 import java.awt.Rectangle;
-
-import javax.media.j3d.Texture;
+import java.awt.image.BufferedImage;
 
 // Application specific imports
 // none
@@ -27,13 +26,13 @@ import javax.media.j3d.Texture;
  * implementations will require. Good to save you typing.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractStaticTerrainData extends AbstractTerrainData
     implements StaticTerrainData
 {
     /** The texture object that is loaded for this instance. */
-    protected Texture texture;
+    protected BufferedImage texture;
 
     /** The width of the terrain in grid points. (Y coordinate) */
     protected int gridWidth;
@@ -54,13 +53,13 @@ public abstract class AbstractStaticTerrainData extends AbstractTerrainData
     //----------------------------------------------------------
 
     /**
-     * Fetch the Texture that is used to cover the entire terrain. If no
+     * Fetch the BufferedImage that is used to cover the entire terrain. If no
      * texture is used, then return null. Assumes a single large texture for
      * the entire terrain.
      *
      * @return The texture instance to use or null
      */
-    public Texture getTexture()
+    public BufferedImage getTexture()
     {
         return texture;
     }
@@ -95,7 +94,7 @@ public abstract class AbstractStaticTerrainData extends AbstractTerrainData
      *
      * @param tex The texture instance to use or null to clear
      */
-    public void setTexture(Texture tex)
+    public void setTexture(BufferedImage tex)
     {
         texture = tex;
     }

@@ -3,10 +3,10 @@
 #  (C) 2001 J3d.org
 #    http://code.j3d.org/
 # 
-# Package makefile for the org.j3d.device.input.spaceball directory
+# Package makefile for the org.j3d.device.input.spaceball.driver directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.3 $
+# Version: $Revision: 1.4 $
 #
 #*********************************************************************
 
@@ -14,15 +14,15 @@ PACKAGE = org.j3d.device.input.spaceball
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-SOURCE = ComponentInputDevice.java \
- 	InputDeviceCallback.java \
-	InputDeviceBehavior.java \
-	InputDeviceBase.java \
-	OnDemandInputDevice.java \
-	MouseInputDevice.java \
-	MouseKeyboard3DInputDevice.java \
-	SpaceballInputDevice.java \
-	Keyboard6DInputDevice.java \
+SOURCE = SpaceballPacket.java \
+    SpaceballDriver.java \
+    Spaceball3003CallbackInterface.java \
+    Spaceball3003Packet.java \
+    Spaceball3003Driver.java \
+    Spaceball4000CallbackInterface.java \
+    Spaceball4000Packet.java \
+    Spaceball4000Driver.java \
+    SpaceballTypeDetector.java
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

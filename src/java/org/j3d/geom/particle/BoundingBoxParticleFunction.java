@@ -9,33 +9,51 @@
 
 package org.j3d.geom.particle;
 
-import javax.media.j3d.BoundingBox;
-import javax.vecmath.Point3d;
+// Standard imports
+// None
+
+// Application specific imports
+// None
 
 /**
- * The BoundingBoxParticleFunction simply clamps the position of a particle
- * to within a BoundingBox. The BoundingBoxParticleFunction should be applied
- * <b>after</b> any other ParticleFunctions which modify a Particle's position
- * (e.g. PhysicsFunction).
+ * Clamps the position of a particle to within a BoundingBox.
+ * <p>
+ * This function should be applied <i>after</i> any other ParticleFunctions
+ * which modify a Particle's position (e.g. PhysicsFunction).
  *
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class BoundingBoxParticleFunction implements ParticleFunction
 {
-    private Point3d position = new Point3d();
-    private Point3d lowerCorner = new Point3d();
-    private Point3d upperCorner = new Point3d();
-    private BoundingBox boundingBox;
+    /** Temp variable for requesting the position from a particle */
+    private float[] position;
+
+    /** Location of the lower corner of the bounding box */
+    private float[] lowerCorner;
+
+    /** Location of the upper corner of the bounding box */
+    private float[] upperCorner;
+
 
     /** Flag to say whether or not this function is disabled or not */
     private boolean enabled;
 
-    public BoundingBoxParticleFunction(BoundingBox boundingBox)
+    /**
+     * Create a new bounding box function with the given initial bounds
+     *
+     * @param upper All positive corner of the bounds
+     * @param lower All negative corner of the bounds
+     */
+    public BoundingBoxParticleFunction(float[] upper, float[] lower)
     {
-        this.boundingBox = boundingBox;
-        boundingBox.getLower(lowerCorner);
-        boundingBox.getUpper(upperCorner);
+        lowerCorner[0] = lower[0];
+        lowerCorner[1] = lower[1];
+        lowerCorner[2] = lower[2];
+
+        upperCorner[0] = upper[0];
+        upperCorner[1] = upper[1];
+        upperCorner[2] = upper[2];
 
         enabled = true;
     }
@@ -88,28 +106,46 @@ public class BoundingBoxParticleFunction implements ParticleFunction
         // we constrain the particle to be inside the BoundingBox
         particle.getPosition(position);
 
-        if(!boundingBox.intersect(position))
+        boolean changed = false;
+
+        if(position[0] > upperCorner[0])
         {
-            if(position.x > upperCorner.x)
-                position.x = upperCorner.x;
-
-            if(position.y > upperCorner.y)
-                position.y = upperCorner.y;
-
-            if(position.z > upperCorner.z)
-                position.z = upperCorner.z;
-
-            if(position.x < lowerCorner.x)
-                position.x = lowerCorner.x;
-
-            if(position.y < lowerCorner.y)
-                position.y = lowerCorner.y;
-
-            if(position.z < lowerCorner.z)
-                position.z = lowerCorner.z;
+            position[0] = upperCorner[0];
+            changed = true;
         }
 
-        particle.setPosition((float)position.x, (float)position.y, (float)position.z);
+        if(position[1] > upperCorner[1])
+        {
+            position[1] = upperCorner[1];
+            changed = true;
+        }
+
+        if(position[2] > upperCorner[2])
+        {
+            position[2] = upperCorner[2];
+            changed = true;
+        }
+
+        if(position[0] < lowerCorner[0])
+        {
+            position[0] = lowerCorner[0];
+            changed = true;
+        }
+
+        if(position[1] < lowerCorner[1])
+        {
+            position[1] = lowerCorner[1];
+            changed = true;
+        }
+
+        if(position[2] < lowerCorner[2])
+        {
+            position[2] = lowerCorner[2];
+            changed = true;
+        }
+
+        if(changed)
+            particle.setPosition(position[0], position[1], position[2]);
 
         return true;
     }

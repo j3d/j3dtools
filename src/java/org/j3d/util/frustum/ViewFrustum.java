@@ -43,13 +43,9 @@
  * for use in the design, construction, operation or maintenance of
  * any nuclear facility.
  */
-
 package org.j3d.util.frustum;
 
 // Standard imports
-import javax.media.j3d.Transform3D;
-import javax.media.j3d.Canvas3D;
-
 import javax.vecmath.Point4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector4d;
@@ -71,33 +67,10 @@ import javax.vecmath.Matrix4d;
  * The frustum is for the previous Java3D frame that has just been rendered.
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-public class ViewFrustum
+public abstract class ViewFrustum
 {
-    /** The 8 bounding points of the frustum volume */
-    private Point4d[] frustumPoints;
-
-    /** All the canvases that this frustum belongs to */
-    private Canvas3D[] canvases;
-
-    /** Nested frustum instances for each canvas */
-    private Canvas3DFrustum[] frustums;
-
-    // Working vars for projection handling */
-    private Transform3D leftInverseProjection;
-    private Transform3D rightInverseProjection;
-
-    // Temporary data structures
-    private Vector3d tVec1;
-    private Vector3d tVec2;
-    private Vector3d tVec3;
-    private Matrix4d tMatrix;
-
-    private Point3d tmpP1 = new Point3d();
-    private Point3d tmpP2 = new Point3d();
-    private Point3d tmpP3 = new Point3d();
-
     /** The geometry is in the view frustum, either partially or completely */
     public static final int IN = Canvas3DFrustum.IN;
 
@@ -107,29 +80,64 @@ public class ViewFrustum
     /** The geometry has been clipped to the view frustum */
     public static final int CLIPPED = Canvas3DFrustum.CLIPPED;
 
+    /** The 8 bounding points of the frustum volume */
+    private Point4d[] frustumPoints;
+
+    /** Nested frustum instances for each canvas */
+    private Canvas3DFrustum[] frustums;
+
+    /** The number of different canvases provided */
+    protected final int numCanvases;
+
+    // Working vars for projection handling */
+    private Matrix4d inverseProjection;
+
+    // Temporary data structures
+    private Vector3d tVec1;
+    private Vector3d tVec2;
+    private Vector3d tVec3;
+    private Matrix4d tMatrix;
+
+    private Point3d tmpP1;
+    private Point3d tmpP2;
+    private Point3d tmpP3;
+
     /**
-     * Create a new instance that operates on just a single canvas.
+     * Create a new instance that on a given number of canvases that contribute
+     * to the total view frustum.
      *
-     * @param canvas The canvas to use for this frustum
+     * @param numCanvases The number of canvases contributing to this frustum
      */
-    public ViewFrustum(Canvas3D canvas)
+    public ViewFrustum(int numCanvases)
     {
-        canvases = new Canvas3D[1];
-        canvases[0] = canvas;
+        this.numCanvases = numCanvases;
 
-        init();
-    }
+        tMatrix = new Matrix4d();
+        tVec1 = new Vector3d();
+        tVec2 = new Vector3d();
+        tVec3 = new Vector3d();
 
-    /**
-     * Creates new ViewFrustum that represents the collection of all canvases.
-     *
-     * @param canvasList The list of canvases to view
-     */
-    public ViewFrustum(Canvas3D[] canvasList)
-    {
-        canvases = canvasList;
+        tmpP1 = new Point3d();
+        tmpP2 = new Point3d();
+        tmpP3 = new Point3d();
 
-        init();
+        inverseProjection = new Matrix4d();
+
+        frustumPoints = new Point4d[8];
+
+        frustumPoints[0] = new Point4d();
+        frustumPoints[1] = new Point4d();
+        frustumPoints[2] = new Point4d();
+        frustumPoints[3] = new Point4d();
+        frustumPoints[4] = new Point4d();
+        frustumPoints[5] = new Point4d();
+        frustumPoints[6] = new Point4d();
+        frustumPoints[7] = new Point4d();
+
+        frustums = new Canvas3DFrustum[numCanvases];
+
+        for(int i = 0; i < numCanvases; i++)
+            frustums[i] = new Canvas3DFrustum();
     }
 
     /**
@@ -139,7 +147,7 @@ public class ViewFrustum
      */
     public void viewingPlatformMoved()
     {
-        for(int i = 0; i < canvases.length; i++)
+        for(int i = 0; i < numCanvases; i++)
             computeFrustumPlanes(i);
     }
 
@@ -162,7 +170,7 @@ public class ViewFrustum
         tx.transform(frustumPoints[6]);
         tx.transform(frustumPoints[7]);
 
-        for(int i = 0; i < canvases.length; i++)
+        for(int i = 0; i < numCanvases; i++)
             updatePlanes(i);
     }
 
@@ -224,6 +232,7 @@ public class ViewFrustum
             if(frustums[i].isTriangleInFrustum(p1, p2, p3) != OUT)
                 return IN;
         }
+
         return OUT;
     }
 
@@ -236,7 +245,7 @@ public class ViewFrustum
     {
         for(int i = 0; i < frustums.length; i++)
         {
-            if (frustums[i].isPointInFrustum(p1))
+            if(frustums[i].isPointInFrustum(p1))
                 return IN;
         }
 
@@ -284,37 +293,14 @@ public class ViewFrustum
     //----------------------------------------------------------
 
     /**
-     * Perform common initialisation routines.
+     * Request from the renderer-specific canvas the inverse projection
+     * matrix for the given canvasId.
+     *
+     * @param id The ID of the canvas
+     * @param matrix The matrix to copy the data into
      */
-    private void init()
-    {
-        tMatrix = new Matrix4d();
-        tVec1 = new Vector3d();
-        tVec2 = new Vector3d();
-        tVec3 = new Vector3d();
-
-        tmpP1 = new Point3d();
-        tmpP2 = new Point3d();
-        tmpP3 = new Point3d();
-
-        leftInverseProjection = new Transform3D();
-        rightInverseProjection = new Transform3D();
-
-        frustumPoints = new Point4d[8];
-
-        frustumPoints[0] = new Point4d();
-        frustumPoints[1] = new Point4d();
-        frustumPoints[2] = new Point4d();
-        frustumPoints[3] = new Point4d();
-        frustumPoints[4] = new Point4d();
-        frustumPoints[5] = new Point4d();
-        frustumPoints[6] = new Point4d();
-        frustumPoints[7] = new Point4d();
-
-        frustums = new Canvas3DFrustum[canvases.length];
-        for(int i = 0; i < frustums.length; i++)
-            frustums[i] = new Canvas3DFrustum();
-    }
+    protected abstract void getInverseWorldProjection(int id,
+                                                      Matrix4d matrix);
 
     /**
      * Compute the frustum planes for the specified canvas.
@@ -333,14 +319,11 @@ public class ViewFrustum
         frustumPoints[6].set( 1.0,  1.0, -1.0, 1.0);  // upper-right-back
         frustumPoints[7].set( 1.0, -1.0, -1.0, 1.0);  // lower-right-back
 
-        //ccToVworld.get(tMatrix);
-        canvases[canvasId].getInverseVworldProjection(leftInverseProjection,
-                                                      rightInverseProjection);
-        leftInverseProjection.get(tMatrix);
+        getInverseWorldProjection(canvasId, inverseProjection);
 
         for (int i = 0; i < frustumPoints.length; i++)
         {
-            tMatrix.transform(frustumPoints[i]);
+            inverseProjection.transform(frustumPoints[i]);
             double w_inv = 1.0 / frustumPoints[i].w;
             frustumPoints[i].x *= w_inv;
             frustumPoints[i].y *= w_inv;

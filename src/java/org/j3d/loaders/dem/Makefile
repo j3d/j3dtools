@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders.dem directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
 
@@ -16,10 +16,9 @@ PACKAGE = org.j3d.loaders.dem
 # compiled in
 SOURCE = DEMRecord.java \
     DEMTypeARecord.java \
-	DEMTypeBRecord.java \
-	DEMTypeCRecord.java \
-	DEMParser.java \
-	DEMLoader.java \
+    DEMTypeBRecord.java \
+    DEMTypeCRecord.java \
+    DEMParser.java \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

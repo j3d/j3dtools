@@ -20,16 +20,16 @@ package org.j3d.util.device;
  */
 public class InputDeviceDescriptor extends DeviceDescriptor
 {
-  /**
-   * Construct an instance of this class with the given information about
-   * the name, description and class file.
-   *
-   * @param name The name of the device
-   * @param desc A description of the device
-   * @param cls The fully qualified name of the class file
-   */
-  InputDeviceDescriptor(String name, String desc, String cls)
-  {
-    super(name, desc, cls);
-  }
+    /**
+     * Construct an instance of this class with the given information about
+     * the name, description and class file.
+     *
+     * @param name The name of the device
+     * @param desc A description of the device
+     * @param cls The fully qualified name of the class file
+     */
+    public InputDeviceDescriptor(String name, String desc, String cls)
+    {
+        super(name, desc, cls);
+    }
 }

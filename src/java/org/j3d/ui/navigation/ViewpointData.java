@@ -13,15 +13,19 @@
 package org.j3d.ui.navigation;
 
 // Standard imports
-import javax.media.j3d.TransformGroup;
-import javax.media.j3d.View;
+// None
 
 /**
  * A class to represent viewpoint information so that we can put it on screen,
  * move around to it etc etc.
+ * <p>
+ *
+ * Does not include location information for a viewpoint. It expects a derived
+ * class for the individual renderer-type will be created that contains the
+ * specific transformation structure.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ViewpointData
 {
@@ -30,9 +34,6 @@ public class ViewpointData
 
     /** An identifier used to know which view data this is */
     public int id;
-
-    /** The transform group above the view */
-    public TransformGroup viewTg;
 
     /** Flag indicating this is the currently selected viewpoint */
     public boolean selected = false;
@@ -45,13 +46,11 @@ public class ViewpointData
      *
      * @param name The name to use
      * @param id The id of this viewpoint
-     * @param tg The transformgroup for the view
      */
-    public ViewpointData(String name, int id, TransformGroup tg)
+    public ViewpointData(String name, int id)
     {
         this.name = name;
         this.id = id;
-        this.viewTg = tg;
     }
 
     /**

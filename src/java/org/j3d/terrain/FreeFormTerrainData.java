@@ -11,8 +11,7 @@ package org.j3d.terrain;
 
 // Standard imports
 import java.awt.Rectangle;
-
-import javax.media.j3d.Texture;
+import java.awt.image.BufferedImage;
 
 // Application specific imports
 // none
@@ -42,7 +41,7 @@ import javax.media.j3d.Texture;
  * {@link TerrainData#FREEFORM_DATA}.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface FreeFormTerrainData extends TerrainData
 {
@@ -60,7 +59,7 @@ public interface FreeFormTerrainData extends TerrainData
      * @param bounds The bounds of the region based on the grid positions
      * @return The texture object suitable for that bounds or null
      */
-    public Texture getTexture(Rectangle bounds);
+    public BufferedImage getTexture(Rectangle bounds);
 
     /**
      * Get the total width (number of points on the Y axis) of the grid.

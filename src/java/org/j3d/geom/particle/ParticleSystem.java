@@ -10,19 +10,11 @@
 package org.j3d.geom.particle;
 
 // Standard imports
-import java.util.*;
+import java.util.ArrayList;
 
-import javax.media.j3d.*;
-
-import java.io.InputStream;
-import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
-import javax.vecmath.Color4f;
 
 // Application specific imports
-import org.j3d.texture.TextureCacheFactory;
+// None
 
 /**
  * Abstract representation of a ParticleSystem.
@@ -36,7 +28,7 @@ import org.j3d.texture.TextureCacheFactory;
  * <p>
  *
  * @author Justin Couch, based on code by Daniel Selman
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
@@ -118,14 +110,6 @@ public abstract class ParticleSystem implements ParticleFactory
 
         updateGeometry();
     }
-
-    /**
-     * Get the node instance that represents the particle system in the scene
-     * graph.
-     *
-     * @return The Java3D node instance
-     */
-    public abstract Node getNode();
 
     /**
      * Notification that this particle system has been removed from the scene
@@ -223,50 +207,6 @@ public abstract class ParticleSystem implements ParticleFactory
         updateGeometry();
 
         return true;
-    }
-
-    /**
-     * Set the texture instance that this particle should be using. If the
-     * particle doesn't need or want a texture, don't call this. Setting a
-     * value of null will clear the current texture.
-     *
-     * @param tex The texture instance to use
-     */
-    public void setTexture(Texture tex)
-    {
-    }
-
-    /**
-     * Create the appearance used to render the objects with. This appearance
-     * should have all appropriate information set - including textures.
-     *
-     * @return The appearance object to use with this system
-     */
-    protected Appearance createAppearance()
-    {
-        Appearance app = new Appearance();
-
-/*
-        app.setPolygonAttributes(
-                new PolygonAttributes(
-                        PolygonAttributes.POLYGON_FILL,
-                        PolygonAttributes.CULL_NONE,
-                        0));
-*/
-
-        TransparencyAttributes trans =
-            new TransparencyAttributes(TransparencyAttributes.BLENDED, 0);
-        trans.setSrcBlendFunction(TransparencyAttributes.BLEND_ONE_MINUS_SRC_ALPHA);
-
-        TextureAttributes tex_attr = new TextureAttributes();
-        tex_attr.setTextureMode(TextureAttributes.MODULATE);
-        tex_attr.setPerspectiveCorrectionMode(TextureAttributes.FASTEST);
-
-        app.setTransparencyAttributes(trans);
-        app.setTextureAttributes(tex_attr);
-
-//        app.setTexture(getTexture());
-        return app;
     }
 
     /**

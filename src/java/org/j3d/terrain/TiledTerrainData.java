@@ -11,8 +11,8 @@ package org.j3d.terrain;
 
 // Standard imports
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 
-import javax.media.j3d.Texture;
 
 // Application specific imports
 // none
@@ -45,7 +45,7 @@ import javax.media.j3d.Texture;
  * {@link TerrainData#TILED_DATA}.
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface TiledTerrainData extends TerrainData
 {
@@ -60,7 +60,7 @@ public interface TiledTerrainData extends TerrainData
      * @param tileY the y coordinate of the tile number for the texture
      * @return The texture object suitable for that bounds or null
      */
-    public Texture getTexture(int tileX, int tileY);
+    public BufferedImage getTexture(int tileX, int tileY);
 
     /**
      * Get the number of grid points along one side of a single tile. Assumes

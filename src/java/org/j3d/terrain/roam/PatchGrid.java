@@ -34,7 +34,7 @@ class PatchGrid
     private int northOffset;
     private int eastOffset;
 
-    private Patch[][] grid;
+    private ROAMPatch[][] grid;
 
     /**
      * Create a new grid that has its structures initialiesd to the given
@@ -45,7 +45,7 @@ class PatchGrid
      */
     PatchGrid(Rectangle bounds)
     {
-        grid = new Patch[bounds.width][bounds.height];
+        grid = new ROAMPatch[bounds.width][bounds.height];
         numEast = bounds.width;
         numNorth = bounds.height;
 
@@ -68,7 +68,7 @@ class PatchGrid
 
         if(bounds.width > grid.length)
         {
-            Patch[][] tmp = new Patch[bounds.width][];
+            ROAMPatch[][] tmp = new ROAMPatch[bounds.width][];
 
             for(i = 0; i < grid.length; i++)
                 tmp[i] = grid[i];
@@ -76,7 +76,7 @@ class PatchGrid
             int cur_depth = grid[0].length;
 
             for( ; i < bounds.width; i++)
-                tmp[i] = new Patch[cur_depth];
+                tmp[i] = new ROAMPatch[cur_depth];
         }
         else if(bounds.width < numEast)
         {
@@ -93,19 +93,19 @@ class PatchGrid
         // new lets just deal with the depth.
         if(bounds.height > grid[0].length)
         {
-            Patch[] tmp;
+            ROAMPatch[] tmp;
 
             // Copy only the ones that have valid data. Replace the rest
             for(i = 0; i < numEast; i++)
             {
-                tmp = new Patch[bounds.height];
+                tmp = new ROAMPatch[bounds.height];
                 System.arraycopy(grid[i], 0, tmp, 0, numNorth);
 
                 grid[i] = tmp;
             }
 
             for( ; i < grid.length; i++)
-                grid[i] = new Patch[bounds.height];
+                grid[i] = new ROAMPatch[bounds.height];
         }
         else if(bounds.height < numNorth)
         {
@@ -191,13 +191,13 @@ class PatchGrid
      * @param tileX The position in the tile that this should go
      * @param tileY The position in the tile that this should go
      */
-    void addPatch(Patch p, int tileX, int tileY)
+    void addPatch(ROAMPatch p, int tileX, int tileY)
     {
         int local_x = tileX - eastOffset;
         int local_y = tileY - northOffset;
 
         grid[local_x][local_y] = p;
-        Patch tp;
+        ROAMPatch tp;
 
         if(local_x != 0)
         {

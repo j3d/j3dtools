@@ -12,8 +12,7 @@ package org.j3d.terrain;
 // Standard imports
 import java.awt.Dimension;
 import java.awt.Rectangle;
-
-import javax.media.j3d.Texture;
+import java.awt.image.BufferedImage;
 
 // Application specific imports
 // none
@@ -39,7 +38,7 @@ import javax.media.j3d.Texture;
  * before handing the tile back to the caller.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface TextureTileGenerator
 {
@@ -57,7 +56,7 @@ public interface TextureTileGenerator
      * within the bounds expressed by the {@link #getTextureSize()} method.
      *
      * @param bounds The bounds of the texture tile to supply
-     * @return The Java3D texture object corresponding to that bounds
+     * @return The image to use for the texture corresponding to that bounds
      */
-    public Texture getTextureTile(Rectangle bounds);
+    public BufferedImage getTextureTile(Rectangle bounds);
 }

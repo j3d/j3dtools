@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.terrain directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.5 $
+# Version: $Revision: 1.6 $
 #
 #*********************************************************************
 
@@ -14,8 +14,7 @@ PACKAGE = org.j3d.terrain
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-SOURCE = AppearanceGenerator.java \
-	TextureTileGenerator.java \
+SOURCE = TextureTileGenerator.java \
 	TerrainData.java \
 	StaticTerrainData.java \
 	TiledTerrainData.java \

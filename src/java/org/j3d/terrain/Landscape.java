@@ -10,14 +10,10 @@
 package org.j3d.terrain;
 
 // Standard imports
-import javax.media.j3d.Transform3D;
-
-import javax.vecmath.Matrix3f;
 import javax.vecmath.Tuple3f;
 import javax.vecmath.Vector3f;
 
 // Application specific imports
-import org.j3d.ui.navigation.FrameUpdateListener;
 import org.j3d.ui.navigation.HeightMapGeometry;
 import org.j3d.util.frustum.ViewFrustum;
 
@@ -62,37 +58,16 @@ import org.j3d.util.frustum.ViewFrustum;
  * implementation is free to do what it likes.
  *
  * @author Justin Couch, based on original ideas from Paul Byrne
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
-public abstract class Landscape extends javax.media.j3d.BranchGroup
-    implements FrameUpdateListener, HeightMapGeometry
+public abstract class Landscape
+    implements HeightMapGeometry
 {
     /** The current viewing frustum that is seeing the landscape */
     protected ViewFrustum landscapeView;
 
     /** Raw terrain information to be rendered */
     protected TerrainData terrainData;
-
-    /** Generator for appearance information. May be null */
-    protected AppearanceGenerator appearanceGenerator;
-
-    /**
-     * Temporary variable to hold the position information extracted from
-     * the full transform class.
-     */
-    private Vector3f tmpPosition;
-
-    /**
-     * Temporary variable to hold the orientation information extracted from
-     * the matrix class.
-     */
-    private Vector3f tmpOrientation;
-
-    /**
-     * Temporary variable to hold the orientation matrix extracted from
-     * the full transform class.
-     */
-    private Matrix3f tmpMatrix;
 
     /**
      * Create a new Landscape with the set view and data. If either are not
@@ -112,60 +87,10 @@ public abstract class Landscape extends javax.media.j3d.BranchGroup
 
         terrainData = data;
         landscapeView = view;
-
-        tmpPosition = new Vector3f();
-        tmpOrientation = new Vector3f();
-        tmpMatrix = new Matrix3f();
-    }
-
-    /**
-     * Provide a landscape with a specific appearance generator set. If the
-     * generator argument is null, then the default is used.
-     *
-     * @param view The viewing frustum to see the data with
-     * @param data The raw data to view
-     * @param gen The generator instance to use
-     * @throws IllegalArgumentException either parameter is null
-     */
-    public Landscape(ViewFrustum view,
-                     TerrainData data,
-                     AppearanceGenerator gen)
-    {
-        this(view, data);
-
-        appearanceGenerator = gen;
     }
 
     //----------------------------------------------------------
-    // Methods required by FrameUpdateListener
-    //----------------------------------------------------------
-
-    /**
-     * The transition from one point to another is completed. Use this to
-     * update the transformation.
-     *
-     * @param t3d The position of the final viewpoint
-     */
-    public void transitionEnded(Transform3D t3d)
-    {
-        landscapeView.viewingPlatformMoved();
-        setView(t3d);
-    }
-
-    /**
-     * The frame has just been updated with the latest view information.
-     * Update the landscape rendered values now.
-     *
-     * @param t3d The position of the viewpoint now
-     */
-    public void viewerPositionUpdated(Transform3D t3d)
-    {
-        landscapeView.viewingPlatformMoved();
-        setView(t3d);
-    }
-
-    //----------------------------------------------------------
-    // Methods required by FrameUpdateListener
+    // Methods required by HeightMapGeometry
     //----------------------------------------------------------
 
     /**
@@ -207,43 +132,4 @@ public abstract class Landscape extends javax.media.j3d.BranchGroup
      * @param direction The orientation of the user's gaze
      */
     public abstract void setView(Tuple3f position, Vector3f direction);
-
-    /**
-     * Set the current view location information based on a transform matrix.
-     * Only the position and orientation information are extracted from this
-     * matrix. Any shear or scale is ignored. Effectively, this transform
-     * should be the view transform (particularly if you are using navigation
-     * code from this codebase in the {@link org.j3d.ui.navigation} package.
-     *
-     * @param t3d The transform to use as the view position
-     */
-    public void setView(Transform3D t3d)
-    {
-        t3d.get(tmpMatrix, tmpPosition);
-        tmpOrientation.set(0, 0, -1);
-        tmpMatrix.transform(tmpOrientation);
-
-        setView(tmpPosition, tmpOrientation);
-    }
-
-    /**
-     * Set the appearance generator to create new appearanace items. If null
-     * is passed, it clears the current appearance settings
-     *
-     * @param gen The new generator instance to use
-     */
-    public void setAppearanceGenerator(AppearanceGenerator gen)
-    {
-        appearanceGenerator = gen;
-    }
-
-    /**
-     * Get the currently set appearance generator. If not set, returns null.
-     *
-     * @return The current generator instance
-     */
-    public AppearanceGenerator getAppearanceGenerator()
-    {
-        return appearanceGenerator;
-    }
 }

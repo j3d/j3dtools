@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.5 $
+# Version: $Revision: 1.6 $
 #
 #*********************************************************************
 
@@ -22,18 +22,6 @@ SOURCE = \
    ParticleList.java \
    ParticleSystem.java \
    ParticleSystemManager.java \
-   ByRefParticle.java \
-   ByRefParticleSystem.java \
-   PointArrayByRefParticle.java \
-   LineArrayByRefParticle.java \
-   QuadArrayByRefParticle.java \
-   TriangleArrayByRefParticle.java \
-   TriangleFanByRefParticle.java \
-   PointArrayByRefParticleSystem.java \
-   LineArrayByRefParticleSystem.java \
-   QuadArrayByRefParticleSystem.java \
-   TriangleArrayByRefParticleSystem.java \
-   TriangleFanByRefParticleSystem.java \
    PhysicsFunction.java \
    WindParticleFunction.java \
    BoundingBoxParticleFunction.java \
@@ -46,9 +34,6 @@ SOURCE = \
    MaxAgePointForceEmitter.java \
    MaxTimePointEmitter.java \
    PolylineEmitter.java 
-
-#   PickingCollisionParticleFunction.java \
-#   PlanarCollisionParticleFunction.java \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

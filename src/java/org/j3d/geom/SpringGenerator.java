@@ -10,13 +10,10 @@
 package org.j3d.geom;
 
 // Standard imports
-import javax.media.j3d.Appearance;
-import javax.media.j3d.Shape3D;
-import javax.media.j3d.QuadArray;
-
 import javax.vecmath.Vector3f;
 
 // Application specific imports
+// None
 
 /**
  * A generator of Spring geometry with customisable inner radius, outer
@@ -31,7 +28,7 @@ import javax.vecmath.Vector3f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class SpringGenerator extends GeometryGenerator
 {
