@@ -55,7 +55,7 @@ import org.j3d.util.CharHashMap;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class CharacterCreator
 {
@@ -192,12 +192,6 @@ public class CharacterCreator
         neg_trans.scale(1.0, -1.0);
         neg_trans.translate(tx, -ty);
 
-        int vtx_count = 0;
-        int start_vtx = 0;
-        int total_coords = 0;
-        int total_index = 0;
-        boolean just_closed = false;
-
         CharacterData ch_data = new CharacterData();
         Rectangle2D l_bounds = glyph_vec.getLogicalBounds();
 
@@ -212,8 +206,13 @@ public class CharacterCreator
                                   (float)l_bounds.getY() * scale,
                                   (float)l_bounds.getWidth() * scale,
                                   1);
-        total_coords = 0;
-        total_index = 0;
+        int vtx_count = 0;
+        int start_vtx = 0;
+        int total_coords = 0;
+        int total_index = 0;
+        boolean new_curve = true;
+        int second_curve_start = 0;
+        int closest_point = 0;
 
         while(!glyph_path.isDone())
         {
@@ -235,59 +234,154 @@ public class CharacterCreator
                         charCoords = tmp;
                     }
 
-                    charCoords[total_coords++] = newCoords[0] * scale;
-                    charCoords[total_coords++] = newCoords[1] * scale;
-                    charCoords[total_coords++] = 0;
-
-//System.out.println("moveto " + newCoords[0] + " " + newCoords[1] + " " + just_closed + " i " + (total_coords - 3));
-
-                    if(just_closed || total_coords == 3)
-                        break;
-
-                    if(triOutputIndex.length < vtx_count * 3)
-                        triOutputIndex = new int[vtx_count * 3];
-
-                    num_triangles =
-                        triangulator.triangulateConcavePolygon(charCoords,
-                                                               start_vtx,
-                                                               vtx_count,
-                                                               triOutputIndex,
-                                                               FACE_NORMAL);
-
-                    if(num_triangles > 0)
+                    if(total_coords == 0)
                     {
-                        num_triangles *= 3;
-                        for(int i = 0; i < num_triangles; i++)
-                            triOutputIndex[i] /= 3;
+                        charCoords[total_coords++] = newCoords[0] * scale;
+                        charCoords[total_coords++] = newCoords[1] * scale;
+                        charCoords[total_coords++] = 0;
+                        vtx_count = 1;
+// System.out.println("start " + newCoords[0] + " " + newCoords[1] );
+                    }
+                    else
+                    {
+                        // If we are inside the last polygon then we want to
+                        // do some special treatment to it. Because the
+                        // tesselator cannot handle polygons with holes, we
+                        // end up modifying the curve by finding the closest
+                        // point to the new point from the existing current
+                        // curve and inserting the entire new curve there,
+                        // then finish off the curve by going back to the
+                        // original curve.
+                        // If this point is not inside the current curve,
+                        // then tesselate the curve and start a new one.
+                        //
+                        // Note, does not currently handle the case of
+                        // testing all the previous polygons to see if this
+                        // point is inside it. I suspect we'll never see that
+                        // case, but just making note of it here just in case.
 
-                        if(charIndex.length < total_index + num_triangles)
+                        // First, do we have an existing internal curve that
+                        // needs to be inserted?
+                        if(second_curve_start > start_vtx)
                         {
-                            int[] tmp =
-                                new int[total_index + num_triangles];
-                            System.arraycopy(charIndex,
-                                             0,
-                                             tmp,
-                                             0,
-                                             total_index);
-                            charIndex = tmp;
+                            int lower = second_curve_start - closest_point;
+
+                            // Shift the bit between the insert position and
+                            // the start of the second curve to the end past
+                            // the second curve. Since we also want to
+                            // duplicate closest point on the first curve for
+                            // the insertion process, make sure we add an extra
+                            // value.
+                            System.arraycopy(charCoords,
+                                             closest_point,
+                                             charCoords,
+                                             total_coords,
+                                             lower);
+
+                            // Shift the whole lot down to the insert position
+                            System.arraycopy(charCoords,
+                                             second_curve_start,
+                                             charCoords,
+                                             closest_point + 3,
+                                             total_coords -
+                                              second_curve_start + lower + 3);
+
+/*
+System.out.println("adjusting curve: closest " + closest_point +
+                   " total " + total_coords + " amt " + lower);
+System.out.println("2nd copy " + second_curve_start +
+                   " to " + (closest_point + 3) +
+                   " amt " + (total_coords - second_curve_start + lower + 3));
+*/
+                            // Adjust for the extra replicated coordinate
+                            total_coords += 3;
+                            vtx_count++;
+
+                            // Set second curve loc back to start position so
+                            // that next time around we don't trigger this
+                            // condition unless we have to.
+                            second_curve_start = start_vtx;
                         }
 
-                        System.arraycopy(triOutputIndex,
-                                         0,
-                                         charIndex,
-                                         total_index,
-                                         num_triangles);
-                        total_index += num_triangles;
-                    }
-                    else if(num_triangles < 0)
-                    {
-                        System.out.println("can't tesselate \'" +
-                                           character + "\'");
-                    }
+                        if(isInsideEvenOdd(newCoords[0] * scale,
+                                           newCoords[1] * scale,
+                                           charCoords,
+                                           start_vtx,
+                                           vtx_count))
+                        {
+                            // do we have an old internal curve that needs clean
+                            second_curve_start = total_coords;
 
-                    start_vtx = (vtx_count + 1) * 3;
-                    vtx_count = 1;
-                    just_closed = false;
+                            // go find the closest point that we want to
+                            // insert this new curve relative to.
+                            closest_point =
+                                findClosestPoint(newCoords[0] * scale,
+                                                 newCoords[1] * scale,
+                                                 charCoords,
+                                                 start_vtx,
+                                                 vtx_count);
+
+//System.out.println("inside curve " + total_coords + " " + closest_point + " : " + newCoords[0] + " " + newCoords[1] );
+
+                            charCoords[total_coords++] = newCoords[0] * scale;
+                            charCoords[total_coords++] = newCoords[1] * scale;
+                            charCoords[total_coords++] = 0;
+                            vtx_count++;
+                        }
+                        else
+                        {
+                            charCoords[total_coords++] = newCoords[0] * scale;
+                            charCoords[total_coords++] = newCoords[1] * scale;
+                            charCoords[total_coords++] = 0;
+
+//System.out.println("new curve " + (total_coords - 3) + " " + newCoords[0] + " " + newCoords[1]);
+
+                            if(triOutputIndex.length < vtx_count * 3)
+                                triOutputIndex = new int[vtx_count * 3];
+
+                            num_triangles =
+                                triangulator.triangulateConcavePolygon(charCoords,
+                                                                       start_vtx,
+                                                                       vtx_count,
+                                                                       triOutputIndex,
+                                                                       FACE_NORMAL);
+
+//System.out.println("old num tri " + num_triangles + " " + vtx_count + " " + start_vtx);
+                            if(num_triangles > 0)
+                            {
+                                num_triangles *= 3;
+                                for(int i = 0; i < num_triangles; i++)
+                                    triOutputIndex[i] /= 3;
+
+                                if(charIndex.length < total_index + num_triangles)
+                                {
+                                    int[] tmp =
+                                        new int[total_index + num_triangles];
+                                    System.arraycopy(charIndex,
+                                                     0,
+                                                     tmp,
+                                                     0,
+                                                     total_index);
+                                    charIndex = tmp;
+                                }
+
+                                System.arraycopy(triOutputIndex,
+                                                 0,
+                                                 charIndex,
+                                                 total_index,
+                                                 num_triangles);
+                                total_index += num_triangles;
+                            }
+                            else if(num_triangles < 0)
+                            {
+                                System.out.println("can't tesselate \'" +
+                                                   character + "\'");
+                            }
+
+                            start_vtx = total_coords - 3;
+                            vtx_count = 1;
+                        }
+                    }
 
                     break;
 
@@ -300,55 +394,6 @@ public class CharacterCreator
                     break;
 
                 case PathIterator.SEG_CLOSE:
-                    just_closed = true;
-
-                    if(triOutputIndex.length < vtx_count * 3)
-                        triOutputIndex = new int[vtx_count * 3];
-
-//System.out.println("close at " + total_coords + " : " + start_vtx + " " + vtx_count);
-                    num_triangles =
-                        triangulator.triangulateConcavePolygon(charCoords,
-                                                               start_vtx,
-                                                               vtx_count,
-                                                               triOutputIndex,
-                                                               FACE_NORMAL);
-
-//System.out.println("num index post triangle = " + num_triangles);
-
-                    if(num_triangles > 0)
-                    {
-                        num_triangles *= 3;
-                        for(int i = 0; i < num_triangles; i++)
-                            triOutputIndex[i] /= 3;
-
-                        if(charIndex.length < total_index + num_triangles)
-                        {
-                            int[] tmp =
-                                new int[total_index + num_triangles];
-                            System.arraycopy(charIndex,
-                                             0,
-                                             tmp,
-                                             0,
-                                             total_index);
-                            charIndex = tmp;
-                        }
-
-                        System.arraycopy(triOutputIndex,
-                                         0,
-                                         charIndex,
-                                         total_index,
-                                         num_triangles);
-
-                        total_index += num_triangles;
-                    }
-                    else if(num_triangles < 0)
-                    {
-                        System.out.println("can't tesselate \'" +
-                                           character + "\'");
-                    }
-
-                    start_vtx = (vtx_count + 1) * 3;
-                    vtx_count = 0;
                     break;
 
                 // Javadoc guarantees that no other types are used on fonts
@@ -357,6 +402,87 @@ public class CharacterCreator
             glyph_path.next();
         }
 
+//System.out.println("final curve");
+        if(second_curve_start > start_vtx)
+        {
+            int lower = second_curve_start - closest_point;
+
+            // Shift the bit between the insert position and
+            // the start of the second curve to the end past
+            // the second curve. Since we also want to
+            // duplicate closest point on the first curve for
+            // the insertion process, make sure we add an extra
+            // value.
+            System.arraycopy(charCoords,
+                             closest_point,
+                             charCoords,
+                             total_coords,
+                             lower);
+
+            // Shift the whole lot down to the insert position
+            System.arraycopy(charCoords,
+                             second_curve_start,
+                             charCoords,
+                             closest_point + 3,
+                             total_coords -
+                              second_curve_start + lower + 3);
+
+//System.out.println("adjusting curve: closest " + closest_point +
+//   " total " + total_coords + " amt " + lower);
+//System.out.println("2nd copy " + second_curve_start +
+//   " to " + (closest_point + 3) +
+//   " amt " + (total_coords - second_curve_start + lower + 3));
+
+            // Adjust for the extra replicated coordinate
+            total_coords += 3;
+            vtx_count++;
+        }
+        // Tesselate the final curve that has not be tesselated yet due
+        // to not having the moveto command called.
+        if(triOutputIndex.length < vtx_count * 3)
+            triOutputIndex = new int[vtx_count * 3];
+
+//System.out.println("close at " + total_coords + " : " + start_vtx + " " + vtx_count);
+        num_triangles =
+            triangulator.triangulateConcavePolygon(charCoords,
+                                                   start_vtx,
+                                                   vtx_count,
+                                                   triOutputIndex,
+                                                   FACE_NORMAL);
+
+//System.out.println("num index post triangle = " + num_triangles);
+//System.out.println("old num tri " + num_triangles + " " + vtx_count + " " + start_vtx);
+
+        if(num_triangles > 0)
+        {
+            num_triangles *= 3;
+            for(int i = 0; i < num_triangles; i++)
+                triOutputIndex[i] /= 3;
+
+            if(charIndex.length < total_index + num_triangles)
+            {
+                int[] tmp = new int[total_index + num_triangles];
+                System.arraycopy(charIndex,
+                                 0,
+                                 tmp,
+                                 0,
+                                 total_index);
+                charIndex = tmp;
+            }
+
+            System.arraycopy(triOutputIndex,
+                             0,
+                             charIndex,
+                             total_index,
+                             num_triangles);
+
+            total_index += num_triangles;
+        }
+        else if(num_triangles < 0)
+        {
+            System.out.println("can't tesselate \'" +
+                               character + "\'");
+        }
 
         // Change the Y coordinate to reflect the normal Y orientation of up
         // in 3D land, where Y is down in 2D land. Also, turn the triangles
@@ -408,6 +534,85 @@ public class CharacterCreator
         ByteBuffer buf = ByteBuffer.allocateDirect(size * 4);
         buf.order(ByteOrder.nativeOrder());
         IntBuffer ret_val = buf.asIntBuffer();
+
+        return ret_val;
+    }
+
+    /**
+     * Point is inside check using the odd-even winding rule.
+     * Think of standing inside a field with a fence representing the polygon.
+     * Then walk north. If you have to jump the fence you know you are now
+     * outside the poly. If you have to cross again you know you are now
+     * inside again; i.e., if you were inside the field to start with, the
+     * total number of fence jumps you would make will be odd, whereas if you
+     * were outside the jumps will be even.
+     *
+     * @param x The x coordinate of the point to test against
+     * @param y The y coordinate of the point to test against
+     * @param polygon The set of points of the polygon
+     * @param start The index of the start vertex of the current curve
+     * @param numPoints the number of vertices in this curve
+     * @return true when the point is inside the curve
+     */
+    private boolean isInsideEvenOdd(float x,
+                                    float y,
+                                    float[] polygon,
+                                    int start,
+                                    int numPoints)
+    {
+        boolean inside = false;
+
+        int j = numPoints - 1;
+        for(int i = 0; i < numPoints; j = i++)
+        {
+            if((((polygon[start + i * 3 + 1] <= y) &&
+                 (y < polygon[start + j * 3 + 1])) ||
+                ((polygon[start + j * 3 + 1] <= y) &&
+                 (y < polygon[start + i * 3 + 1]))) &&
+               (x < (polygon[start + j * 3] - polygon[start + i * 3]) *
+                    (y - polygon[start + i * 3 + 1]) / (polygon[start + j * 3 + 1] -
+                     polygon[start + i * 3 + 1]) + polygon[start + i * 3]))
+
+            inside = !inside;
+        }
+
+        return inside;
+    }
+
+    /**
+     * Find the closest point on the previous curve that is closest to the
+     * given point. Uses a simple radial distance calc.
+     *
+     * @param x The x coordinate of the point to test against
+     * @param y The y coordinate of the point to test against
+     * @param polygon The set of points of the polygon
+     * @param start The index of the start vertex of the current curve
+     * @param numPoints the number of vertices in this curve
+     * @return The index of the closest point
+     */
+    private int findClosestPoint(float x,
+                                 float y,
+                                 float[] polygon,
+                                 int start,
+                                 int numPoints)
+    {
+        float dx = x - polygon[start];
+        float dy = y - polygon[start + 1];
+        float min_d = dx * dx + dy * dy;
+        int ret_val = start;
+
+        for(int i = 1; i < numPoints; i++)
+        {
+            dx = x - polygon[start + i * 3];
+            dy = y - polygon[start + i * 3 + 1];
+
+            float d = dx * dx + dy * dy;
+            if(d < min_d)
+            {
+                min_d = d;
+                ret_val = start + i * 3;
+            }
+        }
 
         return ret_val;
     }
