@@ -9,11 +9,16 @@
 
 package org.j3d.geom.particle;
 
+// Standard imports
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+// Application specific imports
+// None
+
 /**
  * WindParticleFunction models a directional wind source.
+ * <p>
  * The wind has a direction and linearly attentuates
  * in strength perpendicular to the direction vector.
  * It applies forces to the particles proportional to their
@@ -23,41 +28,65 @@ import javax.vecmath.Vector3d;
  * wind force.
  *
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class WindParticleFunction implements ParticleFunction
 {
     // orgin of the wind
-    private Point3d windStart = new Point3d(0, -1000, 0);
-    private Point3d windEnd = new Point3d(0, 1000, 0);
+    private Point3d windStart;
+    private Point3d windEnd;
     private Vector3d ab;
-    private Vector3d ap = new Vector3d();
-    private Vector3d crossAbAp = new Vector3d();
+    private Vector3d ap;
+    private Vector3d crossAbAp;
+    private float[] position;
+
     private double abLength;
-    private double attenuationStart = 0.2;
-    private double attenuationEnd = 0.8;
+    private double attenuationStart;
+    private double attenuationEnd;
 
     // force
-    private Vector3d forcePerSquareMeter = new Vector3d(0.0000, 0.020, 0.00000);
-    private Vector3d currentForcePerSquareMeter = new Vector3d();
+    private Vector3d forcePerSquareMeter;
+    private Vector3d currentForcePerSquareMeter;
 
     // percentages
-    private double gustiness = 0.4;
+    private double gustiness;
 
-    private double swirlinessX = -0.0005;
-    private double swirlinessY = 0.0005;
-    private double swirlinessZ = -0.0005;
+    private double swirlinessX;
+    private double swirlinessY;
+    private double swirlinessZ;
 
     /** Flag to say whether or not this function is disabled or not */
     private boolean enabled;
 
+    /**
+     * Construct a new wind particle function
+     */
     public WindParticleFunction(Vector3d forcePerSquareMeter)
     {
-        ab =
-            new Vector3d(
-                    windEnd.x - windStart.x,
-                    windEnd.y - windStart.y,
-                    windEnd.z - windStart.z);
+        windStart = new Point3d(0, -1000, 0);
+        windEnd = new Point3d(0, 1000, 0);
+        crossAbAp = new Vector3d();
+        ap = new Vector3d();
+        position = new float[3];
+
+        attenuationStart = 0.2;
+        attenuationEnd = 0.8;
+
+        // force
+        forcePerSquareMeter = new Vector3d(0.0000, 0.020, 0.00000);
+        currentForcePerSquareMeter = new Vector3d();
+
+        // percentages
+        gustiness = 0.4;
+
+        swirlinessX = -0.0005;
+        swirlinessY = 0.0005;
+        swirlinessZ = -0.0005;
+
+        ab = new Vector3d(windEnd.x - windStart.x,
+                          windEnd.y - windStart.y,
+                          windEnd.z - windStart.z);
+
         abLength = ab.length();
 
         this.forcePerSquareMeter = forcePerSquareMeter;
@@ -105,7 +134,7 @@ public class WindParticleFunction implements ParticleFunction
         currentForcePerSquareMeter.y =
                 Math.random() * forcePerSquareMeter.y * gustiness;
         currentForcePerSquareMeter.z =
-                Math.random() * forcePerSquareMeter.z * gustiness   ;
+                Math.random() * forcePerSquareMeter.z * gustiness;
 
        return true;
     }
@@ -119,8 +148,10 @@ public class WindParticleFunction implements ParticleFunction
     public boolean apply(Particle particle)
     {
         // calculate distance of the particle from the plane
-        particle.getPosition(ap);
-        ap.sub(windStart);
+        particle.getPosition(position);
+        ap.x = position[0] - windStart.x;
+        ap.y = position[1] - windStart.y;
+        ap.z = position[2] - windStart.z;
 
         crossAbAp.cross(ab, ap);
         double distance = crossAbAp.length() / abLength;
@@ -139,7 +170,7 @@ public class WindParticleFunction implements ParticleFunction
             }
         }
 
-        if (distance < attenuationEnd)
+        if(distance < attenuationEnd)
         {
             // apply the swirliness
             currentForcePerSquareMeter.x += Math.random() * swirlinessX;

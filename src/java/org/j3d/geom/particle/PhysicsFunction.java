@@ -39,25 +39,30 @@ import javax.vecmath.Vector3d;
  * f = m * delta v / t<br>
  *
  * @author Daniel Selman
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class PhysicsFunction implements ParticleFunction
 {
-    // the assumed initial interval between calls to the PhysicsFunction
-    // this delta is recalculated every recalculateInterval frames
-    private double deltaTime = 1.0 / 40.0;
+    private static final int RECALC_INTERVAL = 50;
 
-    private Vector3d position = new Vector3d();
-    private Vector3d acceleration = new Vector3d();
+    /**
+     * The assumed initial interval between calls to the PhysicsFunction
+     * this delta is recalculated every RECALC_INTERVAL frames
+     */
+    private double deltaTime;
 
-    // percentage of force still avalailable after friction lossage
-    private double frictionForce = 0.90;
+    /** Current position */
+    private float[] position;
 
-    // percentage of velocity still avilable
-    private double frictionVelocity = 0.95;
+    private Vector3d acceleration;
+
+    /** percentage of force still avalailable after friction lossage */
+    private double frictionForce;
+
+    /** percentage of velocity still avilable */
+    private double frictionVelocity;
 
     private long startTime;
-    private static final int recalculateInterval = 50;
     private static long invokeCount = 0;
 
     /** Flag to say whether or not this function is disabled or not */
@@ -67,6 +72,13 @@ public class PhysicsFunction implements ParticleFunction
     {
         startTime = System.currentTimeMillis();
         enabled = true;
+
+        position = new float[3];
+        acceleration = new Vector3d();
+
+        frictionForce = 0.90;
+        frictionVelocity = 0.95;
+        deltaTime = 1.0 / 40.0;
     }
 
     //-------------------------------------------------------------
@@ -108,11 +120,11 @@ public class PhysicsFunction implements ParticleFunction
         // multiple ParticleSystems we will get bogus results
         invokeCount++;
 
-        if(invokeCount == recalculateInterval)
+        if(invokeCount == RECALC_INTERVAL)
         {
             long now = System.currentTimeMillis();
             double elapsedSeconds = (double)(now - startTime) / 1000;
-            deltaTime =  (double)elapsedSeconds / recalculateInterval;
+            deltaTime =  (double)elapsedSeconds / RECALC_INTERVAL;
 
             System.out.println("PhysicsFunction FPS: " + (int) 1.0 / deltaTime);
 
@@ -141,10 +153,13 @@ public class PhysicsFunction implements ParticleFunction
         particle.getPosition(position);
         acceleration.set(particle.velocity);
         acceleration.scale(deltaTime);
-        position.add(acceleration);
+
+        position[0] += acceleration.x;
+        position[1] += acceleration.y;
+        position[2] += acceleration.z;
 
         // update the position
-        particle.setPosition((float)position.x, (float)position.y, (float)position.z);
+        particle.setPosition(position[0], position[1], position[2]);
 
         return true;
     }
