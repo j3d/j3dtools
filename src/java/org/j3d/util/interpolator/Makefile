@@ -4,7 +4,10 @@
 
 PACKAGE = org.j3d.util.interpolator
 
-SOURCE = PositionInterpolator.java \
+SOURCE = Interpolator.java \
+         ScalarInterpolator.java \
+         PositionInterpolator.java \
+		 TestScalarInterpolator.java \
 		 TestPositionInterpolator.java
 
 include ${PROJECT_ROOT}/make/Makefile.jav
