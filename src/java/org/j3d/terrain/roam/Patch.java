@@ -108,17 +108,13 @@ class Patch implements GeometryUpdater
      *    global set of grid coordinates
      * @param app The global appearance object to use for this patch
      * @param landscapeView The view frustum container used
-     * @param westNeighbour the Patch to the west of this patch
-     * @param southNeighbour the Patch to the south of this patch
      */
     Patch(TerrainData terrain,
           int patchSize,
           int xOrig,
           int yOrig,
           Appearance app,
-          ViewFrustum landscapeView,
-          Patch westNeighbour,
-          Patch southNeighbour)
+          ViewFrustum landscapeView)
     {
         PATCH_SIZE = patchSize;
 
@@ -176,7 +172,7 @@ class Patch implements GeometryUpdater
                                       yOrig);   // Apex X, Y
 
 
-        makeActive(xOrig, yOrig, westNeighbour, southNeighbour);
+        setOrigin(xOrig, yOrig);
 
         double x_step = terrainData.getGridXStep();
         double y_step = terrainData.getGridYStep();
@@ -303,18 +299,9 @@ class Patch implements GeometryUpdater
      *    global set of grid coordinates
      * @param yOrig The tileOrigin of the Y grid coord for this patch in the
      *    global set of grid coordinates
-     * @param westNeighbour the Patch to the west of this patch
-     * @param southNeighbour the Patch to the south of this patch
      */
-    void makeActive(int xOrig,
-                    int yOrig,
-                    Patch westNeighbour,
-                    Patch southNeighbour)
+    void setOrigin(int xOrig, int yOrig)
     {
-
-        westPatchNeighbour = westNeighbour;
-        southPatchNeighbour = southNeighbour;
-
         tileOrigin.x = xOrig / PATCH_SIZE;
         tileOrigin.y = yOrig / PATCH_SIZE;
 
@@ -355,19 +342,47 @@ class Patch implements GeometryUpdater
 
         NWTree.baseNeighbour = SETree;
         SETree.baseNeighbour = NWTree;
+    }
 
-        if(westPatchNeighbour!=null)
+    /**
+     * Set the west neighbour of this patch to the new value. May be called
+     * on an active or inactive patch.
+     *
+     * @param p The patch to set as the new neighbour
+     */
+    void setWestNeighbour(Patch p)
+    {
+        westPatchNeighbour = p;
+
+        if(westPatchNeighbour != null)
         {
             NWTree.leftNeighbour = westPatchNeighbour.SETree;
             westPatchNeighbour.SETree.leftNeighbour = NWTree;
         }
+    }
 
-        if(southPatchNeighbour!=null)
+    /**
+     * Set the south neighbour of this patch to the new value. May be called
+     * on an active or inactive patch.
+     *
+     * @param p The patch to set as the new neighbour
+     */
+    void setSouthNeighbour(Patch p)
+    {
+        southPatchNeighbour = p;
+
+        if(southPatchNeighbour != null)
         {
             SETree.rightNeighbour = southPatchNeighbour.NWTree;
             southPatchNeighbour.NWTree.rightNeighbour = SETree;
         }
+    }
 
+    /**
+     * Everything has been reset correctly - set active again.
+     */
+    void makeActive()
+    {
         resetRequested = false;
     }
 
