@@ -46,7 +46,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * terrain (unless set by some implementing class).
  *
  * @author  Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class HeightMapTerrainData extends AbstractStaticTerrainData
 {
@@ -72,7 +72,25 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
     /** The colour interpolator used by this class */
     private ColorInterpolator colorInterp;
 
-    /** Flag indicating if texCoords should assume tiling */
+    /**
+     * Create a new instance that sources the data from the given parser.
+     * Assumes that the parser has already fetched its information and has
+     * the height-grid available for use.
+     *
+     * @param loader The loader to source the data from
+     */
+    public HeightMapTerrainData(HeightMapParser parser)
+    {
+        heightMap = parser.getHeights();
+        Point2d steps = parser.getGridStep();
+
+        gridStepX = steps.x;
+        gridStepY = steps.y;
+
+        gridDepth = heightMap.length;
+        gridWidth = heightMap[0].length;
+    }
+
     /**
      * Create a new instance that sources the data from the given loader.
      * It assumes that the loader has already loaded the data from the
