@@ -22,13 +22,14 @@ import java.util.HashMap;
 import org.j3d.geom.Axis;
 import org.j3d.geom.overlay.LabelOverlay;
 import org.j3d.geom.overlay.Overlay;
+import org.j3d.geom.overlay.UpdateControlBehavior;
 
 /**
  * Demonstration of the scribble overlay. Presents a box on screen and allows
  * the user to draw over it with a mouse.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class LabelDemo extends DemoFrame
 {
@@ -99,9 +100,14 @@ public class LabelDemo extends DemoFrame
         view.addCanvas3D(canvas);
         view.attachViewPlatform(camera);
 
+        UpdateControlBehavior updater = new UpdateControlBehavior();
+        updater.setSchedulingBounds(new BoundingSphere());
+        view_tg.addChild(updater);
+
         overlay = new LabelOverlay(canvas,
                                    new Rectangle(10, 10, 100, 50),
                                    "hello world");
+        overlay.setUpdateManager(updater);
         overlay.setVisible(true);
 
         view_tg.addChild(overlay.getRoot());

@@ -22,6 +22,7 @@ import java.util.HashMap;
 // Application Specific imports
 import org.j3d.geom.Axis;
 import org.j3d.geom.overlay.ImageOverlay;
+import org.j3d.geom.overlay.UpdateControlBehavior;
 import org.j3d.util.ImageUtils;
 
 /**
@@ -29,7 +30,7 @@ import org.j3d.util.ImageUtils;
  * the user to draw over it with a mouse.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ImageDemo extends DemoFrame
 {
@@ -113,10 +114,15 @@ public class ImageDemo extends DemoFrame
         int w = img.getWidth(null);
         int h = img.getHeight(null);
 
+        UpdateControlBehavior updater = new UpdateControlBehavior();
+        updater.setSchedulingBounds(new BoundingSphere());
+        view_tg.addChild(updater);
+
         ImageOverlay overlay =
             new ImageOverlay(canvas,
-                             new Rectangle(10, 10, w, h),
+                             new Rectangle(10, 10, 64, 32),
                              ImageUtils.createBufferedImage(img));
+        overlay.setUpdateManager(updater);
         overlay.setVisible(true);
 
         view_tg.addChild(overlay.getRoot());
