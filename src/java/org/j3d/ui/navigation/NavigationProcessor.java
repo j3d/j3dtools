@@ -183,7 +183,7 @@ import org.j3d.util.UserSupplementData;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class NavigationProcessor
 {
@@ -836,7 +836,7 @@ public class NavigationProcessor
                 dragTranslationAmt.set(0, 0, direction[2] * scaledSpeed);
 
                 //  Rotate around Y:
-                inputRotationY = direction[0] * scaledSpeed;
+                inputRotationY = direction[0];
 
                 allowCollisions = (collidables != null);
                 allowTerrainFollowing = (terrain != null);
