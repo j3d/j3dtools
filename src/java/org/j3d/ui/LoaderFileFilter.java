@@ -7,7 +7,7 @@
  *
  ****************************************************************************/
 
-package org.j3d.uti;
+package org.j3d.ui;
 
 // Standard imports
 import java.io.File;
@@ -25,7 +25,7 @@ import org.j3d.util.device.FileLoaderDescriptor;
  * information from that. It does not maintain a reference to the
  * descriptor.
  *
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.2 $
  */
 public class LoaderFileFilter extends FileFilter
 {
