@@ -24,7 +24,7 @@ package org.j3d.loaders.discreet;
  * at all times, which may be narrowed into a spotlight.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class LightBlock
 {
@@ -83,6 +83,21 @@ public class LightBlock
     /** The (linear?) attentuation parameter of the light */
     public float attenuation;
 
+    /** Flag indicating if a cone indicating visiblity should be shown */
+    public boolean seeCone;
+
+    /** Flag indicating that this light will cast shadows */
+    public boolean castsShadows;
+
+    /**
+     * If shadows are being case, the parameters. [0] is local shadow low
+     * bias. [1] is local shadow filter in the range 1 (low) to 10 (high).
+     */
+    public float[] shadowParams;
+
+    /** If shadowed, the size of the map to create in pixels (square) */
+    public int shadowMapSize;
+
     /**
      * Create a new light block and set it up for a basic directional light.
      */
@@ -93,5 +108,7 @@ public class LightBlock
         direction = new float[3];
         aspectRatio = 1;
         enabled = true;
+        seeCone = false;
+        castsShadows = false;
     }
 }
