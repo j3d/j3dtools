@@ -760,44 +760,48 @@ public class NavigationHandler
         locationPoint.add(locationVector, oneFrameTranslation);
         terrainPicker.set(locationPoint, downVector);
 
-        SceneGraphPath ground = terrain.pickClosest(terrainPicker);
+        SceneGraphPath[] ground = terrain.pickAllSorted(terrainPicker);
 
         // if there is no ground below us, do nothing.
-        if(ground == null)
+        if((ground == null) || (ground.length == 0))
         {
             return ret_val;
         }
 
-        Transform3D local_tx = ground.getTransform();
-        local_tx.get(locationVector);
-
-        Shape3D i_shape = (Shape3D)ground.getObject();
-
-        Enumeration geom_list = i_shape.getAllGeometries();
         double shortest_length = -1;
 
-        while(geom_list.hasMoreElements())
+        for(int i = 0; i < ground.length; i++)
         {
-            GeometryArray geom = (GeometryArray)geom_list.nextElement();
+            Transform3D local_tx = ground[i].getTransform();
+            local_tx.get(locationVector);
 
-            if(geom == null)
-                continue;
+            Shape3D i_shape = (Shape3D)ground[i].getObject();
 
-            if(intersector.rayUnknownGeometry(locationPoint,
-                                              downVector,
-                                              0,
-                                              geom,
-                                              local_tx,
-                                              wkPoint,
-                                              false))
+            Enumeration geom_list = i_shape.getAllGeometries();
+
+            while(geom_list.hasMoreElements())
             {
-                diffVec.sub(locationPoint, wkPoint);
+                GeometryArray geom = (GeometryArray)geom_list.nextElement();
 
-                if((shortest_length == -1) ||
-                   (diffVec.length() < shortest_length))
+                if(geom == null)
+                    continue;
+
+                if(intersector.rayUnknownGeometry(locationPoint,
+                                                  downVector,
+                                                  0,
+                                                  geom,
+                                                  local_tx,
+                                                  wkPoint,
+                                                  false))
                 {
-                    shortest_length = diffVec.length();
-                    intersectionPoint.set(wkPoint);
+                    diffVec.sub(locationPoint, wkPoint);
+
+                    if((shortest_length == -1) ||
+                       (diffVec.length() < shortest_length))
+                    {
+                        shortest_length = diffVec.length();
+                        intersectionPoint.set(wkPoint);
+                    }
                 }
             }
         }
@@ -875,20 +879,23 @@ public class NavigationHandler
         // in the same direction as the viewpoint.
         collisionPicker.set(locationPoint, locationEndPoint);
 
-        SceneGraphPath closest = collidables.pickClosest(collisionPicker);
+        SceneGraphPath[] closest = collidables.pickAllSorted(collisionPicker);
 
         if(closest != null)
+            return true;
+
+        for(int i = 0; i < closest.length; i++)
         {
             // OK, so we collided on the bounds, lets check on the geometry
             // directly to see if we had a real collision. Java3D just gives
             // us the collision based on the bounding box intersection. We
             // might actually have just walked through something like an
             // archway.
-            Transform3D local_tx = closest.getTransform();
+            Transform3D local_tx = closest[i].getTransform();
 
             float length = (float)collisionVector.length();
 
-            Shape3D i_shape = (Shape3D)closest.getObject();
+            Shape3D i_shape = (Shape3D)closest[i].getObject();
 
             Enumeration geom_list = i_shape.getAllGeometries();
             boolean real_collision = false;
