@@ -41,7 +41,7 @@ import org.j3d.util.ImageUtils;
  * methods that most implementations will find useful.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractTextureCache implements J3DTextureCache
 {
@@ -53,61 +53,21 @@ public abstract class AbstractTextureCache implements J3DTextureCache
         Image.class
     };
 
+    /** Texture utilities class to help do the boring stuff */
+    protected TextureCreateUtils texUtils;
+
     /**
      * Construct a new instance of the empty cache. Empty implementation,
      * does nothing.
      */
     protected AbstractTextureCache()
     {
+        texUtils = new TextureCreateUtils();
     }
 
     //------------------------------------------------------------------------
     // Local methods
     //------------------------------------------------------------------------
-
-    /**
-     * From the image component format, generate the appropriate texture
-     * format.
-     *
-     * @param comp The image component to get the value from
-     * @return The appropriate corresponding texture format value
-     */
-    protected int getTextureFormat(ImageComponent comp)
-    {
-        int ret_val = Texture.RGBA;
-
-        switch(comp.getFormat())
-        {
-            case ImageComponent.FORMAT_CHANNEL8:
-                // could also be alpha, but we'll punt for now. We really need
-                // the user to pass in this information. Need to think of a
-                // good way of doing this.
-                ret_val = Texture.LUMINANCE;
-                break;
-
-            case ImageComponent.FORMAT_LUM4_ALPHA4:
-            case ImageComponent.FORMAT_LUM8_ALPHA8:
-                ret_val = Texture.LUMINANCE_ALPHA;
-                break;
-
-            case ImageComponent.FORMAT_R3_G3_B2:
-            case ImageComponent.FORMAT_RGB:
-            case ImageComponent.FORMAT_RGB4:
-            case ImageComponent.FORMAT_RGB5:
-//            case ImageComponent.FORMAT_RGB8:
-                ret_val = Texture.RGB;
-                break;
-
-            case ImageComponent.FORMAT_RGB5_A1:
-            case ImageComponent.FORMAT_RGBA:
-            case ImageComponent.FORMAT_RGBA4:
-//            case ImageComponent.FORMAT_RGBA8:
-                ret_val = Texture.RGBA;
-                break;
-        }
-
-        return ret_val;
-    }
 
     /**
      * Load the image component from the given filename. All images are
@@ -160,62 +120,6 @@ public abstract class AbstractTextureCache implements J3DTextureCache
         if(content == null)
             throw new FileNotFoundException("No content for " + url);
 
-        BufferedImage image = null;
-
-        if(content instanceof ImageProducer)
-            image = ImageUtils.createBufferedImage((ImageProducer)content);
-        else if(content instanceof BufferedImage)
-            image = (BufferedImage)content;
-        else
-            image = ImageUtils.createBufferedImage((Image)content);
-
-        ColorModel cm = image.getColorModel();
-        boolean alpha = cm.hasAlpha();
-
-        int format = ImageComponent2D.FORMAT_RGBA;
-
-        switch(image.getType())
-        {
-            case BufferedImage.TYPE_3BYTE_BGR:
-            case BufferedImage.TYPE_BYTE_BINARY:
-            case BufferedImage.TYPE_INT_BGR:
-            case BufferedImage.TYPE_INT_RGB:
-                format = ImageComponent2D.FORMAT_RGB;
-                break;
-
-            case BufferedImage.TYPE_CUSTOM:
-                // no idea what this should be, so default to RGBA
-            case BufferedImage.TYPE_INT_ARGB:
-            case BufferedImage.TYPE_INT_ARGB_PRE:
-            case BufferedImage.TYPE_4BYTE_ABGR:
-            case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-                format = ImageComponent2D.FORMAT_RGBA;
-                break;
-
-            case BufferedImage.TYPE_BYTE_GRAY:
-            case BufferedImage.TYPE_USHORT_GRAY:
-                format = ImageComponent2D.FORMAT_CHANNEL8;
-                break;
-
-            case BufferedImage.TYPE_BYTE_INDEXED:
-                if(alpha)
-                    format = ImageComponent2D.FORMAT_RGBA;
-                else
-                    format = ImageComponent2D.FORMAT_RGB;
-                break;
-
-            case BufferedImage.TYPE_USHORT_555_RGB:
-                format = ImageComponent2D.FORMAT_RGB5;
-                break;
-
-            case BufferedImage.TYPE_USHORT_565_RGB:
-                format = ImageComponent2D.FORMAT_RGB5;
-                break;
-        }
-
-        ImageComponent2D ret_val =
-            new ImageComponent2D(format, image, true, false);
-
-        return ret_val;
+        return texUtils.create2DImageComponent(content);
     }
 }
