@@ -1,12 +1,12 @@
 #*********************************************************************
 #
-#                         (C) 2001-02 j3d.org
+#                         (C) 2001-03 j3d.org
 #                         http://code.j3d.org/
 #
-# Package makefile producing j3d-org-geom-particle.jar
+# Package makefile producing j3d-org-geom-spline.jar
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 

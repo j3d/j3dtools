@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.9 $
+# Version: $Revision: 1.10 $
 #
 #*********************************************************************
 
@@ -95,6 +95,11 @@ JAVADOC_CLASSPATH=$(CLASS_DIR)$(PATH_SEP)$(OTHER_JARLIST)
 ifdef PROJECT_CLASSPATH
     CLASSPATH := $(CLASSPATH)$(PATH_SEP)"$(PROJECT_CLASSPATH)"
     JAVADOC_CLASSPATH := $(JAVADOC_CLASSPATH)$(PATH_SEP)"$(PROJECT_CLASSPATH)"
+
+  ifndef IS_WIN32
+    CLASSPATH := $(subst ",,$(CLASSPATH))
+    JAVADOC_CLASSPATH := $(subst ",,$(JAVADOC_CLASSPATH))
+  endif
 endif
 
 #

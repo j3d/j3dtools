@@ -1,0 +1,50 @@
+#*********************************************************************
+#
+#                         (C) 2001-02 j3d.org
+#                         http://code.j3d.org/
+#
+# Package makefile producing j3d-org-util.jar
+# 
+# Author: Justin Couch
+# Version: $Revision: 1.1 $
+#
+#*********************************************************************
+
+# No need to put in subdirs here. We only do that if we want to explicitly
+# exclude some directory and then we name everything around it.
+JAR_CONTENT = org/j3d/util \
+    org/j3d/io \
+    org/j3d/util/device \
+    org/j3d/util/interpolator \
+    org/j3d/util/frustum \
+    org/j3d/device/input/spaceball \
+    org/j3d/device/input/vfx \
+    org/j3d/device/input/polhemus \
+    org/j3d/geom \
+    org/j3d/geom/terrain \
+    org/j3d/geom/particle \
+    org/j3d/geom/spline \
+    org/j3d/ui \
+    org/j3d/ui/image \
+    org/j3d/ui/navigation \
+    org/j3d/terrain \
+    org/j3d/terrain/roam \
+    org/j3d/texture \
+    org/j3d/loaders \
+    org/j3d/loaders/stl \
+    org/j3d/loaders/vterrain \
+    org/j3d/loaders/dem \
+    org/j3d/renderer/java3d/util \
+    org/j3d/renderer/java3d/ui \
+    org/j3d/renderer/java3d/navigation \
+    org/j3d/renderer/java3d/geom \
+    org/j3d/renderer/java3d/loaders \
+    org/j3d/renderer/java3d/texture \
+    org/j3d/renderer/java3d/overlay \
+    org/j3d/renderer/java3d/terrain \
+    org/j3d/renderer/java3d/terrain/roam \
+
+# Manifest file name. Stored in the make/manifest directory
+MANIFEST=java3d-all.mf
+
+include ${PROJECT_ROOT}/make/Makefile.jav

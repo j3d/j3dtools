@@ -6,16 +6,14 @@
 # Package makefile producing j3d-org-inputdevice.jar
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.3 $
+# Version: $Revision: 1.4 $
 #
 #*********************************************************************
 
 # No need to put in subdirs here. We only do that if we want to explicitly
 # exclude some directory and then we name everything around it.
 JAR_CONTENT= org/j3d/device/input/spaceball \
-	org/j3d/device/input/spaceball/driver \
-	org/j3d/device/input/spaceball/transformation \
-	org/j3d/device/input/polhemus
+    org/j3d/device/input/polhemus
 
 # Manifest file name. Stored in the make/manifest directory
 MANIFEST=inputdevice.mf
