@@ -1,7 +1,7 @@
 #*********************************************************************
 #
 #  (C) 2001 J3d.org
-# 
+#
 #*********************************************************************
 
 # Names of packages to be compiled. These are declared in the order that
@@ -11,9 +11,8 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.util.device \
 	org.j3d.util.interpolator \
 	org.j3d.util.frustum \
-	org.j3d.device.input.spaceball \
 	org.j3d.device.input.vfx \
-	org.j3d.device.input.polhemus \
+	org.j3d.device.output.elumens \
 	org.j3d.geom \
 	org.j3d.geom.terrain \
 	org.j3d.geom.particle \
@@ -89,8 +88,8 @@ NATIVE_PACKAGES = org.j3d.device.input.vfx
 JARS_3RDPARTY=
 
 # Definitions of setup information if we are making a self-executable JAR
-MAIN_CLASS     = 
-MAIN_PACKAGE   = 
+MAIN_CLASS     =
+MAIN_PACKAGE   =
 MAIN_JAR       = j3d-org.jar
 
 #*********************************************************************
@@ -112,7 +111,7 @@ BOTTOM      = '<center> \
 
 # A list of the local directories that contain other Javadoc that we want
 # to link to. For example we link to the JDK, JAXP, SAI and JUnit Javadocs
-# here. Note that these *must* be full URLs and not just local directory 
+# here. Note that these *must* be full URLs and not just local directory
 # references. If your directory path contains a space in it, you may be in
 # trouble. We haven't tested it with that. Try using double quotes inside
 # the single quotes to get the space treated in the file name
@@ -121,4 +120,4 @@ BOTTOM      = '<center> \
 #			  'file:///c:/java/jdk1.3/docs/api/' \
 #			  'file:///c:/java/j3d/1.2.1/html/'
 
-include $(PROJECT_ROOT)/make/Makefile.jav 
+include $(PROJECT_ROOT)/make/Makefile.jav
