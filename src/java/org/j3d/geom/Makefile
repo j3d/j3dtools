@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.10 $
+# Version: $Revision: 1.11 $
 #
 #*********************************************************************
 
@@ -26,6 +26,7 @@ SOURCE = GeometryData.java \
   CylinderGenerator.java \
   TorusGenerator.java \
   SpringGenerator.java \
+  SuperShapeGenerator.java \
   IntersectionUtils.java \
   Axis.java \
   Box.java \
