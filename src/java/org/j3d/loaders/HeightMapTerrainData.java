@@ -17,11 +17,12 @@ import javax.media.j3d.Texture;
 import javax.vecmath.Point2d;
 
 // Application specific imports
-import org.j3d.terrain.TerrainData;
+import org.j3d.terrain.AbstractStaticTerrainData;
+import org.j3d.util.interpolator.ColorInterpolator;
 
 /**
- * Generalised implementation of the {@link TerrainData} for any file format
- * or loader that supports a grid based data structure.
+ * Generalised implementation of the {@link org.j3d.terrain.TerrainData} for
+ * any file format or loader that supports a static grid based data structure.
  * <p>
  *
  * Supporting the height data source methods requires a bit of assumption about
@@ -41,13 +42,13 @@ import org.j3d.terrain.TerrainData;
  * place one here.
  * <p>
  *
- * Tiled textures are not supported and requests for this just return the
- * entire texture.
+ * If a color interpolator is not provided, then color is not supported in this
+ * terrain (unless set by some implementing class).
  *
  * @author  Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
-public class HeightMapTerrainData implements TerrainData
+public class HeightMapTerrainData extends AbstractStaticTerrainData
 {
     // Global Implementation Note:
     // There is a lot of mixing of single and double precision floating point
@@ -65,21 +66,13 @@ public class HeightMapTerrainData implements TerrainData
     /** The height values */
     private float[][] heightMap;
 
-    /** The real world distance between each grid position */
-    private Point2d gridStep;
-
     /** The texture to supply to the user of this class */
     private Texture texture = null;
 
+    /** The colour interpolator used by this class */
+    private ColorInterpolator colorInterp;
+
     /** Flag indicating if texCoords should assume tiling */
-    private boolean hasTiledTextures;
-
-    /** The number of points in the width */
-    private final int gridWidth;
-
-    /** The number of points in the depth */
-    private final int gridDepth;
-
     /**
      * Create a new instance that sources the data from the given loader.
      * It assumes that the loader has already loaded the data from the
@@ -90,9 +83,10 @@ public class HeightMapTerrainData implements TerrainData
     public HeightMapTerrainData(HeightMapLoader loader)
     {
         heightMap = loader.getHeights();
-        gridStep = loader.getGridStep();
+        Point2d steps = loader.getGridStep();
 
-        hasTiledTextures = false;
+        gridStepX = steps.x;
+        gridStepY = steps.y;
 
         gridDepth = heightMap.length;
         gridWidth = heightMap[0].length;
@@ -138,9 +132,8 @@ public class HeightMapTerrainData implements TerrainData
             gridWidth = heightMap[0].length;
         }
 
-        gridStep = new Point2d(stepDetails);
-
-        hasTiledTextures = false;
+        gridStepX = stepDetails.x;
+        gridStepY = stepDetails.y;
     }
 
     //----------------------------------------------------------
@@ -159,8 +152,8 @@ public class HeightMapTerrainData implements TerrainData
     {
         // work out where we are in the grid first. Rememeber that we have
         // to convert between coordinate systems
-        float rel_x_pos = x / (float)gridStep.x;
-        float rel_y_pos = z / (float)gridStep.y;
+        float rel_x_pos = x / (float)gridStepX;
+        float rel_y_pos = z / (float)gridStepY;
 
         // fetch the coords of the four heights surrounding this point
         int x_coord = (int)Math.floor(rel_x_pos);
@@ -198,9 +191,40 @@ public class HeightMapTerrainData implements TerrainData
      */
     public void getCoordinate(float[] coord, int gridX, int gridY)
     {
-        coord[0] = gridX * (float)gridStep.x;
+        coord[0] = gridX * (float)gridStepX;
         coord[1] = heightMap[gridX][gridY];
-        coord[2] = -gridY * (float)gridStep.y;
+        coord[2] = -gridY * (float)gridStepY;
+    }
+
+    /**
+     * Get the coordinate with all the information - texture and colors.
+     *
+     * @param coord he x, y, and z coordinates will be placed in the first
+     *   three elements of the array.
+     * @param tex 2D coordinates are placed in the first two elements
+     * @param color 3 component colors are placed in the first 3 elements
+     * @param gridX The X coordinate of the position in the grid
+     * @param gridY The Y coordinate of the position in the grid
+     */
+    public void getCoordinate(float[] coord,
+                              float[] tex,
+                              float[] color,
+                              int gridX,
+                              int gridY)
+    {
+        float height = heightMap[gridX][gridY];
+
+        coord[0] = gridX * (float)gridStepX;
+        coord[1] = height;
+        coord[2] = -gridY * (float)gridStepY;
+
+        tex[0] = ((float)gridX) / gridWidth;
+        tex[1] = ((float)gridY) / gridDepth;
+
+        float[] rgb = colorInterp.floatRGBValue(height);
+        color[0] = rgb[0];
+        color[1] = rgb[1];
+        color[2] = rgb[2];
     }
 
     /**
@@ -219,19 +243,12 @@ public class HeightMapTerrainData implements TerrainData
                                          int gridX,
                                          int gridY)
     {
-        coord[0] = gridX * (float)gridStep.x;
+        coord[0] = gridX * (float)gridStepX;
         coord[1] = heightMap[gridX][gridY];
-        coord[2] = -gridY * (float)gridStep.y;
+        coord[2] = -gridY * (float)gridStepY;
 
-        if(!hasTiledTextures)
-        {
-            textureCoord[0] = ((float)gridX) / heightMap[0].length;
-            textureCoord[1] = ((float)gridY) / heightMap.length;
-        }
-        else
-        {
-            // do something here.
-        }
+        textureCoord[0] = ((float)gridX) / gridWidth;
+        textureCoord[1] = ((float)gridY) / gridDepth;
     }
 
     /**
@@ -250,48 +267,16 @@ public class HeightMapTerrainData implements TerrainData
                                        int gridX,
                                        int gridY)
     {
-        coord[0] = gridX * (float)gridStep.x;
-        coord[1] = heightMap[gridX][gridY];
-        coord[2] = -gridY * (float)gridStep.y;
+        float height = heightMap[gridX][gridY];
 
-        color[0] = 0;
-        color[1] = 0.5f;
-        color[2] = 0;
-    }
+        coord[0] = gridX * (float)gridStepX;
+        coord[1] = height;
+        coord[2] = -gridY * (float)gridStepY;
 
-    /**
-     * Check to see if this terrain data has any texturing at all - either
-     * tiled or simple.
-     *
-     * @return true If a texture is available
-     */
-    public boolean hasTexture()
-    {
-        return (texture != null);
-    }
-
-    /**
-     * Notify the terrain data handler that when generating texture coordinates
-     * that we are using tiled textures and that the coordinates generated
-     * should be based on the tiled versions of the images rather than a single
-     * large texture.
-     *
-     * @param enabled True to set the mode to tiled, false for single
-     * @see #getCoordinateFromGrid(float[], float[], int, int)
-     */
-    public void setTiledTextures(boolean enabled)
-    {
-        hasTiledTextures = enabled;
-    }
-
-    /**
-     * Check to see if the texture coordinates are being tiled.
-     *
-     * @return true if texture coordinates are currently being tiled
-     */
-    public boolean isTiledTextures()
-    {
-        return hasTiledTextures;
+        float[] rgb = colorInterp.floatRGBValue(height);
+        color[0] = rgb[0];
+        color[1] = rgb[1];
+        color[2] = rgb[2];
     }
 
     /**
@@ -302,20 +287,6 @@ public class HeightMapTerrainData implements TerrainData
      * @return The texture instance to use or null
      */
     public Texture getTexture()
-    {
-        return texture;
-    }
-
-    /**
-     * Fetch the texture or part of a texture that can be applied to the
-     * sub-region of the overall object. This is to allow for texture tiling
-     * of very large texture images or terrain items. If there is no texture
-     * or no texture for that region, then this should return null.
-     *
-     * @param bounds The bounds of the region based on the grid positions
-     * @return The texture object suitable for that bounds or null
-     */
-    public Texture getTexture(Rectangle bounds)
     {
         return texture;
     }
@@ -332,46 +303,6 @@ public class HeightMapTerrainData implements TerrainData
         return heightMap[gridX][gridY];
     }
 
-    /**
-     * Get the width (number of points on the Y axis) of the grid.
-     *
-     * @return The number of points in the width if the grid
-     */
-    public int getGridWidth()
-    {
-        return heightMap[0].length;
-    }
-
-    /**
-     * Get the depth (number of points on the X axis) of the grid.
-     *
-     * @return The number of points in the depth of the grid
-     */
-    public int getGridDepth()
-    {
-        return gridDepth;
-    }
-
-    /**
-     * Get the real world distance between consecutive X values in the grid.
-     *
-     * @return The distance between each step of the grid
-     */
-    public double getGridXStep()
-    {
-        return gridStep.x;
-    }
-
-    /**
-     * Get the real world distance between consecutive Y values in the grid.
-     *
-     * @return The distance between each step of the grid
-     */
-    public double getGridYStep()
-    {
-        return gridStep.y;
-    }
-
     //----------------------------------------------------------
     // Local Methods
     //----------------------------------------------------------
@@ -385,5 +316,22 @@ public class HeightMapTerrainData implements TerrainData
     public void setTexture(Texture tex)
     {
         texture = tex;
+
+        textureAvailable = (texture != null);
+    }
+
+    /**
+     * Set up a height color ramp to provide colour information. This should
+     * be set before passing the terrain data to a rendering algorithm as it
+     * sets the hasColor() flag to true. Heights should be based on sea-level
+     * as value zero. A value of null clears the current reference.
+     *
+     * @param interp The interpolator instance to use
+     */
+    public void setColorInterpolator(ColorInterpolator interp)
+    {
+        colorInterp = interp;
+
+        colorAvailable = (colorInterp != null);
     }
 }
