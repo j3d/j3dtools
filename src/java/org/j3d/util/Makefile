@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.util directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.8 $
+# Version: $Revision: 1.9 $
 #
 #*********************************************************************
 
@@ -17,13 +17,16 @@ PACKAGE = org.j3d.util
 SOURCE = ErrorHandler.java \
 		 CharHashMap.java \
 		 IntHashMap.java \
+		 FloatHashMap.java \
+		 DoubleHashMap.java \
 		 Queue.java \
          SAXErrorHandler.java \
          SAXEntityResolver.java	\
 		 ImageLoader.java \
 		 ColorUtils.java \
 		 ImageGenerator.java \
-		 ImageUtils.java
+		 ImageUtils.java \
+		 UserSupplementData.java \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
