@@ -17,8 +17,8 @@ package org.j3d.terrain.roam;
  * up the class with the right flags helps to reduce the amount of data that is
  * kept around.
  *
- * @author  Paul Byrne
- * @version $Revision: 1.3 $
+ * @author  Justin Couch, based on original ideas by Paul Byrne
+ * @version $Revision: 1.4 $
  */
 class VertexData
 {
@@ -63,8 +63,6 @@ class VertexData
             colors = new byte[coords.length];
 
         byte type = COORD_ONLY;
-
-System.out.println("new vertex data. texture " + hasTexture + " color " + hasColor);
 
         type += hasColor ? 1 : 0;
         type += hasTexture ? 2 : 0;
