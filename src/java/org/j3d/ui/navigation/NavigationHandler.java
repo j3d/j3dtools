@@ -469,6 +469,19 @@ public class NavigationHandler
     }
 
     /**
+     * Fetch the behaviour used to do the timer management for scenegraph
+     * updates during navigation. If this behavior is not fetched and added
+     * to a live scene graph, navigation will not happen! A single instance
+     * of the behaviour is used during the entire lifetime of this instance.
+     *
+     * @return The behavior used to control updates
+     */
+    public Behavior getTimerBehavior()
+    {
+        return frameTimer;
+    }
+
+    /**
      * Set the view and it's related transform group to use. The transform
      * group must allow for reading the local to Vworld coordinates so that
      * we can accurately implement terrain following.
