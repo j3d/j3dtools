@@ -24,7 +24,7 @@ package org.j3d.loaders.discreet;
  * information, such as vertices, materials etc.
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ObjectMesh
 {
@@ -59,5 +59,6 @@ public class ObjectMesh
     {
         blocks = new ObjectBlock[8];
         materials = new MaterialBlock[4];
+        masterScale = 1;
     }
 }
