@@ -42,7 +42,7 @@ import javax.vecmath.Vector3d;
  * </pre>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TextureOverlay implements Overlay, ComponentListener
 {
@@ -244,16 +244,9 @@ public class TextureOverlay implements Overlay, ComponentListener
 
         PolygonAttributes pa;
         TextureAttributes ta;
-        TransparencyAttributes trans = null;
 
         // define the rendering attributes used by all sub-overlays
         renderAttributes = new RenderingAttributes();
-        if(clipAlpha)
-        {
-            renderAttributes.setAlphaTestFunction(RenderingAttributes.NOT_EQUAL);
-            renderAttributes.setAlphaTestValue(0);
-        }
-
         renderAttributes.setDepthBufferEnable(false);
         renderAttributes.setDepthBufferWriteEnable(true);
         renderAttributes.setIgnoreVertexColors(true);
@@ -270,26 +263,19 @@ public class TextureOverlay implements Overlay, ComponentListener
         ta = new TextureAttributes();
         ta.setTextureMode(TextureAttributes.REPLACE);
         ta.setPerspectiveCorrectionMode(TextureAttributes.FASTEST);
+        ta.setTextureBlendColor(new Color4f(0, 0, 0, 1));
 
-        // if this needs to support transparancy set up the blend
-        if(hasAlpha)
-        {
-            trans =
-                new TransparencyAttributes(TransparencyAttributes.BLENDED,
-                                           1.0f);
-            ta.setTextureBlendColor(new Color4f(0, 0, 0, 1));
-        }
+        // Set up the blend to support transparency
+        TransparencyAttributes trans =
+            new TransparencyAttributes(TransparencyAttributes.BLENDED, 1.0f);
 
         // Now let's construct the geometry to match
         appearance = new Appearance();
         appearance.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
-
         appearance.setPolygonAttributes(pa);
         appearance.setRenderingAttributes(renderAttributes);
         appearance.setTextureAttributes(ta);
-
-        if(trans != null)
-            appearance.setTransparencyAttributes(trans);
+        appearance.setTransparencyAttributes(trans);
 
         if(texture != null)
             appearance.setTexture(texture);
@@ -354,7 +340,6 @@ public class TextureOverlay implements Overlay, ComponentListener
     {
         return overlayBounds;
     }
-
 
     /**
      * Check to see if the point passed in is contained within the bounds of
@@ -619,11 +604,6 @@ public class TextureOverlay implements Overlay, ComponentListener
         {
             if(componentSize.width == 0 || componentSize.height == 0)
                 return;
-
-//            OverlayUtilities.repositonBounds(overlayBounds,
-//                                             relativePosition,
-//                                             componentSize,
-//                                             offset);
 
             // get the field of view and then calculate the width in meters of the
             // screen
