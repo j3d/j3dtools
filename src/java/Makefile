@@ -4,12 +4,15 @@
 # 
 #*********************************************************************
 
-PACKAGES = org.j3d.util \
+# Names of packages to be compiled. These are declared in the order that
+# they are to be compiled in. We create one at a time
+BUILD_ORDER = org.j3d.util \
 	   org.j3d.util.device \
 	   org.j3d.util.interpolator \
 	   org.j3d.device.input \
        org.j3d.geom \
        org.j3d.geom.terrain \
+ 	   org.j3d.geom.overlay \
 	   org.j3d.ui \
 	   org.j3d.ui.image \
 	   org.j3d.ui.navigation \
@@ -20,14 +23,28 @@ PACKAGES = org.j3d.util \
 	   org.j3d.loaders.ac3d.parser.handlers \
 	   org.j3d.loaders.ac3d
 
-#	   org.j3d.geom.overlay \
 
-NODOC_PACKAGES = \
 
+# Names of packages that we want included in the javadoc
+JAVADOC_PACKAGES = org.j3d.util \
+	   org.j3d.util.device \
+	   org.j3d.util.interpolator \
+	   org.j3d.device.input \
+       org.j3d.geom \
+       org.j3d.geom.terrain \
+ 	   org.j3d.geom.overlay \
+	   org.j3d.ui \
+	   org.j3d.ui.image \
+	   org.j3d.ui.navigation \
+	   org.j3d.loaders.ac3d
+
+# Names of JAR files we want to create
 JARS = j3d-org.jar
 
+# 3rd party libraries that need including.
 JARS_3RDPARTY=
 
+# Definitions of setup information if we are making a self-executable JAR
 MAIN_CLASS     = 
 MAIN_PACKAGE   = 
 MAIN_JAR       = j3d-org.jar
