@@ -12,12 +12,9 @@ package org.j3d.geom.particle;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 
-import javax.media.j3d.Texture;
-import javax.media.j3d.Appearance;
 import javax.media.j3d.Node;
-
-import javax.vecmath.Vector3f;
 
 /**
  * Abstract ParticleSystem. A ParticleSystem managed a List of Particles
@@ -28,10 +25,18 @@ import javax.vecmath.Vector3f;
  * requirement is that is create a Node to be added to the scenegraph.
  *
  * @author Daniel Selman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
+   /**
+    * Name of the environment property that holds the texture to use
+    * on the particle objects. The value may be either a string, which is a
+    * filename, relative to the CLASSPATH, or an instance of a J3D
+    * {@link javax.media.j3d.Texture} object.
+    */
+   public static final String PARTICLE_TEXTURE = "texture";
+
    private int systemType;
    protected List particles;
    protected int particleCount;
@@ -42,9 +47,13 @@ public abstract class ParticleSystem implements ParticleFactory
 
    protected boolean running = false;
 
+   /** The environment entries pass to the system for initialisation. */
+   protected Map environment;
+
    public ParticleSystem( int systemType, Map environment )
    {
        this.systemType = systemType;
+       this.environment = new HashMap(environment);
        particleFactory = this;
    }
 

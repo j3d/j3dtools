@@ -9,11 +9,8 @@
 
 package org.j3d.geom.particle;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 
-import javax.media.j3d.Texture;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.OrientedShape3D;
 
@@ -23,87 +20,156 @@ import javax.media.j3d.Appearance;
 import javax.media.j3d.Geometry;
 import javax.media.j3d.Node;
 
-import javax.vecmath.Vector3f;
-import javax.vecmath.TexCoord2f;
-import javax.vecmath.Point3f;
-
 /**
- * Abstract ParticleSystem for handling ByRef GeometryArrays
- * within the entire geometry for the ParticleSystem represented
- * by a single Shape3D.
+ * Abstract ParticleSystem for handling ByRef GeometryArrays.
+ * <p>
+ *
+ * The entire geometry for the ParticleSystem represented
+ * by a single Shape3D. When an update request is received, the particles
+ * update the position and color information in the arrays provided by this
+ * class and are updated in the underlying geometry.
  *
  * @author Daniel Selman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public abstract class ByRefParticleSystem extends ParticleSystem implements GeometryUpdater
+public abstract class ByRefParticleSystem extends ParticleSystem
+    implements GeometryUpdater
 {
-   protected GeometryArray geometryArray;
+    /** The geometry created for this system */
+    protected GeometryArray geometryArray;
 
-   protected double positionRefArray[];
-   protected float textureCoordRefArray[];
-   protected float colorRefArray[];
-   protected float normalRefArray[];
+    /** Array containing the current position coordinates */
+    protected double positionRefArray[];
 
-   protected Shape3D shape = new OrientedShape3D();
+    /** Array containing the current texture coordinates */
+    protected float textureCoordRefArray[];
 
-   public ByRefParticleSystem( int systemType, ParticleInitializer particleInitializer, int particleCount, Map environment )
-   {
-       super( systemType, environment );
+    /** Array containing the current color values */
+    protected float colorRefArray[];
 
-       initializeArrays( particleCount );
-       createParticles( particleInitializer, particleCount );
+    /** Array containing the current normals */
+    protected float normalRefArray[];
 
-       geometryArray = createGeometryArray();
-       geometryArray.setCapability( GeometryArray.ALLOW_REF_DATA_WRITE );
+    /** The shape containing the geometry */
+    protected Shape3D shape;
 
-       shape.setGeometry( geometryArray );
-       shape.setAppearance( createAppearance() );
+    /**
+     * Create a new particle system that represents the given type.
+     *
+     * @param systemType An identifier describing the current system type
+     * @param particleInitializer Initialised to create the particles
+     * @param environment Environment setup information
+     * @param environment Environment setup information
+     */
+    public ByRefParticleSystem( int systemType,
+                                ParticleInitializer particleInitializer,
+                                int particleCount,
+                                Map environment )
+    {
+        super( systemType, environment );
 
-       shape.setCollidable( false );
-       shape.setPickable( false );
-       shape.setBoundsAutoCompute( false );
-   }
+        shape = new OrientedShape3D();
+        initializeArrays( particleCount );
+        createParticles( particleInitializer, particleCount );
 
-   public Node getNode()
-   {
-       return shape;
-   }
+        geometryArray = createGeometryArray();
+        geometryArray.setCapability( GeometryArray.ALLOW_REF_DATA_WRITE );
 
-   public abstract GeometryArray createGeometryArray();
-   public abstract Appearance createAppearance();
-   protected abstract int getVertexCount();
+        shape.setGeometry( geometryArray );
+        shape.setAppearance( createAppearance() );
 
-   public boolean update()
-   {
-       geometryArray.updateData( this );
-       return running;
-   }
+        shape.setCollidable( false );
+        shape.setPickable( false );
+        shape.setBoundsAutoCompute( false );
+    }
 
-   public void updateData( Geometry geometry )
-   {
-       GeometryArray geometryArray = (GeometryArray) geometry;
+    /**
+     * Fetch the scene graph node that represents the particle system.
+     *
+     * @return The shape containing the particles
+     */
+    public Node getNode()
+    {
+        return shape;
+    }
 
-       for( int n = particleCount-1; n >= 0; n-- )
-       {
+    /**
+     * Request to create the geometry needed by this system.
+     *
+     * @return The object representing the geometry
+     */
+    public abstract GeometryArray createGeometryArray();
+
+    /**
+     * Create the appearance used to render the objects with. This appearance
+     * should have all appropriate information set - including textures.
+     *
+     * @return The appearance object to use with this system
+     */
+    public abstract Appearance createAppearance();
+
+    /**
+     * Fetch the number of vertices used in this geometry. Value should
+     * always be non-negative.
+     *
+     * @return The number of vertices
+     */
+    protected abstract int getVertexCount();
+
+
+    /**
+     * Request to force an update of the geometry now.
+     *
+     * @return true if the system is currently running
+     */
+    public boolean update()
+    {
+        geometryArray.updateData( this );
+        return running;
+    }
+
+    /**
+     * Update request on the geometry data that is accessed by reference.
+     *
+     * @param geometry The geometry object being updated
+     */
+    public void updateData( Geometry geometry )
+    {
+        GeometryArray geometryArray = (GeometryArray) geometry;
+
+        for( int n = particleCount-1; n >= 0; n-- )
+        {
            Particle particle = (Particle) particles.get( n );
            particle.incAge();
            running |= updateParticle( n, particle );
-       }
+        }
 
-       geometryArray.setCoordRefDouble( positionRefArray );
-       geometryArray.setColorRefFloat( colorRefArray );
-       geometryArray.setNormalRefFloat( normalRefArray );
-       geometryArray.setTexCoordRefFloat( 0, textureCoordRefArray );
-   }
+        geometryArray.setCoordRefDouble( positionRefArray );
+        geometryArray.setColorRefFloat( colorRefArray );
+        geometryArray.setNormalRefFloat( normalRefArray );
+        geometryArray.setTexCoordRefFloat( 0, textureCoordRefArray );
+    }
 
-   synchronized protected void initializeArrays( int particleCount )
-   {
-       if ( positionRefArray == null )
-       {
-           positionRefArray = new double[ particleCount * getVertexCount() * ByRefParticle.NUM_COORDS ];
-           colorRefArray = new float [ particleCount * getVertexCount() * ByRefParticle.NUM_COLORS ];
-           normalRefArray = new float [ particleCount * getVertexCount() * ByRefParticle.NUM_NORMALS ];
-           textureCoordRefArray = new float[ particleCount * getVertexCount() * ByRefParticle.NUM_TEXTURE_COORDS ];
-       }
-   }
+    /**
+     * Set up the arrays used internally.
+     *
+     * @param particleCount The number of particles in use
+     */
+    synchronized protected void initializeArrays( int particleCount )
+    {
+        if ( positionRefArray == null )
+        {
+            int count = getVertexCount();
+
+            int pos = particleCount * count * ByRefParticle.NUM_COORDS;
+            int col = particleCount * count * ByRefParticle.NUM_COLORS;
+            int norm = particleCount * count * ByRefParticle.NUM_NORMALS;
+            int tex = particleCount * count * ByRefParticle.NUM_TEXTURE_COORDS;
+
+            positionRefArray = new double[ pos ];
+            colorRefArray = new float [ col ];
+            normalRefArray = new float [ norm ];
+            textureCoordRefArray = new float[ tex ];
+        }
+    }
 }
