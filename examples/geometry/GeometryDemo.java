@@ -16,11 +16,14 @@ import java.awt.event.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 // Application Specific imports
 import org.j3d.geom.*;
 
+import org.j3d.texture.TextureCache;
+import org.j3d.texture.TextureCacheFactory;
 import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationState;
 
@@ -33,7 +36,7 @@ import org.j3d.ui.navigation.NavigationState;
  * of the rendering attributes like the face set.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class GeometryDemo extends DemoFrame
     implements ActionListener, ItemListener
@@ -67,8 +70,8 @@ public class GeometryDemo extends DemoFrame
     /** Menu item to select front or back face culling */
     private CheckboxMenuItem cullingMenuItem;
 
-    /** Menu item to select line type or solid rendering */
-    private CheckboxMenuItem lineStripMenuItem;
+    /** Menu item to select textured rendering or no */
+    private CheckboxMenuItem textureMenuItem;
 
     /** Menu item that is the current geometry generation type */
     private CheckboxMenuItem currentPolygonItem;
@@ -80,13 +83,16 @@ public class GeometryDemo extends DemoFrame
     private Menu polygonMenu;
 
     /** Flag indicating if we want real wireframe or just no faces */
-    private boolean useLineStrip;
+    private boolean useTexture;
 
     /** The last generator selected */
     private GeometryGenerator currentGenerator;
 
     /** The current type of geometry to generate for the primitive */
     private int geometryType;
+
+    /** Texture object for the current appearance */
+    private Texture2D texture;
 
     /**
      * Construct a new demo with no geometry currently showing, but the
@@ -133,16 +139,16 @@ public class GeometryDemo extends DemoFrame
         geom_menu.add(spring_menu);
         geom_menu.add(mobius_menu);
 
-        lineStripMenuItem = new CheckboxMenuItem("Use Line Strip Array");
+        textureMenuItem = new CheckboxMenuItem("Use texture");
         lightingMenuItem = new CheckboxMenuItem("Use Lighting");
 
-        lineStripMenuItem.setState(false);
+        textureMenuItem.setState(false);
         lightingMenuItem.setState(true);
 
-        lineStripMenuItem.addItemListener(this);
+        textureMenuItem.addItemListener(this);
         lightingMenuItem.addItemListener(this);
 
-        renderingMenu.add(lineStripMenuItem);
+        renderingMenu.add(textureMenuItem);
         renderingMenu.add(lightingMenuItem);
 
         CheckboxMenuItem triangles = new CheckboxMenuItem("Triangles");
@@ -235,7 +241,7 @@ public class GeometryDemo extends DemoFrame
                                         NavigationState.PAN_STATE);
 
         // The rendering menu
-        useLineStrip = false;
+        useTexture = false;
 
         geometryType = GeometryData.QUADS;
         currentPolygonItem = quads;
@@ -291,9 +297,9 @@ public class GeometryDemo extends DemoFrame
             {
                 targetMaterial.setLightingEnable(on);
             }
-            else if(src == lineStripMenuItem)
+            else if(src == textureMenuItem)
             {
-                useLineStrip = on;
+                useTexture = on;
                 rebuildGeometry();
             }
         }
@@ -342,81 +348,96 @@ public class GeometryDemo extends DemoFrame
         }
 
         int format = GeometryArray.COORDINATES | GeometryArray.NORMALS;
+
+        if(useTexture)
+            format |= GeometryArray.TEXTURE_COORDINATE_2;
+
         GeometryArray geom = null;
         IndexedGeometryArray i_geom;
 
-        if(!useLineStrip)
+        switch(geometryType)
         {
-            switch(geometryType)
-            {
-                case GeometryData.TRIANGLES:
-                    geom = new TriangleArray(data.vertexCount, format);
-                    break;
+            case GeometryData.TRIANGLES:
+                geom = new TriangleArray(data.vertexCount, format);
+                break;
 
-                case GeometryData.QUADS:
-                    geom = new QuadArray(data.vertexCount, format);
-                    break;
+            case GeometryData.QUADS:
+                geom = new QuadArray(data.vertexCount, format);
+                break;
 
-                case GeometryData.INDEXED_QUADS:
+            case GeometryData.INDEXED_QUADS:
 
-                    i_geom = new IndexedQuadArray(data.vertexCount,
+                i_geom = new IndexedQuadArray(data.vertexCount,
+                                              format,
+                                              data.indexesCount);
+                i_geom.setCoordinateIndices(0, data.indexes);
+                i_geom.setNormalIndices(0, data.indexes);
+                if(useTexture)
+                    i_geom.setTextureCoordinateIndices(0, 0, data.indexes);
+
+                geom = i_geom;
+                break;
+
+            case GeometryData.INDEXED_TRIANGLES:
+
+                i_geom = new IndexedTriangleArray(data.vertexCount,
                                                   format,
                                                   data.indexesCount);
-                    i_geom.setCoordinateIndices(0, data.indexes);
-                    i_geom.setNormalIndices(0, data.indexes);
-                    geom = i_geom;
-                    break;
-                case GeometryData.INDEXED_TRIANGLES:
+                i_geom.setCoordinateIndices(0, data.indexes);
+                i_geom.setNormalIndices(0, data.indexes);
+                if(useTexture)
+                    i_geom.setTextureCoordinateIndices(0, 0, data.indexes);
 
-                    i_geom = new IndexedTriangleArray(data.vertexCount,
-                                                      format,
-                                                      data.indexesCount);
-                    i_geom.setCoordinateIndices(0, data.indexes);
-                    i_geom.setNormalIndices(0, data.indexes);
-                    geom = i_geom;
-                    break;
+                geom = i_geom;
+                break;
 
-                case GeometryData.TRIANGLE_STRIPS:
-                    geom = new TriangleStripArray(data.vertexCount,
-                                                  format,
-                                                  data.stripCounts);
-                    break;
+            case GeometryData.TRIANGLE_STRIPS:
+                geom = new TriangleStripArray(data.vertexCount,
+                                              format,
+                                              data.stripCounts);
+                break;
 
-                case GeometryData.TRIANGLE_FANS:
-                    geom = new TriangleFanArray(data.vertexCount,
-                                                format,
-                                                data.stripCounts);
-                    break;
+            case GeometryData.TRIANGLE_FANS:
+                geom = new TriangleFanArray(data.vertexCount,
+                                            format,
+                                            data.stripCounts);
+                break;
 
-                case GeometryData.INDEXED_TRIANGLE_STRIPS:
-                    i_geom = new IndexedTriangleStripArray(data.vertexCount,
-                                                           format,
-                                                           data.indexesCount,
-                                                           data.stripCounts);
-                    i_geom.setCoordinateIndices(0, data.indexes);
-                    i_geom.setNormalIndices(0, data.indexes);
-                    geom = i_geom;
-                    break;
+            case GeometryData.INDEXED_TRIANGLE_STRIPS:
+                i_geom = new IndexedTriangleStripArray(data.vertexCount,
+                                                       format,
+                                                       data.indexesCount,
+                                                       data.stripCounts);
+                i_geom.setCoordinateIndices(0, data.indexes);
+                i_geom.setNormalIndices(0, data.indexes);
+                if(useTexture)
+                    i_geom.setTextureCoordinateIndices(0, 0, data.indexes);
 
-                case GeometryData.INDEXED_TRIANGLE_FANS:
-                    i_geom = new IndexedTriangleFanArray(data.vertexCount,
-                                                           format,
-                                                           data.indexesCount,
-                                                           data.stripCounts);
-                    i_geom.setCoordinateIndices(0, data.indexes);
-                    i_geom.setNormalIndices(0, data.indexes);
-                    geom = i_geom;
-                    break;
-            }
-        }
-        else
-        {
-//            int[] strip_counts = currentGenerator.generateStripCounts();
-//            geom = new LineStripArray(data.vertexCount, format, strip_counts);
+                geom = i_geom;
+                break;
+
+            case GeometryData.INDEXED_TRIANGLE_FANS:
+                i_geom = new IndexedTriangleFanArray(data.vertexCount,
+                                                       format,
+                                                       data.indexesCount,
+                                                       data.stripCounts);
+                i_geom.setCoordinateIndices(0, data.indexes);
+                i_geom.setNormalIndices(0, data.indexes);
+
+                if(useTexture)
+                    i_geom.setTextureCoordinateIndices(0, 0, data.indexes);
+
+                geom = i_geom;
+                break;
         }
 
         geom.setCoordinates(0, data.coordinates);
         geom.setNormals(0, data.normals);
+
+        if(useTexture)
+            geom.setTextureCoordinates(0, 0, data.textureCoordinates);
+
+        texture.setEnable(useTexture);
 
         targetShape.setGeometry(geom);
     }
@@ -478,6 +499,16 @@ public class GeometryDemo extends DemoFrame
         targetPolyAttr.setCapability(PolygonAttributes.ALLOW_NORMAL_FLIP_WRITE);
         targetPolyAttr.setPolygonMode(targetPolyAttr.POLYGON_FILL);
         blue_appearance.setPolygonAttributes(targetPolyAttr);
+
+        try {
+            TextureCache t_cache = TextureCacheFactory.getCache();
+            texture = (Texture2D)t_cache.fetchTexture("globe_map_2.jpg");
+            texture.setCapability(Texture.ALLOW_ENABLE_WRITE);
+            blue_appearance.setTexture(texture);
+        } catch(IOException ioe) {
+            System.out.println("error loading texture " + ioe);
+
+        }
 
         targetShape = new Shape3D();
         targetShape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
