@@ -12,13 +12,20 @@
 
 package org.j3d.util;
 
+
+// Standard imports
+import java.util.Arrays;
+
+// Application specific imports
+// None
+
 /**
  * A hash map that uses primitive ints for the key rather than objects.
  * <P>
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @see java.util.HashMap
  */
 public class IntHashMap
@@ -244,6 +251,41 @@ public class IntHashMap
             }
         }
         return null;
+    }
+
+    /**
+     * Returns an array with all keys. The order of keys is unspecified.
+     *
+     * @return  the array with the keys
+     */
+    public int[] keySet()
+    {
+        int[] result = new int[count];
+        int i = 0;
+
+        Entry[] tab = table;
+        for (int index = tab.length ; index-- > 0 ;)
+        {
+            for (Entry e = tab[index] ; e != null ; e = e.next)
+            {
+                result[i++] = e.key;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a sorted array with all keys. The keys are sorted ascending.
+     *
+     * @return  the sorted array with the keys
+     */
+    public int[] keySetSorted()
+    {
+        int[] result = keySet();
+        Arrays.sort(result);
+
+        return result;
     }
 
     /**
