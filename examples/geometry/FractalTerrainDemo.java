@@ -33,7 +33,7 @@ import org.j3d.ui.navigation.NavigationState;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class FractalTerrainDemo extends DemoFrame
     implements ActionListener, ItemListener
@@ -190,7 +190,7 @@ public class FractalTerrainDemo extends DemoFrame
         add(p1, BorderLayout.SOUTH);
 
         terrainGenerator =
-            new FractalTerrainGenerator(30, 30, 10, true, 0, 4, 2, 0);
+            new FractalTerrainGenerator(30, 30, 10, true, 0, 4, 2, 0, null);
 
         viewHandler = new MouseViewHandler();
         viewHandler.setCanvas(canvas);
