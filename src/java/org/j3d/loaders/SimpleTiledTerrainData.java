@@ -34,8 +34,8 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * If a color interpolator is not provided, then color is not supported in this
  * terrain (unless set by some implementing class).
  *
- * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @author  Justin Couch, Alan Hudson
+ * @version $Revision: 1.2 $
  */
 public class SimpleTiledTerrainData extends AbstractTiledTerrainData
 {
@@ -337,28 +337,120 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
     public void getCoordinateWithTexture(float[] coord,
                                          float[] textureCoord,
                                          int gridX,
-                                         int gridY)
+                                         int gridY,
+                                         int patchX,
+                                         int patchY)
     {
         int g_x = 0;
         int g_y = 0;
 
-        if(gridX >= gridWidth)
-            g_x = gridWidth - 1;
-        else if(gridX > 0)
-            g_x = gridX;
+        if (tileGenerator == null)
+        {
+            if(gridX >= gridWidth)
+                g_x = gridWidth - 1;
+            else if(gridX > 0)
+                g_x = gridX;
 
-        if(gridY >= gridDepth)
-            g_y = gridDepth - 1;
-        else if(gridY > 0)
-            g_y = gridY;
+            if(gridY >= gridDepth)
+                g_y = gridDepth - 1;
+            else if(gridY > 0)
+                g_y = gridY;
 
-        coord[1] = heightMap[g_x][g_y];
+            coord[1] = heightMap[g_x][g_y];
 
-        coord[0] = gridX * (float)gridStepX;
-        coord[2] = -gridY * (float)gridStepY;
+            coord[0] = gridX * (float)gridStepX;
+            coord[2] = -gridY * (float)gridStepY;
 
-        textureCoord[0] = ((float)gridX) / (gridWidth - 1);
-        textureCoord[1] = ((float)gridY) / (gridDepth - 1);
+            textureCoord[0] = ((float)gridX) / (gridWidth - 1);
+            textureCoord[1] = ((float)gridY) / (gridDepth - 1);
+        }
+        else
+        {
+            if(gridX >= gridWidth)
+                g_x = gridWidth - 1;
+            else if(gridX > 0)
+                g_x = gridX;
+
+            if(gridY >= gridDepth)
+                g_y = gridDepth - 1;
+            else if(gridY > 0)
+                g_y = gridY;
+
+            coord[1] = heightMap[g_x][g_y];
+
+            coord[0] = gridX * (float)gridStepX;
+            coord[2] = -gridY * (float)gridStepY;
+
+            if (patchY % 2 == 0)
+            {
+                if (gridY < 0)
+                {
+                    if (gridY % 128 == 0)
+                        textureCoord[1] = 0;
+                    else
+                        textureCoord[1] = 1 + (gridY % 64) / 64.0f;
+                }
+                else
+                {
+                    if (gridY % 64 == 0 && gridY % 128 != 0)
+                        textureCoord[1] = 1;
+                    else
+                        textureCoord[1] = (gridY % 64) / 64.0f;
+                }
+            }
+            else
+            {
+                if (gridY <= 0)
+                {
+                    if (gridY % 64 == 0 && gridY % 128 != 0)
+                        textureCoord[1] = 0;
+                    else
+                       textureCoord[1] = 1 + (gridY % 64) / 64.0f;
+                }
+                else
+                {
+                    if (gridY % 128 == 0)
+                        textureCoord[1] = 1;
+                    else
+                        textureCoord[1] = (gridY % 64) / 64.0f;
+                }
+            }
+
+            if (patchX % 2 == 0)
+            {
+                if (gridX < 0)
+                {
+                    if (gridX % 64 == 0 && gridX % 128 != 0)
+                        textureCoord[0] = 0;
+                    else
+                        textureCoord[0] = 1 + (gridX % 64) / 64.0f;
+                }
+                else
+                {
+                    if (gridX % 128 == 0)
+                        textureCoord[0] = 1;
+                    else
+                        textureCoord[0] = (gridX % 64) / 64.0f;
+                }
+            }
+            else
+            {
+                if (gridX <= 0)
+                {
+                    if (gridX % 128 == 0)
+                        textureCoord[0] = 0;
+                    else
+                       textureCoord[0] = 1 + (gridX % 64) / 64.0f;
+                }
+                else
+                {
+                    if (gridX % 64 == 0 && gridX % 128 != 0)
+                        textureCoord[0] = 1;
+                    else
+                        textureCoord[0] = (gridX % 64) / 64.0f;
+                }
+            }
+        }
     }
 
     /**

@@ -27,7 +27,7 @@ import javax.media.j3d.Texture;
  * implementations will require. Good to save you typing.
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class AbstractTiledTerrainData extends AbstractTerrainData
     implements TiledTerrainData
@@ -89,7 +89,10 @@ public abstract class AbstractTiledTerrainData extends AbstractTerrainData
 
         if(tileGenerator != null)
         {
-            // first convert tile to grid coords
+            // first convert tile to grid coords.  Why?
+            tileX += 2;
+            tileY += 1;
+
             int x_grid = convertTileToGridCoord(tileX);
             int y_grid = convertTileToGridCoord(tileY);
 
@@ -98,7 +101,7 @@ public abstract class AbstractTiledTerrainData extends AbstractTerrainData
 
             // width & height already set and don't change
             ret_val = tileGenerator.getTextureTile(pixelBounds);
-
+            textureAvailable = true;
         }
 
         return ret_val;
@@ -122,7 +125,7 @@ public abstract class AbstractTiledTerrainData extends AbstractTerrainData
 
         if(gen != null)
         {
-            if(pixelBounds != null)
+            if(pixelBounds == null)
                 pixelBounds = new Rectangle();
 
             // recalculate the conversion information.

@@ -34,7 +34,7 @@ import org.j3d.ui.navigation.HeightDataSource;
  * always be used.
  *
  * @author  Justin Couch based on original ideas of Paul Byrne
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public interface TerrainData extends HeightDataSource
 {
@@ -107,7 +107,9 @@ public interface TerrainData extends HeightDataSource
     public void getCoordinateWithTexture(float[] coord,
                                          float[] tex,
                                          int gridX,
-                                         int gridY);
+                                         int gridY,
+                                         int patchX,
+                                         int patchY);
 
     /**
      * Get the coordinate of the point and the corresponding color value in

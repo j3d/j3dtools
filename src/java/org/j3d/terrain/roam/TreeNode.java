@@ -90,6 +90,10 @@ class TreeNode extends QueueItem
 
     private boolean textured;
 
+    /** Patch Grid Coordinates */
+    private int patchX;
+    private int patchY;
+
     /**
      * A cache of instances of ourselves to help avoid too much object
      * creation and deletion.
@@ -134,7 +138,8 @@ class TreeNode extends QueueItem
                  ViewFrustum frustum,
                  int parentVisible,
                  int depth,
-                 VarianceTree varianceTree)
+                 VarianceTree varianceTree,
+                 int patchX, int patchY)
     {
         this.leftX = leftX;
         this.leftY = leftY;
@@ -146,6 +151,8 @@ class TreeNode extends QueueItem
         this.terrainData = terrainData;
         this.depth = depth;
         this.varianceTree = varianceTree;
+        this.patchX = patchX;
+        this.patchY = patchY;
 
         init(frustum, parentVisible);
     }
@@ -603,7 +610,7 @@ class TreeNode extends QueueItem
                 break;
 
             case 1:   // Texture only
-                terrainData.getCoordinateWithTexture(tmp, tex, leftX, leftY);
+                terrainData.getCoordinateWithTexture(tmp, tex, leftX, leftY, patchX, patchY);
                 p1tS = tex[0];
                 p1tT = tex[1];
                 break;
@@ -639,7 +646,7 @@ class TreeNode extends QueueItem
                 break;
 
             case 1:   // Texture only
-                terrainData.getCoordinateWithTexture(tmp, tex, rightX, rightY);
+                terrainData.getCoordinateWithTexture(tmp, tex, rightX, rightY, patchX, patchY);
                 p2tS = tex[0];
                 p2tT = tex[1];
                 break;
@@ -675,7 +682,7 @@ class TreeNode extends QueueItem
                 break;
 
             case 1:   // Texture only
-                terrainData.getCoordinateWithTexture(tmp, tex, apexX, apexY);
+                terrainData.getCoordinateWithTexture(tmp, tex, apexX, apexY, patchX, patchY);
                 p3tS = tex[0];
                 p3tT = tex[1];
                 break;
@@ -822,7 +829,8 @@ class TreeNode extends QueueItem
                           frustum,
                           visible,
                           depth + 1,
-                          varianceTree);
+                          varianceTree,
+                          patchX,patchY);
 
         rightChild.newNode(rightX, rightY,
                            apexX, apexY,
@@ -832,7 +840,8 @@ class TreeNode extends QueueItem
                            frustum,
                            visible,
                            depth + 1,
-                           varianceTree);
+                           varianceTree,
+                           patchX,patchY);
 
         leftChild.parent = this;
         rightChild.parent = this;

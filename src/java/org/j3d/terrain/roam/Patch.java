@@ -69,6 +69,10 @@ class Patch implements GeometryUpdater
     private int xOrigin;
     private int yOrigin;
 
+    /** The patch grid coordinates */
+    private int patchX;
+    private int patchY;
+
     /** The origin of the patch in tile coordinates */
     private Point tileOrigin;
 
@@ -119,13 +123,17 @@ class Patch implements GeometryUpdater
     Patch(TerrainData terrain,
           int patchSize,
           Appearance app,
-          ViewFrustum frustum)
+          ViewFrustum frustum,
+          int patchX,
+          int patchY)
     {
         PATCH_SIZE = patchSize;
 
         terrainData = terrain;
         viewFrustum = frustum;
         appearance = app;
+        this.patchX = patchX;
+        this.patchY = patchY;
 
         firstUse = false;
 
@@ -347,7 +355,8 @@ class Patch implements GeometryUpdater
                        viewFrustum,
                        TreeNode.UNDEFINED,
                        1,
-                       NWVariance);
+                       NWVariance,
+                       patchX,patchY);
 
         SETree.newNode(width,
                        height,       // Left X, Y
@@ -360,7 +369,8 @@ class Patch implements GeometryUpdater
                        viewFrustum,
                        TreeNode.UNDEFINED,
                        1,
-                       SEVariance);
+                       SEVariance,
+                       patchX,patchY);
 
         maxY = Math.max(NWVariance.getMaxY(), SEVariance.getMaxY());
         minY = Math.min(NWVariance.getMinY(), SEVariance.getMinY());
@@ -594,11 +604,12 @@ class Patch implements GeometryUpdater
     {
         vertexData.reset();
 
-        if(NWTree.visible != ViewFrustum.OUT)
+        if(NWTree.visible != ViewFrustum.OUT) {
             NWTree.getTriangles(vertexData);
-
-        if(SETree.visible != ViewFrustum.OUT)
+        }
+        if(SETree.visible != ViewFrustum.OUT) {
             SETree.getTriangles(vertexData);
+        }
     }
 
     /**

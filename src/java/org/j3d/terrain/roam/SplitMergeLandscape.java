@@ -36,7 +36,7 @@ import org.j3d.util.frustum.ViewFrustum;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class SplitMergeLandscape extends Landscape
 {
@@ -60,7 +60,7 @@ public class SplitMergeLandscape extends Landscape
     private static final int DEFAULT_PATCH_SIZE = 65;
 
     /** The number of tiles to use on an axis */
-    private static final int AXIS_TILE_COUNT = 8;
+    private static final int AXIS_TILE_COUNT = 7;
 
     /** The patch size to use for this landscape */
     private final int patchSize;
@@ -469,7 +469,8 @@ public class SplitMergeLandscape extends Landscape
                 p = new Patch(terrainData,
                               patchSize,
                               app,
-                              landscapeView);
+                              landscapeView,
+                              i, j);
 
                 p.setOrigin(e_grid, n_grid);
 
@@ -536,7 +537,8 @@ System.out.println("Free-form terrain not implemented yet");
                 p = new Patch(terrainData,
                               patchSize,
                               app,
-                              landscapeView);
+                              landscapeView,
+                              0,north);
 
                 p.setOrigin(0, north);
                 p.setSouthNeighbour(southPatchNeighbour);
@@ -563,7 +565,7 @@ System.out.println("Free-form terrain not implemented yet");
                     p = new Patch(terrainData,
                                   patchSize,
                                   app,
-                                  landscapeView);
+                                  landscapeView, east, north);
 
                     p.setOrigin(east, north);
 
@@ -810,16 +812,19 @@ System.out.println("Free-form terrain not implemented yet");
                         app = app_gen.createAppearance();
                         app.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
                         app.setTexture(td.getTexture(east, north));
-
+System.out.println("North: creating new Patch");
                         p = new Patch(terrainData,
                                       patchSize,
                                       app,
-                                      landscapeView);
+                                      landscapeView,
+                                      i,j);
 
                         addChild(p.getShape3D());
                     }
                     else
                     {
+System.out.println("North: reusing Patch");
+
                         p = (Patch)freePatchList.remove(0);
                         app = p.getAppearance();
                         app.setTexture(td.getTexture(east, north));
@@ -873,8 +878,10 @@ System.out.println("Free-form terrain not implemented yet");
                         p = new Patch(terrainData,
                                       patchSize,
                                       app,
-                                      landscapeView);
+                                      landscapeView,
+                                      i,j);
 
+                        BranchGroup bg = new BranchGroup();
                         addChild(p.getShape3D());
                     }
                     else
