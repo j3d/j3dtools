@@ -16,15 +16,44 @@ import javax.vecmath.Vector3d;
  * Particles.
  *
  * @author Daniel Selman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class GravityParticleFunction implements ParticleFunction
 {
     // force of gravity: meters per second
     private Vector3d gravityForce = new Vector3d( 0, -9.8, 0 );
 
+    /** Flag to say whether or not this function is disabled or not */
+    private boolean enabled;
+
     public GravityParticleFunction()
     {
+        enabled = true;
+    }
+
+    //-------------------------------------------------------------
+    // Methods defined by ParticleFunction
+    //-------------------------------------------------------------
+
+    /**
+     * Check to see if this function has been enabled or not currently.
+     *
+     * @return True if this is enabled
+     */
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    /**
+     * Set the enabled state of this function. A disabled function will not
+     * be applied to particles during this update.
+     *
+     * @param state The new enabled state to set it to
+     */
+    public void setEnabled(boolean state)
+    {
+        enabled = state;
     }
 
     public boolean onUpdate( ParticleSystem ps )

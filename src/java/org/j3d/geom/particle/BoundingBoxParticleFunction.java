@@ -19,7 +19,7 @@ import javax.vecmath.Point3d;
  * (e.g. PhysicsFunction).
  *
  * @author Daniel Selman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class BoundingBoxParticleFunction implements ParticleFunction
 {
@@ -28,18 +28,61 @@ public class BoundingBoxParticleFunction implements ParticleFunction
     private Point3d upperCorner = new Point3d();
     private BoundingBox boundingBox;
 
+    /** Flag to say whether or not this function is disabled or not */
+    private boolean enabled;
+
     public BoundingBoxParticleFunction( BoundingBox boundingBox )
     {
         this.boundingBox = boundingBox;
         boundingBox.getLower( lowerCorner );
         boundingBox.getUpper( upperCorner );
+
+        enabled = true;
     }
 
+    //-------------------------------------------------------------
+    // Methods defined by ParticleFunction
+    //-------------------------------------------------------------
+
+    /**
+     * Check to see if this function has been enabled or not currently.
+     *
+     * @return True if this is enabled
+     */
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    /**
+     * Set the enabled state of this function. A disabled function will not
+     * be applied to particles during this update.
+     *
+     * @param state The new enabled state to set it to
+     */
+    public void setEnabled(boolean state)
+    {
+        enabled = state;
+    }
+
+    /**
+     * Apply this function to the given particle right now.
+     *
+     * @param particle The particle to apply the function to
+     * @return true if the particle has changed, false otherwise
+     */
     public boolean onUpdate( ParticleSystem ps )
     {
        return true;
     }
 
+    /**
+     * Notification that the system is about to do an update of the particles
+     * and to do any system-level initialisation.
+     *
+     * @param ps The particle system that is being updated
+     * @return true if this should force another update after this one
+     */
     public boolean apply( Particle particle )
     {
         // we constrain the particle to be inside the BoundingBox

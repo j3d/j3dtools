@@ -23,7 +23,7 @@ import javax.vecmath.Vector3d;
  * wind force.
  *
  * @author Daniel Selman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class WindParticleFunction implements ParticleFunction
 {
@@ -48,6 +48,9 @@ public class WindParticleFunction implements ParticleFunction
     private double swirlinessY = 0.0005;
     private double swirlinessZ = -0.0005;
 
+    /** Flag to say whether or not this function is disabled or not */
+    private boolean enabled;
+
     public WindParticleFunction( Vector3d forcePerSquareMeter )
     {
         ab =
@@ -58,13 +61,53 @@ public class WindParticleFunction implements ParticleFunction
         abLength = ab.length();
 
         this.forcePerSquareMeter = forcePerSquareMeter;
+
+        enabled = true;
     }
 
+    //-------------------------------------------------------------
+    // Methods defined by ParticleFunction
+    //-------------------------------------------------------------
+
+    /**
+     * Check to see if this function has been enabled or not currently.
+     *
+     * @return True if this is enabled
+     */
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    /**
+     * Set the enabled state of this function. A disabled function will not
+     * be applied to particles during this update.
+     *
+     * @param state The new enabled state to set it to
+     */
+    public void setEnabled(boolean state)
+    {
+        enabled = state;
+    }
+
+    /**
+     * Apply this function to the given particle right now.
+     *
+     * @param particle The particle to apply the function to
+     * @return true if the particle has changed, false otherwise
+     */
     public boolean onUpdate( ParticleSystem ps )
     {
        return true;
     }
 
+    /**
+     * Notification that the system is about to do an update of the particles
+     * and to do any system-level initialisation.
+     *
+     * @param ps The particle system that is being updated
+     * @return true if this should force another update after this one
+     */
     public boolean apply( Particle particle )
     {
         // calculate the current wind speed
