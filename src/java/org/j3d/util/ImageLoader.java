@@ -16,8 +16,9 @@ package org.j3d.util;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
+import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.WeakHashMap;
+import java.util.HashMap;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -31,7 +32,7 @@ import javax.swing.ImageIcon;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ImageLoader
 {
@@ -48,13 +49,13 @@ public class ImageLoader
      * A hashmap of the loaded image instances. Weak so that we can discard
      * them if if needed because we're running out of memory.
      */
-    private static WeakHashMap loadedImages;
+    private static HashMap loadedImages;
 
     /**
      * A hashmap of the loaded icon instances. Weak so that we can discard
      * them if if needed because we're running out of memory.
      */
-    private static WeakHashMap loadedIcons;
+    private static HashMap loadedIcons;
 
     /**
      * Static initialiser to get all the bits set up as needed.
@@ -63,8 +64,8 @@ public class ImageLoader
     {
         toolkit = Toolkit.getDefaultToolkit();
         classLoader = ClassLoader.getSystemClassLoader();
-        loadedImages = new WeakHashMap(DEFAULT_SIZE);
-        loadedIcons = new WeakHashMap(DEFAULT_SIZE);
+        loadedImages = new HashMap(DEFAULT_SIZE);
+        loadedIcons = new HashMap(DEFAULT_SIZE);
     }
 
     /**
@@ -79,7 +80,15 @@ public class ImageLoader
     public static Icon loadIcon(String name)
     {
         // Check the map for an instance first
-        Icon ret_val = (Icon)loadedIcons.get(name);
+        Icon ret_val = null;
+
+        WeakReference ref = (WeakReference)loadedIcons.get(name);
+        if(ref != null)
+        {
+            ret_val = (Icon)ref.get();
+            if(ret_val == null)
+                loadedIcons.remove(name);
+        }
 
         if(ret_val == null)
         {
@@ -88,7 +97,7 @@ public class ImageLoader
             if(img != null)
             {
                 ret_val = new ImageIcon(img, name);
-                loadedIcons.put(name, ret_val);
+                loadedIcons.put(name, new WeakReference(ret_val));
             }
         }
 
@@ -107,7 +116,15 @@ public class ImageLoader
     public static Image loadImage(String name)
     {
         // Check the map for an instance first
-        Image ret_val = (Image)loadedImages.get(name);
+        Image ret_val = null;
+
+        WeakReference ref = (WeakReference)loadedImages.get(name);
+        if(ref != null)
+        {
+            ret_val = (Image)ref.get();
+            if(ret_val == null)
+                loadedIcons.remove(name);
+        }
 
         if(ret_val == null)
         {
@@ -116,7 +133,7 @@ public class ImageLoader
             if(url != null)
             {
                 ret_val = toolkit.createImage(url);
-                loadedImages.put(name, ret_val);
+                loadedImages.put(name, new WeakReference(ret_val));
             }
         }
 
