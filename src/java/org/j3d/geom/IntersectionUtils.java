@@ -56,7 +56,7 @@ import javax.vecmath.Vector3d;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class IntersectionUtils
 {
@@ -946,7 +946,7 @@ public class IntersectionUtils
                 }
             }
 
-            offset += stripCounts[i] * 3 - 1;
+            offset += stripCounts[i] * 3;
         }
 
         return (shortest_length != -1);
@@ -1038,7 +1038,7 @@ public class IntersectionUtils
                 }
             }
 
-            offset += stripCounts[i] * 3 - 1;
+            offset += stripCounts[i] * 3;
         }
 
         return (shortest_length != -1);
