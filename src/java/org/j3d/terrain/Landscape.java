@@ -18,6 +18,7 @@ import javax.vecmath.Vector3f;
 
 // Application specific imports
 import org.j3d.ui.navigation.FrameUpdateListener;
+import org.j3d.ui.navigation.HeightMapGeometry;
 
 /**
  * Representation of a piece of rendered terrain data.
@@ -45,12 +46,20 @@ import org.j3d.ui.navigation.FrameUpdateListener;
  * user input code, then there is no penalty for doing so. Simply call one of
  * the <code>setView()</code> methods directly with the transformation
  * information.
+ * <p>
+ *
+ * If you are going to use this class with the navigation code, then you
+ * should also make the internal geometry not pickable, and make this item
+ * pickable. In this way, the navigation code will find this top-level
+ * terrain definition and use it directly to make the code much faster. None
+ * of these capabilities are set within this implementation, so it is up to
+ * the third-party code to make it so via calls to the appropriate methods.
  *
  * @author Justin Couch, based on original ideas from Paul Byrne
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class Landscape extends javax.media.j3d.BranchGroup
-    implements FrameUpdateListener
+    implements FrameUpdateListener, HeightMapGeometry
 {
     /** The current viewing frustum that is seeing the landscape */
     protected ViewFrustum landscapeView;
@@ -124,6 +133,24 @@ public abstract class Landscape extends javax.media.j3d.BranchGroup
     public void viewerPositionUpdated(Transform3D t3d)
     {
         setView(t3d);
+    }
+
+    //----------------------------------------------------------
+    // Methods required by FrameUpdateListener
+    //----------------------------------------------------------
+
+    /**
+     * Get the height at the given X,Z coordinate in the local coordinate
+     * system. This implementation delegates to the underlying terrain data
+     * to do the real resolution.
+     *
+     * @param x The x coordinate for the height sampling
+     * @param z The z coordinate for the height sampling
+     * @return The height at the current point or NaN
+     */
+    public float getHeight(float x, float z)
+    {
+        return terrainData.getHeight(x, z);
     }
 
     //----------------------------------------------------------

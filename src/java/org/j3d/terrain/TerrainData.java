@@ -49,7 +49,7 @@ import java.awt.Rectangle;
 import javax.media.j3d.Texture;
 
 // Application specific imports
-// none
+import org.j3d.ui.navigation.HeightDataSource;
 
 /**
  * This class provides a generic interface to the terrain dataset.
@@ -60,9 +60,9 @@ import javax.media.j3d.Texture;
  * 3D graphics convention of X-Z.
  *
  * @author  Paul Byrne, Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
-public interface TerrainData
+public interface TerrainData extends HeightDataSource
 {
     /**
      * Get the coordinate of the point in the grid. This should translate

@@ -63,8 +63,16 @@ import org.j3d.terrain.TerrainData;
 /**
  * A patch represents a single piece of terrain geometry that can be
  * rendered as a standalone block.
+ * <p>
  *
- * @author  paulby
+ * A patch represents a single block of geometry within the overall scheme
+ * of the terrain data. Apart from a fixed size nothing else is fixed in this
+ * patch. The patch consists of a single TriangleArray that uses a geometry
+ * updater (geometry by reference is used) to update the geometry each frame
+ * as necessary. It will, when instructed, dynamically recalculate what
+ * vertices need to be shown and set those into the geometry array.
+ *
+ * @author  Paul Byrne, Justin Couch
  * @version
  */
 class Patch implements GeometryUpdater
@@ -212,6 +220,11 @@ class Patch implements GeometryUpdater
         shape3D = new Shape3D(geom, app);
         shape3D.setBoundsAutoCompute(false);
         shape3D.setBounds(new BoundingBox(min_bounds, max_bounds));
+
+        // Just as a failsafe, always set the terrain data in the user
+        // data section of the node so that terrain code will find it
+        // again, even if the top user is stupid.
+        shape3D.setUserData(terrainData);
     }
 
     //----------------------------------------------------------
@@ -277,15 +290,6 @@ class Patch implements GeometryUpdater
                           SEVariance,
                           TreeNode.UNDEFINED,
                           queueManager);
-
-        /*
-        NWTree.split(landscapeView);
-        NWTree.rightChild.split(landscapeView);
-        NWTree.rightChild.rightChild.split(landscapeView);
-        NWTree.rightChild.rightChild.leftChild.split(landscapeView);
-        NWTree.rightChild.rightChild.leftChild.rightChild.split(landscapeView);
-        NWTree.rightChild.rightChild.leftChild.rightChild.leftChild.split(landscapeView);
-         */
     }
 
     /**
@@ -339,14 +343,6 @@ class Patch implements GeometryUpdater
 
         if(SETree.visible != ViewFrustum.OUT)
             SETree.getTriangles(vertexData);
-
-        /*
-        System.out.println(vertexData.getVertexCount() + "  "+this);
-        float[] v = vertexData.getCoords();
-        for(int i=0; i<9; i++)
-            System.out.print(v[i]+" ");
-        System.out.println();
-         */
 
         geom.setValidVertexCount(vertexData.getVertexCount());
     }
