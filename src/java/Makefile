@@ -6,6 +6,7 @@
 
 PACKAGES = org.j3d.util \
 	   org.j3d.util.device \
+	   org.j3d.util.interpolator \
 	   org.j3d.ui \
 	   org.j3d.ui.image \
        org.j3d.geom
