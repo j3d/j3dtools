@@ -45,7 +45,7 @@ import javax.vecmath.Point3f;
  * performance will be <I>severely</I> impacted.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $ $Date: 2001-03-03 06:19:47 $
+ * @version $Revision: 1.2 $ $Date: 2001-06-01 12:55:19 $
  */
 public class ImageCaptureCanvas3D extends Canvas3D
 {
@@ -106,7 +106,7 @@ public class ImageCaptureCanvas3D extends Canvas3D
                                               BufferedImage.TYPE_INT_RGB);
 
         ImageComponent2D comp =
-            new ImageComponent2D(ImageComponent.FORMAT_RGB, img);
+            new ImageComponent2D(ImageComponent.FORMAT_RGB, img, true, false);
 
         // The raster components need all be set!
 
@@ -122,7 +122,7 @@ public class ImageCaptureCanvas3D extends Canvas3D
         ctx.readRaster(ras);
 
         // Now strip out the image info
-        // BufferedImage img = ras.getImage().getImage();
+        // BufferedImage output_img = ras.getImage().getImage();
 
         notifyObservers(img);
     }
