@@ -5,6 +5,10 @@
 PACKAGE = org.j3d.ui.navigation
 
 SOURCE = FrameUpdateListener.java \
-    ViewpointTransition.java
+    NavigationStateListener.java \
+    ViewpointTransition.java \
+	NavigationToolbar.java \
+	MouseViewHandler.java \
+	NavigationStateManager.java
 
 include ${PROJECT_ROOT}/make/Makefile.jav
