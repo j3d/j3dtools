@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.3 $
+# Version: $Revision: 1.4 $
 #
 #*********************************************************************
 
@@ -15,32 +15,38 @@ PACKAGE = org.j3d.geom.particle
 # The source files to compile. These are declared in order that they must be
 # compiled in
 SOURCE = \
-   BoundingBoxParticleFunction.java \
-   ByRefParticle.java \
-   ByRefParticleSystem.java \
-   ExplosionPointEmitter.java \
-   FrameCountParticleFunction.java \
-   GravityParticleFunction.java \
-   LineArrayByRefParticle.java \
-   LineArrayByRefParticleSystem.java \
-   MaxAgePointEmitter.java \
-   MaxAgePointForceEmitter.java \
    Particle.java \
    ParticleFactory.java \
    ParticleFunction.java \
    ParticleInitializer.java \
+   ParticleList.java \
    ParticleSystem.java \
    ParticleSystemManager.java \
-   PhysicsFunction.java \
-   PickingCollisionParticleFunction.java \
-   PlanarCollisionParticleFunction.java \
+   ByRefParticle.java \
+   ByRefParticleSystem.java \
    PointArrayByRefParticle.java \
-   PointArrayByRefParticleSystem.java \
+   LineArrayByRefParticle.java \
    QuadArrayByRefParticle.java \
-   QuadArrayByRefParticleSystem.java \
    TriangleArrayByRefParticle.java \
+   PointArrayByRefParticleSystem.java \
+   LineArrayByRefParticleSystem.java \
+   QuadArrayByRefParticleSystem.java \
    TriangleArrayByRefParticleSystem.java \
-   WindParticleFunction.java
+   PhysicsFunction.java \
+   WindParticleFunction.java \
+   BoundingBoxParticleFunction.java \
+   ColorRampFunction.java \
+   FrameCountParticleFunction.java \
+   GravityParticleFunction.java \
+   MaxTimeParticleFunction.java \
+   ExplosionPointEmitter.java \
+   MaxAgePointEmitter.java \
+   MaxAgePointForceEmitter.java \
+   MaxTimePointEmitter.java \
+   PolylineEmitter.java 
+
+#   PickingCollisionParticleFunction.java \
+#   PlanarCollisionParticleFunction.java \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

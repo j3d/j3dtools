@@ -14,7 +14,7 @@ import javax.vecmath.Point3d;
 import java.util.Map;
 
 /**
- * Particle that uses a TriangleArray for the basic geometry.
+ * Particle that uses a LineArray for the basic geometry.
  * <p>
  *
  * Update methods are defined for a TriangleArray
@@ -22,13 +22,13 @@ import java.util.Map;
  *
  * <pre>
  *  <- width*2 ->
- *  2 --------- 3,5  / \
- *   |         /|     |
- *   |       /  |     |
- *   |     +    |   height*2
- *   |   /      |     |
- *   | /        |     |
- * 1,4 -------- 6    \ /
+ *              2    / \
+ *             /      |
+ *           /        |
+ *         +        height*2
+ *       /            |
+ *     /              |
+ * 1,4               \ /
  *
  * </pre>
  *
@@ -38,81 +38,73 @@ import java.util.Map;
  * Point 3 == Point 5<br>
  *
  * @author Daniel Selman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class LineArrayByRefParticle extends ByRefParticle
 {
-    public static final int NUM_VERTICES_PER_PARTICLE = 2;
-
-    protected int startIndex = 0;
-
-    public LineArrayByRefParticle(
-            Map env,
-            Shape3D shape,
-            int index,
-            double[] positionRefArray,
-            float[] colorRefArray,
-            float[] textureCoordRefArray,
-            float[] normalRefArray )
+    public LineArrayByRefParticle(boolean relative)
     {
-        super(
-                env,
-                shape,
-                index,
-                positionRefArray,
-                colorRefArray,
-                textureCoordRefArray,
-                normalRefArray );
-
-        setTextureCoordinates();
-        setNormals();
-
-        startIndex = index * NUM_VERTICES_PER_PARTICLE * ByRefParticle.NUM_COORDS;
+        super(relative);
     }
 
-    protected void updateColors()
-    {
-        int colorStartIndex =
-                index * NUM_VERTICES_PER_PARTICLE * ByRefParticle.NUM_COLORS;
-
-        colorRefArray[colorStartIndex] = color.x;
-        colorRefArray[colorStartIndex+1] = color.y;
-        colorRefArray[colorStartIndex+2] = color.z;
-        colorRefArray[colorStartIndex+3] = 1.0f;
-        colorRefArray[colorStartIndex+4] = color.x;
-        colorRefArray[colorStartIndex+5] = color.y;
-        colorRefArray[colorStartIndex+6] = color.z;
-        colorRefArray[colorStartIndex+7] = 0.0f;
-    }
-
-    protected void updateGeometry()
+    /**
+     * Implement this method to update the BYREF positions of
+     * the geometry based on the change to the position field.
+     *
+     */
+    public void updateGeometry(float[] coords, int startIndex)
     {
         // point 1
-        positionRefArray[startIndex] = position.x;
-        positionRefArray[startIndex+1] = position.y;
-        positionRefArray[startIndex+2] = position.z;
+        coords[startIndex] = position.x;
+        coords[startIndex + 1] = position.y;
+        coords[startIndex + 2] = position.z;
 
         // point 2
-        positionRefArray[startIndex+3] = previousPosition.x;
-        positionRefArray[startIndex+4] = previousPosition.y;
-        positionRefArray[startIndex+5] = previousPosition.z;
+        coords[startIndex + 3] = previousPosition.x;
+        coords[startIndex + 4] = previousPosition.y;
+        coords[startIndex + 5] = previousPosition.z;
     }
 
-    private void setTextureCoordinates()
+    /**
+     * Implement this method to update the BYREF colors for
+     * the geometry based on the change to the color field.
+     *
+     */
+    public void updateColors(float[] colors, int startIndex)
     {
-        int texStartIndex =
-                index * NUM_VERTICES_PER_PARTICLE * ByRefParticle.NUM_TEXTURE_COORDS;
+        colors[startIndex] = color.x;
+        colors[startIndex + 1] = color.y;
+        colors[startIndex + 2] = color.z;
+        colors[startIndex + 3] = color.w;
 
-        // point 1
-        textureCoordRefArray[texStartIndex] = 0;
-        textureCoordRefArray[texStartIndex + 1] = 0;
+        colors[startIndex + 4] = color.x;
+        colors[startIndex + 5] = color.y;
+        colors[startIndex + 6] = color.z;
+        colors[startIndex + 7] = color.w;
+    }
+
+    /**
+     * Implement this method to update the BYREF positions of
+     * the geometry based on the change to the position field.
+     *
+     */
+    public void updateNormals(float[] normals, int startIndex)
+    {
+        // Lines can't have normals
+    }
+
+    /**
+     * Implement this method to update the BYREF colors for
+     * the geometry based on the change to the color field.
+     *
+     */
+    public void updateTexCoords(float[] coords, int startIndex)
+    {
+        coords[startIndex] = 0;
+        coords[startIndex + 1] = 0;
 
         // point 2
-        textureCoordRefArray[texStartIndex + 2] = 1;
-        textureCoordRefArray[texStartIndex + 3] = 0;
-    }
-
-    private void setNormals()
-    {
+        coords[startIndex + 2] = 1;
+        coords[startIndex + 3] = 0;
     }
 }

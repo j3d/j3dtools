@@ -18,25 +18,31 @@ import java.util.Map;
  * to represent the ParticleSystem.
  *
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class QuadArrayByRefParticleSystem extends ByRefParticleSystem
 {
     /**
-     * Create a new particle system with the given number of particles.
-     *
-     * @param particleCount The number of particles to display
-     * @param particleInitializer Initialised to create the particles
-     * @param environment Environment setup information
+     * Flag for the particle creation using the draw from previous position
+     * flag of the particle.
      */
-    public QuadArrayByRefParticleSystem( String name, int particleCount,
-                                         ParticleInitializer particleInitializer,
-                                         Map environment )
+    private boolean usePreviousPosition;
+
+    /**
+     * Create a new particle system that uses quads for the particles.
+     *
+     * @param name An arbitrary string name for ID purposes
+     * @param maxParticleCount The maximum number of particles allowed to exist
+     * @param drawFromPrevious true if this should draw the particle relative to
+     *    the position of last frame
+     */
+    public QuadArrayByRefParticleSystem(String systemName,
+                                        int maxParticleCount,
+                                        boolean drawFromPrevious)
     {
-        super( name,
-               particleInitializer,
-               particleCount,
-               environment );
+        super(systemName, maxParticleCount);
+
+        usePreviousPosition = drawFromPrevious;
     }
 
     /**
@@ -46,14 +52,47 @@ public class QuadArrayByRefParticleSystem extends ByRefParticleSystem
      */
     public GeometryArray createGeometryArray()
     {
-        GeometryArray geomArray =
-                new QuadArray( particleCount * QuadArrayByRefParticle.NUM_VERTICES_PER_PARTICLE,
-                               GeometryArray.COORDINATES |
-                               GeometryArray.NORMALS |
-                               GeometryArray.TEXTURE_COORDINATE_2 |
-                               GeometryArray.BY_REFERENCE |
-                               GeometryArray.COLOR_4 );
+        int format = GeometryArray.COORDINATES |
+                     GeometryArray.NORMALS |
+                     GeometryArray.TEXTURE_COORDINATE_2 |
+                     GeometryArray.BY_REFERENCE |
+                     GeometryArray.COLOR_4;
+
+        GeometryArray geomArray = new QuadArray(maxParticleCount * 4, format);
         return geomArray;
+    }
+
+    /**
+     * Request the number of coordinates each particle will use. Used so that
+     * the manager can allocate the correct length array.
+     *
+     * @return The number of coordinates this particle uses
+     */
+    public int coordinatesPerParticle()
+    {
+        return 4;
+    }
+
+    /**
+     * Request the number of color components this particle uses. Should be a
+     * value of 4 or 3 to indicate use or not of alpha channel.
+     *
+     * @return The number of color components in use
+     */
+    public int numColorComponents()
+    {
+        return 4;
+    }
+
+    /**
+     * Request the number of texture coordinate components this particle uses.
+     * Should be a value of 2 or 3 to indicate use or not of 2D or 3D textures.
+     *
+     * @return The number of color components in use
+     */
+    public int numTexCoordComponents()
+    {
+        return 2;
     }
 
     /**
@@ -62,24 +101,8 @@ public class QuadArrayByRefParticleSystem extends ByRefParticleSystem
      * @param index The id of the particle
      * @return A particle corresponding to the given index
      */
-    public Particle createParticle( Map env, String name, int index )
+    public Particle createParticle()
     {
-        return new QuadArrayByRefParticle( env, shape,
-                                           index,
-                                           positionRefArray,
-                                           colorRefArray,
-                                           textureCoordRefArray,
-                                           normalRefArray );
-    }
-
-    /**
-     * Fetch the number of vertices used in this geometry. Value should
-     * always be non-negative.
-     *
-     * @return The number of vertices
-     */
-    protected int getVertexCount()
-    {
-        return QuadArrayByRefParticle.NUM_VERTICES_PER_PARTICLE;
+        return new QuadArrayByRefParticle(usePreviousPosition);
     }
 }

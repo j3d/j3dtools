@@ -12,16 +12,45 @@ package org.j3d.geom.particle;
 import java.util.Map;
 
 /**
- * ParticleFactory interface defines a mechanism to
- * create instances of Particles. A ParticleFactory
- * is registered with a ParticleSystem and should
- * initialize the fields of the Particle based on the
- * physical entity being modelled (rain, dust, stones etc.)
+ * Abstract representation of a mechanism to create instances of Particles.
+ * <p>
+ * A ParticleFactory is registered with a ParticleSystem and should
+ * initialize the fields of the Particle based on the physical entity being
+ * modelled (rain, dust, stones etc)
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface ParticleFactory
 {
-    public Particle createParticle( Map env, String name, int index );
+    /**
+     * Request the number of coordinates each particle will use. Used so that
+     * the manager can allocate the correct length array.
+     *
+     * @return The number of coordinates this particle uses
+     */
+    public int coordinatesPerParticle();
+
+    /**
+     * Request the number of color components this particle uses. Should be a
+     * value of 4 or 3 to indicate use or not of alpha channel.
+     *
+     * @return The number of color components in use
+     */
+    public int numColorComponents();
+
+    /**
+     * Request the number of texture coordinate components this particle uses.
+     * Should be a value of 2 or 3 to indicate use or not of 2D or 3D textures.
+     *
+     * @return The number of color components in use
+     */
+    public int numTexCoordComponents();
+
+    /**
+     * Create a new particle instance.
+     *
+     * @return The new instance created
+     */
+    public Particle createParticle();
 }

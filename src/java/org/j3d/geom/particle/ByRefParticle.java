@@ -18,69 +18,45 @@ import java.util.Map;
  * information in shared BYREF arrays.
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class ByRefParticle extends Particle
 {
-    public static final int NUM_COORDS = 3;
-    public static final int NUM_COLORS = 4;
-    public static final int NUM_TEXTURE_COORDS = 2;
-    public static final int NUM_NORMALS = 3;
-
-    // particle index into the RefArray's
-    int index;
-    double[] positionRefArray;
-    float[] colorRefArray;
-    float[] textureCoordRefArray;
-    float[] normalRefArray;
-    Shape3D shape;
-
-    Transform3D localToVWorld = new Transform3D();
-
-    public ByRefParticle( Map environment, Shape3D shape,
-                          int index, double[] positionRefArray,
-                          float[] colorRefArray,
-                          float[] textureCoordRefArray,
-                          float[] normalRefArray )
-    {
-        super( environment );
-        this.shape = shape;
-        this.index = index;
-        this.positionRefArray = positionRefArray;
-        this.colorRefArray = colorRefArray;
-        this.textureCoordRefArray = textureCoordRefArray;
-        this.normalRefArray = normalRefArray;
-    }
-
-    public void setPosition( double x, double y, double z )
-    {
-        super.setPosition( x, y, z );
-        updateGeometry();
-    }
-
-    public void setColor( float r, float g, float b, float alpha )
-    {
-        super.setColor( r, g, b, alpha );
-        updateColors();
-    }
-
-    public void setAlpha( float alpha )
-    {
-        super.setAlpha( alpha );
-        updateColors();
-    }
-
     /**
-     * Implement this method to update the BYREF colors for
-     * the geometry based on the change to the color field.
+     * Construct a new particle using by-reference geometry.
      *
+     * @param relative true if the position is relative
      */
-    protected abstract void updateColors();
+    public ByRefParticle(boolean relative)
+    {
+        super(relative);
+    }
 
     /**
      * Implement this method to update the BYREF positions of
      * the geometry based on the change to the position field.
      *
      */
-    protected abstract void updateGeometry();
+    public abstract void updateGeometry(float[] coords, int startIndex);
+
+    /**
+     * Implement this method to update the BYREF colors for
+     * the geometry based on the change to the color field.
+     *
+     */
+    public abstract void updateColors(float[] colors, int startIndex);
+
+    /**
+     * Implement this method to update the BYREF positions of
+     * the geometry based on the change to the position field.
+     *
+     */
+    public abstract void updateNormals(float[] normals, int startIndex);
+
+    /**
+     * Implement this method to update the BYREF colors for
+     * the geometry based on the change to the color field.
+     *
+     */
+    public abstract void updateTexCoords(float[] coords, int startIndex);
 }

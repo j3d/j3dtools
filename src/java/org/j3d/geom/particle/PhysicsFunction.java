@@ -39,75 +39,114 @@ import javax.vecmath.Vector3d;
  * f = m * delta v / t<br>
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class PhysicsFunction implements ParticleFunction
 {
-   // the assumed initial interval between calls to the PhysicsFunction
-   // this delta is recalculated every recalculateInterval frames
-   private double deltaTime = 1.0 / 40.0;
+    // the assumed initial interval between calls to the PhysicsFunction
+    // this delta is recalculated every recalculateInterval frames
+    private double deltaTime = 1.0 / 40.0;
 
-   private Vector3d position = new Vector3d( );
-   private Vector3d acceleration = new Vector3d( );
+    private Vector3d position = new Vector3d();
+    private Vector3d acceleration = new Vector3d();
 
-   // percentage of force still avalailable after friction lossage
-   private double frictionForce = 0.90;
+    // percentage of force still avalailable after friction lossage
+    private double frictionForce = 0.90;
 
-   // percentage of velocity still avilable
-   private double frictionVelocity = 0.95;
-   private long startTime;
-   private static final int recalculateInterval = 256;
-   private static long invokeCount = 0;
+    // percentage of velocity still avilable
+    private double frictionVelocity = 0.95;
 
-   public PhysicsFunction( )
-   {
-       startTime = System.currentTimeMillis( );
-   }
+    private long startTime;
+    private static final int recalculateInterval = 256;
+    private static long invokeCount = 0;
 
-   public boolean onUpdate( ParticleSystem ps )
-   {
-       // review DCS - we don't check ps,
-       // so if this PhysicsFunction is shared between
-       // multiple ParticleSystems we will get bogus results
-       invokeCount++;
+    /** Flag to say whether or not this function is disabled or not */
+    private boolean enabled;
 
-       if( invokeCount == recalculateInterval )
-       {
-           double elapsedSeconds = (System.currentTimeMillis( ) - startTime) / 1000.0;
-           deltaTime =  (double) elapsedSeconds / (double) recalculateInterval;
+    public PhysicsFunction()
+    {
+        startTime = System.currentTimeMillis();
+        enabled = true;
+    }
 
-           System.out.println( "PhysicsFunction FPS: " + (int) 1.0 / deltaTime );
+    //-------------------------------------------------------------
+    // Methods defined by ParticleFunction
+    //-------------------------------------------------------------
 
-           // reset counters
-           invokeCount = 0;
-           startTime = System.currentTimeMillis( );
-       }
+    /**
+     * Check to see if this function has been enabled or not currently.
+     *
+     * @return True if this is enabled
+     */
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
 
-      return true;
-   }
+    /**
+     * Set the enabled state of this function. A disabled function will not
+     * be applied to particles during this update.
+     *
+     * @param state The new enabled state to set it to
+     */
+    public void setEnabled(boolean state)
+    {
+        enabled = state;
+    }
 
-   public boolean apply( Particle particle )
-   {
-       particle.resultantForce.scale( particle.frictionForce );
-       acceleration.set( particle.resultantForce );
+    /**
+     * Notification that the system is about to do an update of the particles
+     * and to do any system-level initialisation.
+     *
+     * @param ps The particle system that is being updated
+     * @return true if this should force another update after this one
+     */
+    public boolean newFrame()
+    {
+        // review DCS - we don't check ps,
+        // so if this PhysicsFunction is shared between
+        // multiple ParticleSystems we will get bogus results
+        invokeCount++;
 
-       // get the change in velocity
-       acceleration.scale( deltaTime / particle.mass );
-       particle.velocity.add( acceleration );
+        if(invokeCount == recalculateInterval)
+        {
+            long now = System.currentTimeMillis();
+            double elapsedSeconds = (double)(now - startTime) / 1000;
+            deltaTime =  (double)elapsedSeconds / recalculateInterval;
 
-       // get the change in position
-       particle.getPosition( position );
-       acceleration.set( particle.velocity );
-       acceleration.scale( deltaTime );
-       position.add( acceleration );
+            System.out.println("PhysicsFunction FPS: " + (int) 1.0 / deltaTime);
 
-       // update the position
-       particle.setPosition( position.x, position.y, position.z );
+            // reset counters
+            invokeCount = 0;
+            startTime = now;
+        }
 
-       particle.velocity.scale( particle.frictionVelocity );
+        return true;
+    }
 
-       // return false, the PhysicsFunction should
-       // not cause the particle system to keep running
-       return false;
-   }
+    /**
+     * Apply this function to the given particle right now.
+     *
+     * @param particle The particle to apply the function to
+     * @return true if the particle has changed, false otherwise
+     */
+    public boolean apply(Particle particle)
+    {
+        acceleration.set(particle.resultantForce);
+
+        // get the change in velocity
+        acceleration.scale(deltaTime / particle.mass);
+        particle.velocity.add(acceleration);
+
+        // get the change in position
+        particle.getPosition(position);
+        acceleration.set(particle.velocity);
+        acceleration.scale(deltaTime);
+        position.add(acceleration);
+
+        // update the position
+        particle.setPosition((float)position.x, (float)position.y, (float)position.z);
+
+        return true;
+    }
 }

@@ -19,7 +19,7 @@ import javax.vecmath.Point3d;
  * (e.g. PhysicsFunction).
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BoundingBoxParticleFunction implements ParticleFunction
 {
@@ -31,11 +31,11 @@ public class BoundingBoxParticleFunction implements ParticleFunction
     /** Flag to say whether or not this function is disabled or not */
     private boolean enabled;
 
-    public BoundingBoxParticleFunction( BoundingBox boundingBox )
+    public BoundingBoxParticleFunction(BoundingBox boundingBox)
     {
         this.boundingBox = boundingBox;
-        boundingBox.getLower( lowerCorner );
-        boundingBox.getUpper( upperCorner );
+        boundingBox.getLower(lowerCorner);
+        boundingBox.getUpper(upperCorner);
 
         enabled = true;
     }
@@ -71,7 +71,7 @@ public class BoundingBoxParticleFunction implements ParticleFunction
      * @param particle The particle to apply the function to
      * @return true if the particle has changed, false otherwise
      */
-    public boolean onUpdate( ParticleSystem ps )
+    public boolean newFrame()
     {
        return true;
     }
@@ -83,46 +83,34 @@ public class BoundingBoxParticleFunction implements ParticleFunction
      * @param ps The particle system that is being updated
      * @return true if this should force another update after this one
      */
-    public boolean apply( Particle particle )
+    public boolean apply(Particle particle)
     {
         // we constrain the particle to be inside the BoundingBox
-        particle.getPosition( position );
+        particle.getPosition(position);
 
-        if ( boundingBox.intersect( position ) == false )
+        if(!boundingBox.intersect(position))
         {
-            if ( position.x > upperCorner.x )
-            {
+            if(position.x > upperCorner.x)
                 position.x = upperCorner.x;
-            }
 
-            if ( position.y > upperCorner.y )
-            {
+            if(position.y > upperCorner.y)
                 position.y = upperCorner.y;
-            }
 
-            if ( position.z > upperCorner.z )
-            {
+            if(position.z > upperCorner.z)
                 position.z = upperCorner.z;
-            }
 
-            if ( position.x < lowerCorner.x )
-            {
+            if(position.x < lowerCorner.x)
                 position.x = lowerCorner.x;
-            }
 
-            if ( position.y < lowerCorner.y )
-            {
+            if(position.y < lowerCorner.y)
                 position.y = lowerCorner.y;
-            }
 
-            if ( position.z < lowerCorner.z )
-            {
+            if(position.z < lowerCorner.z)
                 position.z = lowerCorner.z;
-            }
         }
 
-        particle.setPosition( position.x, position.y, position.z );
+        particle.setPosition((float)position.x, (float)position.y, (float)position.z);
 
-        return false;
+        return true;
     }
 }

@@ -23,13 +23,13 @@ import javax.vecmath.Vector3d;
  * wind force.
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class WindParticleFunction implements ParticleFunction
 {
     // orgin of the wind
-    private Point3d windStart = new Point3d( 0, -1000, 0 );
-    private Point3d windEnd = new Point3d( 0, 1000, 0 );
+    private Point3d windStart = new Point3d(0, -1000, 0);
+    private Point3d windEnd = new Point3d(0, 1000, 0);
     private Vector3d ab;
     private Vector3d ap = new Vector3d();
     private Vector3d crossAbAp = new Vector3d();
@@ -38,7 +38,7 @@ public class WindParticleFunction implements ParticleFunction
     private double attenuationEnd = 0.8;
 
     // force
-    private Vector3d forcePerSquareMeter = new Vector3d( 0.0000, 0.020, 0.00000 );
+    private Vector3d forcePerSquareMeter = new Vector3d(0.0000, 0.020, 0.00000);
     private Vector3d currentForcePerSquareMeter = new Vector3d();
 
     // percentages
@@ -51,13 +51,13 @@ public class WindParticleFunction implements ParticleFunction
     /** Flag to say whether or not this function is disabled or not */
     private boolean enabled;
 
-    public WindParticleFunction( Vector3d forcePerSquareMeter )
+    public WindParticleFunction(Vector3d forcePerSquareMeter)
     {
         ab =
             new Vector3d(
                     windEnd.x - windStart.x,
                     windEnd.y - windStart.y,
-                    windEnd.z - windStart.z );
+                    windEnd.z - windStart.z);
         abLength = ab.length();
 
         this.forcePerSquareMeter = forcePerSquareMeter;
@@ -91,63 +91,64 @@ public class WindParticleFunction implements ParticleFunction
     }
 
     /**
-     * Apply this function to the given particle right now.
-     *
-     * @param particle The particle to apply the function to
-     * @return true if the particle has changed, false otherwise
-     */
-    public boolean onUpdate( ParticleSystem ps )
-    {
-       return true;
-    }
-
-    /**
      * Notification that the system is about to do an update of the particles
      * and to do any system-level initialisation.
      *
      * @param ps The particle system that is being updated
      * @return true if this should force another update after this one
      */
-    public boolean apply( Particle particle )
+    public boolean newFrame()
     {
         // calculate the current wind speed
         currentForcePerSquareMeter.x =
-                Particle.getRandomNumber( forcePerSquareMeter.x, forcePerSquareMeter.x * gustiness );
+                Math.random() * forcePerSquareMeter.x * gustiness;
         currentForcePerSquareMeter.y =
-                Particle.getRandomNumber( forcePerSquareMeter.y, forcePerSquareMeter.y * gustiness );
+                Math.random() * forcePerSquareMeter.y * gustiness;
         currentForcePerSquareMeter.z =
-                Particle.getRandomNumber( forcePerSquareMeter.z, forcePerSquareMeter.z * gustiness );
+                Math.random() * forcePerSquareMeter.z * gustiness   ;
 
+       return true;
+    }
+
+    /**
+     * Apply this function to the given particle right now.
+     *
+     * @param particle The particle to apply the function to
+     * @return true if the particle has changed, false otherwise
+     */
+    public boolean apply(Particle particle)
+    {
         // calculate distance of the particle from the plane
-        particle.getPosition( ap );
-        ap.sub( windStart );
+        particle.getPosition(ap);
+        ap.sub(windStart);
 
-        crossAbAp.cross( ab, ap );
+        crossAbAp.cross(ab, ap);
         double distance = crossAbAp.length() / abLength;
 
-        if ( distance > attenuationStart )
+        if(distance > attenuationStart)
         {
-            if ( distance <= attenuationEnd )
+            if(distance <= attenuationEnd)
             {
                 currentForcePerSquareMeter.scale(
-                        ( distance - attenuationStart ) / ( attenuationEnd - attenuationStart ) );
+                        (distance - attenuationStart) /
+                        (attenuationEnd - attenuationStart));
             }
             else
             {
-                currentForcePerSquareMeter.set( 0, 0, 0 );
+                currentForcePerSquareMeter.set(0, 0, 0);
             }
         }
 
-        if ( distance < attenuationEnd )
+        if (distance < attenuationEnd)
         {
             // apply the swirliness
-            currentForcePerSquareMeter.x += Particle.getRandomNumber( 0, swirlinessX );
-            currentForcePerSquareMeter.y += Particle.getRandomNumber( 0, swirlinessY );
-            currentForcePerSquareMeter.z += Particle.getRandomNumber( 0, swirlinessZ );
-            currentForcePerSquareMeter.scale( particle.surfaceArea );
-            particle.resultantForce.add( currentForcePerSquareMeter );
+            currentForcePerSquareMeter.x += Math.random() * swirlinessX;
+            currentForcePerSquareMeter.y += Math.random() * swirlinessY;
+            currentForcePerSquareMeter.z += Math.random() * swirlinessZ;
+            currentForcePerSquareMeter.scale(particle.surfaceArea);
+            particle.resultantForce.add(currentForcePerSquareMeter);
         }
 
-        return false;
+        return true;
     }
 }

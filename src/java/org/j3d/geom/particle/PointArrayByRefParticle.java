@@ -19,40 +19,61 @@ import java.util.Map;
  * Update methods are defined for a PointArray
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class PointArrayByRefParticle extends ByRefParticle
 {
-    protected static final int X_COORD_INDEX = 0;
-    protected static final int Y_COORD_INDEX = 1;
-    protected static final int Z_COORD_INDEX = 2;
-
-    protected static final int RED_COLOR_INDEX = 0;
-    protected static final int GREEN_COLOR_INDEX = 1;
-    protected static final int BLUE_COLOR_INDEX = 2;
-    protected static final int ALPHA_COLOR_INDEX = 3;
-
-    public PointArrayByRefParticle( Map environment, Shape3D shape, int index,
-                                    double[] positionRefArray,
-                                    float[] colorRefArray,
-                                    float[] textureCoordRefArray,
-                                    float[] normalRefArray )
+    public PointArrayByRefParticle(boolean relative)
     {
-        super( environment, shape, index, positionRefArray, colorRefArray, textureCoordRefArray, normalRefArray );
+        super(relative);
     }
 
-    public void updateGeometry()
+    /**
+     * Implement this method to update the BYREF positions of
+     * the geometry based on the change to the position field.
+     *
+     */
+    public void updateGeometry(float[] coords, int startIndex)
     {
-        positionRefArray[index * NUM_COORDS + X_COORD_INDEX] = position.x;
-        positionRefArray[index * NUM_COORDS + Y_COORD_INDEX] = position.y;
-        positionRefArray[index * NUM_COORDS + Z_COORD_INDEX] = position.z;
+        coords[startIndex] = position.x;
+        coords[startIndex + 1] = position.y;
+        coords[startIndex + 2] = position.z;
     }
 
-    public void updateColors()
+    /**
+     * Implement this method to update the BYREF colors for
+     * the geometry based on the change to the color field.
+     *
+     */
+    public void updateColors(float[] colors, int startIndex)
     {
-        colorRefArray[index * NUM_COLORS + RED_COLOR_INDEX] = color.x;
-        colorRefArray[index * NUM_COLORS + GREEN_COLOR_INDEX] = color.y;
-        colorRefArray[index * NUM_COLORS + BLUE_COLOR_INDEX] = color.z;
-        colorRefArray[index * NUM_COLORS + ALPHA_COLOR_INDEX] = color.w;
+        colors[startIndex] = color.x;
+        colors[startIndex + 1] = color.y;
+        colors[startIndex + 2] = color.z;
+        colors[startIndex + 3] = color.w;
+    }
+
+    /**
+     * Implement this method to update the BYREF positions of
+     * the geometry based on the change to the position field.
+     *
+     */
+    public void updateNormals(float[] normals, int startIndex)
+    {
+        normals[startIndex] = 0;
+        normals[startIndex + 1] = 0;
+        normals[startIndex + 2] = 1;
+    }
+
+    /**
+     * Implement this method to update the BYREF colors for
+     * the geometry based on the change to the color field.
+     *
+     */
+    public void updateTexCoords(float[] coords, int startIndex)
+    {
+        // Seems a bit dumb to do this on a line.
+        coords[startIndex] = 0;
+        coords[startIndex + 1] = 0;
     }
 }

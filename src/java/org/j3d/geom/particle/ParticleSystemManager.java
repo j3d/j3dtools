@@ -9,11 +9,13 @@
 
 package org.j3d.geom.particle;
 
+// Standard imports
+import java.util.ArrayList;
 import javax.media.j3d.Behavior;
 import javax.media.j3d.WakeupCondition;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+
+// Application specific imports
+// None
 
 /**
  * The ParticleSystemManager is a Behavior and can be
@@ -22,14 +24,14 @@ import java.util.Map;
  * on each whenever it is triggered.
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ParticleSystemManager extends Behavior
 {
-    private List particleSystems = new ArrayList();
+    private ArrayList particleSystems = new ArrayList();
     private WakeupCondition wakeupCondition;
 
-    public ParticleSystemManager( WakeupCondition wakeupCondition, Map environment )
+    public ParticleSystemManager( WakeupCondition wakeupCondition )
     {
         this.wakeupCondition = wakeupCondition;
     }

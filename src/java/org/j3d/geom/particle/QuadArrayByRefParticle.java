@@ -20,130 +20,132 @@ import java.util.Map;
  *
  * <pre>
  *  <- width*2 ->
- *  1 --------- 4    / \
+ *  4 --------- 3    / \
  *   |          |     |
  *   |          |     |
  *   |     +    |   height*2
  *   |          |     |
  *   |          |     |
- *  2 --------- 3    \ /
+ *  1 --------- 2    \ /
  *
  * </pre>
  * Quad 1: 1,2,3,4
  *
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class QuadArrayByRefParticle extends ByRefParticle
 {
-    public static final int NUM_VERTICES_PER_PARTICLE = 4;
-
-    protected static final int X_COORD_INDEX = 0;
-    protected static final int Y_COORD_INDEX = 1;
-    protected static final int Z_COORD_INDEX = 2;
-
-    protected static final int COORD_POINT_1 = 0;
-    protected static final int COORD_POINT_2 = 3;
-    protected static final int COORD_POINT_3 = 6;
-    protected static final int COORD_POINT_4 = 9;
-
-    protected static final int TEX_POINT_1 = 0;
-    protected static final int TEX_POINT_2 = 2;
-    protected static final int TEX_POINT_3 = 4;
-    protected static final int TEX_POINT_4 = 6;
-
-    protected static final int S_COORD_INDEX = 0;
-    protected static final int T_COORD_INDEX = 1;
-
-    protected static final int RED_COLOR_INDEX = 0;
-    protected static final int GREEN_COLOR_INDEX = 1;
-    protected static final int BLUE_COLOR_INDEX = 2;
-    protected static final int ALPHA_COLOR_INDEX = 3;
-
-    // we need to save these, as none of the vertices in
-    // the TriangleArray correspond to the particle position
-    protected int startIndex = 0;
-
-    public QuadArrayByRefParticle( Map env, Shape3D shape, int index,
-                                   double[] positionRefArray,
-                                   float[] colorRefArray,
-                                   float[] textureCoordRefArray,
-                                   float[] normalRefArray )
+    public QuadArrayByRefParticle(boolean relative)
     {
-        super( env, shape, index, positionRefArray, colorRefArray, textureCoordRefArray, normalRefArray );
-
-        startIndex = index * NUM_VERTICES_PER_PARTICLE * ByRefParticle.NUM_COORDS;
-
-        setTextureCoordinates();
-        setNormals();
+        super(relative);
     }
 
-    protected void updateColors()
+    /**
+     * Implement this method to update the BYREF positions of
+     * the geometry based on the change to the position field.
+     *
+     */
+    public void updateGeometry(float[] coords, int startIndex)
     {
-        int colorStartIndex = index * NUM_VERTICES_PER_PARTICLE * ByRefParticle.NUM_COLORS;
-
-        for ( int vertex = 0; vertex < NUM_VERTICES_PER_PARTICLE; vertex++ )
-        {
-            colorRefArray[colorStartIndex + ( vertex * ByRefParticle.NUM_COLORS ) + RED_COLOR_INDEX] = color.x;
-            colorRefArray[colorStartIndex + ( vertex * ByRefParticle.NUM_COLORS ) + GREEN_COLOR_INDEX] = color.y;
-            colorRefArray[colorStartIndex + ( vertex * ByRefParticle.NUM_COLORS ) + BLUE_COLOR_INDEX] = color.z;
-            colorRefArray[colorStartIndex + ( vertex * ByRefParticle.NUM_COLORS ) + ALPHA_COLOR_INDEX] = color.w;
-        }
-    }
-
-    protected void updateGeometry()
-    {
-        // point 1
-        positionRefArray[startIndex + COORD_POINT_1 + X_COORD_INDEX] = position.x + width;
-        positionRefArray[startIndex + COORD_POINT_1 + Y_COORD_INDEX] = position.y - height;
-        positionRefArray[startIndex + COORD_POINT_1 + Z_COORD_INDEX] = position.z;
+        coords[startIndex] = position.x - width;
+        coords[startIndex + 1] = position.y - height;
+        coords[startIndex + 2] = position.z;
 
         // point 2
-        positionRefArray[startIndex + COORD_POINT_2 + X_COORD_INDEX] = position.x - width;
-        positionRefArray[startIndex + COORD_POINT_2 + Y_COORD_INDEX] = position.y - height;
-        positionRefArray[startIndex + COORD_POINT_2 + Z_COORD_INDEX] = position.z;
+        coords[startIndex + 3] = position.x + width;
+        coords[startIndex + 4] = position.y - height;
+        coords[startIndex + 5] = position.z;
 
         // point 3
-        positionRefArray[startIndex + COORD_POINT_3 + X_COORD_INDEX] = position.x - width;
-        positionRefArray[startIndex + COORD_POINT_3 + Y_COORD_INDEX] = position.y + height;
-        positionRefArray[startIndex + COORD_POINT_3 + Z_COORD_INDEX] = position.z;
+        coords[startIndex + 6] = position.x + width;
+        coords[startIndex + 7] = position.y + height;
+        coords[startIndex + 8] = position.z;
 
         // point 4
-        positionRefArray[startIndex + COORD_POINT_4 + X_COORD_INDEX] = position.x + width;
-        positionRefArray[startIndex + COORD_POINT_4 + Y_COORD_INDEX] = position.y + height;
-        positionRefArray[startIndex + COORD_POINT_4 + Z_COORD_INDEX] = position.z;
+        coords[startIndex + 9] = position.x - width;
+        coords[startIndex + 10] = position.y + height;
+        coords[startIndex + 11] = position.z;
     }
 
-    private void setTextureCoordinates()
+    /**
+     * Implement this method to update the BYREF colors for
+     * the geometry based on the change to the color field.
+     *
+     */
+    public void updateColors(float[] colors, int startIndex)
     {
-        int texStartIndex = index * NUM_VERTICES_PER_PARTICLE * ByRefParticle.NUM_TEXTURE_COORDS;
+        colors[startIndex] = color.x;
+        colors[startIndex + 1] = color.y;
+        colors[startIndex + 2] = color.z;
+        colors[startIndex + 3] = color.w;
 
+        colors[startIndex + 4] = color.x;
+        colors[startIndex + 5] = color.y;
+        colors[startIndex + 6] = color.z;
+        colors[startIndex + 7] = color.w;
+
+        colors[startIndex + 8] = color.x;
+        colors[startIndex + 9] = color.y;
+        colors[startIndex + 10] = color.z;
+        colors[startIndex + 11] = color.w;
+
+        colors[startIndex + 12] = color.x;
+        colors[startIndex + 13] = color.y;
+        colors[startIndex + 14] = color.z;
+        colors[startIndex + 15] = color.w;
+    }
+
+    /**
+     * Implement this method to update the BYREF positions of
+     * the geometry based on the change to the position field.
+     *
+     */
+    public void updateNormals(float[] normals, int startIndex)
+    {
         // point 1
-        textureCoordRefArray[texStartIndex + TEX_POINT_1 + S_COORD_INDEX] = 1;
-        textureCoordRefArray[texStartIndex + TEX_POINT_1 + T_COORD_INDEX] = 0;
+        normals[startIndex] = 0;
+        normals[startIndex + 1] = 0;
+        normals[startIndex + 2] = 1;
 
         // point 2
-        textureCoordRefArray[texStartIndex + TEX_POINT_2 + S_COORD_INDEX] = 0;
-        textureCoordRefArray[texStartIndex + TEX_POINT_2 + T_COORD_INDEX] = 0;
+        normals[startIndex + 3] = 0;
+        normals[startIndex + 4] = 0;
+        normals[startIndex + 5] = 1;
 
         // point 3
-        textureCoordRefArray[texStartIndex + TEX_POINT_3 + S_COORD_INDEX] = 0;
-        textureCoordRefArray[texStartIndex + TEX_POINT_3 + T_COORD_INDEX] = 1;
+        normals[startIndex + 6] = 0;
+        normals[startIndex + 7] = 0;
+        normals[startIndex + 8] = 1;
 
         // point 4 = point 1
-        textureCoordRefArray[texStartIndex + TEX_POINT_4 + S_COORD_INDEX] = 1;
-        textureCoordRefArray[texStartIndex + TEX_POINT_4 + T_COORD_INDEX] = 1;
+        normals[startIndex + 9] = 0;
+        normals[startIndex + 10] = 0;
+        normals[startIndex + 11] = 1;
+
     }
 
-    private void setNormals()
+    /**
+     * Implement this method to update the BYREF colors for
+     * the geometry based on the change to the color field.
+     *
+     */
+    public void updateTexCoords(float[] coords, int startIndex)
     {
-        int normalStartIndex = index * NUM_VERTICES_PER_PARTICLE * ByRefParticle.NUM_NORMALS;
+        // point 1
+        coords[startIndex] = 0;
+        coords[startIndex + 1] = 0;
 
-        for ( int vertex = 0; vertex < NUM_VERTICES_PER_PARTICLE; vertex++ )
-        {
-            normalRefArray[normalStartIndex + ( vertex * ByRefParticle.NUM_NORMALS ) + X_COORD_INDEX] = 0;
-            normalRefArray[normalStartIndex + ( vertex * ByRefParticle.NUM_NORMALS ) + Y_COORD_INDEX] = 0;
-            normalRefArray[normalStartIndex + ( vertex * ByRefParticle.NUM_NORMALS ) + Z_COORD_INDEX] = 1;
-        }
+        // point 2
+        coords[startIndex + 2] = 1;
+        coords[startIndex + 3] = 0;
+
+        // point 3
+        coords[startIndex + 4] = 1;
+        coords[startIndex + 5] = 1;
+
+        // point 4 = point 1
+        coords[startIndex + 6] = 0;
+        coords[startIndex + 7] = 1;
     }
 }

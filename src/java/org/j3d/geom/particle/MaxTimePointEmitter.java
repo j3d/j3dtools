@@ -9,17 +9,17 @@
 
 package org.j3d.geom.particle;
 
+// Standard imports
+import javax.vecmath.Vector3f;
 
 /**
- * MaxAgePointEmitter checks the age of a Particle
- * and reinitializes it by moving it to a point in space
- * and clearing resultant force and velocity and setting
- * a new randomized force on the Particle.
+ * and limits the maximum age based on wall-clock existance time.
+ * Generates particles that emit in a specific direction with varying velocity
  *
- * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @author Justin Couch
+ * @version $Revision: 1.1 $
  */
-public class MaxAgePointForceEmitter implements ParticleInitializer
+public class MaxTimePointEmitter implements ParticleInitializer
 {
     /**
      * Number of frames of zero consecutive zero time deltas before we should
@@ -31,16 +31,25 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
     private int lifetime;
 
     /** Number of particles to generate per millisecond */
-    private int particlesPerMs;
+    private float particlesPerMs;
 
     /** The origin to generate the particles at */
     private float[] origin;
 
+    /**
+     * The calculated initial velocity of the particles using the direction and
+     * velocity variables.
+     */
+    private float[] initialVelocity;
+
     /** Initial colour to make all particles */
     private float[] color;
 
-    /** The base force applied to the particles. */
-    private float force;
+    /** The initial direction of the particles */
+    private float[] direction;
+
+    /** The initial velocity of the particles. Should be >= 0 */
+    private float velocity;
 
     /** Amount of variation on the randomness */
     private float variation;
@@ -51,9 +60,6 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
     /** Initial surface area given to all particles */
     private double surfaceArea;
 
-    /** The initial velocity imparted to the particles */
-    private float[] initialVelocity;
-
     /**
      * The zero time delta counter - used to make sure particles are still
      * issued on really high-speed machines.
@@ -61,8 +67,7 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
     private int zeroDeltaCounter;
 
     /**
-     * Construct a new emitter instance for a point emitter that gives the
-     * particle a random force direction and strength. The number of
+     * Construct a new emitter instance for a point emitter. The number of
      * particles to create each frame is driven from the maximum particle count
      * divided by the average lifetime.
      *
@@ -70,27 +75,36 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
      * @param maxParticleCount The maximum number of particles to manage
      * @param position The emitting position in the local space
      * @param color The initial color of particles (4 component)
+     * @param direction The initial direction the particles are sent
      * @param velocity The speed of the particls to start with
      * @param variation The amount of variance for the initial values
      */
-    public MaxAgePointForceEmitter(int lifetime,
-                                   int maxParticleCount,
-                                   float[] position,
-                                   float[] color,
-                                   float force,
-                                   float variation)
+    public MaxTimePointEmitter(int lifetime,
+                               int maxParticleCount,
+                               float[] position,
+                               float[] color,
+                               float[] direction,
+                               float velocity,
+                               float variation)
     {
         this.lifetime = lifetime;
 
         // Particle per millisecond is just averaged over the base lifetime
         // Uses the integer division for rounding purposes as we really don't
         // care for high-accuracy in this number - it's just a guide.
-        particlesPerMs = maxParticleCount / lifetime;
+        particlesPerMs = (float)maxParticleCount / lifetime;
+
+        initialVelocity = new float[3];
 
         this.origin = new float[3];
         this.origin[0] = position[0];
         this.origin[1] = position[1];
         this.origin[2] = position[2];
+
+        this.direction = new float[3];
+        this.direction[0] = direction[0];
+        this.direction[1] = direction[1];
+        this.direction[2] = direction[2];
 
         this.color = new float[4];
         this.color[0] = color[0];
@@ -98,18 +112,18 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
         this.color[2] = color[2];
         this.color[3] = color[3];
 
-        this.force = force;
+        this.velocity = velocity;
         this.variation = variation;
+
+        updateVelocity();
 
         initialMass = 0.0000001;
         surfaceArea = 0.0004;
-        initialVelocity = new float[3];
     }
 
     /**
      * The number of particles that should be created and initialised this
      * frame. This is called once per frame by the particle system manager.
-     * Sends all particles initialially and nothing after that.
      *
      * @param timeDelta The delta between the last frame and this one in
      *    milliseconds
@@ -154,22 +168,22 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
      */
     public boolean initialize(Particle particle)
     {
-        // Vary the alpha channel of the color a bit too
-        float rnd = 1 - (float)Math.random() * variation;
-        particle.setColor(color[0], color[1], color[2], color[3] * rnd);
-
-        rnd = 1 - (float)Math.random() * variation;
-        particle.setCycleTime((int)(lifetime * rnd));
+        particle.setColor(color[0], color[1], color[2], color[3]);
+        particle.setCycleTime((int) (Math.random() * lifetime));
 
         particle.setPositionAndPrevious(origin[0], origin[1], origin[2]);
+        particle.resultantForce.set(0, 0, 0);
 
-        rnd = 1 - (float)Math.random() * variation;
-        float f_x = rnd * force * (float)Math.random();
-        float f_y = rnd * force * (float)Math.random();
-        float f_z = rnd * force * (float)Math.random();
+        // Set up the initial velocity using a bit of randomness. Uses the same
+        // scale factor in each component. If more randomness is desired, this
+        // could be used on each component of the velocity.
+        float rnd = (float)Math.random() * variation;
 
-        particle.resultantForce.set(f_x, f_y, f_z);
-        particle.velocity.set(0, 0, 0);
+        float v_x = initialVelocity[0] * rnd;
+        float v_y = initialVelocity[1] * rnd;
+        float v_z = initialVelocity[2] * rnd;
+
+        particle.velocity.set(v_x, v_y, v_z);
         return true;
     }
 
@@ -237,5 +251,54 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
         initialVelocity[0] = x;
         initialVelocity[1] = y;
         initialVelocity[2] = z;
+    }
+
+    /**
+     * Change the base velocity of the particles without changing the
+     * emission direction. The velocity should be >= 0.
+     *
+     * @param v The new velocity to use
+     */
+    public void setVelocity(float v)
+    {
+        velocity = v;
+        updateVelocity();
+    }
+
+    /**
+     * Change the direction that particles are being emitted from by this this
+     * emitter. The base velocity remains unchanged.
+     *
+     * @param direction The new direction to send the particles
+     */
+    public void setEmitDirection(float[] direction)
+    {
+        this.direction[0] = direction[0];
+        this.direction[1] = direction[1];
+        this.direction[2] = direction[2];
+        updateVelocity();
+    }
+
+    /**
+     * Convenience method to update the velocity array
+     */
+    private void updateVelocity()
+    {
+        if(velocity == 0)
+        {
+            initialVelocity[0] = 0;
+            initialVelocity[1] = 0;
+            initialVelocity[2] = 0;
+        }
+        else
+        {
+            Vector3f vec = new Vector3f(direction);
+            vec.normalize();
+            vec.scale(velocity);
+
+            initialVelocity[0] = vec.x;
+            initialVelocity[1] = vec.y;
+            initialVelocity[2] = vec.z;
+        }
     }
 }

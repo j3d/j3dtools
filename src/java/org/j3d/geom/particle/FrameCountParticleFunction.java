@@ -11,22 +11,26 @@ package org.j3d.geom.particle;
 
 
 /**
- * Simple ParticleFunction that causes a ParticleSystem
- * to run for a fixed number of frames.
+ * Simple ParticleFunction that causes a ParticleSystem to run for a fixed
+ * number of frames from the start of this function, regardless of the
+ * particle's set lifetime.
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class FrameCountParticleFunction implements ParticleFunction
 {
+    /** The maximum age a particle is allowed to be */
     private int maxAge;
+
+    /** The number of frames currently used */
     private int frameCount = 0;
 
     /** Flag to say whether or not this function is disabled or not */
     private boolean enabled;
 
 
-    public FrameCountParticleFunction( int maxAge )
+    public FrameCountParticleFunction(int maxAge)
     {
         enabled = true;
         this.maxAge = maxAge;
@@ -58,26 +62,37 @@ public class FrameCountParticleFunction implements ParticleFunction
     }
 
     /**
-     * Apply this function to the given particle right now.
+     * Notification that the system is about to do an update of the particles
+     * and to do any system-level initialisation.
      *
-     * @param particle The particle to apply the function to
-     * @return true if the particle has changed, false otherwise
+     * @return true if this should force another update after this one
      */
-    public boolean onUpdate( ParticleSystem ps )
+    public boolean newFrame()
     {
        frameCount++;
        return true;
     }
 
     /**
-     * Notification that the system is about to do an update of the particles
-     * and to do any system-level initialisation.
+     * Apply this function to the given particle right now.
      *
-     * @param ps The particle system that is being updated
-     * @return true if this should force another update after this one
+     * @param particle The particle to apply the function to
+     * @return true if the particle has changed, false otherwise
      */
-    public boolean apply( Particle particle )
+    public boolean apply(Particle particle)
     {
-        return( frameCount < maxAge );
+        return (frameCount < maxAge);
+    }
+
+    //-------------------------------------------------------------
+    // Local methods
+    //-------------------------------------------------------------
+
+    /**
+     * Reset the function to have a zero frame count again.
+     */
+    public void resetFrameCount()
+    {
+        frameCount = 0;
     }
 }

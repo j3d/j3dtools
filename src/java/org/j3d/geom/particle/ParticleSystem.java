@@ -21,302 +21,199 @@ import java.security.PrivilegedAction;
 
 import javax.vecmath.Color4f;
 
-import com.sun.j3d.utils.image.TextureLoader;
-
 // Application specific imports
 import org.j3d.texture.TextureCacheFactory;
 
 /**
- * Abstract ParticleSystem. A ParticleSystem managed a List of Particles
- * created by a ParticleFactory. It applies changes to the Particles using
- * a List of MovementFunctions and a ParticleInitializer.
+ * Abstract representation of a ParticleSystem.
+ *
+ * A ParticleSystem manages a List of Particles created by a ParticleFactory.
+ * It applies changes to the Particles using a List of ParticleFunctions and a
+ * a single emitter.
  * <P>
  * A ParticleSystem can be represented in any way appropriate, the only
  * requirement is that is create a Node to be added to the scenegraph.
  * <p>
- * This class is not multiple thread safe.
- * <p>
- * <p>
- * By default Particles used the file particle-factory.properties (loaded from
- * the current directory) to initialize their physical attributes and images.
- * <p>
- * @author Daniel Selman
- * @version $Revision: 1.7 $
+ *
+ * @author Justin Couch, based on code by Daniel Selman
+ * @version $Revision: 1.8 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
-    /** Name of the property file that defines the setup information */
-    private static final String PROPERTY_FILE = "particle-factory.properties";
-
-    /**
-     * Name of the environment property that holds the texture to use
-     * on the particle objects. The value may be either a string, which is a
-     * filename, relative to the CLASSPATH, or an instance of a J3D
-     * {@link javax.media.j3d.Texture} object.
-     */
-    public static final String PARTICLE_TEXTURE = "texture";
-
-    /**
-     * Identifier for this particle system type.
-     */
+    /** * Identifier for this particle system type. */
     private String systemName;
 
-    /**
-     * A List of Particle objects under the control of this ParticleSystem.
-     */
-    protected List particles;
 
-    /**
-     * Number of Particles in the ParticleSystem.
-     */
+    /** Maximum number of particles this system can handle */
+    protected int maxParticleCount;
+
+    /** Current number of live particles */
     protected int particleCount;
 
-    /**
-     * List of ParticleFunctions to be applied to each Particle.
-     */
-    protected List particleFunctions = new ArrayList();
+    /** Residue of particles not created last frame */
+    private int creationResidue;
+
+    /** Inter-frame time delta. */
+    protected int frameTime;
+
+    /** The time of this frame. Set during the update() method */
+    protected long timeNow;
+
+    /** * List of ParticleFunctions to be applied to each Particle. */
+    private ArrayList particleFunctions;
+
+    /** The cache of currently dead particles */
+    private ArrayList deadParticles;
+
+    /** The number of dead particles currently */
+    private int numDeadParticles;
+
+    /** List of currently active particle instances */
+    protected ParticleList particleList;
+
+    /** The ParticleInitializer for this ParticleSystem. */
+    private ParticleInitializer particleInitializer;
 
     /**
-     * The ParticleInitializer for this ParticleSystem. ParticleInitializers
-     * control how long Particles live and there attributes if they are recycled.
-     */
-    protected ParticleInitializer particleInitializer;
-
-    /**
-     * The ParticleFactory for this ParticleSystem, responsible for
-     * creating and initializing Particles.
-     */
-    protected ParticleFactory particleFactory;
-
-    /**
-     * Flag indicating that this ParticleSystem is still running
-     * and should not be removed from its driving ParticleSystemManager.
-     */
-    protected boolean running = false;
-
-    /**
-     * The environment entries passed to the system for initialisation.
-     */
-    protected Map environment;
-
-    /**
-     * ResourceBundle used to initialize Particle attributes.
-     */
-    private static Properties resources;
-
-    /**
-     * Do the class initialisation to load the global resources.
-     */
-    static
-    {
-        InputStream is = (InputStream)AccessController.doPrivileged(
-            new PrivilegedAction() {
-                public Object run() {
-                    return ClassLoader.getSystemResourceAsStream(PROPERTY_FILE);
-                }
-            }
-        );
-
-        resources = new Properties();
-
-        if(is != null)
-        {
-            try
-            {
-                resources.load(is);
-                is.close();
-            }
-            catch(IOException ioe)
-            {
-                System.out.println("Error reading particle.properties");
-            }
-        }
-    }
-
-    /**
-     * Creates a ParticleSystem of the given type, using
-     * the supplied initialization environment.
-     * @param systemType the numeric identified for this particle system
-     * @param environment the initialization environment
-     */
-    public ParticleSystem( String systemName, Map environment )
-    {
-        this.systemName = systemName;
-        this.environment = new HashMap( environment );
-        particleFactory = this;
-    }
-
-    /**
-     * Creates and initializes the Particles contained within this
-     * ParticleSystem. The ParticleFactory and ParticleInitializer
-     * are used to create and inititalize the Particles respectively.
-     * @param particleInitializer the ParticleInitializer instance to
-     * use.
-     * @param particleCount the number of Particles to create using the
-     * ParticleFactory.
-     */
-    protected void createParticles( ParticleInitializer particleInitializer,
-                                    int particleCount )
-    {
-        this.particleCount = particleCount;
-        this.particleInitializer = particleInitializer;
-
-        particles = new ArrayList();
-
-        for ( int n = 0; n < particleCount; n++ )
-        {
-            Particle particle = particleFactory.createParticle( environment, systemName, n );
-            initParticle( particle );
-            particles.add( n, particle );
-        }
-    }
-
-    /**
-     * Replaces the ParticleInitialzer supplied at construction time.
+     * Create a new ParticleSystem.
      *
-     * @param particleInitializer the ParticleInitializer instance to
-     * use.
+     * @param name An arbitrary string name for ID purposes
+     * @param maxParticleCount The maximum number of particles allowed to exist
      */
-    public void setParticleInitializer( ParticleInitializer particleInitializer )
+    public ParticleSystem(String name, int maxParticleCount)
     {
-        this.particleInitializer = particleInitializer;
+        systemName = name;
+        particleFunctions = new ArrayList();
+        particleList = new ParticleList();
+        deadParticles = new ArrayList(maxParticleCount);
+
+        this.maxParticleCount = maxParticleCount;
+        numDeadParticles = 0;
+        frameTime = -1;
     }
 
     /**
-     * Updates a single Particle by applying all ParticleFunctions
-     * to the Particle.
+     * Run the initial particle setup for the first frame now. This should be
+     * called just after completing all the setup for the other parts of the system
+     * but before the first update driven by the scene graph.
+     */
+    public void initialize()
+    {
+
+        timeNow = System.currentTimeMillis();
+
+        createParticles();
+
+        updateGeometry();
+    }
+
+    /**
+     * Get the node instance that represents the particle system in the scene
+     * graph.
      *
-     * @param index the Particle index
-     * @param particle the Particle to be updated
-     * @return true if this Particle requires further updates from the ParticleSystem
+     * @return The Java3D node instance
      */
-    public boolean updateParticle( int index, Particle particle )
-    {
-        particle.incAge();
-
-        if ( particleInitializer.isAlive( particle ) != false )
-        {
-            ParticleFunction function = null;
-            int size = particleFunctions.size();
-            for(int n = 0; n < size; n++)
-            {
-                function = ( ParticleFunction ) particleFunctions.get( n );
-                running |= function.apply( particle );
-            }
-        }
-        else
-        {
-            particle.setCycleAge( 0 );
-            running |= particleInitializer.initialize( particle );
-        }
-
-        return running;
-    }
-
-    /**
-     * Initializes a single Particle using the ParticleInitializer.
-     *
-     * @param index the Particle index
-     * @param particle the Particle to be updated
-     * @return true if this Particle requires further updates from the ParticleSystem
-     */
-    public void initParticle( Particle particle )
-    {
-        particleInitializer.initialize( particle );
-    }
-
-    public void addParticleFunction( ParticleFunction function )
-    {
-        particleFunctions.add( function );
-    }
-
-    /**
-     * Inform each of the ParticleFunctions so they can
-     * do any processing.
-     * @return true if the system is currently running
-     */
-    public boolean update( )
-    {
-        ParticleFunction function;
-
-        for ( int n = particleFunctions.size() - 1; n >= 0; n-- )
-        {
-            function = ( ParticleFunction ) particleFunctions.get( n );
-            function.onUpdate( this );
-        }
-
-       return true;
-    }
-
     public abstract Node getNode();
 
+    /**
+     * Notification that this particle system has been removed from the scene
+     * graph and it cleanup anything needed right now.
+     */
     public abstract void onRemove();
 
-    protected void assignAttributes( String name, Particle particle )
+    /**
+     * Update the arrays for the geometry object.
+     */
+    protected abstract void updateGeometry();
+
+    /**
+     * Set the emitter used to initialise particles.
+     *
+     * @param emitter the ParticleInitializer instance to use
+     */
+    public void setParticleInitializer(ParticleInitializer emitter)
     {
-        particle.setSurfaceArea( loadDouble( name + ".surface.area" ) );
-        particle.setEnergy( loadDouble( name + ".energy" ) );
-        particle.setMass( loadDouble( name + ".mass" ) );
-        particle.setElectrostaticCharge( loadDouble( name + ".electrostatic.charge" ) );
-        particle.setWidth( loadDouble( name + ".width" ) );
-        particle.setHeight( loadDouble( name + ".height" ) );
-        particle.setDepth( loadDouble( name + ".depth" ) );
-        particle.setCollisionForce( loadDouble( name + ".collision.force" ) );
-        particle.setCollisionVelocity( loadDouble( name + ".collision.velocity" ) );
-        particle.setFrictionForce( loadDouble( name + ".friction.force" ) );
-        particle.setFrictionVelocity( loadDouble( name + ".friction.velocity" ) );
-    }
-
-    private double loadDouble( String name )
-    {
-        String value = resources.getProperty( name + ".average" );
-        double basis = Double.parseDouble( value );
-
-        value = resources.getProperty( name + ".random" );
-        double random = Double.parseDouble( value );
-
-        return Particle.getRandomNumber( basis, random );
+        this.particleInitializer = emitter;
     }
 
     /**
-     * Retrieves and optionally loads a texture from the
-     * initialization environment. The TextureCache is used
-     * to load the texture.
+     * Append a new particle function to the list. This is placed on the end
+     * of the evaluation list. A null parameter value will be ignored. A
+     * function may be added more than once.
+     *
+     * @param function The function to add
      */
-    protected Texture getTexture()
+    public void addParticleFunction(ParticleFunction function)
     {
-        // load the texture image and assign to the appearance
-        Object prop = environment.get( PARTICLE_TEXTURE );
-        Texture tex = null;
+        if(function != null)
+            particleFunctions.add(function);
+    }
 
-        if ( prop instanceof String )
+    /**
+     * Insert a particle function at a specific place in the list. All others
+     * are shifted up one place. Inserting at a position above the last item
+     * in the list will act as an append. A null parameter value will be ignored.
+     *
+     * @param index The position in the list to insert it on
+     * @param function The function to be added
+     */
+    public void insertParticleFunction(int index, ParticleFunction function)
+    {
+        if(function != null)
         {
-            try
-            {
-                // load the texture from the texture cache
-                tex = TextureCacheFactory.getCache().fetchTexture( ( String ) prop );
-            }
-            catch ( Exception e )
-            {
-                e.printStackTrace();
-            }
+            if(index > particleFunctions.size())
+                particleFunctions.add(function);
+            else
+                particleFunctions.add(index, function);
         }
-        else if ( prop instanceof Texture )
-        {
-            tex = ( Texture ) prop;
-        }
-        else
-        {
-            String name = resources.getProperty( systemName + ".texture" );
+    }
 
-            if ( name != null ) {
-                TextureLoader texLoader =
-                    new TextureLoader( name, Texture.RGBA, null );
-                tex = texLoader.getTexture();
-            }
-        }
+    /**
+     * Remove the first instance of the function defined. If there are more
+     * than one copy inserted, only the first instance found from the front
+     * of the list will be deleted. If the function is not in the list, then
+     * the request is silently ignored.
+     *
+     * @param function The function instance to remove
+     */
+    public void removeParticleFunction(ParticleFunction function)
+    {
+        particleFunctions.remove(function);
+    }
 
-        return tex;
+    /**
+     * Inform each of the ParticleFunctions so they can do any processing.
+     *
+     * @return true if the system is currently running
+     */
+    public boolean update()
+    {
+        if(particleInitializer == null)
+            return true;
+
+        // Work out the delta for frame times.
+        long cur_time = System.currentTimeMillis();
+
+        frameTime = (int)(cur_time - timeNow);
+        timeNow = cur_time;
+
+        updateParticleFunctions();
+        runParticleFunctions();
+        createParticles();
+        updateGeometry();
+
+        return true;
+    }
+
+    /**
+     * Set the texture instance that this particle should be using. If the
+     * particle doesn't need or want a texture, don't call this. Setting a
+     * value of null will clear the current texture.
+     *
+     * @param tex The texture instance to use
+     */
+    public void setTexture(Texture tex)
+    {
     }
 
     /**
@@ -334,25 +231,28 @@ public abstract class ParticleSystem implements ParticleFactory
                 new PolygonAttributes(
                         PolygonAttributes.POLYGON_FILL,
                         PolygonAttributes.CULL_NONE,
-                        0 ) );
+                        0));
 */
-        app.setTransparencyAttributes(
-                new TransparencyAttributes( TransparencyAttributes.FASTEST, 0.0f ) );
 
-        app.setTextureAttributes(
-                new TextureAttributes(
-                        TextureAttributes.MODULATE,
-                        new Transform3D(),
-                        new Color4f(),
-                        TextureAttributes.FASTEST ) );
+        TransparencyAttributes trans =
+            new TransparencyAttributes(TransparencyAttributes.BLENDED, 0);
+        trans.setSrcBlendFunction(TransparencyAttributes.BLEND_ONE_MINUS_SRC_ALPHA);
 
-        app.setTexture( getTexture() );
+        TextureAttributes tex_attr = new TextureAttributes();
+        tex_attr.setTextureMode(TextureAttributes.MODULATE);
+        tex_attr.setPerspectiveCorrectionMode(TextureAttributes.FASTEST);
+
+        app.setTransparencyAttributes(trans);
+        app.setTextureAttributes(tex_attr);
+
+//        app.setTexture(getTexture());
         return app;
     }
 
     /**
-     * Gets the systemName.
-     * @return Returns a String
+     * Gets the currently set systemName.
+     *
+     * @return String representing the current system name
      */
     public String getSystemName()
     {
@@ -360,12 +260,130 @@ public abstract class ParticleSystem implements ParticleFactory
     }
 
     /**
-     * Sets the systemName.
-     * @param systemName The systemName to set
+     * Sets the system name to a new value. Should not be null.
+     *
+     * @param systemName The new name to set
      */
-    public void setSystemName( String systemName )
+    public void setSystemName(String systemName)
     {
         this.systemName = systemName;
     }
 
+    /**
+     * Inform all the particle functions that a new frame has started and that they
+     * should do any common initialization work now.
+     */
+    private void updateParticleFunctions()
+    {
+        ParticleFunction function;
+
+        for (int n = particleFunctions.size() - 1; n >= 0; n--)
+        {
+            function = (ParticleFunction)particleFunctions.get(n);
+            if(function.isEnabled())
+                function.newFrame();
+        }
+    }
+
+    /**
+     * Evaluate the particle functions now.
+     */
+    private void runParticleFunctions()
+    {
+        // Quick exit if there's nothing to be done
+        if(particleFunctions.size() == 0 || particleList.size() == 0)
+            return;
+
+        int num_functions = particleFunctions.size();
+        ParticleFunction function;
+
+        for(int i = 0; i < num_functions; i++)
+        {
+            function = (ParticleFunction)particleFunctions.get(i);
+
+            if(function.isEnabled())
+            {
+                int num_particles = particleList.size();
+                for(int j = 0; j < num_particles; j++)
+                {
+                    Particle p = particleList.next();
+                    if(!function.apply(p))
+                    {
+                        particleList.remove();
+                        releaseParticle(p);
+                        particleCount--;
+                    }
+                }
+
+                particleList.reset();
+            }
+        }
+    }
+
+    /**
+     * Create particles for this frame.
+     */
+    private void createParticles()
+    {
+        int max_avail = maxParticleCount - particleCount;
+        int requested = particleInitializer.numParticlesToCreate(frameTime) +
+                        creationResidue;
+
+        int needed = 0;
+
+        if(max_avail < requested)
+        {
+            needed = max_avail;
+            creationResidue = requested - max_avail;
+        }
+        else
+        {
+            needed = requested;
+            creationResidue = 0;
+        }
+
+        for(int n = 0; n < needed; n++)
+        {
+            Particle particle = fetchParticle();
+
+            particleInitializer.initialize(particle);
+            particle.wallClockBirth = timeNow;
+
+            particleList.add(particle);
+        }
+
+        particleCount += needed;
+    }
+
+    /**
+     * Fetch a new particle instance. The instance will be fetched from the cache if
+     * available, otherwise a new one will be created.
+     *
+     * @return A new particle instance
+     */
+    private Particle fetchParticle()
+    {
+        Particle ret_val;
+
+        if(numDeadParticles != 0)
+        {
+             ret_val  = (Particle)deadParticles.remove(numDeadParticles - 1);
+             numDeadParticles--;
+        }
+        else
+             ret_val = createParticle();
+
+        return ret_val;
+    }
+
+    /**
+     * Hand a particle instance back to the cache because it is now dead.
+     *
+     * @param p The particle instance to put back into the cache
+     */
+    private void releaseParticle(Particle p)
+    {
+        deadParticles.add(p);
+        numDeadParticles++;
+    }
 }

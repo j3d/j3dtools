@@ -24,7 +24,7 @@ import javax.vecmath.Vector3d;
  * and may not perform / scale well with complex geometry.
  *
  * @author Daniel Selman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class PickingCollisionParticleFunction implements ParticleFunction
 {
@@ -34,18 +34,61 @@ public class PickingCollisionParticleFunction implements ParticleFunction
     Point3d previousParticlePostion = new Point3d();
     Vector3d deltaPostion = new Vector3d();
 
+    /** Flag to say whether or not this function is disabled or not */
+    private boolean enabled;
+
     public PickingCollisionParticleFunction( BranchGroup pickRoot )
     {
         this.pickRoot = pickRoot;
+        enabled = true;
+
         pickTool = new PickTool( pickRoot );
         pickTool.setMode( PickTool.BOUNDS );
     }
 
-    public boolean onUpdate( ParticleSystem ps )
+    //-------------------------------------------------------------
+    // Methods defined by ParticleFunction
+    //-------------------------------------------------------------
+
+    /**
+     * Check to see if this function has been enabled or not currently.
+     *
+     * @return True if this is enabled
+     */
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    /**
+     * Set the enabled state of this function. A disabled function will not
+     * be applied to particles during this update.
+     *
+     * @param state The new enabled state to set it to
+     */
+    public void setEnabled(boolean state)
+    {
+        enabled = state;
+    }
+
+    /**
+     * Notification that the system is about to do an update of the particles
+     * and to do any system-level initialisation.
+     *
+     * @param ps The particle system that is being updated
+     * @return true if this has done it's updating
+     */
+    public boolean newFrame( ParticleSystem ps )
     {
        return true;
     }
 
+    /**
+     * Apply this function to the given particle right now.
+     *
+     * @param particle The particle to apply the function to
+     * @return true if the particle is still alive
+     */
     public boolean apply( Particle particle )
     {
         particle.getPosition( particlePostion );
