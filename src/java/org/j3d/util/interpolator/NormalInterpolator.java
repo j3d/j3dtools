@@ -34,7 +34,7 @@ import javax.vecmath.Vector3f;
  *   Normalized result is N3/(|N3|)
  *
  * @author Guy Carpenter
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NormalInterpolator extends Interpolator
 {
@@ -99,7 +99,7 @@ public class NormalInterpolator extends Interpolator
     /**
      * Add a key frame set of values at the given key point. This will insert
      * the values at the correct position within the array for the given key.
-     * If two keys have the same value, the new key is inserted before the old
+     * If two keys have the same value, the new key is inserted after the old
      * one.
      *
      * @param key The value of the key to use
@@ -111,17 +111,14 @@ public class NormalInterpolator extends Interpolator
 
         // loc is now the largest key less than the new key.
         // adjust loc up to first key greater than new key.
-        if (loc>=0) {
-            while (loc<currentSize && keys[loc]<=key) 
-                loc++; 
-        }
+        if(loc < 0)
+            loc = 0;
+        while (loc<currentSize && keys[loc]<=key) 
+            loc++; 
 
         angleCacheIndex = -1;  // invalidate angle cache
 
         realloc();
-
-        if(loc < 0)
-            loc = 0;
 
         if(normals == null)
             throw new IllegalArgumentException("Normal array is null");

@@ -33,7 +33,7 @@ import org.j3d.util.ColorUtils;
  * Wesley, 1990.
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ColorInterpolator extends Interpolator
 {
@@ -370,10 +370,15 @@ public class ColorInterpolator extends Interpolator
     private void addKeyFrame(float key, float x, float y, float z, float a)
     {
         int loc = findKeyIndex(key);
-        realloc();
 
+        // loc is now the largest key less than the new key.
+        // adjust loc up to the first key greater than the new key.
         if(loc < 0)
-          loc = 0;
+            loc = 0;
+        while (loc<currentSize && keys[loc]<=key) 
+            loc++; 
+
+        realloc();
 
         float[] new_val;
 
@@ -384,12 +389,6 @@ public class ColorInterpolator extends Interpolator
         }
         else
         {
-            // Check to see if the location is the actual key value or it
-            // represents a case of this key being between to values in our
-            // array. If so, set the location to be +1 from it's current
-            if(keys[loc] != key)
-                loc++;
-
             // insert. Shuffle everything up one spot
             int num_moving = currentSize - loc;
 
