@@ -44,7 +44,7 @@ package org.j3d.geom;
  * corner of the front face, while 1, 1, 1 is at the top right, rear corner.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class BoxGenerator extends GeometryGenerator
 {
@@ -282,8 +282,22 @@ public class BoxGenerator extends GeometryGenerator
         if(data.indexes == null)
             data.indexes = new int[index_size];
         else if(data.indexes.length < index_size)
-            throw new InvalidArraySizeException("Coordinates",
+            throw new InvalidArraySizeException("Coord Indexes",
                                                 data.indexes.length,
+                                                index_size);
+
+        if(data.normalIndexes == null)
+            data.normalIndexes  = new int[index_size];
+        else if(data.normalIndexes.length < index_size)
+            throw new InvalidArraySizeException("Normal Indexes",
+                                                data.normalIndexes.length,
+                                                index_size);
+
+        if(data.texCoordIndexes == null)
+            data.texCoordIndexes = new int[index_size];
+        else if(data.texCoordIndexes.length < index_size)
+            throw new InvalidArraySizeException("TexCoord Indexes",
+                                                data.texCoordIndexes.length,
                                                 index_size);
 
         int[] indexes = data.indexes;
@@ -296,6 +310,9 @@ public class BoxGenerator extends GeometryGenerator
             indexes[i * 4 + 2] = i * 4 + 2;
             indexes[i * 4 + 3] = i * 4 + 3;
         }
+
+        System.arraycopy(data.indexes, 0, data.normalIndexes, 0, index_size);
+        System.arraycopy(data.indexes, 0, data.texCoordIndexes, 0, index_size);
     }
 
     /**
@@ -328,6 +345,20 @@ public class BoxGenerator extends GeometryGenerator
                                                 data.indexes.length,
                                                 index_size);
 
+        if(data.normalIndexes == null)
+            data.normalIndexes  = new int[index_size];
+        else if(data.normalIndexes.length < index_size)
+            throw new InvalidArraySizeException("Normal Indexes",
+                                                data.normalIndexes.length,
+                                                index_size);
+
+        if(data.texCoordIndexes == null)
+            data.texCoordIndexes = new int[index_size];
+        else if(data.texCoordIndexes.length < index_size)
+            throw new InvalidArraySizeException("TexCoord Indexes",
+                                                data.texCoordIndexes.length,
+                                                index_size);
+
         int[] indexes = data.indexes;
         data.indexesCount = index_size;
 
@@ -341,6 +372,9 @@ public class BoxGenerator extends GeometryGenerator
             indexes[i * 6 + 4] = i * 4 + 3;
             indexes[i * 6 + 5] = i * 4;
         }
+
+        System.arraycopy(data.indexes, 0, data.normalIndexes, 0, index_size);
+        System.arraycopy(data.indexes, 0, data.texCoordIndexes, 0, index_size);
     }
 
     /**
@@ -555,6 +589,20 @@ public class BoxGenerator extends GeometryGenerator
                                                 data.stripCounts.length,
                                                 6);
 
+        if(data.normalIndexes == null)
+            data.normalIndexes  = new int[index_size];
+        else if(data.normalIndexes.length < index_size)
+            throw new InvalidArraySizeException("Normal Indexes",
+                                                data.normalIndexes.length,
+                                                index_size);
+
+        if(data.texCoordIndexes == null)
+            data.texCoordIndexes = new int[index_size];
+        else if(data.texCoordIndexes.length < index_size)
+            throw new InvalidArraySizeException("TexCoord Indexes",
+                                                data.texCoordIndexes.length,
+                                                index_size);
+
         int[] stripCounts = data.stripCounts;
         int[] indexes = data.indexes;
         data.indexesCount = index_size;
@@ -568,6 +616,9 @@ public class BoxGenerator extends GeometryGenerator
             indexes[i * 4 + 2] = i * 4;
             indexes[i * 4 + 3] = i * 4 + 3;
         }
+
+        System.arraycopy(data.indexes, 0, data.normalIndexes, 0, index_size);
+        System.arraycopy(data.indexes, 0, data.texCoordIndexes, 0, index_size);
     }
 
     /**
@@ -610,6 +661,20 @@ public class BoxGenerator extends GeometryGenerator
                                                 data.stripCounts.length,
                                                 6);
 
+        if(data.normalIndexes == null)
+            data.normalIndexes  = new int[index_size];
+        else if(data.normalIndexes.length < index_size)
+            throw new InvalidArraySizeException("Normal Indexes",
+                                                data.normalIndexes.length,
+                                                index_size);
+
+        if(data.texCoordIndexes == null)
+            data.texCoordIndexes = new int[index_size];
+        else if(data.texCoordIndexes.length < index_size)
+            throw new InvalidArraySizeException("TexCoord Indexes",
+                                                data.texCoordIndexes.length,
+                                                index_size);
+
         int[] stripCounts = data.stripCounts;
         int[] indexes = data.indexes;
         data.indexesCount = index_size;
@@ -623,6 +688,9 @@ public class BoxGenerator extends GeometryGenerator
             indexes[i * 4 + 2] = i * 4 + 2;
             indexes[i * 4 + 3] = i * 4 + 3;
         }
+
+        System.arraycopy(data.indexes, 0, data.normalIndexes, 0, index_size);
+        System.arraycopy(data.indexes, 0, data.texCoordIndexes, 0, index_size);
     }
 
     // Quad generated points
