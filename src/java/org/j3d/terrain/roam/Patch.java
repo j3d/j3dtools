@@ -54,10 +54,7 @@ import javax.media.j3d.Shape3D;
 import javax.media.j3d.GeometryUpdater;
 
 import javax.vecmath.Point3d;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Color3f;
-import javax.vecmath.Point2d;
+import javax.vecmath.Tuple3f;
 
 // Application specific imports
 import org.j3d.terrain.ViewFrustum;
@@ -106,6 +103,14 @@ class Patch implements GeometryUpdater
     /**
      * Create a new patch based on the terrain and appearance information.
      *
+     * @param terrainData The raw height map info to use for this terrain
+     * @param patchSize The number of grid points to use in the patch on a side
+     * @param xOrig The origin of the X grid coord for this patch in the
+     *    global set of grid coordinates
+     * @param yOrig The origin of the Y grid coord for this patch in the
+     *    global set of grid coordinates
+     * @param app The global appearance object to use for this patch
+     * @param landscapeView The view frustum container used
      * @param westPatchNeighbour the Patch to the west of this patch
      * @param southPatchNeighbour the Patch to the south of this patch
      */
@@ -249,15 +254,15 @@ class Patch implements GeometryUpdater
     }
 
     /**
-     * Change the view to the new position and orientation.
+     * Change the view to the new position and orientation. In this
+     * implementation the direction information is ignored because we have
+     * the view frustum to use.
      *
      * @param position The location of the user in space
-     * @param direction The orientation of the user at that point
      * @param landscapeView The viewing frustum information for clipping
      * @param queueManager Manager for ordering terrain chunks
      */
-    void setView(Point3f position,
-                 Vector3f direction,
+    void setView(Tuple3f position,
                  ViewFrustum landscapeView,
                  QueueManager queueManager)
     {
