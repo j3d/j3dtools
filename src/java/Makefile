@@ -7,48 +7,54 @@
 # Names of packages to be compiled. These are declared in the order that
 # they are to be compiled in. We create one at a time
 BUILD_ORDER = org.j3d.util \
-	   org.j3d.util.device \
-	   org.j3d.util.interpolator \
-	   org.j3d.device.input \
-	   org.j3d.device.input.spaceball.transformation \
-	   org.j3d.device.input.spaceball.driver \
-	   org.j3d.device.input.spaceball \
-	   org.j3d.texture \
-       org.j3d.geom \
-       org.j3d.geom.terrain \
- 	   org.j3d.geom.overlay \
- 	   org.j3d.geom.particle \
-	   org.j3d.ui \
-	   org.j3d.ui.image \
-	   org.j3d.ui.navigation \
-	   org.j3d.loaders.ac3d.util \
-	   org.j3d.loaders.ac3d.models \
-	   org.j3d.loaders.ac3d.parser.exceptions \
-	   org.j3d.loaders.ac3d.parser \
-	   org.j3d.loaders.ac3d.parser.handlers \
-	   org.j3d.loaders.ac3d \
-	   org.j3d.loaders.stl \
-	   org.j3d.loaders.vterrain
+	org.j3d.util.device \
+	org.j3d.util.interpolator \
+	org.j3d.device.input \
+	org.j3d.device.input.spaceball.transformation \
+	org.j3d.device.input.spaceball.driver \
+	org.j3d.device.input.spaceball \
+	org.j3d.texture \
+	org.j3d.geom \
+	org.j3d.geom.terrain \
+	org.j3d.geom.overlay \
+	org.j3d.geom.particle \
+	org.j3d.ui \
+	org.j3d.ui.image \
+	org.j3d.ui.navigation \
+	org.j3d.terrain \
+	org.j3d.terrain.roam \
+	org.j3d.loaders \
+	org.j3d.loaders.ac3d.util \
+	org.j3d.loaders.ac3d.models \
+	org.j3d.loaders.ac3d.parser.exceptions \
+	org.j3d.loaders.ac3d.parser \
+	org.j3d.loaders.ac3d.parser.handlers \
+	org.j3d.loaders.ac3d \
+	org.j3d.loaders.stl \
+	org.j3d.loaders.vterrain
 
 
 
 # Names of packages that we want included in the javadoc
 JAVADOC_PACKAGES = org.j3d.util \
-	   org.j3d.util.device \
-	   org.j3d.util.interpolator \
-	   org.j3d.device.input.spaceball \
-	   org.j3d.device.input.spaceball.transformation \
-	   org.j3d.texture \
-       org.j3d.geom \
-       org.j3d.geom.terrain \
- 	   org.j3d.geom.overlay \
- 	   org.j3d.geom.particle \
-	   org.j3d.ui \
-	   org.j3d.ui.image \
-	   org.j3d.ui.navigation \
-	   org.j3d.loaders.ac3d \
-	   org.j3d.loaders.stl \
-	   org.j3d.loaders.vterrain
+	org.j3d.util.device \
+	org.j3d.util.interpolator \
+	org.j3d.device.input.spaceball \
+	org.j3d.device.input.spaceball.transformation \
+	org.j3d.texture \
+	org.j3d.geom \
+	org.j3d.geom.terrain \
+	org.j3d.geom.overlay \
+	org.j3d.geom.particle \
+	org.j3d.ui \
+	org.j3d.ui.image \
+	org.j3d.ui.navigation \
+	org.j3d.terrain \
+	org.j3d.terrain.roam \
+	org.j3d.loaders \
+	org.j3d.loaders.ac3d \
+	org.j3d.loaders.stl \
+	org.j3d.loaders.vterrain
 
 # Names of JAR files we want to create
 JARS = j3d-org.jar
