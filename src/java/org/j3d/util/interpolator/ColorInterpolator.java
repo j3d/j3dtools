@@ -33,7 +33,7 @@ import javax.vecmath.Color4f;
  * Wesley, 1990.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ColorInterpolator extends Interpolator
 {
@@ -560,7 +560,7 @@ public class ColorInterpolator extends Interpolator
            sharedVector[2] = keyValues[0][2];
            sharedVector[3] = keyValues[0][3];
         }
-        else if(loc >= currentSize)
+        else if(loc >= (currentSize - 1))
         {
            sharedVector[0] = keyValues[currentSize - 1][0];
            sharedVector[1] = keyValues[currentSize - 1][1];

@@ -24,7 +24,7 @@ import javax.vecmath.Quat4f;
  * and compute correct values.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class RotationInterpolator extends Interpolator
 {
@@ -223,7 +223,7 @@ public class RotationInterpolator extends Interpolator
            sharedVector[2] = keyValues[0][2];
            sharedVector[3] = keyValues[0][3];
         }
-        else if(loc >= currentSize)
+        else if(loc >= (currentSize - 1))
         {
            sharedVector[0] = keyValues[currentSize - 1][0];
            sharedVector[1] = keyValues[currentSize - 1][1];
@@ -242,7 +242,6 @@ public class RotationInterpolator extends Interpolator
                     float y_dist = p1[1] - p0[1];
                     float z_dist = p1[2] - p0[2];
                     float w_dist = p1[3] - p0[3];
-
                     float fraction = 0;
 
                     // just in case we get two keys the same
@@ -251,7 +250,6 @@ public class RotationInterpolator extends Interpolator
 
                     if(found_key != prev_key)
                         fraction = (key - prev_key) / (found_key - prev_key);
-
 /*
 System.out.println("Prev key " + prev_key);
 System.out.println("Next key " + found_key);

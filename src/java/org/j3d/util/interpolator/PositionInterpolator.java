@@ -24,7 +24,7 @@ import javax.vecmath.Point3f;
  * and compute correct values.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class PositionInterpolator extends Interpolator
 {
@@ -156,7 +156,7 @@ public class PositionInterpolator extends Interpolator
 
         if(loc < 0)
            sharedPoint.set(keyValues[0]);
-        else if(loc >= currentSize)
+        else if(loc >= (currentSize - 1))
            sharedPoint.set(keyValues[currentSize - 1]);
         else
         {

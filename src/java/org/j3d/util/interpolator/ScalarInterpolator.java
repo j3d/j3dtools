@@ -24,7 +24,7 @@ import javax.vecmath.Point3f;
  * arbitrarily spaced keyframes and compute correct values.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ScalarInterpolator extends Interpolator
 {
@@ -128,7 +128,7 @@ public class ScalarInterpolator extends Interpolator
         {
            ret_val = keyValues[0];
         }
-        else if(loc >= currentSize)
+        else if(loc >= (currentSize - 1))
         {
            ret_val = keyValues[currentSize - 1];
         }
