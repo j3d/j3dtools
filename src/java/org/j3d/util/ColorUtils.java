@@ -33,7 +33,7 @@ import javax.vecmath.Color4f;
  * Wesley, 1990.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ColorUtils
 {
@@ -155,7 +155,7 @@ public class ColorUtils
         if(s == 0)
         {
             // this color in on the black white center line <=> h = UNDEFINED
-            if(h == Float.NaN)
+            if(Float.isNaN(h))
             {
                 // Achromatic color, there is no hue
                 r = v;
