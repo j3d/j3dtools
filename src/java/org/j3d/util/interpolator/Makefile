@@ -9,7 +9,9 @@ SOURCE = Interpolator.java \
          PositionInterpolator.java \
          RotationInterpolator.java \
          ColorInterpolator.java \
+         CoordinateInterpolator.java \
 		 TestScalarInterpolator.java \
-		 TestPositionInterpolator.java
+		 TestPositionInterpolator.java \
+		 TestCoordinateInterpolator.java
 
 include ${PROJECT_ROOT}/make/Makefile.jav

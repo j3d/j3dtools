@@ -24,7 +24,7 @@ import javax.vecmath.Point3f;
  * and compute correct values.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class Interpolator
 {
@@ -110,14 +110,28 @@ public abstract class Interpolator
         else if(key > keys[currentSize - 1])
             return currentSize;
 
+        int mid = -1;
+        for(int i = 1; i < currentSize; i++)
+        {
+            if(keys[i] > key)
+            {
+                mid = i - 1;
+                break;
+            }
+        }
+
+        // This binary search just doesn't seem to work right. Don't know why
+        // but we've gone for the horribly in-efficient linear search above.
+        // this must be fixed soon....
+/*
         int start = 0;
         int end = currentSize - 1;
-        int mid = currentSize / 2;
+        int mid = (currentSize - 1) >> 1;
 
         // basic binary search. Done without being recursive for speed.
         while(start < end)
         {
-            mid = ((end - start) / 2) + start;
+            mid = ((end - start) >> 1) + start;
             float test = keys[mid];
 
             if(test == key)
@@ -135,7 +149,7 @@ public abstract class Interpolator
         // the array.
         if(keys[mid] > key)
             mid--;
-
+*/
         return mid;
     }
 }
