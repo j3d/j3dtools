@@ -48,7 +48,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * points on a side.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class FractalTerrainGenerator extends GeometryGenerator
 {
@@ -108,6 +108,9 @@ public class FractalTerrainGenerator extends GeometryGenerator
 
     /** The seed terrain, if provided */
     private float[][] seedTerrain;
+
+    /** The last generated terrain heights */
+    private float[][] terrainHeights;
 
     /**
      * Construct a default terrain with the following properties:<BR>
@@ -559,11 +562,23 @@ public class FractalTerrainGenerator extends GeometryGenerator
     }
 
     /**
+     * Generate height values only based on the current configuration.
+     *
+     * @return The last generated height values
+     */
+    public float[][] generate()
+    {
+        regenerateTerrain();
+
+        return terrainHeights;
+    }
+
+    /**
      * Regenerate the base coordinate points. These are the flat circle that
      * makes up the base of the code. The coordinates are generated based on
      * the 2 PI divided by the number of facets to generate.
      */
-    private final void regenerateTerrain()
+    private void regenerateTerrain()
     {
         if(!terrainChanged)
             return;
@@ -585,6 +600,8 @@ public class FractalTerrainGenerator extends GeometryGenerator
             }
 
         }
+
+        terrainHeights = terrain;
 
         // set the terrain into the elevation grid handler
         gridGenerator.setTerrainDetail(terrain, 0);

@@ -36,7 +36,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * always smooth blended.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ElevationGridGenerator extends GeometryGenerator
 {
@@ -50,10 +50,10 @@ public class ElevationGridGenerator extends GeometryGenerator
     private static final float DEFAULT_SIZE = 100;
 
     /** The default number of points in each direction */
-    private static final int DEFAULT_POINT_COUNT = 0;
+    private static final int DEFAULT_POINT_COUNT = 2;
 
     /** The default base height of the terrain */
-    private static final float DEFAULT_HEIGHT = 0;
+    private static final float DEFAULT_HEIGHT = 2;
 
     /** Current width of the terrain */
     private float terrainWidth;
@@ -97,7 +97,7 @@ public class ElevationGridGenerator extends GeometryGenerator
     /**
      * Construct a default terrain with the following properties:<BR>
      * Size: 100x100
-     * Points: 0x0
+     * Points: 2x2
      */
     public ElevationGridGenerator()
     {
@@ -126,9 +126,8 @@ public class ElevationGridGenerator extends GeometryGenerator
     }
 
     /**
-     * Construct a default cylinder with end caps and selectable number of
-     * faces around the radius. The default height is 2 and radius 1. The
-     * minimum number of facets is 3.
+     * Construct a customised terrain according to the full set of configurable
+     * data.
      *
      * @param w The width of the terrain
      * @param d The depth of the terrain
