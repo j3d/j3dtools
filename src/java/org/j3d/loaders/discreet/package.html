@@ -1,7 +1,28 @@
-<HTML>
-<BODY>
-Class for parsing file formats from Discreet's 3DS Max products.
-<P>
+<html>
+<body>
+Classes for parsing Discreet's 3DS Max .3ds file format.
+<p>
 
-</BODY>
-</HTML>
+A parser that handles the raw structural information of the file and returns
+objects that correspond to the structure. No attempt is made to change the 
+raw values as reported by the file except for colours. All colour values are
+normalised to a 3-component float value. 3DS likes to dump invalid colour 
+values with ranges outside the normal [0,1] range, but we leave anything like
+that as is.
+<p>
+
+If you need something that reads to a form that is renderable by a rendering
+engine, you will need to visit the various renderer-specific packages under
+<code>org.j3d.renderer.<i>renderer_name</i>.loaders</code>.
+
+<h3>External References</h3>
+
+<ul>
+<li>The <a href="http://www.dcs.ed.ac.uk/home/mxr/gfx/3d/3DS.spec">3DS Specification</a></li>
+<li><a href="http://www.the-labs.com/Blender/3DS-details.html">Details of every field</a></li>
+<li>A <href="http://www.spacesimulator.net/tut4_3dsloader.html">Tutorial on 
+    reading the file format</a></li>
+<ul>
+
+</body>
+</html>

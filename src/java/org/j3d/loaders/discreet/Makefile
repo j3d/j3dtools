@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders.discreet directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -14,10 +14,40 @@ PACKAGE = org.j3d.loaders.discreet
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-SOURCE = TriangleMesh.java \
+SOURCE = \
+  MaxConstants.java \
+  TrackData.java \
+  PositionData.java \
+  RotationData.java \
+  ScaleData.java \
+  FieldOfViewData.java \
+  RollData.java \
+  ColorData.java \
+  MorphData.java \
+  HotspotData.java \
+  FalloffData.java \
+  NodeHeaderData.java \
+  KeyframePositionBlock.java \
+  KeyframeRotationBlock.java \
+  KeyframeScaleBlock.java \
+  KeyframeFOVBlock.java \
+  KeyframeRollBlock.java \
+  KeyframeColorBlock.java \
+  KeyframeMorphBlock.java \
+  KeyframeHotspotBlock.java \
+  KeyframeFalloffBlock.java \
+  KeyframeFrameBlock.java \
+  KeyframeSpotlightBlock.java \
+  KeyframeMeshBlock.java \
+  KeyframeBlock.java \
+  TextureBlock.java \
+  MaterialBlock.java \
+  TriangleMesh.java \
+  LightBlock.java \
+  CameraBlock.java \
   ObjectBlock.java \
   ObjectMesh.java \
-  MaxParser.java \
+//  MaxParser.java \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
