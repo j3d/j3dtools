@@ -9,15 +9,15 @@
 
 package org.j3d.geom.particle;
 
-// Standard imports
+// External imports
 // None
 
-// Application-specific imports
+// Local imports
 import org.j3d.util.interpolator.ColorInterpolator;
 
 /**
  * Apply a colour change over time to the particle.
- *
+ * <p>
  * Particle effects, like fire, like to change the colour of the emitted
  * particles over their lifetime. For example at t=0, the particle starts red
  * but fades to yellow, then transparent over its age. The time values are in
@@ -25,7 +25,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * colors are provided as RGB values.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 2.0 $
  */
 public class ColorRampFunction implements ParticleFunction
 {
@@ -81,6 +81,7 @@ public class ColorRampFunction implements ParticleFunction
         size = hasAlpha ? size / 4 : size / 3;
         setColorRamp(times, ramp, size, hasAlpha);
         enabled = true;
+        currentTime = System.currentTimeMillis();
     }
 
     /**
@@ -103,6 +104,7 @@ public class ColorRampFunction implements ParticleFunction
         lastColor = new float[4];
 
         setColorRamp(times, ramp, numColors, hasAlpha);
+        currentTime = System.currentTimeMillis();
         enabled = true;
     }
 
@@ -129,18 +131,19 @@ public class ColorRampFunction implements ParticleFunction
     public void setEnabled(boolean state)
     {
         enabled = state;
+        currentTime = System.currentTimeMillis();
     }
 
     /**
      * Notification that the system is about to do an update of the particles
      * and to do any system-level initialisation.
      *
-     * @param ps The particle system that is being updated
-     * @return true if this has done it's updating
+     * @param deltaT The elapsed time in milliseconds since the last frame
+     * @return true if this should force another update after this one
      */
-    public boolean newFrame()
+    public boolean newFrame(int deltaT)
     {
-        currentTime = System.currentTimeMillis();
+        currentTime += deltaT;
         return true;
     }
 
@@ -168,11 +171,12 @@ public class ColorRampFunction implements ParticleFunction
     //-------------------------------------------------------------
 
     /**
-     * Set the color data for the ramp to the new 3 component values.
+     * Set the color data for the ramp to the new 3 component values. Time
+     * is defined in seconds.
      *
      * @param times The array of times for each color
      * @param ramp The color values at each time
-     * @param numColors The number of valid items in the array
+     * @param hasAlpha true if this is 4-component colour, 3 otherwise
      * @throws IllegalArgumentException The two arrays have differet length
      */
     public void setColorRamp(float[] times, float[] ramp, boolean hasAlpha)
@@ -184,7 +188,8 @@ public class ColorRampFunction implements ParticleFunction
     }
 
     /**
-     * Set the color data for the ramp to the new 3 component values.
+     * Set the color data for the ramp to the new 3 component values. Time
+     * is defined in seconds.
      *
      * @param times The array of times for each color
      * @param ramp The color values at each time

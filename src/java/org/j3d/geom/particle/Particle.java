@@ -9,65 +9,77 @@
 
 package org.j3d.geom.particle;
 
-import java.util.Map;
-
-import javax.vecmath.Color4f;
+// External imports
 import javax.vecmath.Point3f;
-import javax.vecmath.Tuple3d;
-import javax.vecmath.Vector3d;
+import javax.vecmath.Vector3f;
 
+// Local imports
+// None
 
 /**
  * An abstract Particle that defines some physical properties and life-cycle
  * properties.
  * <p>
+ *
  * This class is subclassed for specific types of particle that have a means of
  * representing themselves. This class contains some fields commonly used to
  * implement physics based particle systems, such as force, energy, surface
  * area as well as a total age and a cyclable age.
+ * <p>
  *
- * @author Daniel Selman
- * @version $Revision: 1.4 $
+ * Particles start with all settings as zero, except the dimensions, which default
+ * to 0.2.
+ *
+ *
+ * @author Justin Couch, Daniel Selman
+ * @version $Revision: 2.0 $
  */
 public abstract class Particle
 {
-    public static final String RENDER_FROM_PREVIOUS_POSITION = "RENDER_FROM_PREVIOUS_POSITION";
-
     /** a resettable cyclable age */
-    protected int cycleAge = 0;
+    protected int cycleAge;
 
     /** The age of the particle in wall clock time (milliseconds), in this cycle */
     protected long wallClockBirth;
 
-    /** The maximum lifetime of this partical in milliseconds */
-    protected int wallClockLife;
+    /** The end time in wall clock time (milliseconds) */
+    protected long wallClockLife;
+
+    /** The maximum lifetime of this particle in milliseconds */
+    protected int particleLife;
 
     /** Surface area of the particle in square meters */
-    protected double surfaceArea;
+    protected float surfaceArea;
 
     /** currently unused and undefined */
-    protected double energy;
+    protected float energy;
 
     /** Mass of the object in kilograms */
-    protected double mass;
+    protected float mass;
 
     /** Force applied to the particle in newtons */
-    protected Vector3d resultantForce;
+    protected Vector3f resultantForce;
 
     /** Current velocity in  meters per second */
-    protected Vector3d velocity;
+    protected Vector3f velocity;
 
     /** Current position of the particle */
     protected Point3f position;
 
-    /** Previous position of the particle */
-    protected Point3f previousPosition;
-
     /** bounding box for the particle */
     protected float[] boundingBox;
 
-    /** color of the particle */
-    protected Color4f color;
+    /** Red component of the color of the particle */
+    protected float red;
+
+    /** Green component of the color of the particle */
+    protected float green;
+
+    /** Blue component of the color of the particle */
+    protected float blue;
+
+    /** Red component of the color of the particle */
+    protected float alpha;
 
     /** width of the particle in meters */
     protected float width;
@@ -78,112 +90,77 @@ public abstract class Particle
     /** depth of the particle */
     protected float depth;
 
-    protected boolean renderFromPreviousPosition;
-
     /**
-     * Construct a new particle instance.
-     *
-     * @param relative true if the position is relative
+     * Construct a new particle instance. The dimensions default to
+     * 0.2 but no surface area or mass.
      */
-    public Particle(boolean relative)
+    public Particle()
     {
-        renderFromPreviousPosition = relative;
-
-        surfaceArea = 0.0004;
+        surfaceArea = 0;
         energy = 0;
-        mass = 0.0000001;
-        resultantForce = new Vector3d();
-        velocity = new Vector3d();
+        mass = 0;
+        cycleAge = 0;
+        resultantForce = new Vector3f();
+        velocity = new Vector3f();
         position = new Point3f();
-        previousPosition = new Point3f();
-        color = new Color4f();
 
         width = 0.2f;
         height = 0.2f;
         depth = 0.2f;
     }
 
-    public boolean isRenderFromPreviousPosition()
+    /**
+     * Retrieve the current position of this particle.
+     *
+     * @param val An array of length 3 to copy the values to
+     */
+    public void getPosition(float[] val)
     {
-        return renderFromPreviousPosition;
+        val[0] = position.x;
+        val[1] = position.y;
+        val[2] = position.z;
     }
 
+    /**
+     * Set the new position of this particle.
+     *
+     * @param x The x coordinate of the new position
+     * @param y The y coordinate of the new position
+     * @param z The z coordinate of the new position
+     */
     public void setPosition(float x, float y, float z)
     {
-        previousPosition.set(position);
         position.set(x, y, z);
     }
 
-    public void setPositionAndPrevious(float x, float y, float z)
+    /**
+     * Retrieve the current colour that this particle has.
+     *
+     * @param val An array of length 4 to copy the values to
+     */
+    public void getColor(float[] val)
     {
-        position.set(x, y, z);
-        previousPosition.set(position);
+        val[0] = red;
+        val[1] = green;
+        val[2] = blue;
+        val[3] = alpha;
     }
 
-    public void getPosition(float[] newPosition)
-    {
-        newPosition[0] = position.x;
-        newPosition[1] = position.y;
-        newPosition[2] = position.z;
-    }
-
-    public void getPreviousPosition(float[] position)
-    {
-        position[0] = previousPosition.x;
-        position[1] = previousPosition.y;
-        position[2] = previousPosition.z;
-    }
-
-    public float getPositionX()
-    {
-        return position.x;
-    }
-
-    public float getPositionY()
-    {
-        return position.y;
-    }
-
-    public float getPositionZ()
-    {
-        return position.z;
-    }
-
-    public void getColor(Color4f newColor)
-    {
-        newColor.set(this.color);
-    }
-
-    public float getColorRed()
-    {
-        return color.x;
-    }
-
-    public float getColorGreen()
-    {
-        return color.y;
-    }
-
-    public float getColorBlue()
-    {
-        return color.z;
-    }
-
-    public float getColorAlpha()
-    {
-        return color.w;
-    }
-
+    /**
+     * Set this particle to a new colour.
+     *
+     * @param r The red component of the colour
+     * @param g The green component of the colour
+     * @param b The blue component of the colour
+     * @param alpha The alpha component of the colour
+     */
     public void setColor(float r, float g, float b, float alpha)
     {
-        color.set(r, g, b, alpha);
+        red = r;
+        green = g;
+        blue = b;
+        this.alpha = alpha;
     }
-
-    public void setAlpha(float alpha)
-    {
-        color.w = alpha;
-    }
-
 
     /**
      * Retrieve the bounds of this particle in local coordinate space.
@@ -211,7 +188,7 @@ public abstract class Particle
     }
 
     /**
-     * Increment the cycle age
+     * Increment the cycle age.
      */
     public void incAge()
     {
@@ -223,7 +200,7 @@ public abstract class Particle
      *
      * @return The cycle age in frames
      */
-    public int getCycleAge()
+    public final int getCycleAge()
     {
         return cycleAge;
     }
@@ -243,9 +220,19 @@ public abstract class Particle
      *
      * @return The cycle time in frames
      */
-    public int getCycleTime()
+    public final int getCycleTime()
     {
-        return wallClockLife;
+        return particleLife;
+    }
+
+    /**
+     * Get the wall clock time that this particle was born.
+     *
+     * @return The birth time in milliseconds
+     */
+    public final long getBirthTime()
+    {
+        return wallClockBirth;
     }
 
     /**
@@ -255,7 +242,8 @@ public abstract class Particle
      */
     public void setCycleTime(int time)
     {
-        wallClockLife = time;
+        particleLife = time;
+        wallClockLife = wallClockBirth + time;
     }
 
     /**
@@ -263,16 +251,17 @@ public abstract class Particle
      *
      * @return Returns a double
      */
-    public double getMass()
+    public final float getMass()
     {
         return mass;
     }
 
     /**
-     * Sets the mass.
+     * Sets the mass of this particle.
+     *
      * @param mass The mass to set
      */
-    public void setMass(double mass)
+    public void setMass(float mass)
     {
         this.mass = mass;
     }
@@ -282,7 +271,7 @@ public abstract class Particle
      *
      * @return Returns a Vector3d
      */
-    public Vector3d getResultantForce()
+    public Vector3f getResultantForce()
     {
         return resultantForce;
     }
@@ -290,11 +279,11 @@ public abstract class Particle
     /**
      * Sets the resultantForce applied to a particle.
      *
-     * @param resultantForce The resultantForce to set
+     * @param force The resultant Force to set
      */
-    public void setResultantForce(Vector3d resultantForce)
+    public void setResultantForce(Vector3f force)
     {
-        this.resultantForce = resultantForce;
+        resultantForce.set(force);
     }
 
     /**
@@ -302,7 +291,7 @@ public abstract class Particle
      *
      * @return Returns a double
      */
-    public double getSurfaceArea()
+    public final float getSurfaceArea()
     {
         return surfaceArea;
     }
@@ -312,7 +301,7 @@ public abstract class Particle
      *
      * @param surfaceArea The surfaceArea to set
      */
-    public void setSurfaceArea(double surfaceArea)
+    public void setSurfaceArea(float surfaceArea)
     {
         this.surfaceArea = surfaceArea;
     }
@@ -322,7 +311,7 @@ public abstract class Particle
      *
      * @return Returns a Vector3d
      */
-    public Vector3d getVelocity()
+    public Vector3f getVelocity()
     {
         return velocity;
     }
@@ -332,9 +321,9 @@ public abstract class Particle
      *
      * @param velocity The velocity to set
      */
-    public void setVelocity(Vector3d velocity)
+    public void setVelocity(Vector3f velocity)
     {
-        this.velocity = velocity;
+        this.velocity.set(velocity);
     }
 
     /**
@@ -370,9 +359,9 @@ public abstract class Particle
     /**
      * Get the current width of the particle.
      *
-     * @ return The current width value
+     * @return The current width value
      */
-    public float getWidth()
+    public final float getWidth()
     {
         return width;
     }
@@ -380,9 +369,9 @@ public abstract class Particle
     /**
      * Get the current height of the particle.
      *
-     * @ return The current height value
+     * @return The current height value
      */
-    public float getHeight()
+    public final float getHeight()
     {
         return height;
     }
@@ -390,9 +379,9 @@ public abstract class Particle
     /**
      * Get the current depth of the particle.
      *
-     * @ return The current depth value
+     * @return The current depth value
      */
-    public float getDepth()
+    public final float getDepth()
     {
         return depth;
     }

@@ -23,7 +23,7 @@ import java.util.Map;
  * modelled (rain, dust, stones etc)
  *
  * @author Daniel Selman
- * @version $Revision: 1.4 $
+ * @version $Revision: 2.0 $
  */
 public interface ParticleFactory
 {

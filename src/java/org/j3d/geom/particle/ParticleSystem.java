@@ -9,15 +9,15 @@
 
 package org.j3d.geom.particle;
 
-// Standard imports
+// External imports
 import java.util.ArrayList;
 
-
-// Application specific imports
+// Local imports
 // None
 
 /**
  * Abstract representation of a ParticleSystem.
+ * <p>
  *
  * A ParticleSystem manages a List of Particles created by a ParticleFactory.
  * It applies changes to the Particles using a List of ParticleFunctions and a
@@ -28,16 +28,19 @@ import java.util.ArrayList;
  * <p>
  *
  * @author Justin Couch, based on code by Daniel Selman
- * @version $Revision: 1.11 $
+ * @version $Revision: 2.0 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
     /** The initial number of functions to assume just for initialisation */
     private static final int NUM_INIT_FUNCTIONS = 5;
 
+    /** Error message when the particle count is negative */
+    private static final String NEG_PARTICLE_COUNT_MSG =
+        "The max particle count value is negative. Must be non-negative.";
+
     /** * Identifier for this particle system type. */
     private String systemName;
-
 
     /** Maximum number of particles this system can handle */
     protected int maxParticleCount;
@@ -72,17 +75,45 @@ public abstract class ParticleSystem implements ParticleFactory
     /** List of currently active particle instances */
     protected ParticleList particleList;
 
+    /** Interpolator of texture coordinate handling */
+    protected TexCoordInterpolator texCoordInterp;
+
     /** The ParticleInitializer for this ParticleSystem. */
     private ParticleInitializer particleInitializer;
+
+    /** Flag indicating if we should be generating new particles or not */
+    private boolean createParticles;
+
+    /**
+     * Counter check for balancing the delta time values for dealing with
+     * the screwed up Win32 clock. When this gets set, we had a zero-time
+     * frame delta the previous frame. To avoid divZero we arbitrarily set
+     * dT to 1. We need to compensate for that in the next frame to avoid
+     * clock creep, so this flag tells the class when to add and remove a
+     * per-frame increment.
+     */
+    private boolean zeroFrame;
+
+    /**
+     * Flag indicating that texture coordinate values should be generated
+     * for the particles
+     */
+    protected boolean genTexCoords;
+
 
     /**
      * Create a new ParticleSystem.
      *
      * @param name An arbitrary string name for ID purposes
      * @param maxParticleCount The maximum number of particles allowed to exist
+     * @throws IllegalArgumentException The particle count was negative
      */
     public ParticleSystem(String name, int maxParticleCount)
+        throws IllegalArgumentException
     {
+        if(maxParticleCount < 0)
+            throw new IllegalArgumentException(NEG_PARTICLE_COUNT_MSG);
+
         systemName = name;
         particleFunctions = new ArrayList(NUM_INIT_FUNCTIONS);
         particleList = new ParticleList();
@@ -91,6 +122,9 @@ public abstract class ParticleSystem implements ParticleFactory
         this.maxParticleCount = maxParticleCount;
         numDeadParticles = 0;
         frameTime = -1;
+        createParticles = true;
+        zeroFrame = false;
+        genTexCoords = true;
 
         numActiveFunctions = 0;
         activeFunctions = new ParticleFunction[NUM_INIT_FUNCTIONS];
@@ -100,13 +134,18 @@ public abstract class ParticleSystem implements ParticleFactory
      * Run the initial particle setup for the first frame now. This should be
      * called just after completing all the setup for the other parts of the system
      * but before the first update driven by the scene graph.
+     *
+     * @param time The time to start executing for
      */
-    public void initialize()
+    public void initialize(long time)
     {
+        timeNow = time;
 
-        timeNow = System.currentTimeMillis();
+        if(particleInitializer == null)
+            return;
 
-        createParticles();
+        if(createParticles)
+            createNewParticles();
 
         updateGeometry();
     }
@@ -123,13 +162,45 @@ public abstract class ParticleSystem implements ParticleFactory
     protected abstract void updateGeometry();
 
     /**
+     * Change the state about whether new particles should be created from
+     * this point onwards. The particle system will continue to run, but no
+     * new particles would be created if this state is set to false.
+     *
+     * @param state true to enable particle creation, false to stop
+     */
+    public void enableParticleCreation(boolean state)
+    {
+        createParticles = state;
+    }
+
+    /**
+     * Fetch the current particle creation state.
+     *
+     * @return true if new particles are being created
+     */
+    public boolean isParticleCreationEnabled()
+    {
+        return createParticles;
+    }
+
+    /**
      * Set the emitter used to initialise particles.
      *
      * @param emitter the ParticleInitializer instance to use
      */
     public void setParticleInitializer(ParticleInitializer emitter)
     {
-        this.particleInitializer = emitter;
+        particleInitializer = emitter;
+    }
+
+    /**
+     * Fetch the currently set initializer for particles.
+     *
+     * @return The initializer or null if not set
+     */
+    public ParticleInitializer getParticleInitializer()
+    {
+        return particleInitializer;
     }
 
     /**
@@ -186,23 +257,98 @@ public abstract class ParticleSystem implements ParticleFactory
     }
 
     /**
+     * Set a flag to say whether texture coordinates should be generated for
+     * this system. If there is no interpolator set, or other reason, such as
+     * automatically generated texture coordinates, then this flag can be used
+     * to disable texture coordinates. By default they are generated for
+     * geometry types that can make use of them (quads, triangles etc).
+     *
+     * @param state True to enable tex Coord generation
+     */
+    public void enableTextureCoordinates(boolean state)
+    {
+        genTexCoords = state;
+    }
+
+    /**
+     * Get the current value of the texture coordinate generation state.
+     *
+     * @return True if texture coordinates are currently being generated.
+     */
+    public boolean isTextureCoordinateEnabled()
+    {
+        return genTexCoords;
+    }
+
+    /**
+     * Set the keys and texture coordinates to use for geometry that wishes to
+     * change the texture coordinates over the lifetime of the particle. This
+     * technique is used by particle systems that put a collection of different
+     * images into a single texture and then use the texture coordinates to
+     * change the visual appearance over time. Interpolation is based on the
+     * particle's lifetime from birth and uses a stepwise set of changes. At
+     * the time the particle's life is old enough to move to the next time
+     * key, the texture coordinates are completely changed over.
+     * <p>
+     *
+     * It is up to the caller to determine both the ordering and the number
+     * of texture coordinate values to use.
+     * <p>
+     *
+     * Makes an internal copy of the values.
+     *
+     * @param times The list of time keys to use in milliseconds
+     * @param numEntries The number of keys/keyValue pairs
+     * @param texCoords The raw texture coordinates
+     */
+    public void setTexCoordFunction(float[] times,
+                                    int numEntries,
+                                    float[] texCoords)
+    {
+        if(numEntries == 0)
+            texCoordInterp = null;
+        else
+        {
+            if(texCoordInterp == null)
+                texCoordInterp =
+                    new TexCoordInterpolator(coordinatesPerParticle());
+
+            texCoordInterp.setupInterpolants(times, numEntries, texCoords);
+        }
+    }
+
+    /**
      * Inform each of the ParticleFunctions so they can do any processing.
      *
+     * @param timestamp The time for this frame
      * @return true if the system is currently running
      */
-    public boolean update()
+    public boolean update(long timestamp)
     {
         if(particleInitializer == null)
             return true;
 
-        // Work out the delta for frame times.
-        long cur_time = System.currentTimeMillis();
+        // Work out the delta for frame times. If, due to win32 stupid timer
+        // we end up with 0 time between frames, then just bump it a little so
+        // that the thing doesn't have a heart attack with zero times.
+        frameTime = (int)(timestamp - timeNow);
+        if(frameTime == 0)
+        {
+            frameTime = 1;
+            zeroFrame = true;
+        }
+        else if(zeroFrame)
+        {
+            zeroFrame = false;
+            frameTime--;
+        }
 
-        frameTime = (int)(cur_time - timeNow);
-        timeNow = cur_time;
+        timeNow = timestamp;
 
-        createParticles();
-        updateParticleFunctions();
+        if(createParticles)
+            createNewParticles();
+
+        updateParticleFunctions(frameTime);
         runParticleFunctions();
         updateGeometry();
 
@@ -230,10 +376,53 @@ public abstract class ParticleSystem implements ParticleFactory
     }
 
     /**
+     * Change the maximum number of particles that can be generated. If the
+     * number is greater than the currently set value, it will permit more to
+     * be made according to the normal creation speed. If the number is less
+     * than the current amount, then no new particles will be created until the
+     * current total has died down below the new maximum value.
+     *
+     * @param maxCount The new maximum particle count to use
+     * @throws IllegalArgumentException The particle count was negative
+     */
+    public void setMaxParticleCount(int maxCount)
+        throws IllegalArgumentException
+    {
+        if(maxCount < 0)
+            throw new IllegalArgumentException(NEG_PARTICLE_COUNT_MSG);
+
+        if(maxCount > deadParticles.length)
+        {
+            Particle[] tmp = new Particle[maxCount];
+            System.arraycopy(deadParticles, 0, tmp, 0, numDeadParticles);
+            deadParticles = tmp;
+        }
+
+        maxParticleCount = maxCount;
+
+        if(particleInitializer != null)
+            particleInitializer.setMaxParticleCount(maxCount);
+    }
+
+    /**
+     * Get the current maximum number of particles that should be created. Value
+     * will always be non-negative.
+     *
+     * @return The maximum number of particles currently permitted
+     */
+    public int getMaxParticleCount()
+    {
+        return maxParticleCount;
+    }
+
+    /**
      * Inform all the particle functions that a new frame has started and that they
      * should do any common initialization work now.
+     *
+     * @param deltaT The elapsed time in milliseconds since the last frame
+     * @return true if this should force another update after this one
      */
-    private void updateParticleFunctions()
+    private void updateParticleFunctions(int deltaT)
     {
         ParticleFunction function;
         int func_idx = 0;
@@ -244,7 +433,7 @@ public abstract class ParticleSystem implements ParticleFactory
             if(function.isEnabled())
             {
                 activeFunctions[func_idx++] = function;
-                function.newFrame();
+                function.newFrame(deltaT);
             }
         }
 
@@ -286,7 +475,7 @@ public abstract class ParticleSystem implements ParticleFactory
     /**
      * Create particles for this frame.
      */
-    private void createParticles()
+    private void createNewParticles()
     {
         int max_avail = maxParticleCount - particleCount;
         int requested = particleInitializer.numParticlesToCreate(frameTime) +
@@ -309,8 +498,8 @@ public abstract class ParticleSystem implements ParticleFactory
         {
             Particle particle = fetchParticle();
 
-            particleInitializer.initialize(particle);
             particle.wallClockBirth = timeNow;
+            particleInitializer.initialize(particle);
 
             particleList.add(particle);
         }

@@ -12,22 +12,25 @@
 
 package org.j3d.geom.particle;
 
-// Standard imports
-import org.j3d.util.ObjectArray;
-
-// Application specific imports
+// External imports
 // None
+
+// Local imports
+import org.j3d.util.ObjectArray;
 
 /**
  * A special-case linked-list (buffer) implementation for particle systems.
  * <p>
  *
- * The implementation uses a double linked list.
+ * The implementation uses a double linked list. This class is not meant for
+ * use outside of this package and derived classes using this package. The
+ * class is made public to allow derived packages to access it, but constructor
+ * is left package private to prevent external use.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 2.0 $
  */
-class ParticleList
+public class ParticleList
 {
     /** a shared cache of Entry instances */
     private static ObjectArray entryCache = new ObjectArray();
@@ -185,7 +188,8 @@ class ParticleList
 
         if(current == end)
             end = current.prev;
-        else if(current == start)
+
+        if(current == start)
             start = current.next;
 
         current.prev = null;

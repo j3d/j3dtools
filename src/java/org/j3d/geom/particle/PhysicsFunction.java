@@ -9,19 +9,20 @@
 
 package org.j3d.geom.particle;
 
-import javax.vecmath.Vector3d;
+// External imports
+// None
+
+// Local imports
+// None
 
 /**
- * Movement function that performs basic F=M.
+ * Movement function that performs basic F=MA calculations for all the
+ * physics that have been set up in this frame by other functions.
  * <p>
- * A movement control on the Particles
- * based on their applied resultantForce. A percentage
- * of the resultantForce is "lost" prior to position
- * calculation to simulate friction/drag.
+ * A movement control on the Particles based on their applied resultantForce.
  * <p>
- * This ParticleFunction should be added to the ParticleSystem
- * *after* any MovementFunctions which are applying
- * forces to Particles.
+ * This ParticleFunction should be added to the ParticleSystem <i>after</i>
+ * any movement functions which are applying forces to Particles.
  * <p>
  * Some basic physics equations:
  * <p>
@@ -38,8 +39,8 @@ import javax.vecmath.Vector3d;
  * f = m * a<br>
  * f = m * delta v / t<br>
  *
- * @author Daniel Selman
- * @version $Revision: 1.5 $
+ * @author Daniel Selman, Justin Couch
+ * @version $Revision: 2.0 $
  */
 public class PhysicsFunction implements ParticleFunction
 {
@@ -49,36 +50,23 @@ public class PhysicsFunction implements ParticleFunction
      * The assumed initial interval between calls to the PhysicsFunction
      * this delta is recalculated every RECALC_INTERVAL frames
      */
-    private double deltaTime;
+    private float deltaTime;
 
-    /** Current position */
-    private float[] position;
-
-    private Vector3d acceleration;
-
-    /** percentage of force still avalailable after friction lossage */
-    private double frictionForce;
-
-    /** percentage of velocity still avilable */
-    private double frictionVelocity;
-
-    private long startTime;
-    private static long invokeCount = 0;
+    /** How many times have we been called? */
+    private long invokeCount;
 
     /** Flag to say whether or not this function is disabled or not */
     private boolean enabled;
 
+    /**
+     * Create a new default physics function to apply to particles.
+     */
     public PhysicsFunction()
     {
-        startTime = System.currentTimeMillis();
         enabled = true;
 
-        position = new float[3];
-        acceleration = new Vector3d();
-
-        frictionForce = 0.90;
-        frictionVelocity = 0.95;
-        deltaTime = 1.0 / 40.0;
+        deltaTime = 1.0f / 40.0f;
+        invokeCount = 0;
     }
 
     //-------------------------------------------------------------
@@ -110,27 +98,20 @@ public class PhysicsFunction implements ParticleFunction
      * Notification that the system is about to do an update of the particles
      * and to do any system-level initialisation.
      *
-     * @param ps The particle system that is being updated
+     * @param deltaT The elapsed time in milliseconds since the last frame
      * @return true if this should force another update after this one
      */
-    public boolean newFrame()
+    public boolean newFrame(int deltaT)
     {
-        // review DCS - we don't check ps,
-        // so if this PhysicsFunction is shared between
-        // multiple ParticleSystems we will get bogus results
         invokeCount++;
+        deltaTime = deltaT * 0.001f;
 
         if(invokeCount == RECALC_INTERVAL)
         {
-            long now = System.currentTimeMillis();
-            double elapsedSeconds = (double)(now - startTime) / 1000;
-            deltaTime =  (double)elapsedSeconds / RECALC_INTERVAL;
-
-            System.out.println("PhysicsFunction FPS: " + (int) 1.0 / deltaTime);
+//            System.out.println("PhysicsFunction FPS: " +  1 / deltaTime);
 
             // reset counters
             invokeCount = 0;
-            startTime = now;
         }
 
         return true;
@@ -144,22 +125,26 @@ public class PhysicsFunction implements ParticleFunction
      */
     public boolean apply(Particle particle)
     {
-        acceleration.set(particle.resultantForce);
-        // get the change in velocity
-        acceleration.scale(deltaTime / particle.mass);
-        particle.velocity.add(acceleration);
+        if(particle.mass != 0)
+        {
+            // A = force / mass
+            float a_x = particle.resultantForce.x * deltaTime / particle.mass;
+            float a_y = particle.resultantForce.y * deltaTime / particle.mass;
+            float a_z = particle.resultantForce.z * deltaTime / particle.mass;
+
+            particle.velocity.x += a_x;
+            particle.velocity.y += a_y;
+            particle.velocity.z += a_z;
+        }
 
         // get the change in position
-        particle.getPosition(position);
-        acceleration.set(particle.velocity);
-        acceleration.scale(deltaTime);
-
-        position[0] += acceleration.x;
-        position[1] += acceleration.y;
-        position[2] += acceleration.z;
+        // S' = S + ut
+        float x = particle.position.x + particle.velocity.x * deltaTime;
+        float y = particle.position.y + particle.velocity.y * deltaTime;
+        float z = particle.position.z + particle.velocity.z * deltaTime;
 
         // update the position
-        particle.setPosition(position[0], position[1], position[2]);
+        particle.setPosition(x, y, z);
 
         return true;
     }

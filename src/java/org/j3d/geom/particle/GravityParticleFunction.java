@@ -20,15 +20,12 @@ import javax.vecmath.Vector3d;
  * Particles.
  *
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 2.0 $
  */
 public class GravityParticleFunction implements ParticleFunction
 {
     /** accelaration due to gravity: meters per second squared */
-    private Vector3d gravityForce;
-
-    /** Temp variable to used to calculate resultant force on a particle */
-    private Vector3d tempForce;
+    private float[] gravityForce;
 
     /** Flag to say whether or not this function is disabled or not */
     private boolean enabled;
@@ -51,9 +48,7 @@ public class GravityParticleFunction implements ParticleFunction
      */
     public GravityParticleFunction(float x, float y, float z)
     {
-        gravityForce = new Vector3d(x, y, z);
-        tempForce = new Vector3d();
-
+        gravityForce = new float[] {x, y, z};
         enabled = true;
     }
 
@@ -86,9 +81,10 @@ public class GravityParticleFunction implements ParticleFunction
      * Notification that the system is about to do an update of the particles
      * and to do any system-level initialisation.
      *
+     * @param deltaT The elapsed time in milliseconds since the last frame
      * @return true if this should force another update after this one
      */
-    public boolean newFrame()
+    public boolean newFrame(int deltaT)
     {
        return true;
     }
@@ -101,10 +97,38 @@ public class GravityParticleFunction implements ParticleFunction
      */
     public boolean apply(Particle particle)
     {
-        tempForce.set(gravityForce);
-        tempForce.scale(particle.mass);
+        particle.resultantForce.x += gravityForce[0];
+        particle.resultantForce.y += gravityForce[1];
+        particle.resultantForce.z += gravityForce[2];
 
-        particle.resultantForce.add(tempForce);
         return true;
+    }
+
+    //-------------------------------------------------------------
+    // Local methods
+    //-------------------------------------------------------------
+
+    /**
+     * Change the gravity to a new value.
+     *
+     * @param gravity The vector and magnitude of the new gravity
+     */
+    public void setGravity(float[] gravity)
+    {
+        gravityForce[0] = gravity[0];
+        gravityForce[1] = gravity[1];
+        gravityForce[2] = gravity[2];
+    }
+
+    /**
+     * Get the current value of gravity.
+     *
+     * @param val An array of length 3 to copy the values to
+     */
+    public void getGravity(float[] val)
+    {
+        val[0] = gravityForce[0];
+        val[1] = gravityForce[1];
+        val[2] = gravityForce[2];
     }
 }

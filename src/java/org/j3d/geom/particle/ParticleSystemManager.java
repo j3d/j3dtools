@@ -24,19 +24,22 @@ import java.util.ArrayList;
  * update method on each whenever it is triggered.
  *
  * @author Daniel Selman
- * @version $Revision: 1.4 $
+ * @version $Revision: 2.0 $
  */
 public class ParticleSystemManager
 {
     /** Listing of the currently registered and active particle systems */
     private ArrayList particleSystems = new ArrayList();
 
+    /** Listing of the recently added systems */
+    private ArrayList newSystems = new ArrayList();
     /**
      * Create a new manager, with no systems registered.
      */
     public ParticleSystemManager()
     {
         particleSystems = new ArrayList();
+        newSystems = new ArrayList();
     }
 
     /**
@@ -45,14 +48,25 @@ public class ParticleSystemManager
      */
     public void update()
     {
+        long time = System.currentTimeMillis();
+        ParticleSystem system;
+
+        for(int n = newSystems.size() - 1; n >= 0; n--)
+        {
+            system = (ParticleSystem)newSystems.get(n);
+            system.initialize(time);
+        }
+
+        newSystems.clear();
+
         for(int n = particleSystems.size() - 1; n >= 0; n--)
         {
-            ParticleSystem particleSystem = (ParticleSystem)particleSystems.get( n );
+            system = (ParticleSystem)particleSystems.get(n);
 
-            if((particleSystem != null) && (particleSystem.update() == false))
+            if((system != null) && !system.update(time))
             {
                 // the system is dead, so we can remove it...
-                particleSystem.onRemove();
+                system.onRemove();
                 particleSystems.remove(n);
             }
         }
@@ -67,6 +81,7 @@ public class ParticleSystemManager
     public void addParticleSystem(ParticleSystem system)
     {
         particleSystems.add(system);
+        newSystems.add(system);
     }
 
     /**

@@ -22,7 +22,7 @@ package org.j3d.geom.particle;
  * which modify a Particle's position (e.g. PhysicsFunction).
  *
  * @author Daniel Selman
- * @version $Revision: 1.4 $
+ * @version $Revision: 2.0 $
  */
 public class BoundingBoxParticleFunction implements ParticleFunction
 {
@@ -86,10 +86,10 @@ public class BoundingBoxParticleFunction implements ParticleFunction
     /**
      * Apply this function to the given particle right now.
      *
-     * @param particle The particle to apply the function to
-     * @return true if the particle has changed, false otherwise
+     * @param deltaT The elapsed time in milliseconds since the last frame
+     * @return true if this should force another update after this one
      */
-    public boolean newFrame()
+    public boolean newFrame(int deltaT)
     {
        return true;
     }
@@ -98,7 +98,7 @@ public class BoundingBoxParticleFunction implements ParticleFunction
      * Notification that the system is about to do an update of the particles
      * and to do any system-level initialisation.
      *
-     * @param ps The particle system that is being updated
+     * @param particle The particle to apply the function to
      * @return true if this should force another update after this one
      */
     public boolean apply(Particle particle)

@@ -16,7 +16,7 @@ package org.j3d.geom.particle;
  * particle's set lifetime.
  *
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 2.0 $
  */
 public class FrameCountParticleFunction implements ParticleFunction
 {
@@ -65,9 +65,10 @@ public class FrameCountParticleFunction implements ParticleFunction
      * Notification that the system is about to do an update of the particles
      * and to do any system-level initialisation.
      *
+     * @param deltaT The elapsed time in milliseconds since the last frame
      * @return true if this should force another update after this one
      */
-    public boolean newFrame()
+    public boolean newFrame(int deltaT)
     {
        frameCount++;
        return true;

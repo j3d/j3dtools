@@ -17,9 +17,9 @@ package org.j3d.geom.particle;
  * a new randomized force on the Particle.
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 2.0 $
  */
-public class MaxAgePointForceEmitter implements ParticleInitializer
+public class MaxAgePointForceEmitter extends BaseEmitter
 {
     /**
      * Number of frames of zero consecutive zero time deltas before we should
@@ -27,29 +27,14 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
      */
     private static final int DELTA_LIMIT = 5;
 
-    /** Base lifetime in milliseconds */
-    private int lifetime;
-
     /** Number of particles to generate per millisecond */
-    private int particlesPerMs;
+    private float particlesPerMs;
 
     /** The origin to generate the particles at */
     private float[] origin;
 
-    /** Initial colour to make all particles */
-    private float[] color;
-
     /** The base force applied to the particles. */
     private float force;
-
-    /** Amount of variation on the randomness */
-    private float variation;
-
-    /** Initial mass that is imparted to all particles */
-    private double initialMass;
-
-    /** Initial surface area given to all particles */
-    private double surfaceArea;
 
     /** The initial velocity imparted to the particles */
     private float[] initialVelocity;
@@ -61,6 +46,15 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
     private int zeroDeltaCounter;
 
     /**
+     * Used to handle the case when there is a low particle count relative to
+     * the lifetime. This is the case when there is less than one particle per
+     * millisecond to be generated. Saves up the previous elapsed time since
+     * the last particle was generated until we get to the point where one has
+     * to be generated.
+     */
+    private int elapsedZeroParticleTime;
+
+    /**
      * Construct a new emitter instance for a point emitter that gives the
      * particle a random force direction and strength. The number of
      * particles to create each frame is driven from the maximum particle count
@@ -70,40 +64,59 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
      * @param maxParticleCount The maximum number of particles to manage
      * @param position The emitting position in the local space
      * @param color The initial color of particles (4 component)
-     * @param velocity The speed of the particls to start with
      * @param variation The amount of variance for the initial values
      */
-    public MaxAgePointForceEmitter(int lifetime,
+    public MaxAgePointForceEmitter(int maxTime,
                                    int maxParticleCount,
                                    float[] position,
                                    float[] color,
                                    float force,
                                    float variation)
     {
-        this.lifetime = lifetime;
+        super(maxTime, maxParticleCount, color, 0, variation);
 
         // Particle per millisecond is just averaged over the base lifetime
         // Uses the integer division for rounding purposes as we really don't
         // care for high-accuracy in this number - it's just a guide.
-        particlesPerMs = maxParticleCount / lifetime;
+        particlesPerMs = (lifetime == 0) ? 1 : (float)particleCount / lifetime;
+        elapsedZeroParticleTime = 0;
 
         this.origin = new float[3];
         this.origin[0] = position[0];
         this.origin[1] = position[1];
         this.origin[2] = position[2];
 
-        this.color = new float[4];
-        this.color[0] = color[0];
-        this.color[1] = color[1];
-        this.color[2] = color[2];
-        this.color[3] = color[3];
-
         this.force = force;
-        this.variation = variation;
+    }
 
-        initialMass = 0.0000001;
-        surfaceArea = 0.0004;
-        initialVelocity = new float[3];
+    /**
+     * Adjust the maximum number of particles that this initializer is going to
+     * work with. This should not normally be called by the end user. The
+     * particle system that this initializer is registered with will call this
+     * method when it's corresponding method is called.
+     *
+     * @param maxCount The new maximum particle count to use
+     */
+    public void setMaxParticleCount(int maxCount)
+    {
+        super.setMaxParticleCount(maxCount);
+
+        particlesPerMs = (lifetime == 0) ? 1 : (float)particleCount / lifetime;
+    }
+
+    /**
+     * Change the maximum lifetime of the particles. The lifetime of particles
+     * is defined in milliseconds, and must be positive.
+     *
+     * @param time The new lifetime, in milliseconds
+     * @throws IllegalArgumentException The lifetime is zero or negative
+     */
+    public void setParticleLifetime(int time)
+        throws IllegalArgumentException
+    {
+        super.setParticleLifetime(time);
+
+        particlesPerMs = (lifetime == 0) ? 1 : (float)particleCount / lifetime;
     }
 
     /**
@@ -138,6 +151,14 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
             default:
                 zeroDeltaCounter = 0;
                 ret_val = (int)(particlesPerMs * timeDelta);
+                if(ret_val == 0)
+                {
+                    elapsedZeroParticleTime += timeDelta;
+
+                    ret_val = (int)(particlesPerMs * elapsedZeroParticleTime);
+                    if(ret_val != 0)
+                        elapsedZeroParticleTime = 0;
+                }
         }
 
         return ret_val;
@@ -158,10 +179,11 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
         float rnd = 1 - (float)Math.random() * variation;
         particle.setColor(color[0], color[1], color[2], color[3] * rnd);
 
-        rnd = 1 - (float)Math.random() * variation;
+        rnd = 1 - (float)Math.random() * lifetimeVariation;
         particle.setCycleTime((int)(lifetime * rnd));
-
-        particle.setPositionAndPrevious(origin[0], origin[1], origin[2]);
+        particle.setPosition(origin[0], origin[1], origin[2]);
+        particle.setMass(initialMass);
+        particle.setSurfaceArea(surfaceArea);
 
         rnd = 1 - (float)Math.random() * variation;
         float f_x = rnd * force * (float)Math.random();
@@ -185,57 +207,5 @@ public class MaxAgePointForceEmitter implements ParticleInitializer
         origin[0] = x;
         origin[1] = y;
         origin[2] = z;
-    }
-
-    /**
-     * Set the initial color that that the particle is given. If the emitter does
-     * not support the alpha channel, ignore the parameter.
-     *
-     * @param r The red component of the color
-     * @param g The green component of the color
-     * @param b The blue component of the color
-     * @param alpha The alpha component of the color
-     */
-    public void setColor(float r, float g, float b, float alpha)
-    {
-        color[0] = r;
-        color[1] = g;
-        color[2] = b;
-        color[3] = alpha;
-    }
-
-    /**
-     * Change the apparent surface area. Surface area is measured in square
-     * metres.
-     *
-     * @param area surface area
-     */
-    public void setSurfaceArea(double area)
-    {
-        surfaceArea = area;
-    }
-
-    /**
-     * Change the mass of the particle. Mass is measured in kilograms.
-     *
-     * The mass of an individual particle
-     */
-    public void setMass(double mass)
-    {
-        initialMass = mass;
-    }
-
-    /**
-     * Change the initial velocity that the particles are endowed with.
-     *
-     * @param x The x component of the velocity
-     * @param y The y component of the velocity
-     * @param z The z component of the velocity
-     */
-    public void setVelocity(float x, float y, float z)
-    {
-        initialVelocity[0] = x;
-        initialVelocity[1] = y;
-        initialVelocity[2] = z;
     }
 }

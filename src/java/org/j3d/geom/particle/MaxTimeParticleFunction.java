@@ -10,16 +10,17 @@
 package org.j3d.geom.particle;
 
 /**
- * ParticleFunction is the basic interface for functions that can modify the
- * fields of a Particle.
+ * A ParticleFunction that is used to cull particles that have reached their
+ * maximum allowed time.
+ * <p>
  *
- * A function may act on any of the fields of a particle, though typically it
- * is on the size and position. Some movement functions will modify the
- * force/energy of a particle while others will convert the energy into
- * position deltas.
+ * Within this particle system architecture, particles are not automatically
+ * removed from the scene when their lifetime is reached. This function is used
+ * to cull them from visibility at that point by comparing the current time
+ * with the particle's death time.
  *
  * @author Daniel Selman
- * @version $Revision: 1.1 $
+ * @version $Revision: 2.0 $
  */
 public class MaxTimeParticleFunction implements ParticleFunction
 {
@@ -36,6 +37,7 @@ public class MaxTimeParticleFunction implements ParticleFunction
     public MaxTimeParticleFunction()
     {
         enabled = true;
+        currentTime = System.currentTimeMillis();
     }
 
     /**
@@ -57,6 +59,7 @@ public class MaxTimeParticleFunction implements ParticleFunction
     public void setEnabled(boolean state)
     {
         enabled = state;
+        currentTime = System.currentTimeMillis();
     }
 
     /**
@@ -67,20 +70,19 @@ public class MaxTimeParticleFunction implements ParticleFunction
      */
     public boolean apply(Particle particle)
     {
-        long birth = particle.wallClockBirth;
-        return (currentTime - birth) < particle.wallClockLife;
+        return currentTime < particle.wallClockLife;
     }
 
     /**
      * Notification that the system is about to do an update of the particles
      * and to do any system-level initialisation.
      *
-     * @param ps The particle system that is being updated
+     * @param deltaT The elapsed time in milliseconds since the last frame
      * @return true if this should force another update after this one
      */
-    public boolean newFrame()
+    public boolean newFrame(int deltaT)
     {
-        currentTime = System.currentTimeMillis();
+        currentTime += deltaT;
         return true;
     }
 }

@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.6 $
+# Version: $Revision: 2.0 $
 #
 #*********************************************************************
 
@@ -20,6 +20,7 @@ SOURCE = \
    ParticleFunction.java \
    ParticleInitializer.java \
    ParticleList.java \
+   TexCoordInterpolator.java \
    ParticleSystem.java \
    ParticleSystemManager.java \
    PhysicsFunction.java \
@@ -29,11 +30,12 @@ SOURCE = \
    FrameCountParticleFunction.java \
    GravityParticleFunction.java \
    MaxTimeParticleFunction.java \
-   ExplosionPointEmitter.java \
    MaxAgePointEmitter.java \
    MaxAgePointForceEmitter.java \
    MaxTimePointEmitter.java \
-   PolylineEmitter.java 
+   ExplosionPointEmitter.java \
+   PolylineEmitter.java \
+   PointEmitter.java \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

@@ -9,20 +9,15 @@
 
 package org.j3d.geom.particle;
 
-// External imports
-// None
-
-// Local imports
-// None
 
 /**
- * Emits particles at a fixed point in space which only have a maximum time
- * limit and color set - all other values are zeroed out.
+ * Particle emitter that generates particles with an initial speed and
+ * direction from a single point in space.
  *
- * @author Justin Couch, Daniel Selman
+ * @author Justin Couch
  * @version $Revision: 2.0 $
  */
-public class MaxAgePointEmitter extends BaseEmitter
+public class PointEmitter extends BaseEmitter
 {
     /**
      * Number of frames of zero consecutive zero time deltas before we should
@@ -35,6 +30,15 @@ public class MaxAgePointEmitter extends BaseEmitter
 
     /** The origin to generate the particles at */
     private float[] origin;
+
+    /** The base force applied to the particles. */
+    private float force;
+
+    /** The initial velocity imparted to the particles */
+    private float[] initialVelocity;
+
+    /** The direction to shoot the particles in */
+    private float[] direction;
 
     /**
      * The zero time delta counter - used to make sure particles are still
@@ -52,34 +56,67 @@ public class MaxAgePointEmitter extends BaseEmitter
     private int elapsedZeroParticleTime;
 
     /**
-     * Construct a new emitter instance for a point emitter. The number of
+     * Construct a new default emitter. All values are set to zero, and the
+     * direction is straight up along the Y axis.
+     */
+    public PointEmitter()
+    {
+        origin = new float[3];
+        initialVelocity = new float[3];
+        direction = new float[3];
+        direction[1] = 1;
+        elapsedZeroParticleTime = 0;
+    }
+
+    /**
+     * Construct a new emitter instance for a point emitter that gives the
+     * particle a random force direction and strength. The number of
      * particles to create each frame is driven from the maximum particle count
      * divided by the average lifetime.
      *
      * @param maxTime The time length of the particles to exist in milliseconds
      * @param maxParticleCount The maximum number of particles to manage
      * @param position The emitting position in the local space
-     * @param color The initial color of particles (4 component)
+     * @param direction The emitting direction in the local space
+     * @param speed The initial color of particles (4 component)
      * @param variation The amount of variance for the initial values
      */
-    public MaxAgePointEmitter(int maxTime,
-                              int maxParticleCount,
-                              float[] position,
-                              float[] color,
-                              float variation)
+    public PointEmitter(int maxTime,
+                        int maxParticleCount,
+                        float[] position,
+                        float[] direction,
+                        float[] color,
+                        float speed,
+                        float variation)
     {
-        super(maxTime, maxParticleCount, color, 0, variation);
+        super(maxTime, maxParticleCount, color, speed, variation);
 
         // Particle per millisecond is just averaged over the base lifetime
-        // Uses the integer division for rounding purposes as we really don't
-        // care for high-accuracy in this number - it's just a guide.
         particlesPerMs = (lifetime == 0) ? 1 : (float)particleCount / lifetime;
-        elapsedZeroParticleTime = 0;
 
+        elapsedZeroParticleTime = 0;
         this.origin = new float[3];
         this.origin[0] = position[0];
         this.origin[1] = position[1];
         this.origin[2] = position[2];
+
+        initialVelocity = new float[3];
+        initialVelocity[0] = direction[0] * speed;
+        initialVelocity[1] = direction[1] * speed;
+        initialVelocity[2] = direction[2] * speed;
+
+        this.direction = new float[3];
+
+        float d = direction[0] * direction[0] + direction[1] * direction[1] +
+                  direction[2] * direction[2];
+
+        if(d != 0)
+        {
+            d = 1 / d;
+            this.direction[0] = d * direction[0];
+            this.direction[1] = d * direction[1];
+            this.direction[2] = d * direction[2];
+        }
     }
 
     /**
@@ -168,17 +205,26 @@ public class MaxAgePointEmitter extends BaseEmitter
      */
     public boolean initialize(Particle particle)
     {
-        float rnd = 1 - randomiser.nextFloat() * variation;
+        // Vary the alpha channel of the color a bit too
+        float rnd = 1 - (float)Math.random() * variation;
         particle.setColor(color[0], color[1], color[2], color[3] * rnd);
 
-        rnd = 1 - randomiser.nextFloat() * lifetimeVariation;
+        rnd = 1 - (float)Math.random() * lifetimeVariation;
         particle.setCycleTime((int)(lifetime * rnd));
         particle.setPosition(origin[0], origin[1], origin[2]);
-        particle.resultantForce.set(0, 0, 0);
-        particle.velocity.set(0, 0, 0);
         particle.setMass(initialMass);
         particle.setSurfaceArea(surfaceArea);
 
+        // Set up the initial velocity using a bit of randomness. Uses the same
+        // scale factor in each component. If more randomness is desired, this
+        // could be used on each component of the velocity.
+        rnd = 1 - randomiser.nextFloat() * variation;
+
+        float v_x = initialVelocity[0] * rnd;
+        float v_y = initialVelocity[1] * rnd;
+        float v_z = initialVelocity[2] * rnd;
+
+        particle.velocity.set(v_x, v_y, v_z);
         return true;
     }
 
@@ -194,5 +240,49 @@ public class MaxAgePointEmitter extends BaseEmitter
         origin[0] = x;
         origin[1] = y;
         origin[2] = z;
+    }
+
+    /**
+     * Change the initial speed that the particles are endowed with.
+     *
+     * @param speed The magnitude of the speed to use
+     */
+    public void setSpeed(float speed)
+    {
+        super.setSpeed(speed);
+
+        initialVelocity[0] = direction[0] * speed;
+        initialVelocity[1] = direction[1] * speed;
+        initialVelocity[2] = direction[2] * speed;
+    }
+
+    /**
+     * Change the initial velocity that the particles are endowed with by
+     * modifying the direction. Speed still stays the same. The direction
+     * value will be normalised to a unit length vector before being applied
+     * to the velocity calculation.
+     *
+     * @param x The x component of the velocity direction
+     * @param y The y component of the velocity direction
+     * @param z The z component of the velocity direction
+     */
+    public void setDirection(float x, float y, float z)
+    {
+        float d = x * x + y * y + z * z;
+        if(d != 0)
+        {
+            d = 1 / d;
+            x *= d;
+            y *= d;
+            z *= d;
+        }
+
+        direction[0] = x;
+        direction[1] = y;
+        direction[2] = z;
+
+        initialVelocity[0] = x * speed;
+        initialVelocity[1] = y * speed;
+        initialVelocity[2] = z * speed;
     }
 }

@@ -9,89 +9,118 @@
 
 package org.j3d.geom.particle;
 
-// Standard imports
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
+// External imports
+import java.util.Random;
 
-// Application specific imports
+// Local imports
 // None
 
 /**
  * WindParticleFunction models a directional wind source.
  * <p>
- * The wind has a direction and linearly attentuates
- * in strength perpendicular to the direction vector.
- * It applies forces to the particles proportional to their
- * surface area.
- * In addition it can be further parametized with a gustiness
- * and swirliness, controlling the strength and direction of the
- * wind force.
+ * The wind has a direction and speed that control how it effects the
+ * individual particle. From the wind speed, a pressure is calculated using
+ * the following model:
+ * <p>
+ * <pre>
+ * pressure = 10^(2 * log(speed)) * 0.64615
+ * </pre>
  *
- * @author Daniel Selman
- * @version $Revision: 1.4 $
+ * This is taken from the only I could find that would convert speed to
+ * a pressure applied on an object. The location of this convertor is
+ * <a href="http://www.cactus2000.de/uk/unit/masswsp.shtml">
+ * http://www.cactus2000.de/uk/unit/masswsp.shtml</a>
+ * <p>
+ *
+ * The force applied to the particle is thus proportional to it's surface
+ * area. Naturally this does not do a really good model, such as taking into
+ * account drag effects, etc, but it should be good-enough to model a gusty
+ * wind acting on a lot of small particles.
+ * <p>
+ *
+ * Further parameterisation is provided by allowing gustiness (speed variation)
+ * and turbulence (direction variation) per frame, controlling the strength and
+ * direction of the wind force.
+ *
+ * @author Justin Couch
+ * @version $Revision: 2.0 $
  */
 public class WindParticleFunction implements ParticleFunction
 {
-    // orgin of the wind
-    private Point3d windStart;
-    private Point3d windEnd;
-    private Vector3d ab;
-    private Vector3d ap;
-    private Vector3d crossAbAp;
-    private float[] position;
+    /** Message when the gustiness is negative */
+    private static final String NEG_GUSTINESS_MSG =
+        "The gustiness is not allowed to be negative.";
 
-    private double abLength;
-    private double attenuationStart;
-    private double attenuationEnd;
+    /** Calculated force per square meter based on the wind speed */
+    private float pressure;
 
-    // force
-    private Vector3d forcePerSquareMeter;
-    private Vector3d currentForcePerSquareMeter;
+    /** Current value for this frame based on the gustiness variation */
+    private float currentPressure;
 
-    // percentages
-    private double gustiness;
+    /** How much does the wind vary from the basic speed */
+    private float gustiness;
 
-    private double swirlinessX;
-    private double swirlinessY;
-    private double swirlinessZ;
+    /** How much the wind tends to swirl about */
+    private float turbulence;
 
     /** Flag to say whether or not this function is disabled or not */
     private boolean enabled;
 
+    /** The direction the wind is travelling in */
+    private float[] direction;
+
+    /** The current speed of the wind */
+    private float speed;
+
+    /** Random function to mess with the wind */
+    private Random randomiser;
+
     /**
-     * Construct a new wind particle function
+     * Construct a new default wind particle function. Everything is set to
+     * zeroes.
      */
-    public WindParticleFunction(Vector3d forcePerSquareMeter)
+    public WindParticleFunction()
     {
-        windStart = new Point3d(0, -1000, 0);
-        windEnd = new Point3d(0, 1000, 0);
-        crossAbAp = new Vector3d();
-        ap = new Vector3d();
-        position = new float[3];
+        direction = new float[3];
+        pressure = 0;
+        currentPressure = 0;
 
-        attenuationStart = 0.2;
-        attenuationEnd = 0.8;
-
-        // force
-        forcePerSquareMeter = new Vector3d(0.0000, 0.020, 0.00000);
-        currentForcePerSquareMeter = new Vector3d();
-
-        // percentages
-        gustiness = 0.4;
-
-        swirlinessX = -0.0005;
-        swirlinessY = 0.0005;
-        swirlinessZ = -0.0005;
-
-        ab = new Vector3d(windEnd.x - windStart.x,
-                          windEnd.y - windStart.y,
-                          windEnd.z - windStart.z);
-
-        abLength = ab.length();
-
-        this.forcePerSquareMeter = forcePerSquareMeter;
+        gustiness = 0;
+        turbulence = 0;
+        speed = 0;
 
         enabled = true;
+        randomiser = new Random();
+    }
+
+    /**
+     * Construct a new wind function with the parameters provided.
+     *
+     * @param direction The direction of the wind
+     * @param speed The speed of the wind
+     * @param gustiness Speed variation per-frame, non-negative
+     * @param turbulence Amount of per-particle variance
+     */
+    public WindParticleFunction(float[] direction,
+                                float speed,
+                                float gustiness,
+                                float turbulence)
+    {
+        if(gustiness < 0)
+            throw new IllegalArgumentException(NEG_GUSTINESS_MSG);
+
+        this.direction = new float[3];
+        this.direction[0] = direction[0];
+        this.direction[1] = direction[1];
+        this.direction[2] = direction[2];
+
+        this.speed = speed;
+        this.gustiness = gustiness;
+        this.turbulence = turbulence;
+
+        randomiser = new Random();
+
+        recalculatePressure();
     }
 
     //-------------------------------------------------------------
@@ -123,20 +152,15 @@ public class WindParticleFunction implements ParticleFunction
      * Notification that the system is about to do an update of the particles
      * and to do any system-level initialisation.
      *
-     * @param ps The particle system that is being updated
+     * @param deltaT The elapsed time in milliseconds since the last frame
      * @return true if this should force another update after this one
      */
-    public boolean newFrame()
+    public boolean newFrame(int deltaT)
     {
-        // calculate the current wind speed
-        currentForcePerSquareMeter.x =
-                Math.random() * forcePerSquareMeter.x * gustiness;
-        currentForcePerSquareMeter.y =
-                Math.random() * forcePerSquareMeter.y * gustiness;
-        currentForcePerSquareMeter.z =
-                Math.random() * forcePerSquareMeter.z * gustiness;
+        // calculate the current wind pressure from the speed
+        currentPressure = pressure * gustiness * randomiser.nextFloat();
 
-       return true;
+        return true;
     }
 
     /**
@@ -147,39 +171,136 @@ public class WindParticleFunction implements ParticleFunction
      */
     public boolean apply(Particle particle)
     {
-        // calculate distance of the particle from the plane
-        particle.getPosition(position);
-        ap.x = position[0] - windStart.x;
-        ap.y = position[1] - windStart.y;
-        ap.z = position[2] - windStart.z;
 
-        crossAbAp.cross(ab, ap);
-        double distance = crossAbAp.length() / abLength;
+        float force_x = currentPressure * direction[0];
+        float force_y = currentPressure * direction[1];
+        float force_z = currentPressure * direction[2];
 
-        if(distance > attenuationStart)
+        if(turbulence != 0)
         {
-            if(distance <= attenuationEnd)
-            {
-                currentForcePerSquareMeter.scale(
-                        (distance - attenuationStart) /
-                        (attenuationEnd - attenuationStart));
-            }
-            else
-            {
-                currentForcePerSquareMeter.set(0, 0, 0);
-            }
+            // apply the turbulence
+            force_x += randomiser.nextFloat() * turbulence;
+            force_y += randomiser.nextFloat() * turbulence;
+            force_z += randomiser.nextFloat() * turbulence;
         }
 
-        if(distance < attenuationEnd)
-        {
-            // apply the swirliness
-            currentForcePerSquareMeter.x += Math.random() * swirlinessX;
-            currentForcePerSquareMeter.y += Math.random() * swirlinessY;
-            currentForcePerSquareMeter.z += Math.random() * swirlinessZ;
-            currentForcePerSquareMeter.scale(particle.surfaceArea);
-            particle.resultantForce.add(currentForcePerSquareMeter);
-        }
+        // Now scale it by the surface area to get back to newtowns of force
+        force_x *= particle.surfaceArea;
+        force_y *= particle.surfaceArea;
+        force_z *= particle.surfaceArea;
+
+        particle.resultantForce.x += force_x;
+        particle.resultantForce.y += force_y;
+        particle.resultantForce.z += force_z;
 
         return true;
     }
+
+    //-------------------------------------------------------------
+    // Local methods
+    //-------------------------------------------------------------
+
+    /**
+     * Change the speed that wind is blowing at.
+     *
+     * @param speed The magnitude of the wind speed to use
+     */
+    public void setSpeed(float speed)
+    {
+        this.speed = speed;
+        recalculatePressure();
+    }
+
+    /**
+     * Get the current speed of the wind.
+     *
+     * @return A value of the speed
+     */
+    public float getSpeed()
+    {
+        return speed;
+    }
+
+    /**
+     * Change the direction of the wind.
+     *
+     * @param x The x component of the wind direction
+     * @param y The y component of the wind direction
+     * @param z The z component of the wind direction
+     */
+    public void setDirection(float x, float y, float z)
+    {
+        direction[0] = x;
+        direction[1] = y;
+        direction[2] = z;
+    }
+
+    /**
+     * Fetch the current direction of the wind speed direction.
+     *
+     * @param dir An array of length 3 to copy the values into
+     */
+    public void getDirection(float[] dir)
+    {
+        dir[0] = direction[0];
+        dir[0] = direction[1];
+        dir[0] = direction[2];
+    }
+
+    /**
+     * Change the gustiness that wind is blowing at. Gustiness
+     * is a per-frame modifier for the wind speed, so it will be used to
+     * control how strong the wind is. However, it should not allow for the
+     * wind to blow backwards, so it is limited to non-negative values only.
+     *
+     * @param gustiness The magnitude of the wind gustiness to use
+     * @throws IllegalArgumentException The value was negative
+     */
+    public void setGustiness(float gustiness)
+        throws IllegalArgumentException
+    {
+        if(gustiness < 0)
+            throw new IllegalArgumentException(NEG_GUSTINESS_MSG);
+
+        this.gustiness = gustiness;
+    }
+
+    /**
+     * Get the current gustiness that particles effected by.
+     *
+     * @return A value of the gustiness
+     */
+    public float getGustiness()
+    {
+        return gustiness;
+    }
+
+    /**
+     * Change the turbulence of the wind.
+     *
+     * @param turbulence The magnitude of the wind turbulence to use
+     */
+    public void setTurbulence(float turbulence)
+    {
+        this.turbulence = turbulence;
+    }
+
+    /**
+     * Get the current turbulence that particles are effected by.
+     *
+     * @return A value of the turbulence
+     */
+    public float getTurbulence()
+    {
+        return turbulence;
+    }
+
+    /**
+     * Calculate and update the pressure due to the current wind speed.
+     */
+    private void recalculatePressure()
+    {
+        pressure = (float)(Math.pow(10, 2 * Math.log(speed)) * 0.64615);
+    }
+
 }
