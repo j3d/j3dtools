@@ -33,9 +33,7 @@ SOURCE = GeometryData.java \
 #         Knot.java \
 #         Mobius.java \
 #         Shell.java \
-#         Sphere.java \
 #         SpiralTorus.java \
-#         Spring.java \
 #		 MobiusGenerator.java \
 
 #         Torus.java	\
