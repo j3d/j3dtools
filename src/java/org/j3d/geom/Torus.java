@@ -33,7 +33,7 @@ import javax.media.j3d.TriangleStripArray;
  * geometry does not have texture coordinates set.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Torus extends Shape3D
 {
@@ -184,7 +184,9 @@ public class Torus extends Shape3D
 
         setCapability(ALLOW_GEOMETRY_WRITE);
 
-        setAppearance(app);
+        if(app != null)
+            setAppearance(app);
+
         setGeometry(geometry);
     }
 
