@@ -56,7 +56,7 @@ import javax.vecmath.Vector3d;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class IntersectionUtils
 {
@@ -251,8 +251,8 @@ public class IntersectionUtils
 
         geom.getCoordinates(0, workingCoords);
 
+/*
         transformCoords(vtx_count, vworldTransform);
-        //transformPicks(vworldTransform, origin, direction);
 
         return rayTriangleArray(origin,
                                 direction,
@@ -261,6 +261,25 @@ public class IntersectionUtils
                                 vtx_count / 3,
                                 point,
                                 intersectOnly);
+*/
+
+        reverseTx.invert(vworldTransform);
+
+        transformPicks(reverseTx, origin, direction);
+        boolean intersection;
+
+        intersection = rayTriangleArray(pickStart,
+                                        pickDir,
+                                        length,
+                                        workingCoords,
+                                        vtx_count / 3,
+                                        point,
+                                        intersectOnly);
+
+        if(intersection)
+            vworldTransform.transform(point);
+
+        return intersection;
     }
 
     /**
@@ -302,8 +321,8 @@ public class IntersectionUtils
 
         geom.getCoordinates(0, workingCoords);
 
+/*
         transformCoords(vtx_count, vworldTransform);
-        //transformPicks(vworldTransform, origin, direction);
 
         return rayQuadArray(origin,
                             direction,
@@ -312,6 +331,25 @@ public class IntersectionUtils
                             vtx_count / 4,
                             point,
                             intersectOnly);
+*/
+
+        reverseTx.invert(vworldTransform);
+
+        transformPicks(reverseTx, origin, direction);
+        boolean intersection;
+
+        intersection = rayTriangleArray(pickStart,
+                                        pickDir,
+                                        length,
+                                        workingCoords,
+                                        vtx_count / 4,
+                                        point,
+                                        intersectOnly);
+
+        if(intersection)
+            vworldTransform.transform(point);
+
+        return intersection;
     }
 
     /**
@@ -357,9 +395,8 @@ public class IntersectionUtils
 
         geom.getCoordinates(0, workingCoords);
         geom.getStripVertexCounts(workingStrips);
-
+/*
         transformCoords(vtx_count, vworldTransform);
-        //transformPicks(vworldTransform, origin, direction);
 
         boolean ret_val = rayTriangleStripArray(origin,
                                                 direction,
@@ -371,6 +408,25 @@ public class IntersectionUtils
                                                 intersectOnly);
 
         return ret_val;
+*/
+        reverseTx.invert(vworldTransform);
+
+        transformPicks(reverseTx, origin, direction);
+        boolean intersection;
+
+        intersection = rayTriangleStripArray(pickStart,
+                                             pickDir,
+                                             length,
+                                             workingCoords,
+                                             workingStrips,
+                                             strip_count,
+                                             point,
+                                             intersectOnly);
+
+        if(intersection && !intersectOnly)
+            vworldTransform.transform(point);
+
+        return intersection;
     }
 
     /**
@@ -417,7 +473,7 @@ public class IntersectionUtils
         geom.getCoordinates(0, workingCoords);
         geom.getStripVertexCounts(workingStrips);
 
-
+/*
         transformCoords(vtx_count, vworldTransform);
 
         boolean ret_val = rayTriangleFanArray(origin,
@@ -430,6 +486,26 @@ public class IntersectionUtils
                                               intersectOnly);
 
         return ret_val;
+*/
+        reverseTx.invert(vworldTransform);
+
+        transformPicks(reverseTx, origin, direction);
+        boolean intersection;
+
+        intersection = rayTriangleFanArray(pickStart,
+                                           pickDir,
+                                           length,
+                                           workingCoords,
+                                           workingStrips,
+                                           strip_count,
+                                           point,
+                                           intersectOnly);
+
+        if(intersection && !intersectOnly)
+            vworldTransform.transform(point);
+
+        return intersection;
+
     }
 
     /**
@@ -479,6 +555,7 @@ public class IntersectionUtils
         geom.getCoordinates(0, workingCoords);
         geom.getCoordinateIndices(0, workingIndicies);
 
+/*
         transformCoords(vtx_count, vworldTransform);
 
         boolean ret_val = rayIndexedTriangleArray(origin,
@@ -491,6 +568,26 @@ public class IntersectionUtils
                                                   intersectOnly);
 
         return ret_val;
+*/
+        reverseTx.invert(vworldTransform);
+
+        transformPicks(reverseTx, origin, direction);
+        boolean intersection;
+
+        intersection = rayIndexedTriangleArray(pickStart,
+                                               pickDir,
+                                               length,
+                                               workingCoords,
+                                               workingIndicies,
+                                               index_count,
+                                               point,
+                                               intersectOnly);
+
+        if(intersection && !intersectOnly)
+            vworldTransform.transform(point);
+
+        return intersection;
+
     }
 
     /**
@@ -540,6 +637,7 @@ public class IntersectionUtils
         geom.getCoordinates(0, workingCoords);
         geom.getCoordinateIndices(0, workingIndicies);
 
+/*
         transformCoords(vtx_count, vworldTransform);
 
         boolean ret_val = rayIndexedQuadArray(origin,
@@ -552,6 +650,25 @@ public class IntersectionUtils
                                               intersectOnly);
 
         return ret_val;
+*/
+        reverseTx.invert(vworldTransform);
+
+        transformPicks(reverseTx, origin, direction);
+        boolean intersection;
+
+        intersection = rayIndexedQuadArray(pickStart,
+                                           pickDir,
+                                           length,
+                                           workingCoords,
+                                           workingIndicies,
+                                           index_count,
+                                           point,
+                                           intersectOnly);
+
+        if(intersection && !intersectOnly)
+            vworldTransform.transform(point);
+
+        return intersection;
     }
 
     /**
