@@ -39,7 +39,7 @@ import javax.vecmath.Vector3f;
  * that the normal points directly away from the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class SphereGenerator extends GeometryGenerator
 {
@@ -750,17 +750,17 @@ public class SphereGenerator extends GeometryGenerator
                 coords[count++] = quadCoordinates[pos + 2];
 
                 // triangle 2
-                coords[count++] = quadCoordinates[pos + 3];
-                coords[count++] = quadCoordinates[pos + 4];
-                coords[count++] = quadCoordinates[pos + 5];
+                coords[count++] = quadCoordinates[pos + facet_inc];
+                coords[count++] = quadCoordinates[pos + facet_inc + 1];
+                coords[count++] = quadCoordinates[pos + facet_inc + 2];
 
                 coords[count++] = quadCoordinates[pos + facet_inc + 3];
                 coords[count++] = quadCoordinates[pos + facet_inc + 4];
                 coords[count++] = quadCoordinates[pos + facet_inc + 5];
 
-                coords[count++] = quadCoordinates[pos + facet_inc];
-                coords[count++] = quadCoordinates[pos + facet_inc + 1];
-                coords[count++] = quadCoordinates[pos + facet_inc + 2];
+                coords[count++] = quadCoordinates[pos + 3];
+                coords[count++] = quadCoordinates[pos + 4];
+                coords[count++] = quadCoordinates[pos + 5];
             }
         }
 
