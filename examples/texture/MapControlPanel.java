@@ -20,6 +20,7 @@ import java.awt.event.ItemListener;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Switch;
 import javax.media.j3d.TexCoordGeneration;
+import javax.media.j3d.TextureUnitState;
 
 // Application Specific imports
 // None
@@ -30,7 +31,7 @@ import javax.media.j3d.TexCoordGeneration;
  *
  * Note that because spinners are added, this requires JDK 1.4.
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MapControlPanel extends JPanel
     implements ItemListener
@@ -50,16 +51,45 @@ public class MapControlPanel extends JPanel
     /** Appearance for putting the texture coordinate generation */
     private Appearance appearance;
 
+    /** TextureUnitState for putting the texture coordinate generation */
+    private TextureUnitState textureUnit;
+
+    /** Coord generation using normals */
+    private TexCoordGeneration normalMapGen;
+
+    /** Coord generation using reflections */
+    private TexCoordGeneration reflMapGen;
+
     /**
      * Construct a new panel that works with the 6 textures and background
      * switch.
      */
     public MapControlPanel(Switch bgSwitch, Appearance app)
     {
+        this(bgSwitch);
+
+        appearance = app;
+    }
+
+    /**
+     * Construct a new panel that works with the background switch and a
+     * TextureUnitState to control the texcoord generation.
+     */
+    public MapControlPanel(Switch bgSwitch, TextureUnitState texUnit)
+    {
+        this(bgSwitch);
+
+        textureUnit = texUnit;
+    }
+
+    /**
+     * Common internal constructor for simplified setup.
+     */
+    private MapControlPanel(Switch bgSwitch)
+    {
         super(new GridLayout(3, 1));
 
         backgroundSwitch = bgSwitch;
-        appearance = app;
 
         ButtonGroup grouper = new ButtonGroup();
 
@@ -67,15 +97,23 @@ public class MapControlPanel extends JPanel
         backgroundSelector.addItemListener(this);
         add(backgroundSelector);
 
-        normalSelector = new JRadioButton("Use Normal map", true);
+        normalSelector = new JRadioButton("Use Normal mapping", true);
         normalSelector.addItemListener(this);
         grouper.add(normalSelector);
         add(normalSelector);
 
-        reflSelector = new JRadioButton("Use Reflection map", false);
+        reflSelector = new JRadioButton("Use Reflection mapping", false);
         reflSelector.addItemListener(this);
         grouper.add(reflSelector);
         add(reflSelector);
+
+        normalMapGen =
+            new TexCoordGeneration(TexCoordGeneration.NORMAL_MAP,
+                                   TexCoordGeneration.TEXTURE_COORDINATE_3);
+
+        reflMapGen =
+            new TexCoordGeneration(TexCoordGeneration.REFLECTION_MAP,
+                                   TexCoordGeneration.TEXTURE_COORDINATE_3);
     }
 
     /**
@@ -92,20 +130,20 @@ public class MapControlPanel extends JPanel
         {
             if(selected)
             {
-                TexCoordGeneration coord_gen =
-                    new TexCoordGeneration(TexCoordGeneration.NORMAL_MAP,
-                                           TexCoordGeneration.TEXTURE_COORDINATE_3);
-                appearance.setTexCoordGeneration(coord_gen);
+                if(appearance != null)
+                    appearance.setTexCoordGeneration(normalMapGen);
+                else
+                    textureUnit.setTexCoordGeneration(normalMapGen);
             }
         }
         else if(src == reflSelector)
         {
             if(selected)
             {
-                TexCoordGeneration coord_gen =
-                    new TexCoordGeneration(TexCoordGeneration.REFLECTION_MAP,
-                                           TexCoordGeneration.TEXTURE_COORDINATE_3);
-                appearance.setTexCoordGeneration(coord_gen);
+                if(appearance != null)
+                    appearance.setTexCoordGeneration(reflMapGen);
+                else
+                    textureUnit.setTexCoordGeneration(reflMapGen);
             }
         }
         else

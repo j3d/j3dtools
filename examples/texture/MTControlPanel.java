@@ -35,7 +35,7 @@ import javax.vecmath.Vector3d;
  *
  * Note that because spinners are added, this requires JDK 1.4.
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MTControlPanel extends JPanel
     implements ItemListener, ChangeListener
@@ -119,7 +119,7 @@ public class MTControlPanel extends JPanel
         bumpSelector.addItemListener(this);
         add(bumpSelector);
 
-        colourSelector = new JCheckBox("Base textre", true);
+        colourSelector = new JCheckBox("Colour texture", true);
         colourSelector.addItemListener(this);
         add(colourSelector);
 

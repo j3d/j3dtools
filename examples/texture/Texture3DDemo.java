@@ -39,7 +39,7 @@ import org.j3d.util.ImageUtils;
  * of the rendering attributes like the face set.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Texture3DDemo extends DemoFrame
     implements ItemListener
@@ -381,7 +381,15 @@ public class Texture3DDemo extends DemoFrame
         app_3d.setTexture(create3DTexture());
         app_3d.setPolygonAttributes(targetPolyAttr);
 
-        generator = new BoxGenerator();
+/*
+        TexCoordGeneration tex_gen =
+            new TexCoordGeneration(TexCoordGeneration.OBJECT_LINEAR,
+                                   TexCoordGeneration.TEXTURE_COORDINATE_3);
+        tex_gen.setPlaneR(new Vector4f(0, 0, 1, 0));
+        app_3d.setTexCoordGeneration(tex_gen);
+*/
+
+        generator = new BoxGenerator(1, 1, 1);
         generator.generate(data_2d);
         generator.generate(data_3d);
 
@@ -393,6 +401,8 @@ public class Texture3DDemo extends DemoFrame
         geom_2d.setTextureCoordinates(0, 0, data_2d.textureCoordinates);
 
         GeometryArray geom_3d = new TriangleArray(data_3d.vertexCount, format_3d);
+//        GeometryArray geom_3d = new QuadArray(data_3d.vertexCount, format_3d);
+
         geom_3d.setCoordinates(0, data_3d.coordinates);
         geom_3d.setNormals(0, data_3d.normals);
         geom_3d.setTextureCoordinates(0, 0, data_3d.textureCoordinates);
@@ -407,7 +417,7 @@ public class Texture3DDemo extends DemoFrame
         data_2d.textureCoordinates = null;
         data_3d.textureCoordinates = null;
 
-        generator = new ConeGenerator();
+        generator = new ConeGenerator(1, 0.5f);
         generator.generate(data_2d);
         generator.generate(data_3d);
 
@@ -431,7 +441,7 @@ public class Texture3DDemo extends DemoFrame
         data_2d.textureCoordinates = null;
         data_3d.textureCoordinates = null;
 
-        generator = new SphereGenerator();
+        generator = new SphereGenerator(0.5f);
         generator.generate(data_2d);
         generator.generate(data_3d);
 
@@ -455,7 +465,7 @@ public class Texture3DDemo extends DemoFrame
         data_2d.textureCoordinates = null;
         data_3d.textureCoordinates = null;
 
-        generator = new TorusGenerator();
+        generator = new TorusGenerator(0.1f, 0.5f);
         generator.generate(data_2d);
         generator.generate(data_3d);
 
@@ -556,19 +566,25 @@ public class Texture3DDemo extends DemoFrame
             ImageUtils.createBufferedImage(img2)
         };
 
-        ImageComponent3D comp =
-            new ImageComponent3D(ImageComponent.FORMAT_RGB, buf_img);
-
         int img_width = buf_img[0].getWidth(null);
         int img_height = buf_img[0].getHeight(null);
+
+
+        ImageComponent3D comp =
+            new ImageComponent3D(ImageComponent.FORMAT_RGB, img_width, img_height, 4);
+        comp.set(0, buf_img[0]);
+        comp.set(2, buf_img[1]);
 
         // Setup the texture. Cheat - depth is always 2.
         Texture3D ret_val = new Texture3D(Texture.BASE_LEVEL,
                                           Texture.RGB,
                                           img_width,
                                           img_height,
-                                          2);
+                                          4);
         ret_val.setImage(0, comp);
+        ret_val.setBoundaryModeT(Texture.CLAMP);
+        ret_val.setBoundaryModeS(Texture.CLAMP);
+        ret_val.setBoundaryModeR(Texture.CLAMP);
 
         return ret_val;
     }
