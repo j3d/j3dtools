@@ -46,6 +46,7 @@ package org.j3d.terrain.roam;
 // Standard imports
 import javax.media.j3d.*;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -54,6 +55,7 @@ import javax.vecmath.Tuple3f;
 import javax.vecmath.Vector3f;
 
 // Application specific imports
+import org.j3d.terrain.AppearanceGenerator;
 import org.j3d.terrain.ViewFrustum;
 import org.j3d.terrain.Landscape;
 import org.j3d.terrain.TerrainData;
@@ -67,7 +69,7 @@ import org.j3d.terrain.TerrainData;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class SplitMergeLandscape extends Landscape
 {
@@ -82,6 +84,9 @@ public class SplitMergeLandscape extends Landscape
     /** Number of visible triangles */
     private int triCount = 0;
 
+    /** The default generator if none are supplied */
+    private AppearanceGenerator defaultAppGenerator;
+
     /**
      * Creates new Landscape based on the view information and the terrain
      * data.
@@ -92,8 +97,39 @@ public class SplitMergeLandscape extends Landscape
     public SplitMergeLandscape(ViewFrustum view, TerrainData terrain)
     {
         super(view, terrain);
+    }
 
+    /**
+     * Provide a landscape with a specific appearance generator set. If the
+     * generator argument is null, then the default is used.
+     *
+     * @param view The viewing frustum to see the data with
+     * @param data The raw data to view
+     * @param gen The generator instance to use
+     * @throws IllegalArgumentException either parameter is null
+     */
+    public SplitMergeLandscape(ViewFrustum view,
+                               TerrainData data,
+                               AppearanceGenerator gen)
+    {
+        super(view, data, gen);
+    }
+
+    /**
+     * Initialise the landscape ready for viewing. This should be called
+     * before you add the parent branchgroup to the live scenegraph as the
+     * implementation code will need to construct the renderable scene graph.
+     * It also sets the initial position so that if the terrain is using
+     * tilable datasets it can determine where to start building from.
+     *
+     * @param position The position the user is in the virtual world
+     * @param direction The orientation of the user's gaze
+     */
+    public void initialize(Tuple3f position, Vector3f direction)
+    {
         createPatches();
+
+        setView(position, direction);
     }
 
     /**
@@ -183,45 +219,87 @@ public class SplitMergeLandscape extends Landscape
         int depth = terrainData.getGridDepth() - PATCH_SIZE;
         int width = terrainData.getGridWidth() - PATCH_SIZE;
 
-        Appearance app = new Appearance();
-
-        app.setTexture(terrainData.getTexture());
-
-        Material mat = new Material();
-        mat.setLightingEnable(true);
-
-        app.setMaterial(mat);
-
-//        PolygonAttributes polyAttr = new PolygonAttributes();
-//        polyAttr.setPolygonMode(PolygonAttributes.POLYGON_LINE);
-//        polyAttr.setCullFace(PolygonAttributes.CULL_NONE);
-//        app.setPolygonAttributes(polyAttr);
-
         Patch[] westPatchNeighbour = new Patch[width];
         Patch southPatchNeighbour = null;
         Patch p = null;
 
-        for(int east = 0; east <= width; east += PATCH_SIZE)
+        AppearanceGenerator app_gen = null;
+        Appearance app;
+
+        if(appearanceGenerator == null)
         {
-            for(int north = 0; north <= depth; north += PATCH_SIZE)
+            if(defaultAppGenerator == null)
+                defaultAppGenerator = new DefaultAppearanceGenerator();
+
+            app_gen = defaultAppGenerator;
+        }
+        else
+        {
+            app_gen = appearanceGenerator;
+        }
+
+        if(terrainData.isTiledTextures())
+        {
+            Rectangle bounds = new Rectangle();
+            bounds.width = PATCH_SIZE;
+            bounds.height = PATCH_SIZE;
+
+            for(int east = 0; east <= width; east += PATCH_SIZE)
             {
-                p = new Patch(terrainData,
-                              PATCH_SIZE,
-                              east,
-                              north,
-                              app,
-                              landscapeView,
-                              westPatchNeighbour[north/PATCH_SIZE],
-                              southPatchNeighbour);
+                for(int north = 0; north <= depth; north += PATCH_SIZE)
+                {
+                    bounds.x = east;
+                    bounds.y = north;
 
-                patches.add(p);
-                triCount += 2;
-                this.addChild(p.getShape3D());
-                southPatchNeighbour = p;
-                westPatchNeighbour[north/PATCH_SIZE] = p;
+                    app = app_gen.createAppearance();
+                    app.setTexture(terrainData.getTexture(bounds));
+
+                    p = new Patch(terrainData,
+                                  PATCH_SIZE,
+                                  east,
+                                  north,
+                                  app,
+                                  landscapeView,
+                                  westPatchNeighbour[north/PATCH_SIZE],
+                                  southPatchNeighbour);
+
+                    patches.add(p);
+                    triCount += 2;
+                    this.addChild(p.getShape3D());
+                    southPatchNeighbour = p;
+                    westPatchNeighbour[north/PATCH_SIZE] = p;
+                }
+
+                southPatchNeighbour = null;
             }
+        }
+        else
+        {
+            app = app_gen.createAppearance();
+            app.setTexture(terrainData.getTexture());
 
-            southPatchNeighbour = null;
+            for(int east = 0; east <= width; east += PATCH_SIZE)
+            {
+                for(int north = 0; north <= depth; north += PATCH_SIZE)
+                {
+                    p = new Patch(terrainData,
+                                  PATCH_SIZE,
+                                  east,
+                                  north,
+                                  app,
+                                  landscapeView,
+                                  westPatchNeighbour[north/PATCH_SIZE],
+                                  southPatchNeighbour);
+
+                    patches.add(p);
+                    triCount += 2;
+                    this.addChild(p.getShape3D());
+                    southPatchNeighbour = p;
+                    westPatchNeighbour[north/PATCH_SIZE] = p;
+                }
+
+                southPatchNeighbour = null;
+            }
         }
     }
 }

@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.terrain.roam directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -14,7 +14,8 @@ PACKAGE = org.j3d.terrain.roam
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-SOURCE = VertexData.java \
+SOURCE = DefaultAppearanceGenerator.java \
+    VertexData.java \
     VarianceTree.java \
 	QueueManager.java \
 	TreeNode.java \
