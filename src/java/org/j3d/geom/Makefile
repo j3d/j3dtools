@@ -22,6 +22,7 @@ SOURCE = GeometryData.java \
   Sphere.java \
   Spring.java \
   Torus.java \
+  RasterTextLabel.java \
   TestBoxGenerator.java \
   TestConeGenerator.java \
   TestCylinderGenerator.java \
