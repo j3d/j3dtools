@@ -37,7 +37,7 @@ import org.j3d.ui.navigation.NavigationState;
  * of the rendering attributes like the face set.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Nurbs3DDemo extends DemoFrame
     implements ActionListener, ItemListener
@@ -134,10 +134,13 @@ public class Nurbs3DDemo extends DemoFrame
         menu_bar.add(polygonMenu);
 
         MenuItem bezier_menu = new MenuItem("Bezier");
+        MenuItem bspline_menu = new MenuItem("B-Spline");
 
         bezier_menu.addActionListener(this);
+        bspline_menu.addActionListener(this);
 
         geom_menu.add(bezier_menu);
+        geom_menu.add(bspline_menu);
 
         textureMenuItem = new CheckboxMenuItem("Use texture");
         lightingMenuItem = new CheckboxMenuItem("Use Lighting");
@@ -164,8 +167,8 @@ public class Nurbs3DDemo extends DemoFrame
         CheckboxMenuItem f_tris = new CheckboxMenuItem("Triangle Fans");
         CheckboxMenuItem s_tris = new CheckboxMenuItem("Triangle Strips");
 
-        triangles.setState(false);
-        quads.setState(true);
+        triangles.setState(true);
+        quads.setState(false);
         i_quads.setState(false);
         i_tris.setState(false);
         is_tris.setState(false);
@@ -228,6 +231,7 @@ public class Nurbs3DDemo extends DemoFrame
 
         generatorMap = new HashMap();
         generatorMap.put(bezier_menu, new BezierPatchGenerator());
+        generatorMap.put(bspline_menu, new BSplinePatchGenerator());
 
         viewHandler = new MouseViewHandler();
         viewHandler.setCanvas(canvas);
@@ -242,7 +246,7 @@ public class Nurbs3DDemo extends DemoFrame
         useTexture = false;
 
         geometryType = GeometryData.TRIANGLES;
-        currentPolygonItem = quads;
+        currentPolygonItem = triangles;
 
         buildScene();
     }
@@ -329,6 +333,11 @@ public class Nurbs3DDemo extends DemoFrame
         currentGenerator.setPatchControlPoints(controlCoordinates,
                                                controlWidth,
                                                controlDepth);
+
+        if(currentGenerator instanceof BSplinePatchGenerator)
+        {
+            ((BSplinePatchGenerator)currentGenerator).generateSmoothKnots();
+        }
 
         try
         {
@@ -430,7 +439,7 @@ public class Nurbs3DDemo extends DemoFrame
         if(useTexture)
             geom.setTextureCoordinates(0, 0, data.textureCoordinates);
 
-//        texture.setEnable(useTexture);
+        texture.setEnable(useTexture);
 
         targetShape.setGeometry(geom);
     }
@@ -442,11 +451,11 @@ public class Nurbs3DDemo extends DemoFrame
     {
         Color3f white = new Color3f(1, 1, 1);
         Color3f black = new Color3f(0.0f, 0.0f, 0.0f);
-        Color3f blue = new Color3f(0.00f, 0.20f, 0.80f);
+        Color3f blue = new Color3f(0.0f, 0.2f, 0.8f);
         Color3f ambientBlue = new Color3f(0.0f, 0.02f, 0.5f);
         Color3f specular = new Color3f(0.7f, 0.7f, 0.7f);
-        Color3f red = new Color3f(0.00f, 0.80f, 0.20f);
-        Color3f ambientRed = new Color3f(0.0f, 0.5f, 0.02f);
+        Color3f red = new Color3f(0.8f, 0.0f, 0.0f);
+        Color3f ambientRed = new Color3f(0.5f, 0.0f, 0.02f);
 
         VirtualUniverse universe = new VirtualUniverse();
         Locale locale = new Locale(universe);
@@ -495,17 +504,16 @@ public class Nurbs3DDemo extends DemoFrame
         targetPolyAttr.setPolygonMode(targetPolyAttr.POLYGON_FILL);
         blue_appearance.setPolygonAttributes(targetPolyAttr);
 
-/*
         try {
             TextureCache t_cache = TextureCacheFactory.getCache();
-            texture = (Texture2D)t_cache.fetchTexture("globe_map_2.jpg");
+            texture = (Texture2D)t_cache.fetchTexture("grid32.gif");
             texture.setCapability(Texture.ALLOW_ENABLE_WRITE);
             blue_appearance.setTexture(texture);
         } catch(IOException ioe) {
             System.out.println("error loading texture " + ioe);
 
         }
-*/
+
         targetShape = new Shape3D();
         targetShape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
         targetShape.setAppearance(blue_appearance);
@@ -518,7 +526,6 @@ public class Nurbs3DDemo extends DemoFrame
         c_mat.setSpecularColor(specular);
         c_mat.setShininess(75.0f);
         c_mat.setLightingEnable(true);
-        c_mat.setCapability(Material.ALLOW_COMPONENT_WRITE);
 
         controlAttributes = new RenderingAttributes();
         controlAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);
