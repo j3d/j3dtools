@@ -12,6 +12,7 @@ SOURCE = FrameUpdateListener.java \
 	NavigationToolbar.java \
 	ViewpointToolbar.java \
 	MouseViewHandler.java \
-	NavigationStateManager.java
+	NavigationStateManager.java	\
+	ViewpointManager.java
 
 include ${PROJECT_ROOT}/make/Makefile.jav
