@@ -35,7 +35,7 @@ import org.j3d.util.ImageUtils;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TextureCreateUtils
 {
@@ -184,10 +184,10 @@ public class TextureCreateUtils
      */
     public ImageComponent2D create2DImageComponent(Object content)
     {
-        if(!(content instanceof ImageProducer) ||
-           !(content instanceof BufferedImage) ||
+        if(!(content instanceof ImageProducer) &&
+           !(content instanceof BufferedImage) &&
            !(content instanceof Image))
-            throw new IllegalArgumentException("Not a valid image type");
+            throw new IllegalArgumentException("Not a valid image type " + content);
 
         BufferedImage image = null;
 
