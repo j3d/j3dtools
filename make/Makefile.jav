@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.7 $
+# Version: $Revision: 1.8 $
 #
 #*********************************************************************
 
@@ -15,7 +15,7 @@
 #
 include $(PROJECT_ROOT)/make/Makefile.inc
 
-JAVA_DEV_ROOT = $(SRC_DIR)
+JAVA_DEV_ROOT = $(JAVA_DIR)
 
 CLASS_DIR     = $(PROJECT_ROOT)/classes
 JAVADOC_DIR   = $(DOCS_DIR)/javadoc
@@ -33,11 +33,13 @@ ifdef JAVA_HOME
   JAVAC    = $(JAVA_HOME)/bin/javac
   JAR      = $(JAVA_HOME)/bin/jar
   JAVADOC  = $(JAVA_HOME)/bin/javadoc
+  JAVAH    = $(JAVA_HOME)/bin/javah
   JAR_INSTALL_DIR = $(JAVA_HOME)/jre/lib/ext
 else
   JAVAC    = javac
   JAR      = jar
   JAVADOC  = javadoc
+  JAVAH	   = javah
 endif
 
 EMPTY         =
@@ -104,7 +106,7 @@ NONJAVA_FILES   = $(patsubst %.java,,$(SOURCE))
 CLASS_FILES     = $(JAVA_FILES:%.java=$(PACKAGE_DIR)/%.class)
 OTHER_FILES     = $(EXTRA:%=$(PACKAGE_DIR)/%)
 JNI_CLASS_FILES = $(JNI_SOURCE:%.java=$(PACKAGE_DIR)/%.class)
-JNI_HEADERS     = $(JNI_SOURCE:%.java=%.h)
+JNI_HEADERS     = $(JNI_SOURCE:%.java=$(INCLUDE_DIR)/%.h)
 JAR_CLASS_FILES = $(patsubst %, %/*.*, $(JAR_CONTENT))
 
 #JAR_EXTRA_FILES = $(EXTRA_FILES:%=$(JAVA_SRC_DIR)/%)
@@ -121,6 +123,7 @@ endif
 
 PLIST_CLEAN     = $(patsubst %,$(JAVA_SRC_DIR)/%/.clean,$(PACKAGE_LIST))
 PLIST_BUILD     = $(patsubst %,$(JAVA_SRC_DIR)/%/.build,$(PACKAGE_LIST))
+JNI_LIST_BUILD = $(patsubst %,$(JAVA_SRC_DIR)/%/.native,$(NATIVE_LIST))
 
 #
 # Option listing for the various commands
@@ -208,6 +211,28 @@ $(PACKAGE_DIR)/% : $(SRC_DIR)/$(PACKAGE_LOC)/%
 	$(COPY) $< $@
 	$(CHMOD) u+rw $<
 
+# Rule 2 Build JNI .h files. Invokes rule 7.
+jni : $(JNI_CLASS_FILES) $(JNI_HEADERS)
+
+# Rule 3. Change ".build" tag to "Makefile", thus call the package makefile
+# which in turn recalls this makefile with target all (rule 10).
+%.native :
+	$(PRINT) Building native $(subst .build,' ',$@)
+	@ $(MAKE) -k -f $(subst .native,Makefile,$@) jni
+
+# Rule 5. Call rule 2 for every package
+nativeall : $(JNI_LIST_BUILD)
+	$(PRINT) Done native headers
+
+# Rule 7. Building a JNI .h stub file from a .class file
+$(INCLUDE_DIR)/%.h : $(PACKAGE_DIR)/%.class
+	$(PRINT) Creating header for $*
+	@ $(JAVAH) $(JAVAH_OPTIONS) $(PACKAGE).$*
+
+# Rule 8. Building a JNI .h stub file from a class file. Invokes rule 5.
+%.h : %.class
+	$(MAKE) -k $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/$@
+
 #
 # Cleanups
 #
@@ -275,6 +300,8 @@ install: $(JAR_INSTALL_DIR)
 	$(PRINT) Copying JAR files to $(JAR_INSTALL_DIR)
 	$(COPY) $(JAR_DIR)/* $(JAR_INSTALL_DIR)
 
+# Rule 18. Copy the properties files to the classes directory
+properties: $(OTHER_FILES)
+
 # Rule 16. A combination of steps used for automatic building
 complete : clean buildall jar javadoc
-

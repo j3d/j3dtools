@@ -14,7 +14,7 @@
 # - jar:      Make the java JAR file 
 # - javadoc:  Generate the javadoc information
 # - all:      Build everything (including docs)
-# - nuke:     Blow everything away
+# - clean:    Blow away the .class files
 #
 
 ifndef PROJECT_ROOT
@@ -25,7 +25,7 @@ include $(PROJECT_ROOT)/make/Makefile.inc
 
 VERSION=1.1
 
-all: class jar javadoc
+all: class libs jar javadoc
 
 class:
 	cd $(JAVA_DIR) && make buildall
@@ -36,6 +36,10 @@ jar:
 javadoc:
 	cd $(JAVA_DIR) && make javadoc
 
-nuke:
+libs:
+	cd $(JAVA_DIR) && make nativeall
+	cd $(NATIVE_DIR) && make buildall
+    
+clean:
 	cd $(JAVA_DIR) && make clean
-	
+	cd $(NATIVE_DIR) && make clean	

@@ -1,0 +1,143 @@
+#*********************************************************************
+#
+#                         (C) 2001-02 Justin Couch
+#                         http://www.vlc.com.au/~justin/
+#
+# Lowest level common makefile for both native and Java code
+# 
+# Author: Justin Couch
+# Version: $Revision: 1.1 $
+#
+#*********************************************************************
+
+#
+# Directories for standard stuff
+#
+include $(PROJECT_ROOT)/make/Makefile.inc	 
+
+NATIVE_DEV_ROOT = $(SRC_DIR)/native
+
+NATIVE_SRC_DIR  = $(NATIVE_DEV_ROOT)
+3RDPARTY_DLL_DIR  = $(NATIVE_DEV_ROOT)/dll
+DESTINATION   = $(PROJECT_ROOT)/obj
+LIB_DESTINATION= $(PROJECT_ROOT)/lib
+JNI_HEADER_DIR  = $(JAVA_HOME)/include
+
+#
+# Built up tool information
+#
+CC=gcc
+CFLAGS=
+INCLUDE_LIST=$(INCLUDE_DIR) $(JNI_HEADER_DIR)
+
+EMPTY =
+SPACE = $(EMPTY) $(EMPTY)
+
+IS_WIN32 = $(findstring "CYGWIN",`uname`)
+
+ifdef IS_WIN32
+  PATH_SEP=';'
+  LIB_SUFFIX=dll
+  INCLUDE_LIST+=$(JNI_HEADER_DIR)/win32 /usr/include/win32api
+  CFLAGS +=-D_WIN32	-mno-cygwin
+  ifdef LIBRARY_3RDPARTY
+    3RDPARTY_LIBS = $(patsubst %,$(3RDPARTY_DLL_DIR)/lib%.dll,$(LIBRARY_3RDPARTY))
+  endif
+else
+  PATH_SEP=':'
+  LIB_SUFFIX=.so
+  INCLUDE_LIST+=$(JNI_HEADER_DIR)/unix
+  ifdef LIBRARY_3RDPARTY
+    3RDPARTY_LIBS = $(patsubst %,-l%,$(LIBRARY_3RDPARTY))
+  endif
+endif
+
+INCLUDES=$(subst $(SPACE),$(SPACE)-I, $(INCLUDE_LIST))
+
+#
+# Option listing for the various commands
+#
+CC_OPTIONS = -c -O2 $(INCLUDES) $(CFLAGS)
+CC_LINK_OPTIONS = -Wl,--add-stdcall-alias -shared $(CFLAGS)
+
+#
+# Build rules.
+#
+
+ifdef LIBRARY
+	LIB_DIR   = $(DESTINATION)/$(LIBRARY)
+	OBJ_FILES = $(SOURCE_FILES:%.c=$(LIB_DIR)/%.o)
+	LIB_FILES = $(LIB_DESTINATION)/$(LIBRARY).$(LIB_SUFFIX)
+endif
+
+SOURCE_FILES  = $(filter  %.c,$(C_SOURCE))
+
+LIB_LIST_CLEAN = $(patsubst %,$(NATIVE_SRC_DIR)/%/.clean,$(LIBRARY_LIST))
+LIB_LIST_BUILD = $(patsubst %,$(NATIVE_SRC_DIR)/%/.build,$(LIBRARY_LIST))
+
+
+#
+# General build rules
+#
+  
+# Rule 0. Applied when make is called without targets.
+all: $(LIB_DIR) $(OBJ_FILES) $(LIB_FILES)
+
+crap:
+	$(PRINT) 1 $(LIBRARY_3RDPARTY) 2 $(3RDPARTY_LIBS) 3 $(OBJ_FILES)
+	
+# Rule 1. If the destination dir is missing then create it
+$(LIB_DIR) :
+	$(PRINT) Missing object dir. Creating $(LIB_DIR)
+	$(MAKEDIR) $(LIB_DIR)
+
+# Rule 2. Change ".build" tag to "Makefile", thus call the library makefile 
+# which in turn recalls this makefile with target all (rule 10).
+%.build : 
+	$(PRINT) Building directory $(subst .build,' ',$@)
+	$(MAKE) -k -f $(subst .build,Makefile,$@) all
+
+# Rule 3. Call rule 2 for every package
+buildall : $(LIB_LIST_BUILD)               
+	$(PRINT) Completed native libraries.
+
+#
+# Specific dependency build rules
+#
+
+# Rule 4. Building a .o object file from a .java file
+$(LIB_DIR)/%.o : $(NATIVE_DIR)/$(LIBRARY)/%.c
+	$(PRINT) Compiling $*.c
+	cd $(LIB_DIR) && $(CC) $(CC_OPTIONS) $< 
+
+# Rule 5. Building a .o file from a .c file. Invokes rule 4.
+%.o : $(NATIVE_DIR)/$(LIBRARY)/%.c
+	$(PRINT) creating $(LIB_DIR)/$(LIBRARY)
+	$(MAKE) -k $(LIB_DIR)/$@
+
+# Rule 6. Building a .dll or .so from .o files.
+$(LIB_DESTINATION)/$(LIBRARY).$(LIB_SUFFIX): $(OBJ_FILES)
+	$(PRINT) Building $@
+	cd $(LIB_DIR) && $(CC) $(CC_LINK_OPTIONS) -o $(LIB_DESTINATION)/$(LIBRARY).$(LIB_SUFFIX) $(3RDPARTY_LIBS) $(OBJ_FILES) 
+
+# 
+# Cleanups
+#
+
+# Rule 8. Remove all produced files (except javadoc)
+cleanall :
+	$(DELETE) $(LIB_DIR)/*.o 
+
+# Rule 9. Change ".clean" tag to "Makefile", thus call the package makefile 
+# which in turn recalls this makefile with target cleanall (rule 8).
+%.clean :
+	 $(MAKE) -k -f $(subst .clean,Makefile,$@) cleanall
+
+
+# Rule 10: Call rule 9 for every package directory
+clean : $(LIB_LIST_CLEAN)
+	 $(PRINT) Done clean.
+
+# Rule to build everything
+complete : clean buildall 
+
