@@ -45,7 +45,7 @@ package org.j3d.loaders.discreet;
  * </pre>
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class MaterialBlock
 {
@@ -91,23 +91,44 @@ public class MaterialBlock
     /** The first texture map to be associated with this material */
     public TextureBlock textureMap1;
 
+    /** The first texture map to be associated with this material */
+    public TextureBlock textureMask1;
+
     /** The second texture map to be associated with this material */
     public TextureBlock textureMap2;
+
+    /** The second texture map to be associated with this material */
+    public TextureBlock textureMask2;
 
     /** The specular light map to be associated with this material */
     public TextureBlock specularMap;
 
+    /** The specular light map to be associated with this material */
+    public TextureBlock specularMask;
+
     /** The opacity map to be associated with this material */
     public TextureBlock opacityMap;
+
+    /** The opacity map to be associated with this material */
+    public TextureBlock opacityMask;
 
     /** The bump map to be associated with this material */
     public TextureBlock bumpMap;
 
+    /** The bump map to be associated with this material */
+    public TextureBlock bumpMask;
+
     /** The reflection map (environment map) associated with this material */
     public TextureBlock reflectionMap;
 
+    /** The reflection map (environment map) associated with this material */
+    public TextureBlock reflectionMask;
+
     /** The shininess map associated with this material */
     public TextureBlock shininessMap;
+
+    /** The shininess map associated with this material */
+    public TextureBlock shininessMask;
 
     /**
      * Create a new instance of this material block with the defaults set.
@@ -117,5 +138,6 @@ public class MaterialBlock
         twoSidedLighting = false;
         wireframe = false;
         additiveBlend = false;
+        transparency = 1;
     }
 }
