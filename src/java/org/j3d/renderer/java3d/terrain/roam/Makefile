@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.renderer.java3d.terrain.roam directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -14,26 +14,9 @@ PACKAGE = org.j3d.renderer.java3d.terrain.roam
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-<<<<<<< Makefile
 SOURCE = DefaultAppearanceGenerator.java \
     Patch.java \
     J3DSplitMergeLandscape.java 
-=======
-SOURCE = \
-    VertexData.java \
-    VarianceTree.java \
-    QueueItem.java \
-    QueueManager.java \
-    FastQueue.java \
-    TreeNode.java \
-    DiamondComparator.java \
-    TriangleComparator.java \
-    TreeQueueManager.java \
-    FastQueueManager.java \
-    ROAMPatch.java \
-    PatchGrid.java \
-    ROAMSplitMergeLandscape.java 
->>>>>>> 1.6
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
