@@ -38,7 +38,7 @@ import org.j3d.util.ObjectArray;
  * http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class EarCutTriangulator
 {
@@ -242,9 +242,9 @@ class EarCutTriangulator
 
         // Last vertex. Check to see if first is the same as the last vertex,
         // and ignore if it is.
-        if((coords[index * 3] == coords[startIndex * 3]) &&
-           (coords[index * 3 + 1] == coords[startIndex * 3 + 1]) &&
-           (coords[index * 3 + 2] == coords[startIndex * 3 + 2]))
+        if((coords[index * 3] == coords[coordIndex[startIndex] * 3]) &&
+           (coords[index * 3 + 1] == coords[coordIndex[startIndex] * 3 + 1]) &&
+           (coords[index * 3 + 2] == coords[coordIndex[startIndex] * 3 + 2]))
         {
             current.next = first;
             first.prev = current;
