@@ -21,6 +21,8 @@ import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.TriangleStripArray;
 
+import javax.vecmath.Point2d;
+
 import com.sun.j3d.loaders.LoaderBase;
 import com.sun.j3d.loaders.Scene;
 import com.sun.j3d.loaders.SceneBase;
@@ -30,6 +32,7 @@ import com.sun.j3d.loaders.ParsingErrorException;
 // Application specific imports
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.terrain.ElevationGridGenerator;
+import org.j3d.loaders.HeightMapLoader;
 
 /**
  * Loader for the VTerrain Project's BT file format.
@@ -52,9 +55,9 @@ import org.j3d.geom.terrain.ElevationGridGenerator;
  * </a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class BTLoader extends LoaderBase
+public class BTLoader extends HeightMapLoader
 {
     /** Input stream used to read values from */
     private BufferedInputStream input;
@@ -64,6 +67,9 @@ public class BTLoader extends LoaderBase
 
     /** Generator of the grid structure for the geometry */
     private ElevationGridGenerator generator;
+
+    /** Step information because it is not held anywhere else */
+    private Point2d gridStepData;
 
     /**
      * Construct a new default loader with no flags set
@@ -197,6 +203,9 @@ public class BTLoader extends LoaderBase
         float width = (float)(header.rightExtent - header.leftExtent);
         float depth = (float)(header.topExtent - header.bottomExtent);
 
+        gridStepData = new Point2d(width / header.rows,
+                                   depth / header.columns);
+
         if(generator == null)
         {
             generator = new ElevationGridGenerator(width,
@@ -284,4 +293,16 @@ public class BTLoader extends LoaderBase
     {
         return parser.getHeights();
     }
+
+    /**
+     * Fetch information about the real-world stepping sizes that this
+     * grid uses.
+     *
+     * @return The stepping information for width and depth
+     */
+    public Point2d getGridStep()
+    {
+        return gridStepData;
+    }
+
 }
