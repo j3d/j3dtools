@@ -24,7 +24,7 @@ import javax.vecmath.*;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class MatrixUtils
 {
@@ -50,7 +50,7 @@ public class MatrixUtils
         float d = f_x * f_x + f_y * f_y + f_z * f_z;
         if(d != 0)
         {
-            d = 1 / d;
+            d = 1 / (float)Math.sqrt(d);
             f_x *= d;
             f_y *= d;
             f_z *= d;
@@ -63,7 +63,7 @@ public class MatrixUtils
         d = up_x * up_x + up_y * up_y + up_z * up_z;
         if(d != 0)
         {
-            d = 1 / d;
+            d = 1 / (float)Math.sqrt(d);
             up_x *= d;
             up_y *= d;
             up_z *= d;
@@ -73,24 +73,24 @@ public class MatrixUtils
         float s_y = f_z * up_x - f_x * up_z;
         float s_z = f_x * up_y - f_y * up_x;
 
-        float u_x = up_y * f_z - up_z * f_y;
-        float u_y = up_z * f_x - up_x * f_z;
-        float u_z = up_x * f_y - up_y * f_x;
+        float u_x = s_y * f_z - s_z * f_y;
+        float u_y = s_z * f_x - s_x * f_z;
+        float u_z = s_x * f_y - s_y * f_x;
 
         res.m00 = s_x;
         res.m01 = u_x;
         res.m02 = -f_x;
-        res.m03 = 0;
+        res.m03 = -eye.x;
 
         res.m10 = s_y;
         res.m11 = u_y;
         res.m12 = -f_y;
-        res.m13 = 0;
+        res.m13 = -eye.y;
 
         res.m20 = s_z;
         res.m21 = u_z;
         res.m22 = -f_z;
-        res.m23 = 0;
+        res.m23 = -eye.z;
 
         res.m30 = 0;
         res.m31 = 0;
