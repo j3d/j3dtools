@@ -36,7 +36,7 @@ import javax.vecmath.Vector3f;
  * geometry type, but is supported non-the-less for completeness.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ConeGenerator extends GeometryGenerator
 {
