@@ -32,9 +32,13 @@ import org.j3d.util.ObjectArray;
  * indicate the number of triangles successfully created for the return, but the
  * negative is used to indicate an error occurred that could not allow for any
  * more triangulation to take place.
+ * <p>
+ *
+ * Siedel's algorithm is described here:
+ * http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class TriangulationUtils
 {
@@ -275,33 +279,45 @@ public class TriangulationUtils
 
         // Last vertex
         index = coordIndex[startIndex + numVertex - 1];
-        PolyVertex last = newVertex();
-        last.x = coords[index * 3];
-        last.y = coords[index * 3 + 1];
-        last.z = coords[index * 3 + 2];
-        last.vertexIndex = index;
 
-        if(colorIndex != null)
-            last.colorIndex = colorIndex[firstColorIndex + numVertex - 1];
+        // Last vertex. Check to see if first is the same as the last vertex,
+        // and ignore if it is.
+        if((coords[index * 3] == coords[startIndex * 3]) &&
+           (coords[index * 3 + 1] == coords[startIndex * 3 + 1]) &&
+           (coords[index * 3 + 2] == coords[startIndex * 3 + 2]))
+        {
+            current.next = first;
+            first.prev = current;
+        }
+        else
+        {
+            PolyVertex last = newVertex();
+            last.x = coords[index * 3];
+            last.y = coords[index * 3 + 1];
+            last.z = coords[index * 3 + 2];
+            last.vertexIndex = index;
 
-        if(normalIndex != null)
-            last.normalIndex = normalIndex[firstNormalIndex + numVertex - 1];
+            if(colorIndex != null)
+                last.colorIndex = colorIndex[firstColorIndex + numVertex - 1];
 
-        if(texCoordIndex != null)
-            last.texCoordIndex = texCoordIndex[firstTexCoordIndex + numVertex - 1];
+            if(normalIndex != null)
+                last.normalIndex = normalIndex[firstNormalIndex + numVertex - 1];
 
-        if(!isConvexVertex(coords,
-                           coordIndex[startIndex + numVertex - 2] * 3,
-                           coordIndex[startIndex + numVertex - 1] * 3,
-                           coordIndex[startIndex] * 3,
-                           faceNormal))
-            concaveVertices.add(last);
+            if(texCoordIndex != null)
+                last.texCoordIndex = texCoordIndex[firstTexCoordIndex + numVertex - 1];
 
-        first.prev = last;
-        last.next = first;
-        last.prev = current;
-        current.next = last;
+            if(!isConvexVertex(coords,
+                               coordIndex[startIndex + numVertex - 2] * 3,
+                               coordIndex[startIndex + numVertex - 1] * 3,
+                               coordIndex[startIndex] * 3,
+                               faceNormal))
+                concaveVertices.add(last);
 
+            first.prev = last;
+            last.next = first;
+            last.prev = current;
+            current.next = last;
+    }
 /*
 System.out.println("vertices : num " + numVertex + " start " + startIndex);
 PolyVertex tmp = first.next;
@@ -481,27 +497,38 @@ while(tmp != first)
             inc += 3;
         }
 
-        // Last vertex
-        PolyVertex last = newVertex();
-        last.x = coords[vtx];
-        last.y = coords[vtx + 1];
-        last.z = coords[vtx + 2];
-        last.vertexIndex = vtx;
-        last.colorIndex = firstColorIndex + inc;
-        last.normalIndex = firstNormalIndex + inc;
-        last.texCoordIndex = firstTexCoordIndex + inc;
+        // Last vertex. Check to see if first is the same as the last vertex,
+        // and ignore if it is.
+        if((coords[vtx] == coords[startIndex]) &&
+           (coords[vtx + 1] == coords[startIndex + 1]) &&
+           (coords[vtx + 2] == coords[startIndex + 2]))
+        {
+            current.next = first;
+            first.prev = current;
+        }
+        else
+        {
+            PolyVertex last = newVertex();
+            last.x = coords[vtx];
+            last.y = coords[vtx + 1];
+            last.z = coords[vtx + 2];
+            last.vertexIndex = vtx;
+            last.colorIndex = firstColorIndex + inc;
+            last.normalIndex = firstNormalIndex + inc;
+            last.texCoordIndex = firstTexCoordIndex + inc;
 
-        if(!isConvexVertex(coords,
-                           vtx - 3,
-                           vtx,
-                           startIndex,
-                           faceNormal))
-            concaveVertices.add(last);
+            if(!isConvexVertex(coords,
+                               vtx - 3,
+                               vtx,
+                               startIndex,
+                               faceNormal))
+                concaveVertices.add(last);
 
-        first.prev = last;
-        last.next = first;
-        last.prev = current;
-        current.next = last;
+            first.prev = last;
+            last.next = first;
+            last.prev = current;
+            current.next = last;
+        }
 
         return triangulate(first,
                            coordOutput,
@@ -580,7 +607,7 @@ while(tmp != first)
     {
         // Now do the real triangulation algorithm.
         int output_index = 0;
-        int cnt=0;
+        int cnt = 0;
         // The maximum times we should go through this loop before error
         int maxCnt = (coordOutput.length / 3);
         maxCnt *= maxCnt;
@@ -609,10 +636,33 @@ while(tmp != first)
                 return -output_index / 3;
             }
 
-            if(isEar(prev_vtx) && !(is_tri = isTriangle(current)))
-            {
+            is_tri = isTriangle(current);
 
-//System.out.println("Have ear " + prev_vtx);
+            if(isEar(prev_vtx) && !is_tri)
+            {
+//System.out.println("Have ear " + current.prev.prev.vertexIndex / 3 +
+//                   " " + current.prev.vertexIndex / 3 +
+//                   " " + current.vertexIndex / 3);
+
+                // Check to see if this is a degenerate triangle. if it is,
+                // discard the current vertex.
+                if(isCoincident(prev_vtx))
+                {
+//System.out.println("coincident found. Ignoring");
+                    prev_vtx.prev.next = current;
+                    current.prev = prev_vtx.prev;
+
+                    if(prev_vtx == first)
+                        current = current.next;
+
+                    prev_vtx.next = null;
+                    prev_vtx.prev = null;
+                    freeVertex(prev_vtx);
+
+                    continue;
+                }
+
+
                 // Add the triangle to the output
                 coordOutput[output_index] = current.prev.prev.vertexIndex;
                 coordOutput[output_index + 1] = current.prev.vertexIndex;
@@ -669,6 +719,10 @@ while(tmp != first)
             }
             else if(is_tri)
             {
+//System.out.println("is triangle " + current.prev.prev.vertexIndex / 3 +
+//                   " " + current.prev.vertexIndex / 3 +
+//                   " " + current.vertexIndex / 3);
+
                 // This is the last bit, and a triangle, so put in all the
                 // data structures and then clean up.
                 // Add the triangle to the output
@@ -720,7 +774,9 @@ while(tmp != first)
 
                 break;
             }
-            else {
+            else
+            {
+//System.out.println("trying next");
                 current = current.next;
             }
         }
@@ -984,6 +1040,31 @@ for(int i = 0; i < output_index; i += 3)
         // Note that we have already stored the intersection point way back up
         // the start.
         return ((crossings % 2) == 1);
+    }
+
+    /**
+     * Check to see if the triangle described by this apex triangle is actually
+     * a degenerate one. The check is a simple cross product looking for a
+     * value of zero as the result.
+     *
+     * @param vtx The pointer to the vertex to test
+     * @return true if it is degenerate, false otherwise
+     */
+    private boolean isCoincident(PolyVertex vtx)
+    {
+        float x1 = vtx.x - vtx.prev.x;
+        float y1 = vtx.y - vtx.prev.y;
+        float z1 = vtx.z - vtx.prev.z;
+
+        float x2 = vtx.x - vtx.next.x;
+        float y2 = vtx.y - vtx.next.y;
+        float z2 = vtx.z - vtx.next.z;
+
+        float cross_x = y1 * z2 - z1 * y2;
+        float cross_y = z1 * x2 - x1 * z2;
+        float cross_z = x1 * y2 - y1 * x2;
+
+        return (cross_x == 0) && (cross_y == 0) && (cross_z == 0);
     }
 
     /**
