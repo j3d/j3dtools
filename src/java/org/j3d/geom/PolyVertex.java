@@ -20,12 +20,21 @@ import javax.vecmath.Point3d;
  * routines.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class PolyVertex {
 
     /** the index from the source array this vertex corresponds to */
     public int vertexIndex;
+
+	/** Index of the normal from the source data */
+	public int normalIndex;
+
+	/** Index of the normal from the source data */
+	public int colorIndex;
+
+	/** Index of the normal from the source data */
+	public int texCoordIndex;
 
     /** X coordinate of the vertex */
     public float x;
