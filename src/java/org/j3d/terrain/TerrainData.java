@@ -60,12 +60,14 @@ import javax.media.j3d.Texture;
  * 3D graphics convention of X-Z.
  *
  * @author  Paul Byrne, Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface TerrainData
 {
     /**
-     * Get the coordinate of the point in the grid.
+     * Get the coordinate of the point in the grid. This should translate
+     * between the grid position (x,y) and the 3D axis system (x,y,z), which
+     * don't use the same coordinate system.
      *
      * @param coord the x, y, and z coordinates will be placed in the
      *    first three elements of the array.
@@ -79,7 +81,9 @@ public interface TerrainData
     /**
      * Get the coordinate of the point and correspond texture coordinate in
      * the grid. Assumes that the grid covers a single large texture rather
-     * than multiple smaller textures.
+     * than multiple smaller textures. This should translate between the grid
+     * position (x,y) and the 3D axis system (x,y,z), which don't use the same
+     * coordinate system.
      *
      * @param coord he x, y, and z coordinates will be placed in the first
      *   three elements of the array.
@@ -90,7 +94,7 @@ public interface TerrainData
     public abstract void getCoordinateFromGrid(float[] coord,
                                                float[] textureCoord,
                                                int gridX,
-                                               int gridY );
+                                               int gridY);
 
     /**
      * Notify the terrain data handler that when generating texture coordinates
