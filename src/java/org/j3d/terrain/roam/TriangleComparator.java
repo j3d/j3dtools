@@ -19,7 +19,7 @@ import java.util.Comparator;
  * Comparator for dealing with triangle tree nodes.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class TriangleComparator implements Comparator
 {
@@ -51,7 +51,7 @@ class TriangleComparator implements Comparator
         TreeNode t1 = (TreeNode)o1;
         TreeNode t2 = (TreeNode)o2;
 
-        return (int)(t1.diamondVariance - t2.diamondVariance);
+        return (int)(t1.variance - t2.variance);
     }
 }
 
