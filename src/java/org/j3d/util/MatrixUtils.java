@@ -24,10 +24,17 @@ import javax.vecmath.*;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class MatrixUtils
 {
+    /**
+     * Construct a default instance of this class.
+     */
+    public MatrixUtils()
+    {
+    }
+
     /**
      * Perform a LookAt camera calculation and place it in the given matrix.
      * If using this for a viewing transformation, you should invert() the
@@ -43,54 +50,64 @@ public class MatrixUtils
                        Vector3f up,
                        Matrix4f res)
     {
-        float f_x = center.x - eye.x;
-        float f_y = center.y - eye.y;
-        float f_z = center.z - eye.z;
+        double d = eye.x - center.x;
+        double d1 = eye.y - center.y;
+        double d2 = eye.z - center.z;
 
-        float d = f_x * f_x + f_y * f_y + f_z * f_z;
-        if(d != 0)
+        double det = d * d + d1 * d1 + d2 * d2;
+        if(det != 1)
         {
-            d = 1 / (float)Math.sqrt(d);
-            f_x *= d;
-            f_y *= d;
-            f_z *= d;
+            det = 1 / Math.sqrt(det);
+            d *= det;
+            d1 *= det;
+            d2 *= det;
         }
 
-        float up_x = up.x;
-        float up_y = up.y;
-        float up_z = up.z;
+        double d4 = up.x;
+        double d5 = up.y;
+        double d6 = up.z;
 
-        d = up_x * up_x + up_y * up_y + up_z * up_z;
-        if(d != 0)
+        det = (up.x * up.x + up.y * up.y + up.z * up.z);
+        if(det != 1)
         {
-            d = 1 / (float)Math.sqrt(d);
-            up_x *= d;
-            up_y *= d;
-            up_z *= d;
+            det = 1 / Math.sqrt(det);
+            d4 *= det;
+            d5 *= det;
+            d6 *= det;
         }
 
-        float s_x = f_y * up_z - f_z * up_y;
-        float s_y = f_z * up_x - f_x * up_z;
-        float s_z = f_x * up_y - f_y * up_x;
+        double d7 = d5 * d2 - d1 * d6;
+        double d8 = d6 * d - d4 * d2;
+        double d9 = d4 * d1 - d5 * d;
 
-        float u_x = s_y * f_z - s_z * f_y;
-        float u_y = s_z * f_x - s_x * f_z;
-        float u_z = s_x * f_y - s_y * f_x;
+        det = d7 * d7 + d8 * d8 + d9 * d9;
 
-        res.m00 = s_x;
-        res.m01 = u_x;
-        res.m02 = -f_x;
-        res.m03 = -eye.x;
+        if(det != 1)
+        {
+            det = 1 / Math.sqrt(det);
+            d7 *= det;
+            d8 *= det;
+            d9 *= det;
+        }
 
-        res.m10 = s_y;
-        res.m11 = u_y;
-        res.m12 = -f_y;
-        res.m13 = -eye.y;
+        d4 = d1 * d9 - d8 * d2;
+        d5 = d2 * d7 - d * d9;
+        d6 = d * d8 - d1 * d7;
 
-        res.m20 = s_z;
-        res.m21 = u_z;
-        res.m22 = -f_z;
-        res.m23 = -eye.z;
+        res.m00 = (float)d7;
+        res.m01 = (float)d8;
+        res.m02 = (float)d9;
+        res.m03 = (float)(-eye.x * res.m00 + -eye.y * res.m01 + -eye.z * res.m02);
+
+        res.m10 = (float)d4;
+        res.m11 = (float)d5;
+        res.m12 = (float)d6;
+        res.m13 = (float)(-eye.x * res.m10 + -eye.y * res.m11 + -eye.z * res.m12);
+
+        res.m20 = (float)d;
+        res.m21 = (float)d1;
+        res.m22 = (float)d2;
+        res.m23 = (float)(-eye.x * res.m20 + -eye.y * res.m21 + -eye.z * res.m22);
 
         res.m30 = 0;
         res.m31 = 0;
