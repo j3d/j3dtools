@@ -4,6 +4,8 @@
 
 PACKAGE = org.j3d.device.input
 
-SOURCE = 
+SOURCE = FileInputSensor.java \
+         FileInputDevice.java
+ 
 
 include ${PROJECT_ROOT}/make/Makefile.jav
