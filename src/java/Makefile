@@ -13,6 +13,14 @@ PACKAGES = org.j3d.util \
 	   org.j3d.ui \
 	   org.j3d.ui.image \
 	   org.j3d.ui.navigation \
+	   org.j3d.loaders.ac3d.util \
+	   org.j3d.loaders.ac3d.models \
+	   org.j3d.loaders.ac3d.parser.exceptions \
+	   org.j3d.loaders.ac3d.parser \
+	   org.j3d.loaders.ac3d.parser.handlers \
+	   org.j3d.loaders.ac3d
+
+#	   org.j3d.geom.overlay \
 
 NODOC_PACKAGES = \
 
