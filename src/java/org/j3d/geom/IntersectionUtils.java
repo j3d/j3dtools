@@ -49,7 +49,7 @@ import javax.vecmath.Vector3d;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IntersectionUtils
 {
@@ -66,7 +66,7 @@ public class IntersectionUtils
     /** The current coordinate list that we work from */
     private float[] workingCoords;
     private int[] workingStrips;
-    private int[] workingIndexes;
+    private int[] workingIndicies;
 
     /** The current 2D coordinate list that we work from */
     private float[] working2dCoords;
@@ -105,6 +105,8 @@ public class IntersectionUtils
     {
         workingCoords = null;
         working2dCoords = null;
+        workingStrips = null;
+        workingIndicies = null;
     }
 
     /**
@@ -154,6 +156,33 @@ public class IntersectionUtils
                                          (TriangleStripArray)geom,
                                          vworldTransform,
                                          point);
+        }
+        else if(geom instanceof TriangleFanArray)
+        {
+            return rayTriangleFanArray(origin,
+                                       direction,
+                                       length,
+                                       (TriangleFanArray)geom,
+                                       vworldTransform,
+                                       point);
+        }
+        else if(geom instanceof IndexedTriangleArray)
+        {
+            return rayIndexedTriangleArray(origin,
+                                           direction,
+                                           length,
+                                           (IndexedTriangleArray)geom,
+                                           vworldTransform,
+                                           point);
+        }
+        else if(geom instanceof IndexedQuadArray)
+        {
+            return rayIndexedQuadArray(origin,
+                                       direction,
+                                       length,
+                                       (IndexedQuadArray)geom,
+                                       vworldTransform,
+                                       point);
         }
 
         return false;
@@ -205,7 +234,6 @@ public class IntersectionUtils
                                 vtx_count / 3,
                                 point);
     }
-
 
     /**
      * Test the intersection of a ray or segment against the given quad
@@ -309,6 +337,175 @@ public class IntersectionUtils
     }
 
     /**
+     * Test the intersection of a ray or segment against the given triangle
+     * fan array.If there is an intersection, the point will contain the
+     * exact intersection point on the geometry.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param length An optional length for to make the ray a segment. If
+     *   the value is zero, it is ignored
+     * @param geom The geometry to test against
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    public boolean rayTriangleFanArray(Point3d origin,
+                                       Vector3d direction,
+                                       float length,
+                                       TriangleFanArray geom,
+                                       Transform3D vworldTransform,
+                                       Point3d point)
+    {
+        if(!geom.getCapability(GeometryArray.ALLOW_COORDINATE_READ))
+            throw new IllegalStateException("Not allowed to read coordinates");
+
+        int vtx_format = geom.getVertexFormat();
+
+        if((vtx_format & GeometryArray.INTERLEAVED) != 0)
+            throw new IllegalArgumentException("We can't handle interleaved geometry yet");
+
+
+        int vtx_count = geom.getVertexCount();
+        int strip_count = geom.getNumStrips();
+
+        if((workingCoords == null) || (workingCoords.length != vtx_count * 3))
+            workingCoords = new float[vtx_count * 3];
+
+        if((workingStrips == null) || (workingStrips.length != strip_count))
+            workingStrips = new int[strip_count];
+
+        geom.getCoordinates(0, workingCoords);
+        geom.getStripVertexCounts(workingStrips);
+
+
+        transformCoords(vtx_count, vworldTransform);
+
+        boolean ret_val = rayTriangleFanArray(origin,
+                                              direction,
+                                              length,
+                                              workingCoords,
+                                              workingStrips,
+                                              strip_count,
+                                              point);
+
+        return ret_val;
+    }
+
+    /**
+     * Test the intersection of a ray or segment against the given indexed
+     * triangle array.If there is an intersection, the point will contain the
+     * exact intersection point on the geometry.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param length An optional length for to make the ray a segment. If
+     *   the value is zero, it is ignored
+     * @param geom The geometry to test against
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    public boolean rayIndexedTriangleArray(Point3d origin,
+                                           Vector3d direction,
+                                           float length,
+                                           IndexedTriangleArray geom,
+                                           Transform3D vworldTransform,
+                                           Point3d point)
+    {
+        if(!geom.getCapability(GeometryArray.ALLOW_COORDINATE_READ))
+            throw new IllegalStateException("Not allowed to read coordinates");
+
+        if(!geom.getCapability(IndexedGeometryArray.ALLOW_COORDINATE_INDEX_READ))
+            throw new IllegalStateException("Not allowed to read indexes");
+
+        int vtx_format = geom.getVertexFormat();
+
+        if((vtx_format & GeometryArray.INTERLEAVED) != 0)
+            throw new IllegalArgumentException("We can't handle interleaved geometry yet");
+
+
+        int vtx_count = geom.getVertexCount();
+        int index_count = geom.getIndexCount();
+
+        if((workingCoords == null) || (workingCoords.length != vtx_count * 3))
+            workingCoords = new float[vtx_count * 3];
+
+        if((workingIndicies == null) || (workingIndicies.length != index_count))
+            workingIndicies = new int[index_count];
+
+        geom.getCoordinates(0, workingCoords);
+        geom.getCoordinateIndices(0, workingIndicies);
+
+        transformCoords(vtx_count, vworldTransform);
+
+        boolean ret_val = rayIndexedTriangleArray(origin,
+                                                  direction,
+                                                  length,
+                                                  workingCoords,
+                                                  workingIndicies,
+                                                  index_count,
+                                                  point);
+
+        return ret_val;
+    }
+
+    /**
+     * Test the intersection of a ray or segment against the given indexed
+     * quad array.If there is an intersection, the point will contain the
+     * exact intersection point on the geometry.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param length An optional length for to make the ray a segment. If
+     *   the value is zero, it is ignored
+     * @param geom The geometry to test against
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    public boolean rayIndexedQuadArray(Point3d origin,
+                                           Vector3d direction,
+                                           float length,
+                                           IndexedQuadArray geom,
+                                           Transform3D vworldTransform,
+                                           Point3d point)
+    {
+        if(!geom.getCapability(GeometryArray.ALLOW_COORDINATE_READ))
+            throw new IllegalStateException("Not allowed to read coordinates");
+
+        if(!geom.getCapability(IndexedGeometryArray.ALLOW_COORDINATE_INDEX_READ))
+            throw new IllegalStateException("Not allowed to read indexes");
+
+        int vtx_format = geom.getVertexFormat();
+
+        if((vtx_format & GeometryArray.INTERLEAVED) != 0)
+            throw new IllegalArgumentException("We can't handle interleaved geometry yet");
+
+
+        int vtx_count = geom.getVertexCount();
+        int index_count = geom.getIndexCount();
+
+        if((workingCoords == null) || (workingCoords.length != vtx_count * 3))
+            workingCoords = new float[vtx_count * 3];
+
+        if((workingIndicies == null) || (workingIndicies.length != index_count))
+            workingIndicies = new int[index_count];
+
+        geom.getCoordinates(0, workingCoords);
+        geom.getCoordinateIndices(0, workingIndicies);
+
+        transformCoords(vtx_count, vworldTransform);
+
+        boolean ret_val = rayIndexedQuadArray(origin,
+                                              direction,
+                                              length,
+                                              workingCoords,
+                                              workingIndicies,
+                                              index_count,
+                                              point);
+
+        return ret_val;
+    }
+
+    /**
      * Test an array of triangles for intersection. Returns the closest
      * intersection point to the origin of the picking ray. Assumes that the
      * coordinates are ordered as [Xn, Yn, Zn] and are translated into the same
@@ -339,6 +536,7 @@ public class IntersectionUtils
             working2dCoords = new float[8];
 
         double shortest_length = -1;
+        double this_length;
 
         for(int i = 0; i < numTris; i++)
         {
@@ -353,10 +551,12 @@ public class IntersectionUtils
             {
                 diffVec.sub(origin, wkPoint);
 
+                this_length = diffVec.lengthSquared();
+
                 if((shortest_length == -1) ||
-                   (diffVec.length() < shortest_length))
+                   (this_length < shortest_length))
                 {
-                    shortest_length = diffVec.length();
+                    shortest_length = this_length;
                     point.set(wkPoint);
                 }
             }
@@ -396,6 +596,7 @@ public class IntersectionUtils
             working2dCoords = new float[8];
 
         double shortest_length = -1;
+        double this_length;
 
         for(int i = 0; i < numQuads; i++)
         {
@@ -410,10 +611,12 @@ public class IntersectionUtils
             {
                 diffVec.sub(origin, wkPoint);
 
+                this_length = diffVec.lengthSquared();
+
                 if((shortest_length == -1) ||
-                   (diffVec.length() < shortest_length))
+                   (this_length < shortest_length))
                 {
-                    shortest_length = diffVec.length();
+                    shortest_length = this_length;
                     point.set(wkPoint);
                 }
             }
@@ -461,6 +664,7 @@ public class IntersectionUtils
             working2dCoords = new float[8];
 
         double shortest_length = -1;
+        double this_length;
         int offset = 0;
 
         for(int i = 0; i < numStrips; i++)
@@ -480,12 +684,257 @@ public class IntersectionUtils
                 {
                     diffVec.sub(origin, wkPoint);
 
+                    this_length = diffVec.lengthSquared();
+
                     if((shortest_length == -1) ||
-                       (diffVec.length() < shortest_length))
+                       (this_length < shortest_length))
                     {
-                        shortest_length = diffVec.length();
+                        shortest_length = this_length;
                         point.set(wkPoint);
                     }
+                }
+            }
+        }
+
+        return (shortest_length != -1);
+    }
+
+    /**
+     * Test an array of triangle fans for intersection. Returns the closest
+     * intersection point to the origin of the picking ray. Assumes that the
+     * coordinates are ordered as [Xn, Yn, Zn] and are translated into the same
+     * coordinate system that the the origin and direction are from.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param length An optional length for to make the ray a segment. If
+     *   the value is zero, it is ignored
+     * @param coords The coordinates of the triangles
+     * @param stripCounts The number of polygons in each fan
+     * @param numStrips The number of strips to use from the array
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    public boolean rayTriangleFanArray(Point3d origin,
+                                       Vector3d direction,
+                                       float length,
+                                       float[] coords,
+                                       int[] stripCounts,
+                                       int numStrips,
+                                       Point3d point)
+    {
+        // Add all the strip lengths up first
+        int total_coords = 0;
+
+        for(int i = numStrips; --i >= 0; )
+            total_coords += stripCounts[i];
+
+        if(coords.length < total_coords * 3)
+            throw new IllegalArgumentException("coords too small for numCoords");
+
+        // assign the working coords to be big enough for a quadrilateral as
+        // that is what we are most likely to see as the biggest item
+        if(working2dCoords == null)
+            working2dCoords = new float[8];
+
+        double shortest_length = -1;
+        double this_length;
+        int offset = 0;
+
+        for(int i = 0; i < numStrips; i++)
+        {
+            offset = i * stripCounts[i] * 3;
+
+            // setup the constant first position
+            wkPolygon[0] = coords[offset];
+            wkPolygon[1] = coords[offset + 1];
+            wkPolygon[2] = coords[offset + 2];
+
+            for(int j = 1; j < stripCounts[i] - 2; j++)
+            {
+                wkPolygon[3] = coords[offset + j * 3];
+                wkPolygon[4] = coords[offset + j * 3 + 1];
+                wkPolygon[5] = coords[offset + j * 3 + 2];
+
+                wkPolygon[6] = coords[offset + j * 3 + 3];
+                wkPolygon[7] = coords[offset + j * 3 + 4];
+                wkPolygon[8] = coords[offset + j * 3 + 5];
+
+                // Now the rest of the polygon
+                if(rayPolygonChecked(origin,
+                                     direction,
+                                     length,
+                                     wkPolygon,
+                                     3,
+                                     wkPoint))
+                {
+                    diffVec.sub(origin, wkPoint);
+
+                    this_length = diffVec.lengthSquared();
+
+                    if((shortest_length == -1) ||
+                       (this_length < shortest_length))
+                    {
+                        shortest_length = this_length;
+                        point.set(wkPoint);
+                    }
+                }
+            }
+        }
+
+        return (shortest_length != -1);
+    }
+
+    /**
+     * Test an array of indexed triangles for intersection. Returns the
+     * closest intersection point to the origin of the picking ray. Assumes
+     * that the coordinates are ordered as [Xn, Yn, Zn] and are translated
+     * into the same coordinate system that the the origin and direction are
+     * from.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param length An optional length for to make the ray a segment. If
+     *   the value is zero, it is ignored
+     * @param coords The coordinates of the triangles
+     * @param indexes The list of indexes to use to construct triangles
+     * @param numIndex The number of indexes to use from the array
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    public boolean rayIndexedTriangleArray(Point3d origin,
+                                           Vector3d direction,
+                                           float length,
+                                           float[] coords,
+                                           int[] indexes,
+                                           int numIndex,
+                                           Point3d point)
+    {
+        // assign the working coords to be big enough for a quadrilateral as
+        // that is what we are most likely to see as the biggest item
+        if(working2dCoords == null)
+            working2dCoords = new float[8];
+
+        double shortest_length = -1;
+        double this_length;
+        int offset = 0;
+        int i0, i1, i2;
+
+        for(int i = 0; i < numIndex * 3; )
+        {
+            i0 = indexes[i++];
+            i1 = indexes[i++];
+            i2 = indexes[i++];
+
+            wkPolygon[0] = coords[i0++];
+            wkPolygon[1] = coords[i0++];
+            wkPolygon[2] = coords[i0];
+
+            wkPolygon[3] = coords[i1++];
+            wkPolygon[4] = coords[i1++];
+            wkPolygon[5] = coords[i1];
+
+            wkPolygon[6] = coords[i2++];
+            wkPolygon[7] = coords[i2++];
+            wkPolygon[8] = coords[i2];
+
+            if(rayPolygonChecked(origin,
+                                 direction,
+                                 length,
+                                 wkPolygon,
+                                 3,
+                                 wkPoint))
+            {
+                diffVec.sub(origin, wkPoint);
+
+                this_length = diffVec.lengthSquared();
+
+                if((shortest_length == -1) ||
+                   (this_length < shortest_length))
+                {
+                    shortest_length = this_length;
+                    point.set(wkPoint);
+                }
+            }
+        }
+
+        return (shortest_length != -1);
+    }
+
+    /**
+     * Test an array of indexed quads for intersection. Returns the
+     * closest intersection point to the origin of the picking ray. Assumes
+     * that the coordinates are ordered as [Xn, Yn, Zn] and are translated
+     * into the same coordinate system that the the origin and direction are
+     * from.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param length An optional length for to make the ray a segment. If
+     *   the value is zero, it is ignored
+     * @param coords The coordinates of the triangles
+     * @param indexes The list of indexes to use to construct triangles
+     * @param numIndex The number of indexes to use from the array
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    public boolean rayIndexedQuadArray(Point3d origin,
+                                       Vector3d direction,
+                                       float length,
+                                       float[] coords,
+                                       int[] indexes,
+                                       int numIndex,
+                                       Point3d point)
+    {
+        // assign the working coords to be big enough for a quadrilateral as
+        // that is what we are most likely to see as the biggest item
+        if(working2dCoords == null)
+            working2dCoords = new float[8];
+
+        double shortest_length = -1;
+        double this_length;
+        int offset = 0;
+        int i0, i1, i2, i3;
+
+        for(int i = 0; i < numIndex * 3; )
+        {
+            i0 = indexes[i++];
+            i1 = indexes[i++];
+            i2 = indexes[i++];
+            i3 = indexes[i++];
+
+            wkPolygon[0] = coords[i0++];
+            wkPolygon[1] = coords[i0++];
+            wkPolygon[2] = coords[i0];
+
+            wkPolygon[3] = coords[i1++];
+            wkPolygon[4] = coords[i1++];
+            wkPolygon[5] = coords[i1];
+
+            wkPolygon[6] = coords[i2++];
+            wkPolygon[7] = coords[i2++];
+            wkPolygon[8] = coords[i2];
+
+            wkPolygon[9] = coords[i3++];
+            wkPolygon[10] = coords[i3++];
+            wkPolygon[11] = coords[i3];
+
+            if(rayPolygonChecked(origin,
+                                 direction,
+                                 length,
+                                 wkPolygon,
+                                 4,
+                                 wkPoint))
+            {
+                diffVec.sub(origin, wkPoint);
+
+                this_length = diffVec.lengthSquared();
+
+                if((shortest_length == -1) ||
+                   (this_length < shortest_length))
+                {
+                    shortest_length = this_length;
+                    point.set(wkPoint);
                 }
             }
         }
@@ -572,7 +1021,7 @@ public class IntersectionUtils
         normal.cross(v0, v1);
 
         // degenerate polygon?
-        if(normal.length() == 0)
+        if(normal.lengthSquared() == 0)
             return false;
 
         double n_dot_dir = normal.dot(direction);
@@ -640,31 +1089,31 @@ public class IntersectionUtils
         // vertices [Xn Yn Zn] onto dominant coordinate plane (Un Vn).
         // 2. Translate (U, V) polygon so intersection point is origin from
         // (Un', Vn').
-        j = 0;
+        j = 2 * numCoords - 1;
 
         switch(dom_axis)
         {
             case 0:
-                for(i = 0; i < numCoords; i++ )
+                for(i = numCoords; --i >= 0; )
                 {
-                    working2dCoords[j++] = coords[i * 3 + 1] - (float)point.y;
-                    working2dCoords[j++] = coords[i * 3 + 2] - (float)point.z;
+                    working2dCoords[j--] = coords[i * 3 + 2] - (float)point.z;
+                    working2dCoords[j--] = coords[i * 3 + 1] - (float)point.y;
                 }
                 break;
 
             case 1:
-                for(i = 0; i < numCoords; i++ )
+                for(i = numCoords; --i >= 0; )
                 {
-                    working2dCoords[j++] = coords[i * 3]     - (float)point.x;
-                    working2dCoords[j++] = coords[i * 3 + 2] - (float)point.z;
+                    working2dCoords[j--] = coords[i * 3 + 2] - (float)point.z;
+                    working2dCoords[j--] = coords[i * 3]     - (float)point.x;
                 }
                 break;
 
             case 2:
-                for(i = 0; i < numCoords; i++ )
+                for(i = numCoords; --i >= 0; )
                 {
-                    working2dCoords[j++] = coords[i * 3]     - (float)point.x;
-                    working2dCoords[j++] = coords[i * 3 + 1] - (float)point.y;
+                    working2dCoords[j--] = coords[i * 3 + 1] - (float)point.y;
+                    working2dCoords[j--] = coords[i * 3]     - (float)point.x;
                 }
                 break;
         }
