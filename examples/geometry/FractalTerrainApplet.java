@@ -34,7 +34,7 @@ import org.j3d.ui.navigation.NavigationState;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class FractalTerrainApplet extends DemoApplet
     implements ActionListener, ItemListener
@@ -324,6 +324,7 @@ public class FractalTerrainApplet extends DemoApplet
         view_tg.addChild(camera);
 
         view_group.addChild(view_tg);
+        view_group.addChild(viewHandler.getTimerBehavior());
 
         Point3d origin = new Point3d(0, 0, 0);
         BoundingSphere light_bounds =
