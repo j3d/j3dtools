@@ -39,7 +39,7 @@ import javax.vecmath.Vector3f;
  * that the normal points directly away from the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class SphereGenerator extends GeometryGenerator
 {
@@ -248,20 +248,23 @@ public class SphereGenerator extends GeometryGenerator
         switch(data.geometryType)
         {
             case GeometryData.TRIANGLES:
-                ret_val = facetCount * facetCount * 6;
+                ret_val = facetCount * facetCount * 3;
                 break;
             case GeometryData.QUADS:
-                ret_val = facetCount * facetCount * 4;
+                ret_val = facetCount * facetCount * 2;
                 break;
 
             // These all have the same vertex count
             case GeometryData.TRIANGLE_STRIPS:
+                ret_val = (facetCount >> 1) * (facetCount + 1) * 2;
+                break;
+
 //            case GeometryData.TRIANGLE_FANS:
             case GeometryData.INDEXED_TRIANGLES:
             case GeometryData.INDEXED_QUADS:
             case GeometryData.INDEXED_TRIANGLE_STRIPS:
 //            case GeometryData.INDEXED_TRIANGLE_FANS:
-                ret_val = facetCount * facetCount;
+                ret_val = (facetCount + 1) * facetCount;
                 break;
 
             default:
@@ -405,30 +408,21 @@ public class SphereGenerator extends GeometryGenerator
 
         int half = facetCount / 4;
         int i, k;
-        int last_facet = facetCount - 1; // always stop one short of the end
         int pos;
         int k_facet;
 
         for(k = 0; k < half; k++)
         {
-            k_facet = k * facetCount;
+            k_facet = k * (facetCount + 1);
 
-            for(i = 0; i < last_facet; i++)
+            for(i = 0; i < facetCount; i++)
             {
                 pos = i + k_facet;
-                indexes[count++] = pos + facetCount;
+                indexes[count++] = pos + facetCount + 1;
                 indexes[count++] = pos;
                 indexes[count++] = pos + 1;
-                indexes[count++] = pos + facetCount + 1;
+                indexes[count++] = pos + facetCount + 2;
             }
-
-            // now the last remaing quad that uses coords 0 & 1
-            pos = i + k_facet;
-
-            indexes[count++] = pos + facetCount;
-            indexes[count++] = pos;
-            indexes[count++] = k_facet;
-            indexes[count++] = k_facet + facetCount;
         }
 
         if(!useHalf)
@@ -436,25 +430,17 @@ public class SphereGenerator extends GeometryGenerator
             // Bottom half is wound in the opposite order.
             for(k = half + 1; k <= half * 2; k++)
             {
-                k_facet = k * facetCount;
+                k_facet = k * (facetCount + 1);
 
-                for(i = 0; i < last_facet; i++)
+                for(i = 0; i < facetCount; i++)
                 {
                     pos = i + k_facet;
 
                     indexes[count++] = pos;
-                    indexes[count++] = pos + facetCount;
                     indexes[count++] = pos + facetCount + 1;
+                    indexes[count++] = pos + facetCount + 2;
                     indexes[count++] = pos + 1;
                 }
-
-                // now the last remaing quad that uses coords 0 & 1
-                pos = i + k_facet;
-
-                indexes[count++] = pos;
-                indexes[count++] = pos + facetCount;
-                indexes[count++] = k_facet + facetCount;
-                indexes[count++] = k_facet;
             }
         }
     }
@@ -495,41 +481,28 @@ public class SphereGenerator extends GeometryGenerator
 
         int half = facetCount / 4;
         int i, k;
-        int last_facet = facetCount - 1; // always stop one short of the end
         int pos;
         int k_facet;
 
         // Wind the top half separately from the bottom
         for(k = 0; k < half; k++)
         {
-            k_facet = k * facetCount;
+            k_facet = k * (facetCount + 1);
 
-            for(i = 0; i < last_facet; i++)
+            for(i = 0; i < facetCount; i++)
             {
                 pos = i + k_facet;
 
                 // first triangle
-                indexes[count++] = pos + facetCount;
+                indexes[count++] = pos + facetCount + 1;
                 indexes[count++] = pos;
                 indexes[count++] = pos + 1;
 
                 // second triangle
                 indexes[count++] = pos + 1;
+                indexes[count++] = pos + facetCount + 2;
                 indexes[count++] = pos + facetCount + 1;
-                indexes[count++] = pos + facetCount;
             }
-
-            // now the last remaing quad that uses coords 0 & 1
-            pos = i + k_facet;
-
-            indexes[count++] = pos + facetCount;
-            indexes[count++] = pos;
-            indexes[count++] = k_facet;
-
-
-            indexes[count++] = k_facet;
-            indexes[count++] = k_facet + facetCount;
-            indexes[count++] = pos + facetCount;
         }
 
         if(!useHalf)
@@ -537,31 +510,20 @@ public class SphereGenerator extends GeometryGenerator
             // Bottom half is wound in the opposite order.
             for(k = half + 1; k <= half * 2; k++)
             {
-                k_facet = k * facetCount;
+                k_facet = k * (facetCount + 1);
 
-                for(i = 0; i < last_facet; i++)
+                for(i = 0; i < facetCount; i++)
                 {
                     pos = i + k_facet;
 
                     indexes[count++] = pos;
-                    indexes[count++] = pos + facetCount;
                     indexes[count++] = pos + facetCount + 1;
+                    indexes[count++] = pos + facetCount + 2;
 
-                    indexes[count++] = pos + facetCount + 1;
+                    indexes[count++] = pos + facetCount + 2;
                     indexes[count++] = pos + 1;
                     indexes[count++] = pos;
                 }
-
-                // now the last remaing quad that uses coords 0 & 1
-                pos = i + k_facet;
-
-                indexes[count++] = pos;
-                indexes[count++] = pos + facetCount;
-                indexes[count++] = k_facet + facetCount;
-
-                indexes[count++] = k_facet + facetCount;
-                indexes[count++] = k_facet;
-                indexes[count++] = pos;
             }
         }
     }
@@ -587,7 +549,7 @@ public class SphereGenerator extends GeometryGenerator
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTexture3D(data);
 
-        int num_strips = facetCount;
+        int num_strips = facetCount >> 1;
 
         if(data.stripCounts == null)
             data.stripCounts = new int[num_strips];
@@ -640,7 +602,7 @@ public class SphereGenerator extends GeometryGenerator
 
         // now let's do the index list
         int index_size = facetCount * (facetCount + 1);
-        int num_strips = facetCount;
+        int num_strips = facetCount >> 1;
 
         if(useHalf)
         {
@@ -668,7 +630,7 @@ public class SphereGenerator extends GeometryGenerator
         data.numStrips = num_strips;
 
         int count = 0;
-        int half = facetCount / 4;
+        int half = facetCount >> 2;
         int i, k;
         int pos;
         int k_facet;
@@ -676,43 +638,35 @@ public class SphereGenerator extends GeometryGenerator
         // Wind the top half separately from the bottom
         for(k = 0; k < half; k++)
         {
-            k_facet = k * facetCount;
+            k_facet = k * (facetCount + 1);
             stripCounts[k] = (facetCount + 1) << 1;
 
-            for(i = 0; i < facetCount; i++)
+            for(i = 0; i <= facetCount; i++)
             {
                 pos = i + k_facet;
 
                 // first triangle
-                indexes[count++] = pos + facetCount;
+                indexes[count++] = pos + facetCount + 1;
                 indexes[count++] = pos;
             }
-
-            // now the last remaing quad that uses coords 0 & 1 again
-            indexes[count++] = k_facet + facetCount;
-            indexes[count++] = k_facet;
         }
 
-        if(!useHalf)
+        if(useHalf)
+            return;
+
+        // Bottom half is wound in the opposite order.
+        for(k = half; k < (half << 1); k++)
         {
-            // Bottom half is wound in the opposite order.
-            for(k = half; k < half * 2; k++)
+            k_facet = (k + 1) * (facetCount + 1);
+            stripCounts[k] = (facetCount + 1) << 1;
+
+            for(i = 0; i <= facetCount; i++)
             {
-                k_facet = (k + 1) * facetCount;
-                stripCounts[k] = (facetCount + 1) << 1;
+                pos = i + k_facet;
 
-                for(i = 0; i < facetCount; i++)
-                {
-                    pos = i + k_facet;
-
-                    // first triangle
-                    indexes[count++] = pos;
-                    indexes[count++] = pos + facetCount;
-                }
-
-                // now the last remaing quad that uses coords 0 & 1 again
-                indexes[count++] = k_facet;
-                indexes[count++] = k_facet + facetCount;
+                // first triangle
+                indexes[count++] = pos;
+                indexes[count++] = pos + facetCount + 1;
             }
         }
     }
@@ -769,8 +723,7 @@ public class SphereGenerator extends GeometryGenerator
         // Go around and build coordinate arrays from this.
         int half = facetCount / 4;
         int i, k;
-        int facet_inc = facetCount * 3;
-        int last_facet = facetCount - 1; // always stop one short of the end
+        int facet_inc = (facetCount + 1) * 3;
         int k_facet;
         int pos;
         int count = 0;
@@ -779,7 +732,7 @@ public class SphereGenerator extends GeometryGenerator
         {
             k_facet = k * facet_inc;
 
-            for(i = 0; i < last_facet; i++)
+            for(i = 0; i < facetCount; i++)
             {
                 pos = i * 3 + k_facet;
 
@@ -809,35 +762,6 @@ public class SphereGenerator extends GeometryGenerator
                 coords[count++] = quadCoordinates[pos + facet_inc + 1];
                 coords[count++] = quadCoordinates[pos + facet_inc + 2];
             }
-
-            // now the last remaing shape that uses coords 0 & 1
-            pos = i * 3 + k_facet;
-
-            // triangle 1
-            coords[count++] = quadCoordinates[pos + facet_inc];
-            coords[count++] = quadCoordinates[pos + facet_inc + 1];
-            coords[count++] = quadCoordinates[pos + facet_inc + 2];
-
-            coords[count++] = quadCoordinates[pos];
-            coords[count++] = quadCoordinates[pos + 1];
-            coords[count++] = quadCoordinates[pos + 2];
-
-            coords[count++] = quadCoordinates[k_facet];
-            coords[count++] = quadCoordinates[k_facet + 1];
-            coords[count++] = quadCoordinates[k_facet + 2];
-
-            // triangle 2
-            coords[count++] = quadCoordinates[k_facet];
-            coords[count++] = quadCoordinates[k_facet + 1];
-            coords[count++] = quadCoordinates[k_facet + 2];
-
-            coords[count++] = quadCoordinates[k_facet + facet_inc];
-            coords[count++] = quadCoordinates[k_facet + facet_inc + 1];
-            coords[count++] = quadCoordinates[k_facet + facet_inc + 2];
-
-            coords[count++] = quadCoordinates[pos + facet_inc];
-            coords[count++] = quadCoordinates[pos + facet_inc + 1];
-            coords[count++] = quadCoordinates[pos + facet_inc + 2];
         }
 
         int tempVertCount = count;
@@ -847,9 +771,11 @@ public class SphereGenerator extends GeometryGenerator
             coords[count++] =  coords[k + 6];
             coords[count++] = -coords[k + 7];
             coords[count++] =  coords[k + 8];
+
             coords[count++] =  coords[k + 3];
             coords[count++] = -coords[k + 4];
             coords[count++] =  coords[k + 5];
+
             coords[count++] =  coords[k + 0];
             coords[count++] = -coords[k + 1];
             coords[count++] =  coords[k + 2];
@@ -858,9 +784,11 @@ public class SphereGenerator extends GeometryGenerator
             coords[count++] =  coords[k + 15];
             coords[count++] = -coords[k + 16];
             coords[count++] =  coords[k + 17];
+
             coords[count++] =  coords[k + 12];
             coords[count++] = -coords[k + 13];
             coords[count++] =  coords[k + 14];
+
             coords[count++] =  coords[k +  9];
             coords[count++] = -coords[k + 10];
             coords[count++] =  coords[k + 11];
@@ -902,115 +830,7 @@ public class SphereGenerator extends GeometryGenerator
         // Go around and build coordinate arrays from this.
         int half = facetCount / 4;
         int i, k;
-        int facet_inc = facetCount * 3;
-        int last_facet = facetCount - 1; // always stop one short of the end
-        int k_facet;
-        int pos;
-        int count = 0;
-
-        for(k = 0; k < half; k++)
-        {
-            k_facet = k * facet_inc;
-
-            for(i = 0; i < last_facet; i++)
-            {
-                pos = i * 3 + k_facet;
-
-                coords[count++] = quadCoordinates[pos + facet_inc];
-                coords[count++] = quadCoordinates[pos + facet_inc + 1];
-                coords[count++] = quadCoordinates[pos + facet_inc + 2];
-
-                coords[count++] = quadCoordinates[pos];
-                coords[count++] = quadCoordinates[pos + 1];
-                coords[count++] = quadCoordinates[pos + 2];
-
-                coords[count++] = quadCoordinates[pos + 3];
-                coords[count++] = quadCoordinates[pos + 4];
-                coords[count++] = quadCoordinates[pos + 5];
-
-                coords[count++] = quadCoordinates[pos + facet_inc + 3];
-                coords[count++] = quadCoordinates[pos + facet_inc + 4];
-                coords[count++] = quadCoordinates[pos + facet_inc + 5];
-            }
-
-            // now the last remaing quad that uses coords 0 & 1
-            pos = i * 3 + k_facet;
-
-            coords[count++] = quadCoordinates[pos + facet_inc];
-            coords[count++] = quadCoordinates[pos + facet_inc + 1];
-            coords[count++] = quadCoordinates[pos + facet_inc + 2];
-
-            coords[count++] = quadCoordinates[pos];
-            coords[count++] = quadCoordinates[pos + 1];
-            coords[count++] = quadCoordinates[pos + 2];
-
-            coords[count++] = quadCoordinates[k_facet + 0];
-            coords[count++] = quadCoordinates[k_facet + 1];
-            coords[count++] = quadCoordinates[k_facet + 2];
-
-            coords[count++] = quadCoordinates[k_facet + facet_inc + 0];
-            coords[count++] = quadCoordinates[k_facet + facet_inc + 1];
-            coords[count++] = quadCoordinates[k_facet + facet_inc + 2];
-        }
-
-        if(!useHalf)
-        {
-            // lower half just mirrors the upper half on y axis but we have to
-            // change the winding so that they all remain with the same clockwise
-            // ordering of vertices
-            int tempVertCount = count;
-            for(k = 0; k < tempVertCount; k += 12)
-            {
-                coords[count++] =  coords[k + 3];
-                coords[count++] = -coords[k + 4];
-                coords[count++] =  coords[k + 5];
-                coords[count++] =  coords[k];
-                coords[count++] = -coords[k + 1];
-                coords[count++] =  coords[k + 2];
-                coords[count++] =  coords[k + 9];
-                coords[count++] = -coords[k + 10];
-                coords[count++] =  coords[k + 11];
-                coords[count++] =  coords[k + 6];
-                coords[count++] = -coords[k + 7];
-                coords[count++] =  coords[k + 8];
-            }
-        }
-    }
-
-    /**
-     * Generates new set of points suitable for use in an triangle strip array.
-     * Each strip goes along the outer radius.
-     * The first half of the array is the top, the second half, the bottom.
-     *
-     * @param data The data to shape the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void generateUnindexedTriStripCoordinates(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        int vtx_cnt = facetCount * (facetCount + 1) * 2;
-
-        if(useHalf)
-            vtx_cnt /= 2;
-
-        if(data.coordinates == null)
-            data.coordinates = new float[vtx_cnt * 3];
-        else if(data.coordinates.length < vtx_cnt * 3)
-            throw new InvalidArraySizeException("Coordinates",
-                                                data.coordinates.length,
-                                                vtx_cnt * 3);
-
-        float[] coords = data.coordinates;
-        data.vertexCount = vtx_cnt;
-
-        recalculateQuadSphere();
-
-        // quad torus generates coordinates at facetCount * 3 indexes apart.
-        // Go around and build coordinate arrays from this.
-        int half = facetCount / 2;
-        int i, k;
-        int facet_inc = facetCount * 3;
+        int facet_inc = (facetCount + 1) * 3;
         int k_facet;
         int pos;
         int count = 0;
@@ -1030,16 +850,98 @@ public class SphereGenerator extends GeometryGenerator
                 coords[count++] = quadCoordinates[pos];
                 coords[count++] = quadCoordinates[pos + 1];
                 coords[count++] = quadCoordinates[pos + 2];
+
+                coords[count++] = quadCoordinates[pos + 3];
+                coords[count++] = quadCoordinates[pos + 4];
+                coords[count++] = quadCoordinates[pos + 5];
+
+                coords[count++] = quadCoordinates[pos + facet_inc + 3];
+                coords[count++] = quadCoordinates[pos + facet_inc + 4];
+                coords[count++] = quadCoordinates[pos + facet_inc + 5];
             }
+        }
 
-            // now the last remaing shape that uses coords 0 & 1
-            coords[count++] = quadCoordinates[k_facet + facet_inc];
-            coords[count++] = quadCoordinates[k_facet + facet_inc + 1];
-            coords[count++] = quadCoordinates[k_facet + facet_inc + 2];
+        if(!useHalf)
+        {
+            // lower half just mirrors the upper half on y axis but we have to
+            // change the winding so that they all remain with the same clockwise
+            // ordering of vertices
+            int tempVertCount = count;
+            for(k = 0; k < tempVertCount; k += 12)
+            {
+                coords[count++] =  coords[k + 3];
+                coords[count++] = -coords[k + 4];
+                coords[count++] =  coords[k + 5];
 
-            coords[count++] = quadCoordinates[k_facet];
-            coords[count++] = quadCoordinates[k_facet + 1];
-            coords[count++] = quadCoordinates[k_facet + 2];
+                coords[count++] =  coords[k];
+                coords[count++] = -coords[k + 1];
+                coords[count++] =  coords[k + 2];
+
+                coords[count++] =  coords[k + 9];
+                coords[count++] = -coords[k + 10];
+                coords[count++] =  coords[k + 11];
+
+                coords[count++] =  coords[k + 6];
+                coords[count++] = -coords[k + 7];
+                coords[count++] =  coords[k + 8];
+            }
+        }
+    }
+
+    /**
+     * Generates new set of points suitable for use in an triangle strip array.
+     * Each strip goes along the outer radius.
+     * The first half of the array is the top, the second half, the bottom.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedTriStripCoordinates(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = (facetCount >> 1) * (facetCount + 1) * 2;
+
+        if(useHalf)
+            vtx_cnt /= 2;
+
+        if(data.coordinates == null)
+            data.coordinates = new float[vtx_cnt * 3];
+        else if(data.coordinates.length < vtx_cnt * 3)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.coordinates.length,
+                                                vtx_cnt * 3);
+
+        float[] coords = data.coordinates;
+        data.vertexCount = vtx_cnt;
+
+        recalculateQuadSphere();
+
+        // Half sphere is actually facetCount / 4 because the strip goes all
+        // the way around and we want it symmetrical looking
+        int half = facetCount / 4;
+        int i, k;
+        int facet_inc = (facetCount + 1) * 3;
+        int k_facet;
+        int pos;
+        int count = 0;
+
+        for(k = 0; k < half; k++)
+        {
+            k_facet = k * facet_inc;
+
+            for(i = 0; i <= facetCount; i++)
+            {
+                pos = i * 3 + k_facet;
+
+                coords[count++] = quadCoordinates[pos + facet_inc];
+                coords[count++] = quadCoordinates[pos + facet_inc + 1];
+                coords[count++] = quadCoordinates[pos + facet_inc + 2];
+
+                coords[count++] = quadCoordinates[pos];
+                coords[count++] = quadCoordinates[pos + 1];
+                coords[count++] = quadCoordinates[pos + 2];
+            }
         }
 
         // bottom half is wound in the opposite direction so swap the
@@ -1050,6 +952,7 @@ public class SphereGenerator extends GeometryGenerator
             coords[count++] =  coords[k + 3];
             coords[count++] = -coords[k + 4];
             coords[count++] =  coords[k + 5];
+
             coords[count++] =  coords[k];
             coords[count++] = -coords[k + 1];
             coords[count++] =  coords[k + 2];
@@ -1162,6 +1065,125 @@ public class SphereGenerator extends GeometryGenerator
         float[] tex_coords = data.textureCoordinates;
 
         recalc2DTexture();
+
+        int half = facetCount / 4;
+        int i, k;
+        int facet_inc = (facetCount + 1) * 2;
+        int last_facet = facetCount - 1; // always stop one short of the end
+        int k_facet;
+        int pos;
+        int count = 0;
+
+        for(k = 0; k < half; k++)
+        {
+            k_facet = k * facet_inc;
+
+            for(i = 0; i < last_facet; i++)
+            {
+                pos = i * 2 + k_facet;
+
+                // triangle 1
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc];
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+
+                tex_coords[count++] = texCoordinates2D[pos];
+                tex_coords[count++] = texCoordinates2D[pos + 1];
+
+                tex_coords[count++] = texCoordinates2D[pos + 2];
+                tex_coords[count++] = texCoordinates2D[pos + 3];
+
+                // triangle 2
+                tex_coords[count++] = texCoordinates2D[pos + 2];
+                tex_coords[count++] = texCoordinates2D[pos + 3];
+
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 2];
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 3];
+
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc];
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+            }
+
+            // now the last remaing shape that uses tex_coords 0 & 1
+            pos = i * 2 + k_facet;
+
+            // triangle 1
+            tex_coords[count++] = texCoordinates2D[pos + facet_inc];
+            tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+
+            tex_coords[count++] = texCoordinates2D[pos];
+            tex_coords[count++] = texCoordinates2D[pos + 1];
+
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[k_facet + 1];
+
+            // triangle 2
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[k_facet + 1];
+
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[k_facet + facet_inc + 1];
+
+            tex_coords[count++] = texCoordinates2D[pos + facet_inc];
+            tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+        }
+
+        if(useHalf)
+            return;
+
+        int offset = numTexCoords2D / 2;
+
+        for(k = 0; k < half; k++)
+        {
+            k_facet = k * facet_inc;
+
+            for(i = 0; i < last_facet; i++)
+            {
+                pos = 2 * i + k_facet + offset;
+
+                // triangle 1
+                tex_coords[count++] = texCoordinates2D[pos + 2];
+                tex_coords[count++] = texCoordinates2D[pos + 3];
+
+                tex_coords[count++] = texCoordinates2D[pos];
+                tex_coords[count++] = texCoordinates2D[pos + 1];
+
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc];
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+
+                // triangle 2
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc];
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 2];
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 3];
+
+                tex_coords[count++] = texCoordinates2D[pos + 2];
+                tex_coords[count++] = texCoordinates2D[pos + 3];
+            }
+
+            // now the last remaing shape that uses tex_coords 0 & 1
+            pos = i * 2 + k_facet + offset;
+
+            // triangle 1
+            tex_coords[count++] = texCoordinates2D[offset + k_facet];
+            tex_coords[count++] = texCoordinates2D[offset + k_facet + 1];
+
+            tex_coords[count++] = texCoordinates2D[pos];
+            tex_coords[count++] = texCoordinates2D[pos + 1];
+
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+
+            // triangle 2
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[offset + k_facet + facet_inc + 1];
+
+            tex_coords[count++] = texCoordinates2D[offset + k_facet];
+            tex_coords[count++] = texCoordinates2D[offset + k_facet + 1];
+        }
     }
 
     /**
@@ -1194,7 +1216,7 @@ public class SphereGenerator extends GeometryGenerator
         // Go around and build coordinate arrays from this.
         int half = facetCount / 4;
         int i, k;
-        int facet_inc = facetCount * 2;
+        int facet_inc = (facetCount + 1) * 2 ;
         int last_facet = facetCount - 1; // always stop one short of the end
         int k_facet;
         int pos;
@@ -1230,26 +1252,28 @@ public class SphereGenerator extends GeometryGenerator
             tex_coords[count++] = texCoordinates2D[pos];
             tex_coords[count++] = texCoordinates2D[pos + 1];
 
-            tex_coords[count++] = texCoordinates2D[k_facet + 0];
+            tex_coords[count++] = 1;
             tex_coords[count++] = texCoordinates2D[k_facet + 1];
 
-            tex_coords[count++] = texCoordinates2D[k_facet + facet_inc + 0];
+            tex_coords[count++] = 1;
             tex_coords[count++] = texCoordinates2D[k_facet + facet_inc + 1];
         }
 
         if(useHalf)
             return;
 
-        for(k = half + 1; k < half * 2; k++)
+        int offset = numTexCoords2D / 2;
+
+        for(k = 0; k < half; k++)
         {
             k_facet = k * facet_inc;
 
             for(i = 0; i < last_facet; i++)
             {
-                pos = i * 2 + k_facet;
+                pos = i * 2 + k_facet + offset;
 
-                tex_coords[count++] = texCoordinates2D[pos + 2];
-                tex_coords[count++] = texCoordinates2D[pos + 3];
+                tex_coords[count++] = texCoordinates2D[pos];
+                tex_coords[count++] = texCoordinates2D[pos + 1];
 
                 tex_coords[count++] = texCoordinates2D[pos + facet_inc];
                 tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
@@ -1257,24 +1281,24 @@ public class SphereGenerator extends GeometryGenerator
                 tex_coords[count++] = texCoordinates2D[pos + facet_inc + 2];
                 tex_coords[count++] = texCoordinates2D[pos + facet_inc + 3];
 
-                tex_coords[count++] = texCoordinates2D[pos];
-                tex_coords[count++] = texCoordinates2D[pos + 1];
+                tex_coords[count++] = texCoordinates2D[pos + 2];
+                tex_coords[count++] = texCoordinates2D[pos + 3];
             }
 
             // now the last remaing quad that uses tex_coords 0 & 1
-            pos = i * 2 + k_facet;
+            pos = i * 2 + k_facet + offset;
 
-            tex_coords[count++] = texCoordinates2D[k_facet + 0];
-            tex_coords[count++] = texCoordinates2D[k_facet + 1];
+            tex_coords[count++] = texCoordinates2D[pos];
+            tex_coords[count++] = texCoordinates2D[pos + 1];
 
             tex_coords[count++] = texCoordinates2D[pos + facet_inc];
             tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
 
-            tex_coords[count++] = texCoordinates2D[k_facet + facet_inc + 0];
-            tex_coords[count++] = texCoordinates2D[k_facet + facet_inc + 1];
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[offset + k_facet + facet_inc + 1];
 
-            tex_coords[count++] = texCoordinates2D[pos];
-            tex_coords[count++] = texCoordinates2D[pos + 1];
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[offset + k_facet + 1];
         }
     }
 
@@ -1303,6 +1327,65 @@ public class SphereGenerator extends GeometryGenerator
         float[] tex_coords = data.textureCoordinates;
 
         recalc2DTexture();
+
+        int half = facetCount / 4;
+        int i, k;
+        int facet_inc = (facetCount + 1) * 2;
+        int k_facet;
+        int pos;
+        int count = 0;
+
+        for(k = 0; k < half; k++)
+        {
+            k_facet = k * facet_inc;
+
+            for(i = 0; i < facetCount; i++)
+            {
+                pos = i * 2 + k_facet;
+
+                // triangle 1
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc];
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+
+                tex_coords[count++] = texCoordinates2D[pos];
+                tex_coords[count++] = texCoordinates2D[pos + 1];
+            }
+
+            // now the last remaing shape that uses tex_coords 0 & 1
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[k_facet + 1];
+
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[k_facet + facet_inc + 1];
+        }
+
+        if(useHalf)
+            return;
+
+        int offset = numTexCoords2D / 2;
+
+        for(k = 0; k < half; k++)
+        {
+            k_facet = k * facet_inc;
+
+            for(i = 0; i < facetCount; i++)
+            {
+                pos = 2 * i + k_facet + offset;
+
+                tex_coords[count++] = texCoordinates2D[pos];
+                tex_coords[count++] = texCoordinates2D[pos + 1];
+
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc];
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+            }
+
+            // now the last remaing shape that uses tex_coords 0 & 1
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[k_facet + offset + 1];
+
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[k_facet + offset + facet_inc + 1];
+        }
     }
 
     /**
@@ -1317,6 +1400,24 @@ public class SphereGenerator extends GeometryGenerator
     private void generateIndexedTexture2D(GeometryData data)
         throws InvalidArraySizeException
     {
+        int vtx_cnt = data.vertexCount * 2;
+
+        if(data.textureCoordinates == null)
+            data.textureCoordinates = new float[vtx_cnt];
+        else if(data.textureCoordinates.length < vtx_cnt)
+            throw new InvalidArraySizeException("2D Texture coordinates",
+                                                data.textureCoordinates.length,
+                                                vtx_cnt);
+
+        float[] tex_coords = data.textureCoordinates;
+
+        recalc2DTexture();
+
+        System.arraycopy(texCoordinates2D,
+                         0,
+                         data.textureCoordinates,
+                         0,
+                         numTexCoords2D);
     }
 
     /**
@@ -1358,7 +1459,7 @@ public class SphereGenerator extends GeometryGenerator
 
         quadChanged = false;
 
-        int vtx_count = facetCount * facetCount;
+        int vtx_count = (facetCount + 1) * facetCount;
 
         if(useHalf)
             vtx_count /= 2;
@@ -1396,6 +1497,10 @@ public class SphereGenerator extends GeometryGenerator
             quadCoordinates[count++] = (float)(y_radius * cos_table[i]);
         }
 
+        quadCoordinates[count++] = (float)(y_radius * sin_table[0]);
+        quadCoordinates[count++] = y;
+        quadCoordinates[count++] = (float)(y_radius * cos_table[0]);
+
         // loop from the centerline to the top
         for(k = 1; k < half; k++)
         {
@@ -1408,10 +1513,14 @@ public class SphereGenerator extends GeometryGenerator
                 quadCoordinates[count++] = y;
                 quadCoordinates[count++] = (float)(y_radius * cos_table[i]);
             }
+
+            quadCoordinates[count++] = (float)(y_radius * sin_table[0]);
+            quadCoordinates[count++] = y;
+            quadCoordinates[count++] = (float)(y_radius * cos_table[0]);
         }
 
         // Top coords are easy :)
-        for(i = facetCount; --i >= 0; )
+        for(i = facetCount + 1; --i >= 0; )
         {
             quadCoordinates[count++] = 0;
             quadCoordinates[count++] = radius;
@@ -1437,7 +1546,9 @@ public class SphereGenerator extends GeometryGenerator
      * Recalculate the 2D texture coordinates IAW the coordinate values. This
      * starts by using the circumference as a T value of 0.5 to indicate it is
      * halfway through the texture (we are starting at the middle of the
-     * sphere!). Then, if we have a bottom, we calculate the T from 0 to 0.5
+     * sphere!). Then, if we have a bottom, we calculate the T from 0 to 0.5.
+     * thus the coordinates are for the top half of the sphere, followed by
+     * the bottom half.
      */
     private void recalc2DTexture()
     {
@@ -1448,7 +1559,7 @@ public class SphereGenerator extends GeometryGenerator
         // the 3D coordinates.
         facetsChanged = false;
 
-        int vtx_count = facetCount * facetCount;
+        int vtx_count = (facetCount - 2) * (facetCount + 1);
 
         if(useHalf)
             vtx_count /= 2;
@@ -1459,64 +1570,90 @@ public class SphereGenerator extends GeometryGenerator
             texCoordinates2D = new float[vtx_count * 2];
         }
 
-        numQuadValues = vtx_count * 2;
-
-        int half = facetCount / 4;
-
         // local constant to make math calcs faster
-        double segment_angle = 1 / facetCount;
+        int half = facetCount / 4;
+        float segment_angle = 1 / (float)facetCount;
         int count = 0;
         int i, k;
         float t;
         float[] s_table = new float[facetCount];
-        float[] t_table = new float[facetCount];
-
 
         for(i = 0; i < facetCount; i++)
         {
-            s_table[i] = (float)(i * segment_angle);
-            t_table[i] = (float)(i * segment_angle);
+            s_table[i] = i * segment_angle;
 
             texCoordinates2D[count++] = s_table[i];
             texCoordinates2D[count++] = 0.5f;
         }
 
+        texCoordinates2D[count++] = 1;
+        texCoordinates2D[count++] = 0.5f;
+
         // loop from the centerline to the top
         for(k = 1; k < half; k++)
         {
-            t = t_table[k + facetCount / 2];
+            t = 0.5f + segment_angle * 2 * k;
 
-            // Reverse loop count because it is *much* faster than the forward
-            // version.
             for(i = 0; i < facetCount; i++)
             {
                 texCoordinates2D[count++] = s_table[i];
                 texCoordinates2D[count++] = t;
             }
+
+            texCoordinates2D[count++] = 1;
+            texCoordinates2D[count++] = t;
         }
 
         // Top coords are easy :)
-        for(i = facetCount; --i >= 0; )
+        texCoordinates2D[count++] = 0;
+        texCoordinates2D[count++] = 1;
+
+        for(i = 1; i < facetCount; i++)
         {
             texCoordinates2D[count++] = s_table[i];
             texCoordinates2D[count++] = 1;
         }
 
-        if(!useHalf)
-        {
-            int mid_pt = count;
-            for(k = 0; k < half; k++)
-            {
-                t = t_table[k];
+        texCoordinates2D[count++] = 1;
+        texCoordinates2D[count++] = 1;
 
-                // Reverse loop count because it is *much* faster than the forward
-                // version.
-                for(i = 0; i < facetCount; i++)
-                {
-                    texCoordinates2D[count++] = s_table[i];
-                    texCoordinates2D[count++] = t;
-                }
-            }
+        if(useHalf)
+            return;
+
+        // The centerline of the sphere
+        for(i = 0; i < facetCount; i++)
+        {
+            texCoordinates2D[count++] = s_table[i];
+            texCoordinates2D[count++] = 0.5f;
         }
+
+        texCoordinates2D[count++] = 1;
+        texCoordinates2D[count++] = 0.5f;
+
+        for(k = 1; k < half; k++)
+        {
+            t = 0.5f - segment_angle * 2 * k;
+
+            for(i = 0; i < facetCount; i++)
+            {
+                texCoordinates2D[count++] = s_table[i];
+                texCoordinates2D[count++] = t;
+            }
+
+            texCoordinates2D[count++] = 1;
+            texCoordinates2D[count++] = t;
+        }
+
+        // bottom of sphere
+        for(i = 0; i < facetCount; i++)
+        {
+            texCoordinates2D[count++] = s_table[i];
+            texCoordinates2D[count++] = 0;
+        }
+
+        texCoordinates2D[count++] = 1;
+        texCoordinates2D[count++] = 0;
+
+        numTexCoords2D = count;
     }
 }
