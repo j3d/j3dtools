@@ -27,7 +27,7 @@ import junit.textui.TestRunner;
  * performed by the example code.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TestConeGenerator extends TestCase
 {
@@ -89,7 +89,7 @@ public class TestConeGenerator extends TestCase
 
         generator.generate(data);
 
-        assert("Default cone is missing the bottom", generator.hasBottom());
+        assertTrue("Default cone is missing the bottom", generator.hasBottom());
         assertEquals("Default cone vertex count is wrong",
                      96,
                      data.vertexCount);
@@ -105,7 +105,7 @@ public class TestConeGenerator extends TestCase
         data.coordinates = null;
         generator.generate(data);
 
-        assert("Dimensioned cone is missing the bottom",
+        assertTrue("Dimensioned cone is missing the bottom",
                generator.hasBottom());
 
         assertEquals("Dimensioned vertex count is wrong",
@@ -126,7 +126,7 @@ public class TestConeGenerator extends TestCase
         // check that the bottom flag is set independently
         generator.setDimensions(TEST_HEIGHT, TEST_RADIUS, false);
 
-        assert("Dimensioned cone bottom check is wrong",
+        assertTrue("Dimensioned cone bottom check is wrong",
                !generator.hasBottom());
 
         // test the default cone is 2, 2, 2
@@ -136,7 +136,7 @@ public class TestConeGenerator extends TestCase
         generator.generate(data);
 
 
-        assert("Test cone is missing the bottom", generator.hasBottom());
+        assertTrue("Test cone is missing the bottom", generator.hasBottom());
         assertEquals("Test cone vertex count is wrong",
                      96,
                      data.vertexCount);

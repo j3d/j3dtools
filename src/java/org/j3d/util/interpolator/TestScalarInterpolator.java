@@ -25,7 +25,7 @@ import junit.textui.TestRunner;
  * interpolator.
  *
  * @author Justin Couc
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TestScalarInterpolator extends TestCase
 {
@@ -110,7 +110,7 @@ public class TestScalarInterpolator extends TestCase
         int i;
         int num_keys = keys.length;
 
-        assert("Not enough keys ( < 3) to do this test", num_keys > 2);
+        assertTrue("Not enough keys ( < 3) to do this test", num_keys > 2);
 
         interpolator.addKeyFrame(keys[0], values[0]);
         interpolator.addKeyFrame(keys[2], values[2]);

@@ -27,7 +27,7 @@ import junit.textui.TestRunner;
  * performed by the example code.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TestSphereGenerator extends TestCase
 {
@@ -87,7 +87,7 @@ public class TestSphereGenerator extends TestCase
 
         generator.generate(data);
 
-        assert("Default sphere is missing the bottom", !generator.isHalf());
+        assertTrue("Default sphere is missing the bottom", !generator.isHalf());
         assertEquals("Default sphere vertex count is wrong",
                      1536,
                      data.vertexCount);
@@ -101,7 +101,7 @@ public class TestSphereGenerator extends TestCase
         data.coordinates = null;
         generator.generate(data);
 
-        assert("Dimensioned sphere is missing the bottom",
+        assertTrue("Dimensioned sphere is missing the bottom",
                !generator.isHalf());
         assertEquals("Dimensioned vertex count is wrong",
                      1536,
@@ -117,7 +117,7 @@ public class TestSphereGenerator extends TestCase
         // check that the bottom flag is set independently
         generator.setDimensions(TEST_RADIUS, true);
 
-        assert("Dimensioned sphere bottom check is wrong",
+        assertTrue("Dimensioned sphere bottom check is wrong",
                generator.isHalf());
 
         // test the sphere is radius 0.5
@@ -125,7 +125,7 @@ public class TestSphereGenerator extends TestCase
         data.coordinates = null;
         generator.generate(data);
 
-        assert("Test sphere is missing the bottom", !generator.isHalf());
+        assertTrue("Test sphere is missing the bottom", !generator.isHalf());
         assertEquals("Test sphere vertex count is wrong",
                      1536,
                      data.vertexCount);

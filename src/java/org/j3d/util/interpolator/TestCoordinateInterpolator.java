@@ -23,7 +23,7 @@ import junit.textui.TestRunner;
  * interpolator.
  *
  * @author Justin Couc
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TestCoordinateInterpolator extends TestCase
 {
@@ -158,7 +158,7 @@ public class TestCoordinateInterpolator extends TestCase
     public void testValueInsertFloat()
     {
         int j = keys.length;
-        assert("Not enough keys ( < 3) to do this test", j > 2);
+        assertTrue("Not enough keys ( < 3) to do this test", j > 2);
         interpolator.addKeyFrame(keys[0], values[0]);
         interpolator.addKeyFrame(keys[2], values[2]);
         interpolator.addKeyFrame(keys[1], values[1]);

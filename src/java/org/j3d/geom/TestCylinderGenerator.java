@@ -27,7 +27,7 @@ import junit.textui.TestRunner;
  * performed by the example code.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TestCylinderGenerator extends TestCase
 {
@@ -90,7 +90,7 @@ public class TestCylinderGenerator extends TestCase
 
         generator.generate(data);
 
-        assert("Default cylinder is missing the bottom", generator.hasEnds());
+        assertTrue("Default cylinder is missing the bottom", generator.hasEnds());
         assertEquals("Default cylinder vertex count is wrong",
                      192,
                      data.vertexCount);
@@ -105,7 +105,7 @@ public class TestCylinderGenerator extends TestCase
         data.coordinates = null;
         generator.generate(data);
 
-        assert("Dimensioned cylinder is missing the bottom",
+        assertTrue("Dimensioned cylinder is missing the bottom",
                generator.hasEnds());
         assertEquals("Dimensioned vertex count is wrong",
                      192,
@@ -127,7 +127,7 @@ public class TestCylinderGenerator extends TestCase
         data.coordinates = null;
         generator.generate(data);
 
-        assert("Dimensioned cylinder bottom check is wrong",
+        assertTrue("Dimensioned cylinder bottom check is wrong",
                !generator.hasEnds());
 
         // test the default cylinder is 2, 2, 2
@@ -135,7 +135,7 @@ public class TestCylinderGenerator extends TestCase
         data.coordinates = null;
         generator.generate(data);
 
-        assert("Test cylinder is missing the bottom", generator.hasEnds());
+        assertTrue("Test cylinder is missing the bottom", generator.hasEnds());
         assertEquals("Test cylinder vertex count is wrong",
                      192,
                      data.vertexCount);
