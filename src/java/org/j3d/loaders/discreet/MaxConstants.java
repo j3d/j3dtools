@@ -25,7 +25,7 @@ package org.j3d.loaders.discreet;
  * http://www.the-labs.com/Blender/3DS-details.html</a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface MaxConstants
 {
@@ -265,8 +265,8 @@ public interface MaxConstants
     /** The object ID represents an old camera data (0x4500) */
     public static final int CAMERA_OLD = 0x4500;
 
-    /** The ID represents a directional light (0x4600) */
-    public static final int DIRECTIONAL_LIGHT = 0x4600;
+    /** The ID represents the number of directional lights (0x4600) */
+    public static final int N_DIRECTIONAL_LIGHT = 0x4600;
 
     /** The ID represents a spot light (0x4610) */
     public static final int SPOT_LIGHT = 0x4610;
@@ -393,6 +393,13 @@ public interface MaxConstants
     public static final int USE_BEVEL = 0x6160;
 
     // 7xxx group
+    public static final int VIEWPORT_LAYOUT_OLD = 0x7000;
+    public static final int VIEWPORT_LAYOUT = 0x7001;
+    public static final int VIEWPORT_DATA_OLD = 0x7010;
+    public static final int VIEWPORT_DATA = 0x7011;
+    public static final int VIEWPORT_DATA_3 = 0x0712;
+    public static final int VIEWPORT_SIZE = 0x7020;
+    public static final int NETWORK_VIEW = 0x7030;
 
     // 8xxx group
     public static final int XDATA_SECTION = 0x8000;
@@ -488,6 +495,8 @@ public interface MaxConstants
 
     public static final int MAT_USE_XPFALL = 0xA240;
     public static final int MAT_USE_REFBLUR = 0xA250;
+
+    /** ID represents a percentage scale of the bumpmap to apply */
     public static final int MAT_BUMP_PERCENT = 0xA252;
 
     /** ID represents the name of the texture file to use (0xA300) */
