@@ -37,6 +37,7 @@ BUILD_ORDER = org.j3d.util \
     org.j3d.renderer.java3d.overlay \
     org.j3d.renderer.java3d.terrain \
     org.j3d.renderer.java3d.terrain.roam \
+    org.j3d.renderer.java3d.device.output.elumens
 
 # Names of packages that we want included in the javadoc
 JAVADOC_PACKAGES = org.j3d.util \
@@ -74,6 +75,7 @@ JAVADOC_PACKAGES = org.j3d.util \
     org.j3d.renderer.java3d.overlay \
     org.j3d.renderer.java3d.terrain \
     org.j3d.renderer.java3d.terrain.roam \
+    org.j3d.renderer.java3d.device.output.elumens
 
 # Names of JAR files we want to create
 JARS = j3d-org-util.jar \
