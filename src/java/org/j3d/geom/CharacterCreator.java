@@ -55,7 +55,7 @@ import org.j3d.util.CharHashMap;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class CharacterCreator
 {
@@ -214,10 +214,6 @@ public class CharacterCreator
                                   1);
         total_coords = 0;
         total_index = 0;
-        float last_x = 0;
-        float last_y = 0;
-        float init_x = 0;
-        float init_y = 0;
 
         while(!glyph_path.isDone())
         {
@@ -238,9 +234,6 @@ public class CharacterCreator
                         System.arraycopy(charCoords, 0, tmp, 0, total_coords);
                         charCoords = tmp;
                     }
-
-                    init_x = newCoords[0] * scale;
-                    init_y = newCoords[1] * scale;
 
                     charCoords[total_coords++] = newCoords[0] * scale;
                     charCoords[total_coords++] = newCoords[1] * scale;
@@ -299,16 +292,10 @@ public class CharacterCreator
                     break;
 
                 case PathIterator.SEG_LINETO:
-                    if(last_x == newCoords[0] && last_y == newCoords[1])
-                        break;
-
                     charCoords[total_coords++] = newCoords[0] * scale;
                     charCoords[total_coords++] = newCoords[1] * scale;
                     charCoords[total_coords++] = 0;
                     vtx_count++;
-
-                    last_x = newCoords[0];
-                    last_y = newCoords[1];
 //System.out.println("line " + (total_coords - 3) + " : " + newCoords[0] + " " + newCoords[1]);
                     break;
 
@@ -317,13 +304,6 @@ public class CharacterCreator
 
                     if(triOutputIndex.length < vtx_count * 3)
                         triOutputIndex = new int[vtx_count * 3];
-
-                    if(charCoords[total_coords - 3] == init_x &&
-                       charCoords[total_coords - 2] == init_y)
-                    {
-                        vtx_count--;
-                        total_coords -= 3;
-                    }
 
 //System.out.println("close at " + total_coords + " : " + start_vtx + " " + vtx_count);
                     num_triangles =
