@@ -16,7 +16,7 @@ static int stereo_loaded;
  * Method:    initializeVFX
  * Signature: ()V
  */
-JNIEXPORT jboolean JNICALL 
+JNIEXPORT jboolean JNICALL
 Java_org_j3d_device_input_vfx_VFXDriver_initializeVFX
   (JNIEnv *env, jobject obj)
 {
@@ -29,7 +29,7 @@ Java_org_j3d_device_input_vfx_VFXDriver_initializeVFX
  * Method:    resetTrackerZero
  * Signature: ()V
  */
-JNIEXPORT void JNICALL 
+JNIEXPORT void JNICALL
 Java_org_j3d_device_input_vfx_VFXDriver_resetTrackerZero
   (JNIEnv *env, jobject obj)
 {
@@ -41,7 +41,7 @@ Java_org_j3d_device_input_vfx_VFXDriver_resetTrackerZero
  * Method:    readTrackerPosition
  * Signature: ([F)V
  */
-JNIEXPORT void JNICALL 
+JNIEXPORT void JNICALL
 Java_org_j3d_device_input_vfx_VFXDriver_readTrackerPosition
   (JNIEnv *env, jobject obj, jfloatArray output)
 {
@@ -54,16 +54,16 @@ Java_org_j3d_device_input_vfx_VFXDriver_readTrackerPosition
     // yaw 0 = -179.99 deg
     // yaw 32768 = 0 deg
     // yaw 65535 = 180.00 deg
-    float heading=(((float)yaw * 360) / 65535) - 180;
-    
+    float heading = ((float)yaw / 65535.0f) * 360 - 180;
+
     // pitch range is 20025 - 45511, head up-down
     // pitch 45511 = 70 deg
     // pitch 20025 = -70 deg
     // it must be minus from some reason ??
-    float up_down=-(((float)pitch * 360) / 65535) - 180;
-                    
+    float up_down= ((float)pitch / 65535.0f) * 360 - 180;
+
     // roll shuld handled as pitch
-    float look_roll=(((float)roll * 360) / 65535) - 180;
+    float look_roll = ((float)roll / 65535.0f) * 360 - 180;
 
     jfloat *arr = (*env)->GetFloatArrayElements(env, output, 0);
     arr[0] = heading;
@@ -78,7 +78,7 @@ Java_org_j3d_device_input_vfx_VFXDriver_readTrackerPosition
  * Method:    enableVFXStereo
  * Signature: (Z)V
  */
-JNIEXPORT void JNICALL 
+JNIEXPORT void JNICALL
 Java_org_j3d_device_input_vfx_VFXDriver_enableVFXStereo
   (JNIEnv *env, jobject obj, jboolean isDirect3D)
 {
@@ -92,9 +92,9 @@ Java_org_j3d_device_input_vfx_VFXDriver_enableVFXStereo
  * Method:    disableVFXStereo
  * Signature: ()V
  */
-JNIEXPORT void JNICALL 
+JNIEXPORT void JNICALL
 Java_org_j3d_device_input_vfx_VFXDriver_disableVFXStereo
-  (JNIEnv *env, jobject obj) 
+  (JNIEnv *env, jobject obj)
 {
 }
 
@@ -103,7 +103,7 @@ Java_org_j3d_device_input_vfx_VFXDriver_disableVFXStereo
  * Method:    shutdown
  * Signature: ()V
  */
-JNIEXPORT void JNICALL 
+JNIEXPORT void JNICALL
 Java_org_j3d_device_input_vfx_VFXDriver_shutdown
   (JNIEnv *env, jobject obj)
 {
