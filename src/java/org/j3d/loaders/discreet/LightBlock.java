@@ -24,7 +24,7 @@ package org.j3d.loaders.discreet;
  * at all times, which may be narrowed into a spotlight.
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class LightBlock
 {
@@ -41,7 +41,7 @@ public class LightBlock
     /** The light type to treat this as. */
     public int type;
 
-    /** Is this light on or off right now? Default to on */
+    /** Is this light on or off right now. Default to on. */
     public boolean enabled;
 
     /** The 3-component light colour value */
@@ -80,7 +80,7 @@ public class LightBlock
     /** A multiplier value for the standard light settings */
     public float multiple;
 
-    /** The (linear?) attentuation parameter of the light */
+    /** The linear attentuation parameter of the light */
     public float attenuation;
 
     /** Flag indicating if a cone indicating visiblity should be shown */
@@ -90,8 +90,10 @@ public class LightBlock
     public boolean castsShadows;
 
     /**
-     * If shadows are being case, the parameters. [0] is local shadow low
-     * bias. [1] is local shadow filter in the range 1 (low) to 10 (high).
+     * If shadows are being case, the parameters. <br>
+     * shadowParams[0] is local shadow low bias.<br>
+     * shadowParams[1] is local shadow filter in the range 1
+     * (low) to 10 (high).
      */
     public float[] shadowParams;
 

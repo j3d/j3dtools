@@ -30,7 +30,7 @@ import javax.vecmath.Matrix4f;
  * we've added fields and support for it anyway.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class HAnimJoint extends HAnimObject
     implements HAnimObjectParent
@@ -706,7 +706,7 @@ public class HAnimJoint extends HAnimObject
      * Get the current collection of children. If none are set, the array is
      * unchanged.
      *
-     * @param val An array of at least length numChildren() to copy the values to
+     * @param vals An array of at least length numChildren() to copy the values to
      */
     public void getChildren(HAnimObject[] vals)
     {
@@ -833,7 +833,7 @@ public class HAnimJoint extends HAnimObject
      * Get the current collection of children. If none are set, the array is
      * unchanged.
      *
-     * @param val An array of at least length numChildren() to copy the values to
+     * @param vals An array of at least length numChildren() to copy the values to
      */
     public void getDisplacers(HAnimDisplacer[] vals)
     {

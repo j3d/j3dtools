@@ -32,7 +32,7 @@ import org.j3d.ui.navigation.HeightDataSource;
  * always be used.
  *
  * @author  Justin Couch based on original ideas of Paul Byrne
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public interface TerrainData extends HeightDataSource
 {
@@ -131,8 +131,8 @@ public interface TerrainData extends HeightDataSource
      * be used with or separately from the texture data. This allows you
      * to use colours to modulate the texture information if desired. Note that
      * if you provide per-vertex colour information here, you need to be
-     * careful with the Appearance information that gets set if you provide
-     * a custom {@link AppearanceGenerator} implementation.
+     * careful with the appearance information that gets set if you provide
+     * a custom appearance implementation.
      *
      * @return true If per-vertex color is available
      */

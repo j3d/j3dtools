@@ -32,7 +32,7 @@ import javax.swing.ImageIcon;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ImageLoader
 {
@@ -73,7 +73,7 @@ public class ImageLoader
      * image so the path provided must be fully qualified relative to the
      * classpath.
      *
-     * @param path The path to load the icon for. If not found,
+     * @param name The path to load the icon for. If not found,
      *   no image is loaded.
      * @return An icon for the named path.
      */
@@ -109,7 +109,7 @@ public class ImageLoader
      * image so the path provided must be fully qualified relative to the
      * classpath.
      *
-     * @param path The path to load the icon for. If not found,
+     * @param name The path to load the icon for. If not found,
      *   no image is loaded.
      * @return An image for the named path.
      */

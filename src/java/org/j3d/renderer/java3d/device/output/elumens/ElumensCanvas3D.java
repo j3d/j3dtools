@@ -29,7 +29,7 @@ import org.j3d.device.output.elumens.*;
  * This code requires the elumens.dll created in the j3d.org area to run.
  *
  * @author Alan Hudson
- * @verion $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ElumensCanvas3D extends Canvas3D
     implements MouseCoordinateConverter {
@@ -129,7 +129,7 @@ public class ElumensCanvas3D extends Canvas3D
     /**
      * Set the initialization paramaters for the SPI library.
      *
-     * @format The format to use
+     * @param format The format to use
      */
     public void initSPI(int format) {
         initialize = true;

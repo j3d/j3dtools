@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * <a href="http://h-anim.org/Specifications/H-Anim1.1/">6.5 Segment</a>.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class HAnimSegment extends HAnimObject
 {
@@ -83,7 +83,7 @@ public class HAnimSegment extends HAnimObject
      * Get the current value of the mass of the segment. A value of -1 indicates
      * that no mass is available.
      *
-     * @param return A positive value or -1.
+     * @return A positive value or -1.
      */
     public float getMass()
     {
@@ -291,7 +291,7 @@ public class HAnimSegment extends HAnimObject
      * Get the current collection of children. If none are set, the array is
      * unchanged.
      *
-     * @param val An array of at least length numChildren() to copy the values to
+     * @param vals An array of at least length numChildren() to copy the values to
      */
     public void getChildren(Object[] vals)
     {

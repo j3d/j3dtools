@@ -29,7 +29,7 @@ import javax.vecmath.Color4f;
  * http://astronomy.swin.edu.au/~pbourke/colour/convert/</a>
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ColorUtils
 {
@@ -116,9 +116,7 @@ public class ColorUtils
      * Change an HSV color to RGB color. We don't bother converting the alpha
      * as that stays the same regardless of color space.
      *
-     * @param h The h component of the color
-     * @param s The s component of the color
-     * @param v The v component of the color
+     * @param hsv The HSV component of the color as an array
      * @param rgb An array to return the RGB colour values in
      */
     public static void convertHSVtoRGB(float[] hsv, float[] rgb)

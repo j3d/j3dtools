@@ -37,14 +37,6 @@ import org.j3d.util.frustum.ViewFrustum;
  * called at most once per frame.
  * <p>
  *
- * For convenience, this class also implements {@link FrameUpdateListener} from
- * the {@link org.j3d.ui.navigation} package so that you can have fast, quick
- * navigation implementation in your code. If you wish to use your own custom
- * user input code, then there is no penalty for doing so. Simply call one of
- * the <code>setView()</code> methods directly with the transformation
- * information.
- * <p>
- *
  * If you are going to use this class with the navigation code, then you
  * should also make the internal geometry not pickable, and make this item
  * pickable. In this way, the navigation code will find this top-level
@@ -58,7 +50,7 @@ import org.j3d.util.frustum.ViewFrustum;
  * implementation is free to do what it likes.
  *
  * @author Justin Couch, based on original ideas from Paul Byrne
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public abstract class Landscape
     implements HeightMapGeometry

@@ -16,7 +16,7 @@ import javax.vecmath.Point3f;
 // none
 
 /**
- * An interpolator that works with integer values
+ * An interpolator that works with integer values.
  * <P>
  *
  * For linear interpolation this class will operate as such:
@@ -29,7 +29,7 @@ import javax.vecmath.Point3f;
  * arbitrarily spaced keyframes and compute correct values.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IntegerInterpolator extends Interpolator
 {

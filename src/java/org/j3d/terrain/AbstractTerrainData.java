@@ -27,7 +27,7 @@ import java.awt.Rectangle;
  * functionality that is extended by the more derived versions.
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class AbstractTerrainData implements TerrainData
 {
@@ -51,7 +51,7 @@ public abstract class AbstractTerrainData implements TerrainData
      *
      * @param dataType The type of data that this instance represents
      */
-   protected AbstractTerrainData(int dataType)
+    protected AbstractTerrainData(int dataType)
     {
         terrainType = dataType;
 
@@ -80,8 +80,9 @@ public abstract class AbstractTerrainData implements TerrainData
      * be used with or separately from the texture data. This allows you
      * to use colours to modulate the texture information if desired. Note that
      * if you provide per-vertex colour information here, you need to be
-     * careful with the Appearance information that gets set if you provide
-     * a custom {@link AppearanceGenerator} implementation.
+     * careful with the appearance information that gets set if you provide
+     * a custom appearance generator implementation that comes with the
+     * renderer-specific versions of this class.
      *
      * @return true If per-vertex color is available
      */

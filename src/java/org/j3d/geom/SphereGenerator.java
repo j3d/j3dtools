@@ -39,7 +39,7 @@ import javax.vecmath.Vector3f;
  * that the normal points directly away from the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class SphereGenerator extends GeometryGenerator
 {
@@ -115,7 +115,7 @@ public class SphereGenerator extends GeometryGenerator
      * segments on the radius.
      *
      * @param r The radius of the sphere
-     * @param half True to generate a hemi-sphere, false for full spher
+     * @param useHalf True to generate a hemi-sphere, false for full spher
      */
     public SphereGenerator(float r, boolean useHalf)
     {
@@ -189,7 +189,6 @@ public class SphereGenerator extends GeometryGenerator
      * normals.
      *
      * @param r The radius of the sphere
-     * @param facets The number of facets to use
      * @param half True to generate a hemi-sphere, false for full spher
      */
     public void setDimensions(float r, boolean half)
@@ -215,6 +214,7 @@ public class SphereGenerator extends GeometryGenerator
      *    or not divisible by 2.
      */
     public void setFacetCount(int facets)
+        throws IllegalArgumentException
     {
         if(facets < 4)
             throw new IllegalArgumentException("Number of facets is < 4");

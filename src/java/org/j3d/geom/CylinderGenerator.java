@@ -28,7 +28,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {
@@ -187,7 +187,6 @@ public class CylinderGenerator extends GeometryGenerator
      * @param radius The radis of the cylinder to generate
      * @param top Whether to generate the top of the cylinder
      * @param bottom Whether to generate the bottom of the cylinder
-     * @param ends true to use end caps
      */
     public CylinderGenerator(float height, float radius, boolean top, boolean bottom)
     {
@@ -201,6 +200,7 @@ public class CylinderGenerator extends GeometryGenerator
      *
      * @param height The height of the cylinder to generate
      * @param radius The radis of the cylinder to generate
+     * @param facets The number of faces to use around the radius
      * @param ends true to use end caps
      * @throws IllegalArgumentException The number of facets is less than 3
      */
@@ -219,7 +219,9 @@ public class CylinderGenerator extends GeometryGenerator
      *
      * @param height The height of the cylinder to generate
      * @param radius The radis of the cylinder to generate
-     * @param ends true to use end caps
+     * @param facets The number of faces to use around the radius
+     * @param top Whether to generate the top of the cylinder
+     * @param bottom Whether to generate the bottom of the cylinder
      * @throws IllegalArgumentException The number of facets is less than 3
      */
     public CylinderGenerator(float height,

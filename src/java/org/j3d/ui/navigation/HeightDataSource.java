@@ -41,7 +41,7 @@ package org.j3d.ui.navigation;
  * for.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface HeightDataSource
 {
@@ -50,7 +50,7 @@ public interface HeightDataSource
      * system. Depending on the nature of the underlying data source, this
      * may need to be interpolated (for example, the data is a height grid).
      * If the height is from an area outside of the extents of this geometry
-     * which it should never be!) then return {@link Float.NaN}.
+     * which it should never be!) then return Float.NaN.
      *
      * @param x The x coordinate for the height sampling
      * @param z The z coordinate for the height sampling

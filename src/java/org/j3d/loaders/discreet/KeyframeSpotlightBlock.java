@@ -16,7 +16,7 @@ package org.j3d.loaders.discreet;
 // None
 
 /**
- * Representation of a keyframe spotlight handling
+ * Representation of a keyframe spotlight handling.
  * <p>
  *
  * A keyframe consists of
@@ -30,7 +30,7 @@ package org.j3d.loaders.discreet;
  *     COLOR TRACK TAG 0xB025
  * </pre>
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class KeyframeSpotlightBlock extends KeyframeTag
 {

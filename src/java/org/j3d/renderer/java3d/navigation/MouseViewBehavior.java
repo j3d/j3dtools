@@ -39,7 +39,7 @@ import org.j3d.ui.navigation.NavigationStateListener;
  * extra functionality.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MouseViewBehavior extends Behavior
 {
@@ -155,7 +155,7 @@ public class MouseViewBehavior extends Behavior
     /**
      * Get the NavigationHandler instance that this class is using.
      *
-     * @param The navigation instance currently in use
+     * @return The navigation instance currently in use
      */
     public NavigationHandler getNavigationHandler()
     {

@@ -19,7 +19,7 @@ package org.j3d.renderer.java3d.device.output.elumens;
  * changes should be made except during the update method.
  *
  * @author Alan Hudson
- * @verion $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface SGUpdater {
    /**

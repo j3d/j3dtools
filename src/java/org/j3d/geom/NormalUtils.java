@@ -26,7 +26,7 @@ import javax.vecmath.Vector3f;
  * class with synchronised methods would be very bad for performance.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class NormalUtils
 {
@@ -107,9 +107,6 @@ public class NormalUtils
      * @param srcNormals The source coordinate array to copy
      * @param numNormals The number of valid coordinates in the array
      * @param destNormals The array to copy the values into
-     * @param x The amount to translate in the x axis
-     * @param y The amount to translate in the y ayis
-     * @param z The amount to translate in the z azis
      */
     public void negate(float[] srcNormals,
                        int numNormals,
@@ -133,9 +130,6 @@ public class NormalUtils
      * @param srcNormals The source coordinate array to copy
      * @param numNormals The number of valid coordinates in the array
      * @param destNormals The array to copy the values into
-     * @param x The amount to translate in the x axis
-     * @param y The amount to translate in the y ayis
-     * @param z The amount to translate in the z azis
      */
     public void translate(float[][] srcNormals,
                           int numNormals,

@@ -22,7 +22,7 @@ package org.j3d.loaders.discreet;
  * For this implementation, the unknown values are ignored and not stored.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class TrackData
 {
@@ -32,6 +32,6 @@ public abstract class TrackData
     /** keys for working with the spline information. See spec for more info. */
     public int splineFlags;
 
-    /** Data that is set if splineFlags is non-zero. 5 values. */
+    /** Data that is set if splineFlags is non-zero. Array is length 5. */
     public float[] splineData;
 }

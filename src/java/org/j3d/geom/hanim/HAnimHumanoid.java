@@ -29,7 +29,7 @@ import javax.vecmath.Matrix4f;
  * critical is the output object.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class HAnimHumanoid extends HAnimObject
     implements HAnimObjectParent
@@ -464,7 +464,7 @@ public abstract class HAnimHumanoid extends HAnimObject
      * Get the current collection of info strings. If none are set, the array is
      * unchanged.
      *
-     * @param val An array of at least length numInfo() to copy the values to
+     * @param vals An array of at least length numInfo() to copy the values to
      */
     public void getInfo(String[] vals)
     {
@@ -602,7 +602,7 @@ public abstract class HAnimHumanoid extends HAnimObject
      * Get the current collection of viewpoints. If none are set, the array is
      * unchanged.
      *
-     * @param val An array of at least length numViewpoints() to copy the values to
+     * @param vals An array of at least length numViewpoints() to copy the values to
      */
     public void getViewpoints(Object[] vals)
     {
@@ -643,7 +643,7 @@ public abstract class HAnimHumanoid extends HAnimObject
      * Get the current collection of joints. If none are set, the array is
      * unchanged.
      *
-     * @param val An array of at least length numJoints() to copy the values to
+     * @param vals An array of at least length numJoints() to copy the values to
      */
     public void getJoints(HAnimJoint[] vals)
     {
@@ -684,7 +684,7 @@ public abstract class HAnimHumanoid extends HAnimObject
      * Get the current collection of skeleton. If none are set, the array is
      * unchanged.
      *
-     * @param val An array of at least length numSkeleton() to copy the values to
+     * @param vals An array of at least length numSkeleton() to copy the values to
      */
     public void getSkeleton(HAnimObject[] vals)
     {
@@ -754,7 +754,7 @@ public abstract class HAnimHumanoid extends HAnimObject
      * Get the current collection of sites. If none are set, the array is
      * unchanged.
      *
-     * @param val An array of at least length numSites() to copy the values to
+     * @param vals An array of at least length numSites() to copy the values to
      */
     public void getSites(HAnimObject[] vals)
     {
@@ -797,7 +797,7 @@ public abstract class HAnimHumanoid extends HAnimObject
      * Get the current collection of segments. If none are set, the array is
      * unchanged.
      *
-     * @param val An array of at least length numSegments() to copy the values to
+     * @param vals An array of at least length numSegments() to copy the values to
      */
     public void getSegments(HAnimObject[] vals)
     {

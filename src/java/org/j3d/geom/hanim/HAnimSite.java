@@ -23,7 +23,7 @@ import javax.vecmath.Matrix4f;
  * <a href="http://h-anim.org/Specifications/H-Anim1.1/">6.5 Site</a>.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class HAnimSite extends HAnimObject
 {
@@ -278,7 +278,7 @@ public class HAnimSite extends HAnimObject
      * Get the current collection of children. If none are set, the array is
      * unchanged.
      *
-     * @param val An array of at least length numChildren() to copy the values to
+     * @param vals An array of at least length numChildren() to copy the values to
      */
     public void getChildren(Object[] vals)
     {

@@ -32,7 +32,7 @@ import org.j3d.util.frustum.ViewFrustum;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class ROAMSplitMergeLandscape extends Landscape
 {
@@ -322,7 +322,7 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
      * @param xTile The tile coordinate of the patch along the X axis
      * @param yTile The tile coordinate of the patch along the Y axis
      */
-    protected abstract ROAMPatch createPatch(int eastPostion,
+    protected abstract ROAMPatch createPatch(int eastPosition,
                                              int northPosition,
                                              int xTile,
                                              int yTile);

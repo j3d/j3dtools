@@ -24,7 +24,7 @@ import javax.media.j3d.SceneGraphPath;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface CollisionListener
 {
@@ -32,7 +32,8 @@ public interface CollisionListener
      * Notification that a collision has taken place with the given Java3D
      * scene object.
      *
-     * @param node The node that was collided with
+     * @param path The path from the root of the scene graph to the node that
+     *    was collided with
      */
     public void avatarCollision(SceneGraphPath path);
 }

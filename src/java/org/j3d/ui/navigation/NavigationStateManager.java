@@ -283,7 +283,7 @@ public class NavigationStateManager
      * Set the navigation handler instance to use. Setting a value of null
      * will clear the currently set instance.
      *
-     * @param tbr The new toolbar instance to use
+     * @param view The new processor for the mouse navigation
      */
     public void setMouseHandler(NavigationMouseProcessor view)
     {

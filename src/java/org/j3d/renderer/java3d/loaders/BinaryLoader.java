@@ -28,7 +28,7 @@ import com.sun.j3d.loaders.ParsingErrorException;
  *
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface BinaryLoader extends Loader
 {
@@ -41,11 +41,11 @@ public interface BinaryLoader extends Loader
      * @param is The stream to read the file data from
      * @return The scene that represents the file content
      * @throws IOException An I/O error while reading the data
-     * @param IncorrectFormatException The file format is not of this type
-     * @param ParsingErrorException Syntax and/or semantic parsing problems
+     * @throws IncorrectFormatException The file format is not of this type
+     * @throws ParsingErrorException Syntax and/or semantic parsing problems
      */
     public Scene load(InputStream is)
-               throws IOException,
-                      IncorrectFormatException,
-                      ParsingErrorException;
+       throws IOException,
+              IncorrectFormatException,
+              ParsingErrorException;
 }

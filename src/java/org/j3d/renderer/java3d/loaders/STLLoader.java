@@ -33,7 +33,7 @@ import org.j3d.loaders.stl.*;
  * recognized if an invalid amount of data is contained in the file.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept. of Medical Computer Sciences
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class STLLoader extends LoaderBase
 {
@@ -134,7 +134,7 @@ public class STLLoader extends LoaderBase
     /**
      * Creates a <code>Scene</code> object with the contents of the STL file.
      * Closes the reader after finishing reading.
-     * @param <code>STLFileReader</code> object for reading the STL file.
+     * @param reader <code>STLFileReader</code> object for reading the STL file.
      */
     public static Scene createScene( final STLFileReader reader )
     throws IncorrectFormatException, ParsingErrorException

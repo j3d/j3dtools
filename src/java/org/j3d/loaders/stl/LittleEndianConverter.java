@@ -20,27 +20,17 @@ package org.j3d.loaders.stl;
 import java.io.*;
 
  /**
-  * Utility to convert little endain data to big endian data.<p>
-  * @todo extend to convert big endian to little endain data and write to
+  * Utility to convert little endain data to big endian data.
+  * <p>
+  * TODO: Extend to convert big endian to little endain data and write to
   * <code>OutputStream</code>
+  *
   * @author  Dipl. Ing. Paul Szawlowski -
   *          University of Vienna, Dept. of Medical Computer Sciences
-  * @version $Revision: 1.2 $
+  * @version $Revision: 1.3 $
   */
 public class LittleEndianConverter
 {
-    /**
-     * Starts a test of this class.
-     * @todo test blockSize 3
-     * @todo test blockSize 2 to int
-     * @todo test InputStream.
-     * @todo automatic verification of conversion
-     */
-    public static void main( String[ ] args )
-    {
-        test( );
-    }
-
     /**
      * Converts little endian data in <code>srcBuffer</code> to big endian
      * signed short (2 bytes long) data.
@@ -801,76 +791,5 @@ public class LittleEndianConverter
             throw new IOException( "Filesize does not match blocksize" );
         }
         return tempValue;
-    }
-
-    /**
-     * Starts a test of this class.
-     * @todo test blockSize 3
-     * @todo test blockSize 2 to int
-     * @todo test InputStream.
-     * @todo automatic verification of conversion
-     */
-    private static void test( )
-    {
-        final byte[ ] src = new byte[ ]
-            {
-                ( byte )0x00, ( byte )0x00, ( byte )0x00, ( byte )0xff,
-                ( byte )0xff, ( byte )0x00, ( byte )0xff, ( byte )0xff,
-                ( byte )0x00, ( byte )0x00, ( byte )0x00, ( byte )0x01,
-                ( byte )0x01, ( byte )0x00, ( byte )0x01, ( byte )0x01,
-                ( byte )0x00, ( byte )0x00, ( byte )0x00, ( byte )0x00,
-                ( byte )0x00, ( byte )0x00, ( byte )0x00, ( byte )0xff,
-                ( byte )0x00, ( byte )0x00, ( byte )0xff, ( byte )0x00,
-                ( byte )0x00, ( byte )0xff, ( byte )0x00, ( byte )0x00,
-                ( byte )0xff, ( byte )0x00, ( byte )0x00, ( byte )0x00,
-                ( byte )0xff, ( byte )0x00, ( byte )0x00, ( byte )0xff,
-                ( byte )0x00, ( byte )0xff, ( byte )0xff, ( byte )0x00,
-                ( byte )0xff, ( byte )0xff, ( byte )0xff, ( byte )0xff,
-                ( byte )0xff, ( byte )0xff, ( byte )0x00, ( byte )0x00,
-                ( byte )0x00, ( byte )0x00, ( byte )0xff, ( byte )0xff,
-                ( byte )0x00, ( byte )0x00, ( byte )0x00, ( byte )0x00,
-                ( byte )0x00, ( byte )0x00, ( byte )0x00, ( byte )0x01,
-                ( byte )0x00, ( byte )0x00, ( byte )0x01, ( byte )0x00,
-                ( byte )0x00, ( byte )0x01, ( byte )0x00, ( byte )0x00,
-                ( byte )0x01, ( byte )0x00, ( byte )0x00, ( byte )0x00,
-                ( byte )0x01, ( byte )0x00, ( byte )0x00, ( byte )0x01,
-                ( byte )0x00, ( byte )0x01, ( byte )0x01, ( byte )0x00,
-                ( byte )0x01, ( byte )0x01, ( byte )0x01, ( byte )0x01
-            };
-
-        final short[ ] shortDest = new short[ src.length / 2 ];
-        final int[ ] intDest = new int[ src.length / 4 ];
-
-        convertToBigEndian( src, shortDest, src.length, 0, shortDest.length );
-        convertToBigEndian( src, intDest, src.length, 0, intDest.length );
-
-        System.out.println( "Source" );
-        int length = src.length;
-        for( int i = 0; i < length; i ++ )
-        {
-            if( ( i % 4 == 0 ) && ( i != 0 ) )
-            {
-                System.out.println( );
-            }
-            System.out.print( Integer.toHexString( src[ i ] & 0xFF ) + " " );
-        }
-        System.out.println( );
-
-        System.out.println( "Short" );
-        length = shortDest.length;
-        for( int i = 0; i < length; i ++ )
-        {
-            System.out.
-                print( Integer.toHexString( shortDest[ i ] & 0xFFFF ) + " " );
-        }
-        System.out.println( );
-
-        System.out.println( "int blockSize 4" );
-        length = intDest.length;
-        for( int i = 0; i < length; i ++ )
-        {
-            System.out.print( Integer.toHexString( intDest[ i ] ) + " " );
-        }
-        System.out.println( );
     }
 }

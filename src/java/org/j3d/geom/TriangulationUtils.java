@@ -34,7 +34,7 @@ import org.j3d.util.ObjectArray;
  * more triangulation to take place.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class TriangulationUtils
 {
@@ -373,9 +373,7 @@ while(tmp != first)
      * @param startIndex The index of the first coordinate in the face
      * @param numVertex  The number of vertices to read from the list
      * @param firstNormalIndex The first position of the normalIndex array
-     * @param normalIndex The index of normals for each coordinate
-     * @param firstColorIndex The first position of the colorIndex array
-     * @param colorIndex The index of color for each coordinate
+     * @param firstColorIndex The index of color for each coordinate
      * @param firstTexCoordIndex The first position of the texCoordIndex array
      * @param coordOutput The array to copy the coord index values to
      * @param normalOutput The array to copy the normal index values to

@@ -60,7 +60,7 @@ public class DynamicClassLoader
    * arguments, constructors that do require parameters cannot be called.
    *
    * @param name The fully qualified name of the class to be loaded
-   * @returns An instance of the named class if it could be found.
+   * @return An instance of the named class if it could be found.
    * @throws NullPointerException The class name supplied is null or zero
    *   length
    * @throws ClassNotFoundException We couldn't locate the class anywhere
@@ -105,7 +105,7 @@ public class DynamicClassLoader
    * @param name The fully qualified name of the class to be loaded
    * @param base The fully qualified name of the base class to be checked
    *   against
-   * @returns An instance of the named class if it could be found.
+   * @return An instance of the named class if it could be found.
    * @throws NullPointerException The class name or base class name supplied
    *   is null or zero length
    * @throws ClassNotFoundException We couldn't locate the class anywhere
@@ -143,7 +143,7 @@ public class DynamicClassLoader
    * @param name The fully qualified name of the class to be loaded
    * @param base The fully qualified name of the base class to be checked
    *   against
-   * @returns An instance of the named class if it could be found.
+   * @return An instance of the named class if it could be found.
    * @throws NullPointerException The class name or base class name supplied
    *   is null or zero length
    * @throws ClassNotFoundException We couldn't locate the class anywhere

@@ -22,9 +22,9 @@ import javax.media.j3d.Appearance;
  *
  * The generator is used to create instances of the appearance object on
  * demand for the system internal scene graph representation. The generator
- * is required to act in concert with the {@link TerrainData} implementation
- * as the use of this class by the specific terrain rendering algorithms are
- * dependent on the way the data is being handled.
+ * is required to act in concert with the {@link org.j3d.terrain.TerrainData}
+ * implementation as the use of this class by the specific terrain rendering
+ * algorithms are dependent on the way the data is being handled.
  * <p>
  *
  * Every time the method of this interface is called the implementation is
@@ -53,7 +53,7 @@ import javax.media.j3d.Appearance;
  * adding in the future.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface AppearanceGenerator
 {

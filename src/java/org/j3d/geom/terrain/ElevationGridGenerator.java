@@ -39,7 +39,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * Especially in regards to 3D textures.
  *
  * @author Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class ElevationGridGenerator extends GeometryGenerator
 {
@@ -167,7 +167,6 @@ public class ElevationGridGenerator extends GeometryGenerator
      * @param dPnts The number of heights in the depth
      * @param heights The array of height values to use
      * @param baseHeight The base height for relative calcs. May be zero
-     * @param centerOrigin Whether to use a center origin or a left corner origin.  By default it will be center.
      * @throws IllegalArgumentException One of the points were <= 1 or the
      *   dimensions are non-positive
      */
@@ -192,7 +191,6 @@ public class ElevationGridGenerator extends GeometryGenerator
      * @param dPnts The number of heights in the depth
      * @param heights The array of height values to use
      * @param baseHeight The base height for relative calcs. May be zero
-     * @param centerOrigin Whether to use a center origin or a left corner origin
      * @throws IllegalArgumentException One of the points were <= 1 or the
      *   dimensions are non-positive
      */

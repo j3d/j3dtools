@@ -35,7 +35,7 @@ import org.j3d.util.ImageUtils;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TextureCreateUtils
 {
@@ -128,7 +128,6 @@ public class TextureCreateUtils
      * @param ri The texture to scale
      * @param newWidth The new width
      * @param newHeight The new height
-     * @param msg Whether to warn about resizing textures
      */
     public RenderedImage scaleTexture(RenderedImage ri,
                                       int newWidth,

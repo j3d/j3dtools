@@ -25,7 +25,7 @@ package org.j3d.geom.hanim;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class HAnimDisplacer extends HAnimObject
 {
@@ -59,7 +59,7 @@ public class HAnimDisplacer extends HAnimObject
     /**
      * Get the current value of the weight to be applied to the displacements.
      *
-     * @param return A non-negative value
+     * @return A non-negative value
      */
     public float getWeight()
     {

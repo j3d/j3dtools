@@ -30,7 +30,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * at http://astronomy.swin.edu.au/~pbourke/curves/spline/.
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class BSplineGenerator extends GeometryGenerator
 {
@@ -507,7 +507,7 @@ public class BSplineGenerator extends GeometryGenerator
      * greater. If the array is not of minimum length 3 an exception is
      * generated.
      *
-     * @param t The degree of the curve
+     * @param n The degree of the curve
      * @param knts The knot values to control the curve
      */
     public void setKnots(int n, float[] knts)
@@ -597,8 +597,6 @@ public class BSplineGenerator extends GeometryGenerator
      * to have knot[i] = i, but whenever curves change this results in a lot of
      * extra calculations. This smoothing function will localize the changes at
      * any particular breakpoint in the line.
-     *
-     * @param t The degree of the curve
      */
     public void generateSmoothKnots()
     {

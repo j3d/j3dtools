@@ -67,7 +67,7 @@ import javax.vecmath.Matrix4d;
  * The frustum is for the previous Java3D frame that has just been rendered.
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class ViewFrustum
 {
@@ -155,7 +155,7 @@ public abstract class ViewFrustum
      * Manually re-orient the view frustum by this given matrix. This is used
      * for doing predictive work about where the user will be in the next
      * rendered frame. This assumes that you have called the
-     * {@link viewingPlatformMoved()} method first for this frame.
+     * {@link #viewingPlatformMoved()} method first for this frame.
      *
      * @param tx The transform used to modify the points with
      */

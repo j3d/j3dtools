@@ -18,8 +18,8 @@ import java.awt.image.BufferedImage;
 // none
 
 /**
- * Generator for supplying instances of Java3D {@link Texture} texture objects
- * as tiles for large-scale terrains.
+ * Generator for supplying instances of texture objects as tiles for
+ * large-scale terrains.
  * <p>
  *
  * The implementation of this interface is free to source the texture tiles
@@ -38,7 +38,7 @@ import java.awt.image.BufferedImage;
  * before handing the tile back to the caller.
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface TextureTileGenerator
 {

@@ -47,7 +47,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * points on a side.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class FractalTerrainGenerator extends GeometryGenerator
 {
@@ -402,7 +402,7 @@ public class FractalTerrainGenerator extends GeometryGenerator
      * @param height The (approx) max height of the terrain to generate
      * @param iterations The number of subdivisions to calculate
      * @param roughness Division factor for each iteration of height
-     * @param colorMap The colour ranges for height
+     * @param seed A value to use to seed the random number generator with
      */
     public void setGenerationFactors(float height,
                                      int iterations,

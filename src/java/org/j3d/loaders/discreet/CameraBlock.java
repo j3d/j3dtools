@@ -34,7 +34,7 @@ package org.j3d.loaders.discreet;
  * </pre>
  *
  * @author  Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class CameraBlock
 {
@@ -45,8 +45,8 @@ public class CameraBlock
     public float[] target;
 
     /**
-     * The rotation angle in degrees (relative to the local Y axis?) for the
-     * camera.
+     * The rotation angle in degrees for the camera. It is an angle relative
+     * to the local up vector (0,1,0).
      */
     public float bankAngle;
 

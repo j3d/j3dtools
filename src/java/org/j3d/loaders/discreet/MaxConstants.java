@@ -25,7 +25,7 @@ package org.j3d.loaders.discreet;
  * http://www.the-labs.com/Blender/3DS-details.html</a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface MaxConstants
 {
@@ -208,7 +208,7 @@ public interface MaxConstants
     /** The ID for a matte object (0x4013) */
     public static final int OBJ_MATTE = 0x4013;
 
-    /** The ID for a fast (!) object (0x4014) */
+    /** The ID for a fast object (0x4014) */
     public static final int OBJ_FAST = 0x4014;
 
     /** The ID for a procedural object (0x4015) */

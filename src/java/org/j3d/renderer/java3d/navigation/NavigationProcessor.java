@@ -184,7 +184,7 @@ import org.j3d.util.MatrixUtils;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class NavigationProcessor
 {
@@ -715,8 +715,8 @@ public class NavigationProcessor
 
     /**
      * Set the time it takes in seconds to make one 360 degree rotation of the
-     * center position when in examine mode. speed to the new value. The time
-     * must be a non-negative number.
+     * center position when in examine mode. The time must be a non-negative
+     * number.
      *
      * @param time The time value to use
      * @throws IllegalArgumentException The value was <= 0
@@ -736,8 +736,6 @@ public class NavigationProcessor
      * Note that it is quite legal to set all three buttons to the same
      * navigation state
      *
-     * @param button The mouse button value from
-     *    {@link java.awt.event.MouseEvent}
      * @param state The navigation state to use for that button
      */
     public void setNavigationState(int state)

@@ -20,7 +20,7 @@ import java.util.Arrays;
  * <P>
  *
  * @author <a href="mailto:georg.rehfeld@gmx.de">Georg Rehfeld</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class FloatHashMap
 {
@@ -160,8 +160,6 @@ public class FloatHashMap
      *             determined by the <tt>equals</tt> method;
      *             <code>false</code> otherwise.
      * @throws  NullPointerException  if the value is <code>null</code>.
-     * @see        #containsKey(double)
-     * @see        #containsValue(Object)
      * @see        java.util.Map
      */
     public boolean contains(Object value)
@@ -232,7 +230,6 @@ public class FloatHashMap
      * @return  the value to which the key is mapped in this hashtable;
      *          <code>null</code> if the key is not mapped to any value in
      *          this hashtable.
-     * @see     #put(double, Object)
      */
     public Object get(float key)
     {
@@ -262,7 +259,7 @@ public class FloatHashMap
      * @param value   the value.
      * @return the previous value of the specified key in this hashtable,
      *         or <code>null</code> if it did not have one.
-     * @see     #get(double)
+     * @see     #get(float)
      */
     public Object put(float key, Object value)
     {

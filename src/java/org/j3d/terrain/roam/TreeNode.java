@@ -30,7 +30,7 @@ import org.j3d.util.frustum.ViewFrustum;
  * left/right as you look down on the terrain.
  *
  * @author  Paul Byrne, Justin Couch
- * @version
+ * @version $Revision: 2.4 $
  */
 public class TreeNode extends QueueItem
 {

@@ -24,7 +24,7 @@ package org.j3d.loaders.discreet;
  * information, such as vertices, materials etc.
  *
  * @author  Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ObjectMesh
 {
@@ -97,8 +97,11 @@ public class ObjectMesh
     public float backgroundMidpoint;
 
     /**
-     * Details of a basic global fog instruction. [0] is near fog distance,
-     * [1] is near density (0-1). [2] is far fog distance, [3] is far density.
+     * Details of a basic global fog instruction. <br>
+     * linearFogDetails[0] is near fog distance<br>
+     * linearFogDetails[1] is near density (0-1)<br>
+     * linearFogDetails[2] is far fog distance<br>
+     * linearFogDetails[3] is far density.
      */
     public float[] linearFogDetails;
 
@@ -109,8 +112,10 @@ public class ObjectMesh
     public boolean fogBackground;
 
     /**
-     * Details of a vertically layered constant atmospheric fog. [0] lower Y
-     * boundary, [1] upper Y boundary, [2] fog density.
+     * Details of a vertically layered constant atmospheric fog.<br>
+     * layerFogDetails[0] lower Y boundary<br>
+     * layerFogDetails[1] upper Y boundary<br>
+     * layerFogDetails[2] fog density.
      */
     public float[] layerFogDetails;
 

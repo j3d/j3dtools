@@ -31,7 +31,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class BSplinePatchGenerator extends PatchGenerator
 {
@@ -102,7 +102,8 @@ public class BSplinePatchGenerator extends PatchGenerator
      * over the side of the patch, regardless of extents and specific degree
      * for both width and depth.
      *
-     * @param facets The number of facets on the side of the cone
+     * @param widthFacets The number of facets for the width
+     * @param depthFacets The number of facets for the depth
      * @param tWidth The degree of the curve in the width direction > 1
      * @param tDepth The degree of the curve in the depth direction > 1
      * @throws IllegalArgumentException The number of facets is less than 3
@@ -295,8 +296,6 @@ public class BSplinePatchGenerator extends PatchGenerator
      * to have knot[i] = i, but whenever curves change this results in a lot of
      * extra calculations. This smoothing function will localize the changes at
      * any particular breakpoint in the line.
-     *
-     * @param t The degree of the curve
      */
     public void generateSmoothKnots()
     {

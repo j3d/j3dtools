@@ -43,7 +43,7 @@ import org.j3d.renderer.java3d.texture.TextureCreateUtils;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class J3DSplitMergeLandscape extends ROAMSplitMergeLandscape
     implements J3DLandscape
@@ -245,8 +245,8 @@ public class J3DSplitMergeLandscape extends ROAMSplitMergeLandscape
      * Create a new patch object instance that is located at the given
      * position within the tile.
      *
-     * @param eastPosition The east coordinate of the patch
-     * @param northPosition The north coordinate of the patch
+     * @param x The east coordinate of the patch
+     * @param y The north coordinate of the patch
      * @param xTile The tile coordinate of the patch along the X axis
      * @param yTile The tile coordinate of the patch along the Y axis
      */

@@ -30,7 +30,7 @@ import javax.vecmath.Vector3f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TorusGenerator extends GeometryGenerator
 {
@@ -162,7 +162,6 @@ public class TorusGenerator extends GeometryGenerator
      *
      * @param ir The ir of the cone to generate
      * @param or The or of the bottom of the cone
-     * @param ends True if to generate faces for the ends
      */
     public void setDimensions(float ir, float or)
     {

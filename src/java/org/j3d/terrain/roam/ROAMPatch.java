@@ -36,7 +36,7 @@ import org.j3d.util.frustum.ViewFrustum;
  * extending with their own geometry handling.
  *
  * @author  Justin Couch, Paul Byrne
- * @version
+ * @version $Revision: 1.3 $
  */
 public abstract class ROAMPatch
 {
@@ -96,7 +96,6 @@ public abstract class ROAMPatch
      *
      * @param terrain The raw height map info to use for this terrain
      * @param patchSize The number of grid points to use in the patch on a side
-     * @param app The global appearance object to use for this patch
      * @param frustum The view frustum container used
      */
     protected ROAMPatch(TerrainData terrain,

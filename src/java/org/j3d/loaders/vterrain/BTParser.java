@@ -30,7 +30,7 @@ import org.j3d.loaders.HeightMapSource;
  * </a>
  *
  * @author  Paul Byrne, Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class BTParser implements HeightMapSource
 {
@@ -134,8 +134,7 @@ public class BTParser implements HeightMapSource
     /**
      * Do all the parsing work. Convenience method for all to call internally
      *
-     * @param is The inputsource for this reader
-     * @return The scene description
+     * @return A 2D array of the heighs read, if requested
      * @throws IncorrectFormatException The file is not one our loader
      *    understands
      * @throws ParsingErrorException An error parsing the file

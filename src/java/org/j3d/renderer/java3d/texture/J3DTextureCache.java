@@ -50,7 +50,7 @@ import org.j3d.texture.TextureCache;
  * using the utilities of this class.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface J3DTextureCache extends TextureCache
 {
@@ -115,7 +115,7 @@ public interface J3DTextureCache extends TextureCache
     /**
      * Register an imagecomponent with the cache assigned to a filename.
      *
-     * @param texture The texture to store
+     * @param component The texture component to store
      * @param filename The filename to register
      */
     public void registerImageComponent(ImageComponent component, String filename);

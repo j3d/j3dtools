@@ -36,8 +36,8 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * <p>
  * The basic implementation here does not support a texture. If an application
  * wishes to use a texture, they should extend this class and override the
- * {@link #getBufferedImage()} method. If you wish to provide a pre-loaded texture,
- * then you can use the {@link #setBufferedImage(BufferedImage)} method of this class to
+ * {@link #getTexture()} method. If you wish to provide a pre-loaded texture,
+ * then you can use the {@link #setTexture(BufferedImage)} method of this class to
  * place one here.
  * <p>
  *
@@ -45,7 +45,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * terrain (unless set by some implementing class).
  *
  * @author  Justin Couch
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class HeightMapTerrainData extends AbstractStaticTerrainData
 {
@@ -76,7 +76,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      * Assumes that the parser has already fetched its information and has
      * the height-grid available for use.
      *
-     * @param loader The loader to source the data from
+     * @param source The place to source the data from
      */
     public HeightMapTerrainData(HeightMapSource source)
     {

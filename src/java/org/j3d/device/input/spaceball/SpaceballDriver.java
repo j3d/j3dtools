@@ -129,7 +129,7 @@ public abstract class SpaceballDriver
 
     /**
      * Requests data from the Spaceball device. Must be called once after
-     * {@link #open} in order to receive position data. The first data packet
+     * opening in order to receive position data. The first data packet
      * will be "null-data" packet (all position data is set to zero)
      * Blocking until response from device received or timeout is over.
      * @param timeout [ms] timeout for response from the Spaceball device
