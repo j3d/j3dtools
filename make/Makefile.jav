@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.8 $
+# Version: $Revision: 1.9 $
 #
 #*********************************************************************
 
@@ -45,10 +45,11 @@ endif
 EMPTY         =
 SPACE         = $(EMPTY) $(EMPTY)
 
-ifeq ("cygwin", "$(strip $(OSTYPE))")
-  PATH_SEP=";"
+OS_NAME=$(shell uname)
+ifeq (, $(strip $(findstring CYGWIN, $(OS_NAME))))
+  PATH_SEP=':'
 else
-  PATH_SEP=";"
+  PATH_SEP=';'
 endif
 
 ifdef JARS
@@ -105,8 +106,11 @@ JAVA_FILES      = $(filter  %.java,$(SOURCE))
 NONJAVA_FILES   = $(patsubst %.java,,$(SOURCE))
 CLASS_FILES     = $(JAVA_FILES:%.java=$(PACKAGE_DIR)/%.class)
 OTHER_FILES     = $(EXTRA:%=$(PACKAGE_DIR)/%)
+
 JNI_CLASS_FILES = $(JNI_SOURCE:%.java=$(PACKAGE_DIR)/%.class)
-JNI_HEADERS     = $(JNI_SOURCE:%.java=$(INCLUDE_DIR)/%.h)
+JNI_PKG_PREFIX  = $(subst .,_,$(PACKAGE))
+JNI_HEADERS     = $(JNI_SOURCE:%.java=%.h)
+
 JAR_CLASS_FILES = $(patsubst %, %/*.*, $(JAR_CONTENT))
 
 #JAR_EXTRA_FILES = $(EXTRA_FILES:%=$(JAVA_SRC_DIR)/%)
@@ -117,8 +121,10 @@ LINK_FILES      = $(patsubst %, -link %,$(LINK_URLS))
 # Make a list of all packages involved
 ifdef PACKAGE
   PACKAGE_LIST  = $(subst .,/,$(PACKAGE))
+  NATIVE_LIST  = $(subst .,/,$(PACKAGE))
 else
   PACKAGE_LIST  = $(subst .,/,$(BUILD_ORDER))
+  NATIVE_LIST  = $(subst .,/,$(NATIVE_PACKAGES))
 endif
 
 PLIST_CLEAN     = $(patsubst %,$(JAVA_SRC_DIR)/%/.clean,$(PACKAGE_LIST))
@@ -168,9 +174,6 @@ $(DESTINATION) :
 	$(PRINT) Creating $(DESTINATION)
 	@ $(MAKEDIR) $(DESTINATION)
 
-# Rule 2. Build JNI .h files. Invokes rule 6.
-jni : $(JNI_CLASS_FILES) $(JNI_HEADERS)
-
 # Rule 3. Change ".build" tag to "Makefile", thus call the package makefile
 # which in turn recalls this makefile with target all (rule 0).
 %.build :
@@ -194,15 +197,6 @@ $(PACKAGE_DIR)/%.class : $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/%.java
 %.class : $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/%.java
 	@ $(MAKE) -k $(PACKAGE_DIR)/$@
 
-# Rule 7. Building a JNI .h stub file from a .class file
-$(JAVA_SRC_DIR)/$(PACKAGE_LOC)/%.h : $(PACKAGE_DIR)/%.class
-	$(PRINT) Creating header for $*
-	@ $(JAVAH) $(JAVAH_OPTIONS) $(PACKAGE).$*
-
-# Rule 8. Building a JNI .h stub file from a class file. Invokes rule 7.
-%.h : %.class
-	@ $(MAKE) -k $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/$@
-
 # Rule 9. Default behaviour within a package: Simply copy the object from src
 # to classes. Note that the location of this rule is important. It must be after
 # the package specifics.
@@ -211,9 +205,6 @@ $(PACKAGE_DIR)/% : $(SRC_DIR)/$(PACKAGE_LOC)/%
 	$(COPY) $< $@
 	$(CHMOD) u+rw $<
 
-# Rule 2 Build JNI .h files. Invokes rule 7.
-jni : $(JNI_CLASS_FILES) $(JNI_HEADERS)
-
 # Rule 3. Change ".build" tag to "Makefile", thus call the package makefile
 # which in turn recalls this makefile with target all (rule 10).
 %.native :
@@ -221,17 +212,26 @@ jni : $(JNI_CLASS_FILES) $(JNI_HEADERS)
 	@ $(MAKE) -k -f $(subst .native,Makefile,$@) jni
 
 # Rule 5. Call rule 2 for every package
-nativeall : $(JNI_LIST_BUILD)
+nativeall : $(DESTINATION) $(INCLUDE_DIR) $(LIB_DIR) $(JNI_LIST_BUILD)
 	$(PRINT) Done native headers
 
+# Rule 6. If the destination dir is missing then create it
+$(INCLUDE_DIR) :
+	$(PRINT) Missing include dir. Creating $(INCLUDE_DIR)
+	@ $(MAKEDIR) $(INCLUDE_DIR)
+
+# Rule 7. If the destination dir is missing then create it
+$(LIB_DIR) :
+	$(PRINT) Missing library dir. Creating $(LIB_DIR)
+	@ $(MAKEDIR) $(LIB_DIR)
+
+# Rule 2 Build JNI .h files. Invokes rule 7.
+jni : $(DESTINATION) $(JNI_CLASS_FILES) $(JNI_HEADERS)
+
 # Rule 7. Building a JNI .h stub file from a .class file
-$(INCLUDE_DIR)/%.h : $(PACKAGE_DIR)/%.class
+%.h : %.class
 	$(PRINT) Creating header for $*
 	@ $(JAVAH) $(JAVAH_OPTIONS) $(PACKAGE).$*
-
-# Rule 8. Building a JNI .h stub file from a class file. Invokes rule 5.
-%.h : %.class
-	$(MAKE) -k $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/$@
 
 #
 # Cleanups
