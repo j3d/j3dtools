@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Copyright (c) 2001 Daniel Selman
+ *                        Yumtech, Inc Copyright (c) 2004-
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -25,7 +25,7 @@ package org.j3d.geom.hanim;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class HAnimDisplacer extends HAnimObject
 {

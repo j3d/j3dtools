@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Copyright (c) 2001 Daniel Selman
+ *                        Yumtech, Inc Copyright (c) 2004-
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -30,7 +30,7 @@ import org.j3d.util.ErrorReporter;
  * we've added fields and support for it anyway.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class HAnimJoint extends HAnimObject
     implements HAnimObjectParent

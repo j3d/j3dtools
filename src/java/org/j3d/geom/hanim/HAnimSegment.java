@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Copyright (c) 2001 Daniel Selman
+ *                        Yumtech, Inc Copyright (c) 2004-
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * <a href="http://h-anim.org/Specifications/H-Anim1.1/">6.5 Segment</a>.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class HAnimSegment extends HAnimObject
 {
