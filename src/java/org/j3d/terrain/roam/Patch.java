@@ -7,43 +7,10 @@
  *
  ****************************************************************************/
 
-/*
- * @(#)Patch.java 1.1 02/01/10 09:27:28
- *
- * Copyright (c) 2000-2002 Sun Microsystems, Inc.  All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *    -Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *    -Redistribution in binary form must reproduct the above copyright notice,
- *     this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- * Neither the name of Sun Microsystems, Inc. or the names of contributors may
- * be used to endorse or promote products derived from this software without
- * specific prior written permission.
- *
- * This software is provided "AS IS," without a warranty of any kind. ALL
- * EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY
- * IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR
- * NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN AND ITS LICENSORS SHALL NOT BE
- * LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING
- * OR DISTRIBUTING THE SOFTWARE OR ITS DERIVATIVES. IN NO EVENT WILL SUN OR ITS
- * LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR DATA, OR FOR DIRECT,
- * INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER
- * CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF THE USE OF
- * OR INABILITY TO USE SOFTWARE, EVEN IF SUN HAS BEEN ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGES.
- *
- * You acknowledge that Software is not designed,licensed or intended for use in
- * the design, construction, operation or maintenance of any nuclear facility.
- */
 package org.j3d.terrain.roam;
 
 // Standard imports
+import java.awt.Point;
 import java.util.LinkedList;
 
 import javax.media.j3d.Appearance;
@@ -71,8 +38,13 @@ import org.j3d.terrain.TerrainData;
  * updater (geometry by reference is used) to update the geometry each frame
  * as necessary. It will, when instructed, dynamically recalculate what
  * vertices need to be shown and set those into the geometry array.
+ * <p>
  *
- * @author  Paul Byrne, Justin Couch
+ * If the patch is used with one of the tiled terrain formats, then it is
+ * expected that the user instance will manage the change in texture
+ * references of the passed in Appearance.
+ *
+ * @author  Justin Couch, Paul Byrne
  * @version
  */
 class Patch implements GeometryUpdater
@@ -86,21 +58,35 @@ class Patch implements GeometryUpdater
     /** The values of the nodes in the NW triangle of this patch */
     TreeNode SETree;
 
+    /** Variance holders for the two sub-trees of this patch */
     private VarianceTree NWVariance;
     private VarianceTree SEVariance;
 
     /** The J3D geometry for this patch */
     private Shape3D shape3D;
 
-    private int xOrig;
-    private int yOrig;
+    /** The origin grid coordinates. */
+    private int xOrigin;
+    private int yOrigin;
 
+    /** The origin of the patch in tile coordinates */
+    private Point tileOrigin;
+
+    /** Source terrain data */
     private TerrainData terrainData;
+
+    /** The view frustum used for this terrain */
+    private ViewFrustum viewFrustum;
+
+    /** Neighbour references for calculations */
     private Patch westPatchNeighbour;
     private Patch southPatchNeighbour;
+
+    /** Raw vertex collection information */
     private VertexData vertexData;
 
-    private TriangleArray geom;
+    /** The java3D geometry that gets rendered */
+    private TriangleArray geometry;
 
     /** The maximum Y for this patch */
     private float maxY;
@@ -108,38 +94,41 @@ class Patch implements GeometryUpdater
     /** The minimumY for this patch */
     private float minY;
 
+    /** Flag to indicate if a clear has been requested */
+    private boolean resetRequested;
+
     /**
      * Create a new patch based on the terrain and appearance information.
      *
-     * @param terrainData The raw height map info to use for this terrain
+     * @param terrain The raw height map info to use for this terrain
      * @param patchSize The number of grid points to use in the patch on a side
-     * @param xOrig The origin of the X grid coord for this patch in the
+     * @param xOrig The tileOrigin of the X grid coord for this patch in the
      *    global set of grid coordinates
-     * @param yOrig The origin of the Y grid coord for this patch in the
+     * @param yOrig The tileOrigin of the Y grid coord for this patch in the
      *    global set of grid coordinates
      * @param app The global appearance object to use for this patch
      * @param landscapeView The view frustum container used
-     * @param westPatchNeighbour the Patch to the west of this patch
-     * @param southPatchNeighbour the Patch to the south of this patch
+     * @param westNeighbour the Patch to the west of this patch
+     * @param southNeighbour the Patch to the south of this patch
      */
-    Patch(TerrainData terrainData,
+    Patch(TerrainData terrain,
           int patchSize,
           int xOrig,
           int yOrig,
           Appearance app,
           ViewFrustum landscapeView,
-          Patch westPatchNeighbour,
-          Patch southPatchNeighbour)
+          Patch westNeighbour,
+          Patch southNeighbour)
     {
-        int height = yOrig + patchSize;
-        int width = xOrig + patchSize;
+        PATCH_SIZE = patchSize;
 
-        this.xOrig = xOrig;
-        this.yOrig = yOrig;
-        this.PATCH_SIZE = patchSize;
-        this.terrainData = terrainData;
-        this.westPatchNeighbour = westPatchNeighbour;
-        this.southPatchNeighbour = southPatchNeighbour;
+        int height = yOrig + PATCH_SIZE;
+        int width = xOrig + PATCH_SIZE;
+
+        terrainData = terrain;
+        viewFrustum = landscapeView;
+
+        tileOrigin = new Point();
 
         boolean has_texture = terrainData.hasTexture();
         boolean has_color = terrainData.hasColor();
@@ -156,80 +145,49 @@ class Patch implements GeometryUpdater
         if(has_color)
             format |= TriangleArray.COLOR_3;
 
-        geom = new TriangleArray(PATCH_SIZE * PATCH_SIZE * 2 * 3, format);
+        geometry = new TriangleArray(PATCH_SIZE * PATCH_SIZE * 2 * 3, format);
 
-        geom.setCapability(TriangleArray.ALLOW_REF_DATA_WRITE);
-        geom.setCapability(TriangleArray.ALLOW_COUNT_WRITE);
-        geom.setCoordRefFloat(vertexData.getCoords());
+        geometry.setCapability(TriangleArray.ALLOW_REF_DATA_WRITE);
+        geometry.setCapability(TriangleArray.ALLOW_COUNT_WRITE);
+        geometry.setCoordRefFloat(vertexData.getCoords());
 
         if(has_texture)
-            geom.setTexCoordRefFloat(0, vertexData.getTextureCoords());
+            geometry.setTexCoordRefFloat(0, vertexData.getTextureCoords());
 
         if(has_color)
-            geom.setColorRefByte(vertexData.getColors());
+            geometry.setColorRefByte(vertexData.getColors());
 
         NWVariance = new VarianceTree(terrainData,
                                        PATCH_SIZE,
-                                       xOrig, yOrig,
-                                       width, height,
-                                       xOrig, height);
-
-        NWTree = new TreeNode(xOrig, yOrig,        // Left X, Y
-                               width, height,       // Right X, Y
-                               xOrig, height,       // Apex X, Y
-                               1,
-                               terrainData,
-                               landscapeView,
-                               TreeNode.UNDEFINED,
-                               1,
-                               NWVariance);
+                                       xOrig,
+                                       yOrig,
+                                       width,
+                                       height,
+                                       xOrig,
+                                       height);
 
         SEVariance = new VarianceTree(terrainData,
-                                       PATCH_SIZE,
-                                       width, height,       // Left X, Y
-                                       xOrig, yOrig,        // Right X, Y
-                                       width, yOrig);       // Apex X, Y
+                                      PATCH_SIZE,
+                                      width,
+                                      height,   // Left X, Y
+                                      xOrig,
+                                      yOrig,    // Right X, Y
+                                      width,
+                                      yOrig);   // Apex X, Y
 
 
-        SETree = new TreeNode(width, height,       // Left X, Y
-                               xOrig, yOrig,        // Right X, Y
-                               width, yOrig,        // Apex X, Y
-                               1,
-                               terrainData,
-                               landscapeView,
-                               TreeNode.UNDEFINED,
-                               1,
-                               SEVariance);
+        makeActive(xOrig, yOrig, westNeighbour, southNeighbour);
 
-        maxY = Math.max(NWVariance.getMaxY(), SEVariance.getMaxY());
-        minY = Math.min(NWVariance.getMinY(), SEVariance.getMinY());
-
-        NWTree.baseNeighbour = SETree;
-        SETree.baseNeighbour = NWTree;
-
-        if(westPatchNeighbour!=null)
-        {
-            NWTree.leftNeighbour = westPatchNeighbour.SETree;
-            westPatchNeighbour.SETree.leftNeighbour = NWTree;
-        }
-
-        if(southPatchNeighbour!=null)
-        {
-            SETree.rightNeighbour = southPatchNeighbour.NWTree;
-            southPatchNeighbour.NWTree.rightNeighbour = SETree;
-        }
+        double x_step = terrainData.getGridXStep();
+        double y_step = terrainData.getGridYStep();
 
         Point3d min_bounds =
-            new Point3d(xOrig * terrainData.getGridXStep(),
-                        minY,
-                        -(yOrig + height) * terrainData.getGridYStep());
+            new Point3d(xOrig * x_step, minY, -(yOrig + height) * y_step);
 
         Point3d max_bounds =
-            new Point3d((xOrig + width) * terrainData.getGridXStep(),
-                        maxY,
-                        -yOrig * terrainData.getGridYStep());
+            new Point3d((xOrig + width) * x_step, maxY, -yOrig * y_step);
 
-        shape3D = new Shape3D(geom, app);
+        shape3D = new Shape3D(geometry, app);
         shape3D.setBoundsAutoCompute(false);
         shape3D.setBounds(new BoundingBox(min_bounds, max_bounds));
 
@@ -250,33 +208,16 @@ class Patch implements GeometryUpdater
      */
     public void updateData(Geometry geom)
     {
-        createGeometry((TriangleArray)geom);
+        if(!resetRequested)
+            createGeometry();
+
+        TriangleArray tri = (TriangleArray)geom;
+        tri.setValidVertexCount(vertexData.getVertexCount());
     }
 
     //----------------------------------------------------------
-    // local convenience methods
+    // local public methods
     //----------------------------------------------------------
-
-    void reset(ViewFrustum landscapeView)
-    {
-        NWTree.reset(landscapeView);
-        SETree.reset(landscapeView);
-
-        NWTree.baseNeighbour = SETree;
-        SETree.baseNeighbour = NWTree;
-
-        if(westPatchNeighbour != null)
-        {
-            NWTree.leftNeighbour = westPatchNeighbour.SETree;
-            westPatchNeighbour.SETree.leftNeighbour = NWTree;
-        }
-
-        if(southPatchNeighbour != null)
-        {
-            SETree.rightNeighbour = southPatchNeighbour.NWTree;
-            southPatchNeighbour.NWTree.rightNeighbour = SETree;
-        }
-    }
 
     /**
      * Change the view to the new position and orientation. In this
@@ -291,6 +232,11 @@ class Patch implements GeometryUpdater
                  ViewFrustum landscapeView,
                  QueueManager queueManager)
     {
+        // Will be null if the patch is not in use currently, so ignore the
+        // request.
+        if(NWTree == null)
+            return;
+
         NWTree.updateTree(position,
                           landscapeView,
                           NWVariance,
@@ -312,12 +258,128 @@ class Patch implements GeometryUpdater
      */
     void updateGeometry()
     {
-        if(NWTree.visible != ViewFrustum.OUT ||
-           SETree.visible != ViewFrustum.OUT ||
-            vertexData.getVertexCount() != 0)
+        if(NWTree != null &&
+           (NWTree.visible != ViewFrustum.OUT ||
+            SETree.visible != ViewFrustum.OUT ||
+            vertexData.getVertexCount() != 0))
         {
-            geom.updateData(this);
+            geometry.updateData(this);
         }
+    }
+
+    /**
+     * Instruct this patch that it is about to be removed from active duty.
+     * That means it should set all the geometry to be non-renderable, and
+     * clear all references to neightbours. It may be re-activated at some
+     * later stage.
+     */
+    void clear()
+    {
+        resetRequested = true;
+
+        vertexData.reset();
+
+        NWTree.freeNode();
+        SETree.freeNode();
+
+        NWTree = null;
+        SETree = null;
+
+        // No need to clear out the variance tree as the only thing it really
+        // cares about is the patchSize so that it can recompute the levels.
+        // As the patches are fixed size, we can just ignore them.
+
+        geometry.updateData(this);
+    }
+
+    /**
+     * Restart this patch with new data from the terrain. The patch now exists
+     * in a different part of the world. This is called by the constructor,
+     * so there is no need for the caller to call this after the constructor
+     * has been called. It must be called to make the patch active again after
+     * having been cleared earlier.
+     *
+     * @param xOrig The tileOrigin of the X grid coord for this patch in the
+     *    global set of grid coordinates
+     * @param yOrig The tileOrigin of the Y grid coord for this patch in the
+     *    global set of grid coordinates
+     * @param westNeighbour the Patch to the west of this patch
+     * @param southNeighbour the Patch to the south of this patch
+     */
+    void makeActive(int xOrig,
+                    int yOrig,
+                    Patch westNeighbour,
+                    Patch southNeighbour)
+    {
+
+        westPatchNeighbour = westNeighbour;
+        southPatchNeighbour = southNeighbour;
+
+        tileOrigin.x = xOrig / PATCH_SIZE;
+        tileOrigin.y = yOrig / PATCH_SIZE;
+
+        xOrigin = xOrig;
+        yOrigin = yOrig;
+
+        int height = yOrigin + PATCH_SIZE;
+        int width = xOrigin + PATCH_SIZE;
+
+        NWTree = new TreeNode(xOrigin,
+                              yOrigin,      // Left X, Y
+                              width,
+                              height,       // Right X, Y
+                              xOrigin,
+                              height,       // Apex X, Y
+                              1,
+                              terrainData,
+                              viewFrustum,
+                              TreeNode.UNDEFINED,
+                              1,
+                              NWVariance);
+
+        SETree = new TreeNode(width,
+                              height,       // Left X, Y
+                              xOrigin,
+                              yOrigin,      // Right X, Y
+                              width,
+                              yOrigin,      // Apex X, Y
+                              1,
+                              terrainData,
+                              viewFrustum,
+                              TreeNode.UNDEFINED,
+                              1,
+                              SEVariance);
+
+        maxY = Math.max(NWVariance.getMaxY(), SEVariance.getMaxY());
+        minY = Math.min(NWVariance.getMinY(), SEVariance.getMinY());
+
+        NWTree.baseNeighbour = SETree;
+        SETree.baseNeighbour = NWTree;
+
+        if(westPatchNeighbour!=null)
+        {
+            NWTree.leftNeighbour = westPatchNeighbour.SETree;
+            westPatchNeighbour.SETree.leftNeighbour = NWTree;
+        }
+
+        if(southPatchNeighbour!=null)
+        {
+            SETree.rightNeighbour = southPatchNeighbour.NWTree;
+            southPatchNeighbour.NWTree.rightNeighbour = SETree;
+        }
+
+        resetRequested = false;
+    }
+
+    /**
+     * Fetch the tileOrigin of this patch in tile coordinates. This is effectively
+     * the Tile ID, describing it in terms of X and Y positions.
+     *
+     * @return A point describing the tileOrigin of the patch
+     */
+    Point getTileOrigin()
+    {
+        return tileOrigin;
     }
 
     /**
@@ -340,13 +402,15 @@ class Patch implements GeometryUpdater
         return shape3D;
     }
 
+    //----------------------------------------------------------
+    // local convenience methods
+    //----------------------------------------------------------
+
     /**
      * Create the geometry needed for this patch. Just sets how many vertices
      * are to be used based on the triangles of the two halves of the tree.
-     *
-     * @param geom The geometry array to work with
      */
-    private void createGeometry(TriangleArray geom)
+    private void createGeometry()
     {
         vertexData.reset();
 
@@ -355,7 +419,5 @@ class Patch implements GeometryUpdater
 
         if(SETree.visible != ViewFrustum.OUT)
             SETree.getTriangles(vertexData);
-
-        geom.setValidVertexCount(vertexData.getVertexCount());
     }
 }
