@@ -34,7 +34,7 @@ import org.j3d.terrain.*;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class SplitMergeLandscape extends Landscape
 {
@@ -816,6 +816,8 @@ System.out.println("Free-form terrain not implemented yet");
                     p.setOrigin(e_grid, n_grid);
                     patchGrid.addPatch(p, east, north);
                     p.makeActive();
+
+                    p.reset();
 
                     patches.add(p);
 

@@ -216,6 +216,8 @@ class Patch implements GeometryUpdater
         if(NWTree == null)
             return;
 
+        viewFrustum = frustum;
+
         try
         {
             NWTree.updateTree(position,
@@ -369,6 +371,32 @@ class Patch implements GeometryUpdater
         bounds.setUpper(width * x_step, maxY, -yOrig * y_step);
 
         shape3D.setBounds(bounds);
+    }
+
+    /**
+     * Reset this patch back to a simple patch like new.
+     *
+     * @param frustum The view information
+     */
+    void reset()
+    {
+        NWTree.reset(viewFrustum);
+        SETree.reset(viewFrustum);
+
+        NWTree.baseNeighbour = SETree;
+        SETree.baseNeighbour = NWTree;
+
+        if(westPatchNeighbour != null)
+        {
+            NWTree.leftNeighbour = westPatchNeighbour.SETree;
+            westPatchNeighbour.SETree.leftNeighbour = NWTree;
+        }
+
+        if(southPatchNeighbour != null)
+        {
+            SETree.rightNeighbour = southPatchNeighbour.NWTree;
+            southPatchNeighbour.NWTree.rightNeighbour = SETree;
+        }
     }
 
     /**

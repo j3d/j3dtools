@@ -62,7 +62,7 @@ import javax.vecmath.Vector3d;
  *
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class OverlayBase
     implements Overlay,
@@ -265,7 +265,7 @@ public class OverlayBase
         {
             overlayBounds = bounds;
             fixedSize = true;
-            minDivSize = 16;
+            minDivSize = 8;
         }
 
         visible = true;
@@ -316,7 +316,7 @@ public class OverlayBase
             renderAttributes.setAlphaTestValue(0);
         }
 
-        renderAttributes.setDepthBufferEnable(true);
+        renderAttributes.setDepthBufferEnable(false);
         renderAttributes.setDepthBufferWriteEnable(true);
         renderAttributes.setIgnoreVertexColors(true);
         renderAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_READ);
@@ -366,29 +366,6 @@ public class OverlayBase
         dirtyCheck[DIRTY_VISIBLE] = true;
         dirtyCheck[DIRTY_POSITION] = true;
         dirtyCheck[DIRTY_ACTIVE_BUFFER] = true;
-    }
-
-    /**
-     * Returns the UpdateManager responsible for seeing that updates to the
-     * Overlay only take place between frames.
-     *
-     * @param The update manage instance for this overlay
-     */
-    public UpdateManager getUpdateManager()
-    {
-        return updateManager;
-    }
-
-    /**
-     * Set the UpdateManager to the new value. If the reference is null, it
-     * will clear the current manager.
-     *
-     * @param updateManager A reference to the new manage instance to use
-     */
-    public void setUpdateManager(UpdateManager updateManager)
-    {
-        this.updateManager = updateManager;
-        updateManager.updateRequested();
     }
 
     /**
@@ -587,6 +564,28 @@ public class OverlayBase
         }
     }
 
+    /**
+     * Returns the UpdateManager responsible for seeing that updates to the
+     * Overlay only take place between frames.
+     *
+     * @param The update manage instance for this overlay
+     */
+    public UpdateManager getUpdateManager()
+    {
+        return updateManager;
+    }
+
+    /**
+     * Set the UpdateManager to the new value. If the reference is null, it
+     * will clear the current manager.
+     *
+     * @param mgr A reference to the new manage instance to use
+     */
+    public void setUpdateManager(UpdateManager mgr)
+    {
+        updateManager = mgr;
+    }
+
     //------------------------------------------------------------------------
     // Methods from the UpdatableEntity interface
     //------------------------------------------------------------------------
@@ -624,6 +623,18 @@ public class OverlayBase
     public Rectangle getBounds()
     {
         return overlayBounds;
+    }
+
+    /**
+     * Check to see if the point passed in is contained within the bounds of
+     * the overlay.
+     *
+     * @param p The point to check if it is contained
+     * @return true if the point is contained within the bounds of this overlay
+     */
+    public boolean contains(Point p)
+    {
+        return overlayBounds.contains(p);
     }
 
     //------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.terrain.roam directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.3 $
+# Version: $Revision: 1.4 $
 #
 #*********************************************************************
 

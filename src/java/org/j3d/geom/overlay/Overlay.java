@@ -12,6 +12,7 @@ package org.j3d.geom.overlay;
 // Standard imports
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Rectangle;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
@@ -73,7 +74,7 @@ import javax.media.j3d.Canvas3D;
  * the alpha channel.
  *
  * @author David Yazel, Will Holcomb
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface Overlay extends UpdatableEntity {
 
@@ -116,6 +117,15 @@ public interface Overlay extends UpdatableEntity {
      * @return A rectangle representing the bounds
      */
     public Rectangle getBounds();
+
+    /**
+     * Check to see if the point passed in is contained within the bounds of
+     * the overlay.
+     *
+     * @param p The point to check if it is contained
+     * @return true if the point is contained within the bounds of this overlay
+     */
+    public boolean contains(Point p);
 
     /**
      * Returns the UpdateManager responsible for seeing that updates to the

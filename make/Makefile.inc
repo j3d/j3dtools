@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.4 $
+# Version: $Revision: 1.5 $
 #
 #*********************************************************************
 

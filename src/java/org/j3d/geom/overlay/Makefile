@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.overlay directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.4 $
+# Version: $Revision: 1.5 $
 #
 #*********************************************************************
 
@@ -30,7 +30,8 @@ SOURCE = UpdateManager.java \
   MouseOverlay.java \
   LineData.java \
   LineDetails.java \
-  ScribbleOverlay.java
+  ScribbleOverlay.java \
+  ImageButtonOverlay.java
 
 #  ScrollingOverlay.java \
 #  FpsOverlay.java \

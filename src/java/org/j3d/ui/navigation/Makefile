@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.ui.navigation directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.9 $
+# Version: $Revision: 1.10 $
 #
 #*********************************************************************
 

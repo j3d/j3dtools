@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.util directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.7 $
+# Version: $Revision: 1.8 $
 #
 #*********************************************************************
 

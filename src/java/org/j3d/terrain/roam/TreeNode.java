@@ -168,6 +168,32 @@ class TreeNode
     }
 
     /**
+     * Reset the tree node so that it is like the first time it has been used.
+     *
+     * @param frustum The view information
+     */
+    void reset(ViewFrustum frustum)
+    {
+        if(leftChild != null)
+        {
+            leftChild.freeNode();
+            leftChild = null;
+        }
+
+        if(rightChild != null)
+        {
+            rightChild.freeNode();
+            rightChild = null;
+        }
+
+        baseNeighbour = null;
+        leftNeighbour = null;
+        rightNeighbour = null;
+
+        visible = checkVisibility(frustum);
+    }
+
+    /**
      * Place this node and all it's children in the TreeNodeCache
      */
     void freeNode()

@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders.vterrain directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
