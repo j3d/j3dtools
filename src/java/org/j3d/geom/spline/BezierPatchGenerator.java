@@ -23,34 +23,19 @@ import org.j3d.geom.UnsupportedTypeException;
  * <P>
  *
  * Bezier patches of all orders are permitted. Order information is derived
- * from the provided knot coordinates. When generating a patch, the values
+ * from the provided controlPoint coordinates. When generating a patch, the values
  * for the coordinates are nominally provided in the X and Z plane although no
- * explicit checking is performed to ensure that knot coordinates do not
+ * explicit checking is performed to ensure that controlPoint coordinates do not
  * self-intersect or do anything nasty. Normals are always generated as the
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class BezierPatchGenerator extends GeometryGenerator
+public class BezierPatchGenerator extends PatchGenerator
 {
     /** Default number of segments used in the patch */
     private static final int DEFAULT_FACETS = 16;
-
-    /** The number of sections used around the patch */
-    private int facetCount;
-
-    /** Knot values used to generate patches */
-    private float[][] knotCoordinates;
-
-    /** The points on the patch. */
-    private float[] patchCoordinates;
-
-    /** The number of values used in the patch coordinate array */
-    private int numPatchValues;
-
-    /** Flag indicating base values have changed */
-    private boolean patchChanged;
 
     /**
      * Construct a new generator with default settings of 20 grid squares over
@@ -58,6 +43,7 @@ public class BezierPatchGenerator extends GeometryGenerator
      */
     public BezierPatchGenerator()
     {
+        this(DEFAULT_FACETS);
     }
 
     /**
@@ -72,118 +58,7 @@ public class BezierPatchGenerator extends GeometryGenerator
         if(facets < 3)
             throw new IllegalArgumentException("Number of facets is < 3");
 
-        patchChanged = true;
         facetCount = facets;
-    }
-
-    /**
-     * Change the number of facets used to create this cone. This will cause
-     * the geometry to be regenerated next time they are asked for.
-     * The minimum number of facets is 3.
-     *
-     * @param facets The number of facets on the side of the cone
-     * @throws IllegalArgumentException The number of facets is less than 3
-     */
-    public void setFacetCount(int facets)
-    {
-        if(facets < 3)
-            throw new IllegalArgumentException("Number of facets is < 3");
-
-        if(facetCount != facets)
-            patchChanged = true;
-
-        facetCount = facets;
-    }
-
-    /**
-     * Set the bezier patch knots. The array is presented as [depth][width]
-     * with the coordinates flattened as [Xn, Yn, Zn] in the width array. The
-     * order of the patch is determined by the passed array. If the arrays are
-     * not of minimum length 3 and equal length an exception is generated.
-     *
-     * @param knots The knot coordinate values
-     */
-    public void setPatchKnots(float[][] knots)
-    {
-        int min_length = knots[0].length;
-
-        if((knots.length < 3) || (knots[0].length < 3))
-            throw new IllegalArgumentException("Depth patch size < 3");
-
-        // second check for consistent lengths of the width patches
-        int i;
-
-        for(i = 1; i < knots.length; i++)
-        {
-            if(knots[i].length != min_length)
-                throw new IllegalArgumentException("Non-equal array lengths");
-        }
-
-        if((knots.length != knotCoordinates.length) &&
-           (min_length != knotCoordinates[0].length))
-        {
-            if(knots.length != knotCoordinates.length)
-            {
-                knotCoordinates = new float[knots.length][min_length];
-            }
-            else
-            {
-                for(i = 0; i < knots.length; i++)
-                    knotCoordinates[i] = new float[min_length];
-            }
-        }
-
-        for(i = 0; i < knots.length; i++)
-        {
-            System.arraycopy(knots[i],
-                             0,
-                             knotCoordinates[i],
-                             0,
-                             min_length);
-        }
-
-        patchChanged = true;
-    }
-
-    /**
-     * Get the number of vertices that this generator will create for the
-     * shape given in the definition.
-     *
-     * @param data The data to patch the calculations on
-     * @return The vertex count for the object
-     * @throws UnsupportedTypeException The generator cannot handle the type
-     *   of geometry you have requested.
-     */
-    public int getVertexCount(GeometryData data)
-        throws UnsupportedTypeException
-    {
-        int ret_val = 0;
-
-        switch(data.geometryType)
-        {
-            case GeometryData.TRIANGLES:
-                ret_val = facetCount * facetCount * 3 ;
-                break;
-            case GeometryData.QUADS:
-                ret_val = facetCount * facetCount * 4;
-                break;
-
-            // These all have the same vertex count
-            case GeometryData.TRIANGLE_STRIPS:
-            case GeometryData.TRIANGLE_FANS:
-            case GeometryData.INDEXED_TRIANGLES:
-            case GeometryData.INDEXED_QUADS:
-            case GeometryData.INDEXED_TRIANGLE_STRIPS:
-            case GeometryData.INDEXED_TRIANGLE_FANS:
-                ret_val = facetCount * facetCount;
-                break;
-
-            default:
-                throw new UnsupportedTypeException("Unknown geometry type: " +
-                                                   data.geometryType);
-        }
-
-        return ret_val;
     }
 
     /**
@@ -206,9 +81,9 @@ public class BezierPatchGenerator extends GeometryGenerator
             case GeometryData.TRIANGLES:
                 unindexedTriangles(data);
                 break;
-//            case GeometryData.QUADS:
-//                unindexedQuads(data);
-//                break;
+            case GeometryData.QUADS:
+                unindexedQuads(data);
+                break;
 //            case GeometryData.TRIANGLE_STRIPS:
 //                triangleStrips(data);
 //                break;
@@ -266,6 +141,15 @@ public class BezierPatchGenerator extends GeometryGenerator
     private void unindexedQuads(GeometryData data)
         throws InvalidArraySizeException
     {
+        generateUnindexedQuadCoordinates(data);
+
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
+            generateUnindexedQuadNormals(data);
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+            generateUnindexedQuadTexture2D(data);
+        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+            generateUnindexedQuadTexture3D(data);
     }
 
     /**
@@ -279,10 +163,10 @@ public class BezierPatchGenerator extends GeometryGenerator
     private void indexedQuads(GeometryData data)
         throws InvalidArraySizeException
     {
-        generateIndexedTriCoordinates(data);
+        generateIndexedCoordinates(data);
 
         if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateIndexedTriNormals(data);
+            generateIndexedNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
             generateTriTexture2D(data);
@@ -300,10 +184,10 @@ public class BezierPatchGenerator extends GeometryGenerator
     private void indexedTriangles(GeometryData data)
         throws InvalidArraySizeException
     {
-        generateIndexedTriCoordinates(data);
+        generateIndexedCoordinates(data);
 
         if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateIndexedTriNormals(data);
+            generateIndexedNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
             generateTriTexture2D(data);
@@ -365,10 +249,10 @@ public class BezierPatchGenerator extends GeometryGenerator
     private void indexedTriangleFans(GeometryData data)
         throws InvalidArraySizeException
     {
-        generateIndexedTriCoordinates(data);
+        generateIndexedCoordinates(data);
 
         if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateIndexedTriNormals(data);
+            generateIndexedNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
             generateTriTexture2D(data);
@@ -406,6 +290,98 @@ public class BezierPatchGenerator extends GeometryGenerator
 
         regeneratePatch();
 
+        // now just build a grid of coordinates
+        int cnt;
+        int vtx = 0;
+        for(int i = 0; i < facetCount; i++)
+        {
+            cnt = 0;
+            for(int j = 0; j < facetCount; j++)
+            {
+                coords[vtx++] = patchCoordinates[i][cnt + 3];
+                coords[vtx++] = patchCoordinates[i][cnt + 4];
+                coords[vtx++] = patchCoordinates[i][cnt + 5];
+
+                coords[vtx++] = patchCoordinates[i][cnt];
+                coords[vtx++] = patchCoordinates[i][cnt + 1];
+                coords[vtx++] = patchCoordinates[i][cnt + 2];
+
+                coords[vtx++] = patchCoordinates[i + 1][cnt];
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 1];
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 2];
+
+                // Now the second triangle for the upper half
+                coords[vtx++] = patchCoordinates[i + 1][cnt];
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 1];
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 2];
+
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 3];
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 4];
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 5];
+
+                coords[vtx++] = patchCoordinates[i][cnt + 3];
+                coords[vtx++] = patchCoordinates[i][cnt + 4];
+                coords[vtx++] = patchCoordinates[i][cnt + 5];
+
+                cnt += 3;
+            }
+        }
+    }
+
+    /**
+     * Generates new set of points suitable for use in an unindexed array. Each
+     * patch coordinate will appear twice in this list. The first half of the
+     * array is the top, the second half, the bottom.
+     *
+     * @param data The data to patch the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedQuadCoordinates(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = getVertexCount(data);
+
+        if(data.coordinates == null)
+            data.coordinates = new float[vtx_cnt * 3];
+        else if(data.coordinates.length < vtx_cnt * 3)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.coordinates.length,
+                                                vtx_cnt * 3);
+
+        float[] coords = data.coordinates;
+        data.vertexCount = vtx_cnt;
+
+        regeneratePatch();
+
+        // now just build a grid of coordinates
+        int cnt;
+        int vtx = 0;
+        for(int i = 0; i < facetCount; i++)
+        {
+            cnt = 0;
+            for(int j = 0; j < facetCount; j++)
+            {
+                coords[vtx++] = patchCoordinates[i][cnt + 3];
+                coords[vtx++] = patchCoordinates[i][cnt + 4];
+                coords[vtx++] = patchCoordinates[i][cnt + 5];
+
+                coords[vtx++] = patchCoordinates[i][cnt];
+                coords[vtx++] = patchCoordinates[i][cnt + 1];
+                coords[vtx++] = patchCoordinates[i][cnt + 2];
+
+                coords[vtx++] = patchCoordinates[i + 1][cnt];
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 1];
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 2];
+
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 3];
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 4];
+                coords[vtx++] = patchCoordinates[i + 1][cnt + 5];
+
+                cnt += 3;
+            }
+        }
+
     }
 
     /**
@@ -417,7 +393,7 @@ public class BezierPatchGenerator extends GeometryGenerator
      * start at vertexCount / 2 with the first value as 0,0,0 (the center of
      * the patch) and then all the following values as the patch.
      */
-    private void generateIndexedTriCoordinates(GeometryData data)
+    private void generateIndexedCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
         int vtx_cnt = getVertexCount( data);
@@ -434,6 +410,16 @@ public class BezierPatchGenerator extends GeometryGenerator
 
         regeneratePatch();
 
+        int offset = 0;
+
+        for(int i = 0; i <= facetCount; i++)
+        {
+            System.arraycopy(controlPointCoordinates[i],
+                             0,
+                             coords,
+                             offset,
+                             (facetCount + 1) * 3);
+        }
     }
 
     //------------------------------------------------------------------------
@@ -466,6 +452,31 @@ public class BezierPatchGenerator extends GeometryGenerator
     }
 
     /**
+     * Generate a new set of normals for a normal set of unindexed points.
+     * Smooth normals are used for the sides at the average between the faces.
+     * Bottom normals always point down.
+     * <p>
+     * This must always be called after the coordinate generation. The
+     * top normal of the cone is always perpendicular to the face.
+     *
+     * @param data The data to patch the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedQuadNormals(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = data.vertexCount * 3;
+
+        if(data.normals == null)
+            data.normals = new float[vtx_cnt];
+        else if(data.normals.length < vtx_cnt)
+            throw new InvalidArraySizeException("Normals",
+                                                data.normals.length,
+                                                vtx_cnt);
+    }
+
+    /**
      * Generate a new set of normals for a normal set of indexed points.
      * Handles both flat and smooth shading of normals. Flat just has them
      * perpendicular to the face. Smooth has them at the value at the
@@ -478,7 +489,7 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void generateIndexedTriNormals(GeometryData data)
+    private void generateIndexedNormals(GeometryData data)
         throws InvalidArraySizeException
     {
         int vtx_cnt = data.vertexCount * 3;
@@ -532,10 +543,36 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void generateTriTexture3D(GeometryData data)
+    private void generateUnindexedQuadTexture2D(GeometryData data)
         throws InvalidArraySizeException
     {
         int vtx_cnt = data.vertexCount * 2;
+
+        if(data.textureCoordinates == null)
+            data.textureCoordinates = new float[vtx_cnt];
+        else if(data.textureCoordinates.length < vtx_cnt)
+            throw new InvalidArraySizeException("2D Texture coordinates",
+                                                data.textureCoordinates.length,
+                                                vtx_cnt);
+
+        float[] texCoords = data.textureCoordinates;
+    }
+
+    /**
+     * Generate a new set of texCoords for a normal set of unindexed points. Each
+     * normal faces directly perpendicular for each point. This makes each face
+     * seem flat.
+     * <p>
+     * This must always be called after the coordinate generation.
+     *
+     * @param data The data to patch the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateTriTexture3D(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = data.vertexCount * 3;
 
         if(data.textureCoordinates == null)
             data.textureCoordinates = new float[vtx_cnt];
@@ -548,6 +585,33 @@ public class BezierPatchGenerator extends GeometryGenerator
     }
 
     /**
+     * Generate a new set of texCoords for a normal set of unindexed points. Each
+     * normal faces directly perpendicular for each point. This makes each face
+     * seem flat.
+     * <p>
+     * This must always be called after the coordinate generation.
+     *
+     * @param data The data to patch the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedQuadTexture3D(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = data.vertexCount * 3;
+
+        if(data.textureCoordinates == null)
+            data.textureCoordinates = new float[vtx_cnt];
+        else if(data.textureCoordinates.length < vtx_cnt)
+            throw new InvalidArraySizeException("3D Texture coordinates",
+                                                data.textureCoordinates.length,
+                                                vtx_cnt);
+
+        float[] texCoords = data.textureCoordinates;
+    }
+
+
+    /**
      * Regenerate the patch coordinate points. These are the flat circle that
      * makes up the patch of the code. The coordinates are generated patchd on
      * the 2 PI divided by the number of facets to generate.
@@ -558,12 +622,144 @@ public class BezierPatchGenerator extends GeometryGenerator
             return;
 
         patchChanged = false;
-        numPatchValues = ((facetCount + 1) << 1) * 3;
+        numPatchValues = (facetCount + 1) * 3;
 
         if((patchCoordinates == null) ||
-           (numPatchValues > patchCoordinates.length))
+           (numPatchValues > patchCoordinates.length) ||
+           (numPatchValues > patchCoordinates[0].length))
         {
-            patchCoordinates = new float[numPatchValues];
+            patchCoordinates = new float[facetCount + 1][numPatchValues];
         }
+
+        double mui,muj,bi,bj;
+        int cnt;
+        float x, y, z;
+
+        for(int i = 0; i < facetCount; i++)
+        {
+            mui = i / (double)facetCount;
+            cnt = 0;
+            for(int j = 0; j < facetCount; j++)
+            {
+                muj = j / (double)facetCount;
+                x = 0;
+                y = 0;
+                z = 0;
+
+                for(int ki = 0; ki < numWidthControlPoints ; ki++)
+                {
+                    bi = bezierBlend(ki, mui, numWidthControlPoints - 1);
+
+                    for(int kj = 0; kj < numDepthControlPoints; kj++)
+                    {
+                        bj = bezierBlend(kj, muj, numDepthControlPoints - 1);
+                        int pos = kj * 3;
+                        x += (controlPointCoordinates[ki][pos] * bi * bj);
+                        y += (controlPointCoordinates[ki][pos + 1] * bi * bj);
+                        z += (controlPointCoordinates[ki][pos + 2] * bi * bj);
+                    }
+                }
+
+                patchCoordinates[i][cnt++] = x;
+                patchCoordinates[i][cnt++] = y;
+                patchCoordinates[i][cnt++] = z;
+            }
+
+            int ncp = numDepthControlPoints * 3;
+            x = 0;
+            y = 0;
+            z = 0;
+
+            for(int ki = 0; ki < numWidthControlPoints ; ki++)
+            {
+                bi = bezierBlend(ki, mui, numWidthControlPoints - 1);
+
+                for(int kj = 0; kj < numDepthControlPoints; kj++)
+                {
+                    bj = bezierBlend(kj, 1, numDepthControlPoints - 1);
+                    int pos = kj * 3;
+                    x += (controlPointCoordinates[ki][pos] * bi * bj);
+                    y += (controlPointCoordinates[ki][pos + 1] * bi * bj);
+                    z += (controlPointCoordinates[ki][pos + 2] * bi * bj);
+                }
+            }
+
+            patchCoordinates[i][cnt++] = x;
+            patchCoordinates[i][cnt++] = y;
+            patchCoordinates[i][cnt++] = z;
+        }
+
+        // Calculate the last set of coordinates just based on the width values
+        // as a simple bezier curve rather than a surface. mui == 1;
+        cnt = 0;
+        for(int j = 0; j < facetCount; j++)
+        {
+            muj = j / (double)facetCount;
+            x = 0;
+            y = 0;
+            z = 0;
+
+            for(int ki = 0; ki < numWidthControlPoints ; ki++)
+            {
+                bi = bezierBlend(ki, 1, numWidthControlPoints - 1);
+
+                for(int kj = 0; kj < numDepthControlPoints; kj++)
+                {
+                    bj = bezierBlend(kj, muj, numDepthControlPoints - 1);
+                    int pos = kj * 3;
+                    x += (controlPointCoordinates[ki][pos] * bi * bj);
+                    y += (controlPointCoordinates[ki][pos + 1] * bi * bj);
+                    z += (controlPointCoordinates[ki][pos + 2] * bi * bj);
+                }
+            }
+
+            patchCoordinates[facetCount][cnt++] = x;
+            patchCoordinates[facetCount][cnt++] = y;
+            patchCoordinates[facetCount][cnt++] = z;
+        }
+
+        int ncp = numDepthControlPoints * 3;
+        patchCoordinates[facetCount][cnt++] =
+            controlPointCoordinates[numWidthControlPoints - 1][ncp - 3];
+        patchCoordinates[facetCount][cnt++] =
+            controlPointCoordinates[numWidthControlPoints - 1][ncp - 2];;
+        patchCoordinates[facetCount][cnt++] =
+            controlPointCoordinates[numWidthControlPoints - 1][ncp - 1];;
+    }
+
+    /**
+     * Calculate the blending function of the two curves that contribute to
+     * this point.
+     */
+    private double bezierBlend(int k, double mu, int n) {
+        int nn = n;
+        int kn = k;
+        int nkn = n - k;
+        double blend = 1;
+
+        while(nn >= 1)
+        {
+            blend *= nn;
+            nn--;
+            if(kn > 1)
+            {
+                blend /= (double)kn;
+                kn--;
+            }
+
+            if(nkn > 1)
+            {
+                blend /= (double)nkn;
+                nkn--;
+            }
+        }
+
+        if(k > 0)
+            blend *= Math.pow(mu, (double)k);
+
+        if(n - k > 0)
+            blend *= Math.pow(1 - mu, (double)(n - k));
+
+        return blend;
     }
 }
