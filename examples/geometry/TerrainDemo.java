@@ -37,7 +37,7 @@ import org.j3d.ui.navigation.NavigationState;
  * of the rendering attributes like the face set.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TerrainDemo extends DemoFrame
     implements ActionListener, ItemListener
@@ -217,7 +217,7 @@ public class TerrainDemo extends DemoFrame
         ElevationGridGenerator egg =
             new ElevationGridGenerator(5, 5, 3, 3, FLAT_POINTS, 0);
         FractalTerrainGenerator ftg =
-            new FractalTerrainGenerator(30, 30, 10, true, 0, 4, 2, 0);
+            new FractalTerrainGenerator(30, 30, 10, true, 0, 4, 2, 0, null);
 
         generatorMap = new HashMap();
         generatorMap.put(eg_menu, egg);
