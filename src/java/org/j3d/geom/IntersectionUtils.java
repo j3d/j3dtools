@@ -56,7 +56,7 @@ import org.j3d.util.UserSupplementData;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class IntersectionUtils
 {
@@ -1082,7 +1082,7 @@ public class IntersectionUtils
         int offset = 0;
         int i0, i1, i2;
 
-        for(int i = 0; i < numIndex * 3; )
+        for(int i = 0; i < numIndex; )
         {
             i0 = indexes[i++];
             i1 = indexes[i++];
@@ -1164,7 +1164,7 @@ public class IntersectionUtils
         int offset = 0;
         int i0, i1, i2, i3;
 
-        for(int i = 0; i < numIndex * 3; )
+        for(int i = 0; i < numIndex; )
         {
             i0 = indexes[i++];
             i1 = indexes[i++];
