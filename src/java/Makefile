@@ -15,6 +15,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.device.output.elumens \
 	org.j3d.geom \
 	org.j3d.geom.terrain \
+	org.j3d.geom.hanim \
 	org.j3d.geom.particle \
 	org.j3d.geom.spline \
 	org.j3d.geom.spring \
@@ -49,18 +50,19 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.device.input.spaceball.transformation \
 	org.j3d.device.input.vfx \
 	org.j3d.device.input.polhemus \
-	org.j3d.texture \
 	org.j3d.geom \
-	org.j3d.geom.terrain \
+	org.j3d.geom.hanim \
 	org.j3d.geom.particle \
 	org.j3d.geom.spline \
 	org.j3d.geom.spring \
+	org.j3d.geom.terrain \
 	org.j3d.ui \
 	org.j3d.ui.image \
 	org.j3d.ui.navigation \
 	org.j3d.terrain \
 	org.j3d.terrain.roam \
 	org.j3d.texture \
+	org.j3d.texture.procedural \
 	org.j3d.loaders \
 	org.j3d.loaders.discreet \
 	org.j3d.loaders.stl \
@@ -70,6 +72,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 # Names of JAR files we want to create
 JARS = j3d-org-util.jar \
 	j3d-org-geom-core.jar \
+	j3d-org-geom-hanim.jar \
 	j3d-org-geom-particle.jar \
 	j3d-org-geom-spline.jar \
 	j3d-org-geom-terrain.jar \
