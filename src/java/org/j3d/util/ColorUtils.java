@@ -33,7 +33,7 @@ import javax.vecmath.Color4f;
  * Wesley, 1990.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ColorUtils
 {
@@ -79,19 +79,16 @@ public class ColorUtils
         v = max;    // this is the value v
 
         // Calculate the saturation s
-        if(max != 0)
-            s = (max - min) / max;
-        else
-            s = 0;
-
-        if(s == 0)
+        if(max == 0)
         {
+            s = 0;
             h = Float.NaN;  // h => UNDEFINED
         }
         else
         {
             // Chromatic case: Saturation is not 0, determine hue
             float delta = max - min;
+            s = delta / max;
 
             if(r == max)
             {
@@ -110,7 +107,7 @@ public class ColorUtils
             }
 
             // convert hue to degrees and make sure it is non-negative
-            h = h * 60;
+            h *= 60;
             if(h < 0)
                 h += 360;
         }
@@ -222,6 +219,7 @@ public class ColorUtils
                    break;
             }
         }
+
         // now assign everything....
         rgb[0] = r;
         rgb[1] = g;
