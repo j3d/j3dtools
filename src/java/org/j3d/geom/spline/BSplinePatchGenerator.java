@@ -31,7 +31,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class BSplinePatchGenerator extends PatchGenerator
 {
@@ -168,6 +168,57 @@ public class BSplinePatchGenerator extends PatchGenerator
 
         System.arraycopy(wKnots, 0, widthKnots, 0, wKnots.length);
         System.arraycopy(dKnots, 0, depthKnots, 0, dKnots.length);
+
+        numWidthKnots = wKnots.length;
+        numDepthKnots = dKnots.length;
+
+        patchChanged = true;
+    }
+
+    /**
+     * Set the bezier patch knots. The array is presented as [depth][width]
+     * with the coordinates flattened as [Xn, Yn, Zn] in the width array. The
+     * order of the patch is determined by the passed array. If the arrays are
+     * not of minimum length 3 and equal length an exception is generated.
+     *
+     * @param tWidth The degree in the width direction
+     * @param wKnots The knot coordinate values in the width direction
+     * @param tDepth The degree in the depth direction
+     * @param dKnots The knot coordinate values in the depth direction
+     */
+    public void setPatchKnots(int tWidth,
+                              double[] wKnots,
+                              int tDepth,
+                              double[] dKnots)
+    {
+        if(tWidth < 2)
+            throw new IllegalArgumentException("Width degree is < 2");
+
+        if(wKnots.length < (numWidthControlPoints + tWidth + 1))
+            throw new IllegalArgumentException("Width Knots < 3");
+
+        if(tDepth < 2)
+            throw new IllegalArgumentException("Depth degree is < 2");
+
+        if(dKnots.length < (numDepthControlPoints + tDepth + 1))
+            throw new IllegalArgumentException("Depth Knots < 3");
+
+        widthDegree = tWidth;
+        depthDegree = tDepth;
+
+        if(wKnots.length > widthKnots.length)
+            widthKnots = new float[wKnots.length];
+
+        if(dKnots.length > depthKnots.length)
+            depthKnots = new float[dKnots.length];
+
+        int i;
+
+        for(i = 0; i < tWidth; i++)
+            widthKnots[i] = (float)wKnots[i];
+
+        for(i = 0; i < tDepth; i++)
+            depthKnots[i] = (float)dKnots[i];
 
         numWidthKnots = wKnots.length;
         numDepthKnots = dKnots.length;

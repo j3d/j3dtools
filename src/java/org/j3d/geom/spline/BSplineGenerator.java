@@ -30,7 +30,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * at http://astronomy.swin.edu.au/~pbourke/curves/spline/.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class BSplineGenerator extends GeometryGenerator
 {
@@ -177,6 +177,81 @@ public class BSplineGenerator extends GeometryGenerator
     }
 
     /**
+     * Set the control point weights to use with the existing control points.
+     * Will automatically turn on the use of control point weight calculations
+     * (rational form).
+     *
+     * @param weights Weight values to go with the points
+     */
+    public void setWeights(float[] weights)
+    {
+        setWeights(weights, weights.length);
+    }
+
+    /**
+     * Set the control point weights to use with the existing control points.
+     * Will automatically turn on the use of control point weight calculations
+     * (rational form).
+     *
+     * @param weights Weight values to go with the points
+     */
+    public void setWeights(double[] weights)
+    {
+        setWeights(weights, weights.length);
+    }
+
+    /**
+     * Set the control point weights to use with the existing control points.
+     * Will automatically turn on the use of control point weight calculations
+     * (rational form).
+     *
+     * @param weights Weight values to go with the points
+     * @param numValid The number of valid points in the array
+     */
+    public void setWeights(float[] weights, int numValid)
+    {
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           (controlPointWeights.length < numValid))
+        {
+            controlPointWeights = new float[numValid];
+        }
+
+        System.arraycopy(weights,
+                         0,
+                         controlPointWeights,
+                         0,
+                         numValid);
+
+        curveChanged = true;
+        useControlPointWeights = true;
+    }
+
+    /**
+     * Set the control point weights to use with the existing control points.
+     * Will automatically turn on the use of control point weight calculations
+     * (rational form).
+     *
+     * @param weights Weight values to go with the points
+     * @param numValid The number of valid points in the array
+     */
+    public void setWeights(double[] weights, int numValid)
+    {
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           (controlPointWeights.length < numValid))
+        {
+            controlPointWeights = new float[numValid];
+        }
+
+        for(int i = 0; i < numValid; i++)
+            controlPointWeights[i] = (float)weights[i];
+
+        curveChanged = true;
+        useControlPointWeights = true;
+    }
+
+    /**
      * Set the curve controlPoints. The array is presented with the coordinates
      * flattened as [Xn, Yn, Zn] in the width array. The order of the patch is
      * determined by the passed array. If the arrays are not of minimum length
@@ -187,6 +262,53 @@ public class BSplineGenerator extends GeometryGenerator
     public void setControlPoints(float[] controlPoints)
     {
         setControlPoints(controlPoints, controlPoints.length / 3);
+    }
+
+    /**
+     * Set the curve controlPoints. The array is presented with the coordinates
+     * flattened as [Xn, Yn, Zn] in the width array. The order of the patch is
+     * determined by the passed array. If the arrays are not of minimum length
+     * 3 an exception is generated.
+     *
+     * @param controlPoints The controlPoint coordinate values
+     */
+    public void setControlPoints(double[] controlPoints)
+    {
+        setControlPoints(controlPoints, controlPoints.length / 3);
+    }
+
+    /**
+     * Set the curve controlPoints. The array is presented with the coordinates
+     * flattened as [Xn, Yn, Zn] in the width array. The order of the patch is
+     * determined by the passed array. If the arrays are not of minimum length
+     * 3 an exception is generated.
+     * <p>
+     * Will automatically turn on the use of control point weight calculations
+     * (rational form).
+     *
+     * @param controlPoints The controlPoint coordinate values
+     * @param weights Weight values to go with the points
+     */
+    public void setControlPoints(float[] controlPoints, float[] weights)
+    {
+        setControlPoints(controlPoints, controlPoints.length / 3, weights);
+    }
+
+    /**
+     * Set the curve controlPoints. The array is presented with the coordinates
+     * flattened as [Xn, Yn, Zn] in the width array. The order of the patch is
+     * determined by the passed array. If the arrays are not of minimum length
+     * 3 an exception is generated.
+     * <p>
+     * Will automatically turn on the use of control point weight calculations
+     * (rational form).
+     *
+     * @param controlPoints The controlPoint coordinate values
+     * @param weights Weight values to go with the points
+     */
+    public void setControlPoints(double[] controlPoints, double[] weights)
+    {
+        setControlPoints(controlPoints, controlPoints.length / 3, weights);
     }
 
     /**
@@ -227,6 +349,138 @@ public class BSplineGenerator extends GeometryGenerator
     }
 
     /**
+     * Set the curve controlPoints from a subset of the given array. The array
+     * is presented with the coordinates flattened as [Xn, Yn, Zn] in the width
+     * array. The order of the patch is determined by the and number of points.
+     * If the arrays are not of minimum length 3 an exception is generated.
+     *
+     * @param controlPoints The controlPoint coordinate values
+     * @param numValid The number of valid points in the array
+     */
+    public void setControlPoints(double[] controlPoints, int numValid)
+    {
+        if(numValid < 1)
+            throw new IllegalArgumentException("Number of valid points < 1");
+
+        if(numValid * 3 > controlPointCoordinates.length)
+            controlPointCoordinates = new float[numValid * 3];
+
+        for(int i = 0; i < numValid; )
+        {
+            controlPointCoordinates[i++] = (float)controlPoints[i];
+            controlPointCoordinates[i++] = (float)controlPoints[i];
+            controlPointCoordinates[i++] = (float)controlPoints[i];
+        }
+
+        numControlPoints = numValid;
+
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           (controlPoints.length != controlPointWeights.length))
+        {
+            float[] tmp = new float[controlPoints.length];
+            System.arraycopy(controlPointWeights, 0, tmp, 0, numValid);
+            controlPointWeights = tmp;
+        }
+
+        curveChanged = true;
+    }
+
+    /**
+     * Set the curve controlPoints from a subset of the given array. The array
+     * is presented with the coordinates flattened as [Xn, Yn, Zn] in the width
+     * array. The order of the patch is determined by the and number of points.
+     * If the arrays are not of minimum length 3 an exception is generated.
+     * <p>
+     * Will automatically turn on the use of control point weight calculations
+     * (rational form).
+     *
+     * @param controlPoints The controlPoint coordinate values
+     * @param numValid The number of valid points in the array
+     * @param weights Weight values to go with the points
+     */
+    public void setControlPoints(float[] controlPoints,
+                                 int numValid,
+                                 float[] weights)
+    {
+        if(numValid < 1)
+            throw new IllegalArgumentException("Number of valid points < 1");
+
+        if(numValid * 3 > controlPointCoordinates.length)
+            controlPointCoordinates = new float[numValid * 3];
+
+        System.arraycopy(controlPoints,
+                         0,
+                         controlPointCoordinates,
+                         0,
+                         numValid * 3);
+
+        numControlPoints = numValid;
+
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           (controlPointWeights.length < numValid))
+        {
+            controlPointWeights = new float[numValid];
+        }
+
+        System.arraycopy(weights,
+                         0,
+                         controlPointWeights,
+                         0,
+                         numValid);
+
+        curveChanged = true;
+        useControlPointWeights = true;
+    }
+
+    /**
+     * Set the curve controlPoints from a subset of the given array. The array
+     * is presented with the coordinates flattened as [Xn, Yn, Zn] in the width
+     * array. The order of the patch is determined by the and number of points.
+     * If the arrays are not of minimum length 3 an exception is generated.
+     * <p>
+     * Will automatically turn on the use of control point weight calculations
+     * (rational form).
+     *
+     * @param controlPoints The controlPoint coordinate values
+     * @param numValid The number of valid points in the array
+     * @param weights Weight values to go with the points
+     */
+    public void setControlPoints(double[] controlPoints,
+                                 int numValid,
+                                 double[] weights)
+    {
+        if(numValid < 1)
+            throw new IllegalArgumentException("Number of valid points < 1");
+
+        if(numValid * 3 > controlPointCoordinates.length)
+            controlPointCoordinates = new float[numValid * 3];
+
+        for(int i = 0; i < numValid; )
+        {
+            controlPointCoordinates[i++] = (float)controlPoints[i];
+            controlPointCoordinates[i++] = (float)controlPoints[i];
+            controlPointCoordinates[i++] = (float)controlPoints[i];
+        }
+
+        numControlPoints = numValid;
+
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           (controlPointWeights.length < numValid))
+        {
+            controlPointWeights = new float[numValid];
+        }
+
+        for(int i = 0; i < numValid; i++)
+            controlPointWeights[i] = (float)weights[i];
+
+        curveChanged = true;
+        useControlPointWeights = true;
+    }
+
+    /**
      * Set the curve degree and knots. The degree must be of order 2 or
      * greater. If the array is not of minimum length 3 an exception is
      * generated.
@@ -252,6 +506,39 @@ public class BSplineGenerator extends GeometryGenerator
             knots = new float[knts.length];
 
         System.arraycopy(knts, 0, knots, 0, knts.length);
+
+        numKnots = knots.length;
+
+        curveChanged = true;
+    }
+
+    /**
+     * Set the curve degree and knots. The degree must be of order 2 or
+     * greater. If the array is not of minimum length 3 an exception is
+     * generated.
+     *
+     * @param t The degree of the curve
+     * @param knts The knot values to control the curve
+     */
+    public void setKnots(int t, double[] knts)
+    {
+        if(t < 2)
+            throw new IllegalArgumentException("Degree is < 2");
+
+        if(knts.length < (numControlPoints + t + 1))
+            throw new IllegalArgumentException("Knots < 3");
+
+        if(t != degree)
+        {
+            degree = t;
+            curveChanged = true;
+        }
+
+        if(knts.length > knots.length)
+            knots = new float[knts.length];
+
+        for(int i = 0; i < knts.length; i++)
+            knots[i] = (float)knts[i];
 
         numKnots = knots.length;
 
