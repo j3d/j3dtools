@@ -38,7 +38,7 @@ import org.xml.sax.InputSource;
  * The current implementation ignores the publicId information.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class SAXEntityResolver implements EntityResolver
 {
@@ -49,6 +49,7 @@ public class SAXEntityResolver implements EntityResolver
      * @param publicId The public identifier to use (if set)
      * @param systemId The system identifier to resolve
      * @return An input source to the entity or null if not handled
+     * @throws IOException An error reading the stream
      */
     public InputSource resolveEntity(String publicId, String systemId)
         throws IOException

@@ -24,7 +24,7 @@ import org.xml.sax.SAXParseException;
  * output stream. If no stream is provided, it prints to stdout.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SAXErrorHandler implements ErrorHandler
 {
@@ -75,17 +75,37 @@ public class SAXErrorHandler implements ErrorHandler
     // The following methods are standard SAX ErrorHandler methods.
     // See SAX documentation for more info.
 
+    /**
+     * Process a warning exception. Just prints the message out
+     *
+     * @param spe The exception to be processed
+     * @throws SAXException Never thrown
+     */
     public void warning(SAXParseException spe) throws SAXException
     {
         System.out.println("Warning: " + getParseExceptionInfo(spe));
     }
 
+    /**
+     * Process a non-fatal error exception. Prints the message out and
+     * re-throws the exception.
+     *
+     * @param spe The exception to be processed
+     * @throws SAXException A wrapped version of the original exception
+     */
     public void error(SAXParseException spe) throws SAXException
     {
         String message = "Error: " + getParseExceptionInfo(spe);
         throw new SAXException(message);
     }
 
+    /**
+     * Process a non-fatal error exception. Prints the message out and
+     * re-throws the exception.
+     *
+     * @param spe The exception to be processed
+     * @throws SAXException A wrapped version of the original exception
+     */
     public void fatalError(SAXParseException spe) throws SAXException
     {
         String message = "Fatal Error: " + getParseExceptionInfo(spe);
