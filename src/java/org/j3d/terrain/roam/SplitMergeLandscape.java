@@ -43,6 +43,7 @@
  */
 package org.j3d.terrain.roam;
 
+// Standard imports
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -56,31 +57,45 @@ import javax.vecmath.Point2d;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 
+// Application specific imports
 import org.j3d.terrain.ViewFrustum;
 import org.j3d.terrain.Landscape;
 import org.j3d.terrain.TerrainData;
 
 /**
- * First patch is a t 0,0 in x, z and then patches are laid out along the
+ * ROAM implmentation of a landscape using the split-merge combination
+ * algorithm.
+ * <p>
+ *
+ * First patch is at 0,0 in x, z and then patches are laid out along the
  * +ve x axis and the -ve z axis
  *
- * @author  paulby
+ * @author Paul Byrne, Justin Couch
  * @version
  */
 public class SplitMergeLandscape extends Landscape
 {
     static final int PATCH_SIZE = 64;
 
+    /** The collection of all patches in this landscape */
     private ArrayList patches = new ArrayList();
+
+    /** Queue manager for the pathces needing splits or merges each frame */
     private TreeQueueManager queueManager = new TreeQueueManager();
-    private int triCount=0;     // Number of visible triangles
+
+    /** Number of visible triangles */
+    private int triCount = 0;
 
     /**
-     * Creates new Landscape
+     * Creates new Landscape based on the view information and the terrain
+     * data.
+     *
+     * @param view The view frustum looking at this landscape
+     * @param terrain The raw data for the terrain
      */
-    public SplitMergeLandscape(ViewFrustum view, TerrainData terrainData)
+    public SplitMergeLandscape(ViewFrustum view, TerrainData terrain)
     {
-        super(view, terrainData);
+        super(view, terrain);
 
         createPatches();
     }
@@ -168,7 +183,7 @@ public class SplitMergeLandscape extends Landscape
      */
     private void createPatches()
     {
-        int height = terrainData.getGridHeight() - PATCH_SIZE;
+        int depth = terrainData.getGridDepth() - PATCH_SIZE;
         int width = terrainData.getGridWidth() - PATCH_SIZE;
 
         Appearance app = new Appearance();
@@ -184,7 +199,7 @@ public class SplitMergeLandscape extends Landscape
 
         for(int east = 0; east <= width; east += PATCH_SIZE)
         {
-            for(int north = 0; north <= height; north += PATCH_SIZE)
+            for(int north = 0; north <= depth; north += PATCH_SIZE)
             {
                 p = new Patch(terrainData,
                               PATCH_SIZE,

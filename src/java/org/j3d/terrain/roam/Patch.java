@@ -64,18 +64,27 @@ import org.j3d.terrain.ViewFrustum;
 import org.j3d.terrain.TerrainData;
 
 /**
+ * A patch represents a single piece of terrain geometry that can be
+ * rendered as a standalone block.
  *
  * @author  paulby
  * @version
  */
 class Patch implements GeometryUpdater
 {
+    /** The final size in number of grid points for this patch */
     private final int PATCH_SIZE;
 
+    /** The values of the nodes in the NW triangle of this patch */
     TreeNode NWTree;
+
+    /** The values of the nodes in the NW triangle of this patch */
     TreeNode SETree;
+
     private VarianceTree NWVariance;
     private VarianceTree SEVariance;
+
+    /** The J3D geometry for this patch */
     private Shape3D shape3D;
 
     private int xOrig;
@@ -95,7 +104,7 @@ class Patch implements GeometryUpdater
     private float minY;
 
     /**
-     * Creates new Patch
+     * Create a new patch based on the terrain and appearance information.
      *
      * @param westPatchNeighbour the Patch to the west of this patch
      * @param southPatchNeighbour the Patch to the south of this patch
@@ -204,6 +213,11 @@ class Patch implements GeometryUpdater
     // Methods required by GeometryUpdater
     //----------------------------------------------------------
 
+    /**
+     * Update the J3D geometry array for data now.
+     *
+     * @param geom The geometry object to update
+     */
     public void updateData(Geometry geom)
     {
         createGeometry((TriangleArray)geom);
@@ -235,7 +249,12 @@ class Patch implements GeometryUpdater
     }
 
     /**
+     * Change the view to the new position and orientation.
      *
+     * @param position The location of the user in space
+     * @param direction The orientation of the user at that point
+     * @param landscapeView The viewing frustum information for clipping
+     * @param queueManager Manager for ordering terrain chunks
      */
     void setView(Point3f position,
                  Vector3f direction,
@@ -264,6 +283,12 @@ class Patch implements GeometryUpdater
          */
     }
 
+    /**
+     * Request an update to the geometry. If the geometry is visible then
+     * tell J3D that we would like to update the geometry. It does not directly
+     * do the update because we are using GeomByRef and so need to wait for the
+     * renderer to tell us when it is OK to do the updates.
+     */
     void updateGeometry()
     {
         if(NWTree.visible != ViewFrustum.OUT ||
@@ -274,6 +299,11 @@ class Patch implements GeometryUpdater
         }
     }
 
+    /**
+     * Fetch the number of triangles that are currently visible in this patch.
+     *
+     * @return The number of visible triangles
+     */
     int getTriangleCount()
     {
         return vertexData.getVertexCount() / 3;
@@ -289,6 +319,12 @@ class Patch implements GeometryUpdater
         return shape3D;
     }
 
+    /**
+     * Create the geometry needed for this patch. Just sets how many vertices
+     * are to be used based on the triangles of the two halves of the tree.
+     *
+     * @param geom The geometry array to work with
+     */
     private void createGeometry(TriangleArray geom)
     {
         vertexData.reset();
