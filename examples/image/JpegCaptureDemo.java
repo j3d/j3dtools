@@ -24,11 +24,11 @@ import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationStateManager;
 
 /**
- * Demonstration of a mouse navigation in a world that presents a GUI
- * representation.
+ * Demonstration of how to capture a single screenshot using the image
+ * capture facilities of the library.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class JpegCaptureDemo extends DemoFrame
     implements ActionListener, NavigationStateListener
@@ -81,7 +81,7 @@ public class JpegCaptureDemo extends DemoFrame
         Label l1 = new Label("Output file: ");
         filename = new TextField(System.getProperty("user.dir"));
 
-        p2.add(l1, BorderLayout.EAST);
+        p2.add(l1, BorderLayout.WEST);
         p2.add(filename, BorderLayout.CENTER);
 
         Panel p3 = new Panel(new GridLayout(1, 2));
