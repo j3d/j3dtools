@@ -11,7 +11,6 @@ package org.j3d.geom.terrain;
 
 // Standard imports
 import java.util.Random;
-import javax.vecmath.Vector3f;
 
 // Application specific imports
 import org.j3d.geom.GeometryGenerator;
@@ -48,7 +47,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * points on a side.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class FractalTerrainGenerator extends GeometryGenerator
 {
@@ -90,9 +89,6 @@ public class FractalTerrainGenerator extends GeometryGenerator
 
     /** Flag indicating terrain values have changed */
     private boolean terrainChanged;
-
-    /** Working values for the normal generation */
-    private Vector3f normal;
 
     /** Random number generator for the heights */
     private Random randomiser;
@@ -353,8 +349,6 @@ public class FractalTerrainGenerator extends GeometryGenerator
 
         if(seed != 0)
             randomiser.setSeed(seed);
-
-        normal = new Vector3f();
 
         if(terrain == null)
             seedTerrain = new float[][] {{0, 0}, {0, 0}};
