@@ -23,6 +23,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.terrain \
 	org.j3d.terrain.roam \
 	org.j3d.texture \
+	org.j3d.texture.procedural \
 	org.j3d.loaders \
 	org.j3d.loaders.stl \
 	org.j3d.loaders.vterrain \
