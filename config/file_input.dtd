@@ -1,0 +1,49 @@
+<!--
+   This simple DTD describes file input information for the j3d.org 
+   FileInputDevice implementation. A very simple form, it just says to 
+   have X sensors and then defines the data points for each sensor.
+-->
+
+<!ELEMENT input_data "(sensors_data)+">
+
+<!-- 
+  Describes the list of sensor information. The number is how many sensor
+  objects we should use. Allows us to define extras and not use them in testing
+-->
+
+<!ELEMENT sensor_info (sensor)* >
+<!ATTLIST sensor_info number CDATA #FIXED>
+
+
+<!--
+   Description of an individual sensor. The coordinates are defines as being a
+   series of 3 points in the PCDATA of this element. The index is the sensor
+   number to be used and corresponds to the device's getSensor(int) reply. 
+   time is the amount of time for a single loop - in seconds (fractions
+   permitted). Loops is the number of loops to perform. 0 says to not loop.
+-->
+
+<!ELEMENT sensor (sensor-data+ , button*)? >
+<!ATTLIST sensor
+  index CDATA #REQUIRED
+  time  CDATA #REQUIRED
+  loops CDATA "0"
+  buttons CDATA "0"
+>
+
+<!ELEMENT sensor-data EMPTY>
+<!ATTLIST sensor-data
+  position CDATA #REQUIRED
+  time     CDATA #REQUIRED
+>
+
+<!ELEMENT button (button-data)+ >
+<!ATTLIST button 
+  index CDATA #REQUIRED
+>
+
+<!ELEMENT button-data EMPTY>
+<!ATTLIST button-data
+  time  CDATA #REQUIRED
+  value CDATA "0"
+>
