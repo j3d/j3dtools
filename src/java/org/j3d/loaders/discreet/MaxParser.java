@@ -28,7 +28,7 @@ import org.j3d.io.BlockDataInputStream;
  * http://www.spacesimulator.net/tut4_3dsloader.html
  *
  * @author  Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class MaxParser
 {
@@ -203,6 +203,7 @@ public class MaxParser
             int type = readUnsignedShort();
             int size = readInt();
 
+//System.out.println("mesh 0x" + Integer.toHexString(type) + " size " + size);
             switch(type)
             {
                 case MaxConstants.NAMED_OBJECT:
@@ -250,17 +251,12 @@ public class MaxParser
                 case MaxConstants.SOLID_BG:
 
                     data.solidBackgroundColor = new float[3];
+                    read = readColor(data.solidBackgroundColor);
 
-                    if(releaseVersion == 3)
-                    {
-                        // Skip the COLOR_F section
-                        skipBytes(18);
+                    // If an R3 file, may double declare the colour value
+                    // so replace the COLOR_F with LIN_COLOR value.
+                    if(size - read - 6 != 0)
                         readColor(data.solidBackgroundColor);
-                    }
-                    else
-                    {
-                        readColor(data.solidBackgroundColor);
-                    }
 
                     break;
 
@@ -269,23 +265,31 @@ public class MaxParser
 
                     data.gradientBackgroundColors = new float[3][3];
 
-                    if(releaseVersion == 3)
+                    read = readColor(data.gradientBackgroundColors[0]);
+                    read += readColor(data.gradientBackgroundColors[1]);
+                    read += readColor(data.gradientBackgroundColors[2]);
+
+                    // Did we get R3 data with the LIN_COLOR values interlaced?
+                    // If so, we just read BG color 0 twice and bg color 1 once
+                    // as a COLOR_F. Reshuffle and read extras again. Only keep
+                    // the LIN_COLOR values
+                    if(size - read - 6 - 4 != 0)
                     {
-                        // Basically need to skip each of the COLOR_F sections,
-                        // which are 18 bytes each.
-                        skipBytes(18);
-                        readColor(data.gradientBackgroundColors[0]);
-                        skipBytes(18);
+                        // set color[0] to be the LIN_COLOR value from [1].
+                        data.gradientBackgroundColors[0] =
+                            data.gradientBackgroundColors[1];
+
+                        // [2] now contains the COLOR_F value from the middle
+                        // value, which should be [1]. Read [1] again to get
+                        // the LIN_COLOR version.
                         readColor(data.gradientBackgroundColors[1]);
-                        skipBytes(18);
+
+                        // read and discard COLOR_F value for [2], replacing
+                        // it with the LIN_COLOR version.
+                        readColor(data.gradientBackgroundColors[2]);
                         readColor(data.gradientBackgroundColors[2]);
                     }
-                    else
-                    {
-                        readColor(data.gradientBackgroundColors[0]);
-                        readColor(data.gradientBackgroundColors[1]);
-                        readColor(data.gradientBackgroundColors[2]);
-                    }
+
                     break;
 
                 case MaxConstants.USE_V_GRADIENT:
@@ -1371,6 +1375,11 @@ public class MaxParser
 
                 case MaxConstants.KEYFRAME_SMOOTH_MORPH:
                     frame.morphSmoothingAngle = readFloat();
+                    break;
+
+                case MaxConstants.XDATA_SECTION:
+                    // Ignore it
+                    skipBytes(size - 6);
                     break;
 
                 // hide track not handed yet
