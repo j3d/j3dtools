@@ -41,7 +41,7 @@ import org.j3d.util.ImageUtils;
  * methods that most implementations will find useful.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class AbstractTextureCache implements TextureCache
 {
@@ -74,7 +74,7 @@ public abstract class AbstractTextureCache implements TextureCache
      */
     protected int getTextureFormat(ImageComponent comp)
     {
-        int ret_val = Texture.RGB;
+        int ret_val = Texture.RGBA;
 
         switch(comp.getFormat())
         {
@@ -94,11 +94,11 @@ public abstract class AbstractTextureCache implements TextureCache
             case ImageComponent.FORMAT_RGB:
             case ImageComponent.FORMAT_RGB4:
             case ImageComponent.FORMAT_RGB5:
-            case ImageComponent.FORMAT_RGB5_A1:
 //            case ImageComponent.FORMAT_RGB8:
                 ret_val = Texture.RGB;
                 break;
 
+            case ImageComponent.FORMAT_RGB5_A1:
             case ImageComponent.FORMAT_RGBA:
             case ImageComponent.FORMAT_RGBA4:
 //            case ImageComponent.FORMAT_RGBA8:
