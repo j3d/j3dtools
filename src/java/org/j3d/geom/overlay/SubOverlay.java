@@ -27,7 +27,7 @@ import java.awt.image.BufferedImage;
  * directly.
  *
  * @author David Yazel
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 class SubOverlay
 {
@@ -69,7 +69,19 @@ class SubOverlay
      */
     SubOverlay(Rectangle space)
     {
-        this(space, 2, false, null, null, null, null);
+        this(space, 2, false, null, null, null, null, null);
+    }
+
+    /**
+     * Creates a double buffered suboverlay for the specified region that has
+     * no transparency.
+     *
+     * @param space The area in screen space coords to create this for
+     * @param material The common material for all to use
+     */
+    SubOverlay(Rectangle space, Material material)
+    {
+        this(space, 2, false, null, null, null, null, material);
     }
 
     /**
@@ -81,7 +93,20 @@ class SubOverlay
      */
     SubOverlay(Rectangle space, int numBuffers)
     {
-        this(space, numBuffers, false, null, null, null, null);
+        this(space, numBuffers, false, null, null, null, null, null);
+    }
+
+    /**
+     * Creates a suboverlay for the specified region that has a given number
+     * of buffers and no transparency.
+     *
+     * @param space The area in screen space coords to create this for
+     * @param numBuffers The number of buffers to create
+     * @param material The common material for all to use
+     */
+    SubOverlay(Rectangle space, int numBuffers, Material material)
+    {
+        this(space, numBuffers, false, null, null, null, null, material);
     }
 
     /**
@@ -93,7 +118,20 @@ class SubOverlay
      */
     SubOverlay(Rectangle space, boolean hasAlpha)
     {
-        this(space, 2, hasAlpha, null, null, null, null);
+        this(space, 2, hasAlpha, null, null, null, null, null);
+    }
+
+    /**
+     * Creates a double buffered suboverlay for the specified region with
+     * the option to set the transparency.
+     *
+     * @param space The area in screen space coords to create this for
+     * @param hasAlpha true If the overlay should include an alpha component
+     * @param material The common material for all to use
+     */
+    SubOverlay(Rectangle space, boolean hasAlpha, Material material)
+    {
+        this(space, 2, hasAlpha, null, null, null, null, material);
     }
 
     /**
@@ -103,10 +141,28 @@ class SubOverlay
      * @param space The area in screen space coords to create this for
      * @param numBuffers The number of buffers to create
      * @param hasAlpha true If the overlay should include an alpha component
+     * @param material The common material for all to use
      */
     SubOverlay(Rectangle space, int numBuffers, boolean hasAlpha)
     {
-        this(space, numBuffers, hasAlpha, null, null, null, null);
+        this(space, numBuffers, hasAlpha, null, null, null, null, null);
+    }
+
+    /**
+     * Creates a buffered suboverlay for the specified region with
+     * the option to set the transparency and number of buffers.
+     *
+     * @param space The area in screen space coords to create this for
+     * @param numBuffers The number of buffers to create
+     * @param hasAlpha true If the overlay should include an alpha component
+     * @param material The common material for all to use
+     */
+    SubOverlay(Rectangle space,
+               int numBuffers,
+               boolean hasAlpha,
+               Material material)
+    {
+        this(space, numBuffers, hasAlpha, null, null, null, null, material);
     }
 
     /**
@@ -120,6 +176,7 @@ class SubOverlay
      * @param renderAttr RenderingAttributes from the parent overlay
      * @param texAttr TextureAttributes from the parent overlay
      * @param transAttr TransparencyAttributes from the parent overlay
+     * @param material The common material for all to use
      */
     SubOverlay(Rectangle space,
                int numBuffers,
@@ -127,7 +184,8 @@ class SubOverlay
                PolygonAttributes polyAttr,
                RenderingAttributes renderAttr,
                TextureAttributes texAttr,
-               TransparencyAttributes transAttr)
+               TransparencyAttributes transAttr,
+               Material material)
     {
         this.space = space;
         this.numBuffers = numBuffers;
@@ -161,8 +219,6 @@ class SubOverlay
         appearance.setTextureAttributes(texAttr);
         appearance.setTransparencyAttributes(transAttr);
 
-        Material material = new Material();
-        material.setLightingEnable(false);
         appearance.setMaterial(material);
 
         texture = new Texture2D(Texture.BASE_LEVEL,
@@ -294,8 +350,8 @@ class SubOverlay
 
         geom.setCoordinates(0, vertices);
 
-        float w_ratio = space.width / texture.getWidth();
-        float h_ratio = space.height / texture.getHeight();
+        float w_ratio = space.width / (float)texture.getWidth();
+        float h_ratio = space.height / (float)texture.getHeight();
 
         float[] textureCoordinates =
         {

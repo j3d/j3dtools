@@ -72,7 +72,7 @@ import javax.vecmath.Vector3d;
  * the overlays.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public abstract class OverlayBase
     implements Overlay, ScreenComponent, ComponentListener
@@ -165,6 +165,7 @@ public abstract class OverlayBase
     private PolygonAttributes polygonAttributes;
     private TextureAttributes textureAttributes;
     private TransparencyAttributes transparencyAttributes;
+    private Material material;
 
     /** List of the dirty flag settings */
     private boolean[] dirtyCheck = new boolean[DIRTY_SIZE + 1];
@@ -380,6 +381,9 @@ public abstract class OverlayBase
         textureAttributes.setTextureMode(TextureAttributes.REPLACE);
         textureAttributes.setPerspectiveCorrectionMode(TextureAttributes.FASTEST);
 
+        material = new Material();
+        material.setLightingEnable(false);
+
         // if this needs to support transparancy set up the blend
         if(hasAlpha)
         {
@@ -403,7 +407,8 @@ public abstract class OverlayBase
                                            polygonAttributes,
                                            renderAttributes,
                                            textureAttributes,
-                                           transparencyAttributes);
+                                           transparencyAttributes,
+                                           material);
 
             consoleTG.addChild(subOverlay[i].getShape());
         }
@@ -992,7 +997,8 @@ public abstract class OverlayBase
                                                polygonAttributes,
                                                renderAttributes,
                                                textureAttributes,
-                                               transparencyAttributes);
+                                               transparencyAttributes,
+                                               material);
                 consoleTG.addChild(subOverlay[i].getShape());
             }
 
