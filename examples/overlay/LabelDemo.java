@@ -29,14 +29,11 @@ import org.j3d.geom.overlay.UpdateControlBehavior;
  * the user to draw over it with a mouse.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class LabelDemo extends DemoFrame
 {
     private static final double BACK_CLIP_DISTANCE = 100.0;
-
-    /** The overlay we're putting labels on */
-    private LabelOverlay overlay;
 
     /**
      * Construct a new demo with no geometry currently showing, but the
@@ -47,8 +44,6 @@ public class LabelDemo extends DemoFrame
         super("Label test window");
 
         buildScene();
-
-        overlay.initialize();
     }
 
     /**
@@ -104,19 +99,91 @@ public class LabelDemo extends DemoFrame
         updater.setSchedulingBounds(new BoundingSphere());
         view_tg.addChild(updater);
 
-        overlay = new LabelOverlay(canvas,
-                                   new Dimension(100, 50),
-                                   "hello world");
-        overlay.setLocation(10, 10);
-        overlay.setUpdateManager(updater);
-        overlay.setVisible(true);
+        Color bg_color = new Color(0.1f, 0.1f, 0.1f, 1f);
+        Dimension ovl_size = new Dimension(64, 32);
 
-        view_tg.addChild(overlay.getRoot());
+        LabelOverlay o1 = new LabelOverlay(canvas, ovl_size, "Default");
+        o1.setLocation(0, 0);
+        o1.setBackgroundColor(bg_color);
+        o1.setUpdateManager(updater);
+        o1.setVisible(true);
+
+        LabelOverlay o2 = new LabelOverlay(canvas, ovl_size, "Left");
+        o2.setLocation(0, 32);
+        o2.setBackgroundColor(bg_color);
+        o2.setHorizontalAlignment(LabelOverlay.LEFT_ALIGN);
+        o2.setUpdateManager(updater);
+        o2.setVisible(true);
+
+        LabelOverlay o3 = new LabelOverlay(canvas, ovl_size, "Center");
+        o3.setLocation(0, 64);
+        o3.setBackgroundColor(bg_color);
+        o3.setHorizontalAlignment(LabelOverlay.CENTER_ALIGN);
+        o3.setUpdateManager(updater);
+        o3.setVisible(true);
+
+        LabelOverlay o4 = new LabelOverlay(canvas, ovl_size, "Right");
+        o4.setLocation(0, 96);
+        o4.setBackgroundColor(bg_color);
+        o4.setHorizontalAlignment(LabelOverlay.RIGHT_ALIGN);
+        o4.setUpdateManager(updater);
+        o4.setVisible(true);
+
+        LabelOverlay o5 = new LabelOverlay(canvas, ovl_size, "Default");
+        o5.setLocation(0, 128);
+        o5.setBackgroundColor(bg_color);
+        o5.setUpdateManager(updater);
+        o5.setVisible(true);
+
+        LabelOverlay o6 = new LabelOverlay(canvas, ovl_size, "Top");
+        o6.setLocation(64, 128);
+        o6.setBackgroundColor(bg_color);
+        o6.setVerticalAlignment(LabelOverlay.TOP_ALIGN);
+        o6.setUpdateManager(updater);
+        o6.setVisible(true);
+
+        LabelOverlay o7 = new LabelOverlay(canvas, ovl_size, "Center");
+        o7.setLocation(128, 128);
+        o7.setBackgroundColor(bg_color);
+        o7.setVerticalAlignment(LabelOverlay.CENTER_ALIGN);
+        o7.setUpdateManager(updater);
+        o7.setVisible(true);
+
+        LabelOverlay o8 = new LabelOverlay(canvas, ovl_size, "Bottom");
+        o8.setLocation(192, 128);
+        o8.setBackgroundColor(bg_color);
+        o8.setVerticalAlignment(LabelOverlay.BOTTOM_ALIGN);
+        o8.setUpdateManager(updater);
+        o8.setVisible(true);
+
+        view_tg.addChild(o1.getRoot());
+        view_tg.addChild(o2.getRoot());
+        view_tg.addChild(o3.getRoot());
+        view_tg.addChild(o4.getRoot());
+        view_tg.addChild(o5.getRoot());
+        view_tg.addChild(o6.getRoot());
+        view_tg.addChild(o7.getRoot());
+        view_tg.addChild(o8.getRoot());
         locale.addBranchGraph(view_group);
         locale.addBranchGraph(world_object_group);
 
-        overlay.setAntialiased(false);
-        overlay.initialize();
+        o1.setAntialiased(false);
+        o2.setAntialiased(false);
+        o3.setAntialiased(false);
+        o4.setAntialiased(false);
+        o5.setAntialiased(false);
+        o6.setAntialiased(false);
+        o7.setAntialiased(false);
+        o8.setAntialiased(false);
+
+        o1.initialize();
+        o2.initialize();
+        o3.initialize();
+        o4.initialize();
+        o5.initialize();
+        o6.initialize();
+        o7.initialize();
+        o8.initialize();
     }
 
     public static void main(String[] argv)
