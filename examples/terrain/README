@@ -29,5 +29,5 @@ The TiledCullingDemo will require a JVM with 256M of memory so use the -Xmx256M
 option to run that demo.  The numgrid.jpg.gz will need to be uncompressed
 before running.
 
-Justin Couch
-Feb '02
+Justin Couch, Alan Hudson
+Oct '02
