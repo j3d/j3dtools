@@ -31,7 +31,7 @@ import org.j3d.ui.navigation.NavigationToolbar;
  * interaction.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NavToolbarDemo extends DemoJFrame
 {
@@ -64,7 +64,8 @@ public class NavToolbarDemo extends DemoJFrame
         NavigationStateManager nav_mgr = new NavigationStateManager(canvas);
         nav_mgr.setMouseHandler(viewHandler);
         nav_mgr.setToolbar(nav_bar);
-        nav_mgr.setNavigationState(NavigationStateListener.WALK_STATE);
+
+        nav_mgr.setNavigationState(NavigationStateListener.NO_STATE);
 
         buildScene();
     }
@@ -144,7 +145,7 @@ public class NavToolbarDemo extends DemoJFrame
         view.attachViewPlatform(camera);
 
         viewHandler.setViewInfo(view, view_tg);
-        viewHandler.setNavigationSpeed(1.0);
+        viewHandler.setNavigationSpeed(1.0f);
     }
 
     public static void main(String[] argv)

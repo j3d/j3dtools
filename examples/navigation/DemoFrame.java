@@ -22,7 +22,7 @@ import javax.media.j3d.*;
  * Demonstration of a mouse navigation in a world.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class DemoFrame extends Frame implements WindowListener
 {
@@ -48,6 +48,9 @@ public class DemoFrame extends Frame implements WindowListener
         setSize(400, 400);
         setLocation(40, 40);
         addWindowListener(this);
+
+        Cursor curse = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
+        canvas.setCursor(curse);
     }
 
     /**

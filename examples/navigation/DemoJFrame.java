@@ -16,6 +16,7 @@ import javax.media.j3d.*;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.GraphicsEnvironment;
 import java.awt.GraphicsDevice;
 
@@ -26,7 +27,7 @@ import java.awt.GraphicsDevice;
  * Demonstration of a mouse navigation in a world.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class DemoJFrame extends JFrame
 {
@@ -53,5 +54,8 @@ public class DemoJFrame extends JFrame
         setSize(400, 400);
         setLocation(40, 40);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        Cursor curse = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
+        canvas.setCursor(curse);
     }
 }

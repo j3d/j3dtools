@@ -27,7 +27,7 @@ import org.j3d.ui.navigation.NavigationStateManager;
  * representation.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class MouseIconDemo extends DemoFrame
     implements NavigationStateListener
@@ -60,9 +60,10 @@ public class MouseIconDemo extends DemoFrame
         NavigationStateManager nav_mgr = new NavigationStateManager(canvas);
         nav_mgr.setNavigationStateListener(this);
         nav_mgr.setMouseHandler(viewHandler);
-        nav_mgr.setNavigationState(FLY_STATE);
 
         buildScene();
+
+        nav_mgr.setNavigationState(NO_STATE);
     }
 
     /**
@@ -97,6 +98,19 @@ public class MouseIconDemo extends DemoFrame
             case TILT_STATE:
                 label = "Navigation state: Tilt";
                 break;
+
+            case FLY_STATE:
+                label = "Navigation state: Fly";
+                break;
+
+            case EXAMINE_STATE:
+                label = "Navigation state: Examine";
+                break;
+
+            case NO_STATE:
+                label = "Navigation state: <none>";
+                break;
+
         }
 
         if(label != null)
@@ -178,7 +192,7 @@ public class MouseIconDemo extends DemoFrame
         view.attachViewPlatform(camera);
 
         viewHandler.setViewInfo(view, view_tg);
-        viewHandler.setNavigationSpeed(1.0);
+        viewHandler.setNavigationSpeed(1.0f);
     }
 
     public static void main(String[] argv)
