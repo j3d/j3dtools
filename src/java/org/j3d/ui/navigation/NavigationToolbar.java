@@ -30,7 +30,8 @@ import org.j3d.util.ImageLoader;
  * The toolbar offers three buttons representing the navigation states. As this
  * panel also implements the state listener, these will change in response to
  * the mouse changing. Clicking these buttons will send the appropriate event
- * back to it's registered listener.
+ * back to it's registered listener. By default, the navigation toolbar does
+ * not have any state pre-set.
  * <p>
  *
  * Using the default images, the toolbar looks like this:
@@ -40,7 +41,7 @@ import org.j3d.util.ImageLoader;
  *
  * @author <a href="http://www.ife.no/vr/">Halden VR Centre, Institute for Energy Technology</a><br>
  *    Updated for j3d.org by Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class NavigationToolbar extends JPanel
     implements ActionListener, NavigationStateListener
@@ -91,9 +92,12 @@ public class NavigationToolbar extends JPanel
     /** The last selected button */
     private JToggleButton lastButton;
 
+    /** Flag to indicate if user state selection is allowed */
+    private boolean allowUserSelect;
+
     /**
      * Create a new horizontal navigation toolbar with an empty list of
-     * viewpoints.
+     * viewpoints and disabled user selection of state.
      */
     public NavigationToolbar()
     {
@@ -102,7 +106,7 @@ public class NavigationToolbar extends JPanel
 
     /**
      * Create a new navigation toolbar with an empty list of viewpoints but
-     * controllable direction for the buttons.
+     * controllable direction for the buttons. The user selection is disabled.
      *
      * @param horizontal True to lay out the buttons horizontally
      */
@@ -116,7 +120,7 @@ public class NavigationToolbar extends JPanel
         navStateGroup = new ButtonGroup();
 
         Icon icon = ImageLoader.loadIcon(FLY_BUTTON);
-        flyButton = new JToggleButton(icon);
+        flyButton = new JToggleButton(icon, false);
         flyButton.setMargin(new Insets(0,0,0,0));
         flyButton.setToolTipText("Fly");
         flyButton.addActionListener(this);
@@ -124,7 +128,7 @@ public class NavigationToolbar extends JPanel
         add(flyButton);
 
         icon = ImageLoader.loadIcon(TILT_BUTTON);
-        tiltButton = new JToggleButton(icon);
+        tiltButton = new JToggleButton(icon, false);
         tiltButton.setMargin(new Insets(0,0,0,0));
         tiltButton.setToolTipText("Tilt");
         tiltButton.addActionListener(this);
@@ -132,7 +136,7 @@ public class NavigationToolbar extends JPanel
         add(tiltButton);
 
         icon = ImageLoader.loadIcon(PAN_BUTTON);
-        panButton = new JToggleButton(icon);
+        panButton = new JToggleButton(icon, false);
         panButton.setMargin(new Insets(0,0,0,0));
         panButton.setToolTipText("Pan");
         panButton.addActionListener(this);
@@ -140,7 +144,7 @@ public class NavigationToolbar extends JPanel
         add(panButton);
 
         icon = ImageLoader.loadIcon(WALK_BUTTON);
-        walkButton = new JToggleButton(icon);
+        walkButton = new JToggleButton(icon, false);
         walkButton.setMargin(new Insets(0,0,0,0));
         walkButton.setToolTipText("Walk");
         walkButton.addActionListener(this);
@@ -148,15 +152,15 @@ public class NavigationToolbar extends JPanel
         add(walkButton);
 
         icon = ImageLoader.loadIcon(EXAMINE_BUTTON);
-        examineButton = new JToggleButton(icon);
+        examineButton = new JToggleButton(icon, false);
         examineButton.setMargin(new Insets(0,0,0,0));
         examineButton.setToolTipText("Examine");
         examineButton.addActionListener(this);
         navStateGroup.add(examineButton);
         add(examineButton);
 
-        flyButton.setSelected(true);
-        lastButton = flyButton;
+        allowUserSelect = false;
+        setEnabled(false);
     }
 
     //----------------------------------------------------------
@@ -174,6 +178,18 @@ public class NavigationToolbar extends JPanel
         navigationListener = l;
     }
 
+    /**
+     * Toggle whether the UI will allow the user to change the state selected
+     * for navigation.
+     *
+     * @param allow True if the user can change the navigation state
+     */
+    public void setAllowUserStateChange(boolean allow)
+    {
+        allowUserSelect = allow;
+        setEnabled(allowUserSelect);
+    }
+
     //----------------------------------------------------------
     // Methods required by the ActionListener
     //----------------------------------------------------------
@@ -185,6 +201,9 @@ public class NavigationToolbar extends JPanel
      */
     public void actionPerformed(ActionEvent evt)
     {
+        if(!allowUserSelect)
+            return;
+
         Object src = evt.getSource();
 
         if(src == flyButton)
@@ -260,7 +279,8 @@ public class NavigationToolbar extends JPanel
                 break;
 
             case NavigationStateListener.NO_STATE:
-                lastButton.setSelected(false);
+                if(lastButton != null)
+                    lastButton.setSelected(false);
                 break;
         }
     }
@@ -288,6 +308,8 @@ public class NavigationToolbar extends JPanel
      */
     public void setEnabled(boolean enabled)
     {
+        super.setEnabled(enabled);
+
         examineButton.setEnabled(enabled);
         flyButton.setEnabled(enabled);
         walkButton.setEnabled(enabled);
