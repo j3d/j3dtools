@@ -25,7 +25,7 @@ import java.util.Map;
  * TODO: add support for interleaved arrays and test performance.
  *
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class ByRefParticleSystem extends ParticleSystem
         implements GeometryUpdater
@@ -34,28 +34,19 @@ public abstract class ByRefParticleSystem extends ParticleSystem
    protected GeometryArray geometryArray;
 
    /** Array containing the current position coordinates */
-   protected double positionRefArray[];
+   protected double[] positionRefArray;
 
    /** Array containing the current texture coordinates */
-   protected float textureCoordRefArray[];
+   protected float[] textureCoordRefArray;
 
    /** Array containing the current color values */
-   protected float colorRefArray[];
+   protected float[] colorRefArray;
 
    /** Array containing the current normals */
-   protected float normalRefArray[];
+   protected float[] normalRefArray;
 
    /** The shape containing the geometry */
    protected Shape3D shape;
-
-   /** PolygonAttributes for Apperance on shape */
-   protected PolygonAttributes polygonAttributes;
-
-   /** TransparencyAttributes for Apperance on shape */
-   protected TransparencyAttributes transparencyAttributes;
-
-   /** TextureAttributes for Apperance on shape */
-   protected TextureAttributes textureAttributes;
 
    /**
    * Create a new particle system that represents the given type.
@@ -87,19 +78,6 @@ public abstract class ByRefParticleSystem extends ParticleSystem
 
        shape.setCollidable( false );
        shape.setPickable( false );
-       shape.setBoundsAutoCompute( false );
-
-       polygonAttributes = new PolygonAttributes( PolygonAttributes.POLYGON_FILL,
-           PolygonAttributes.CULL_NONE, 0 );
-
-       transparencyAttributes =
-           new TransparencyAttributes( TransparencyAttributes.NICEST, 0.0f );
-
-       textureAttributes =
-           new TextureAttributes( TextureAttributes.REPLACE,
-           new Transform3D( ),
-           new Color4f( ),
-           TextureAttributes.FASTEST );
    }
 
    /**
