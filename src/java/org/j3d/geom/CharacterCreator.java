@@ -55,7 +55,7 @@ import org.j3d.util.CharHashMap;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class CharacterCreator
 {
@@ -321,7 +321,8 @@ System.out.println("2nd copy " + second_curve_start +
                                                  start_vtx,
                                                  vtx_count);
 
-//System.out.println("inside curve " + total_coords + " " + closest_point + " : " + newCoords[0] + " " + newCoords[1] );
+//System.out.println("inside curve at " + vtx_count + " closest " + closest_point);
+//System.out.println("pt   " + total_coords + " : " + newCoords[0] + " " + newCoords[1]);
 
                             charCoords[total_coords++] = newCoords[0] * scale;
                             charCoords[total_coords++] = newCoords[1] * scale;
@@ -330,11 +331,8 @@ System.out.println("2nd copy " + second_curve_start +
                         }
                         else
                         {
-                            charCoords[total_coords++] = newCoords[0] * scale;
-                            charCoords[total_coords++] = newCoords[1] * scale;
-                            charCoords[total_coords++] = 0;
-
-//System.out.println("new curve " + (total_coords - 3) + " " + newCoords[0] + " " + newCoords[1]);
+//System.out.println("new curve at " + vtx_count);
+//System.out.println("pt   " + total_coords + " : " + newCoords[0] + " " + newCoords[1]);
 
                             if(triOutputIndex.length < vtx_count * 3)
                                 triOutputIndex = new int[vtx_count * 3];
@@ -378,6 +376,10 @@ System.out.println("2nd copy " + second_curve_start +
                                                    character + "\'");
                             }
 
+                            charCoords[total_coords++] = newCoords[0] * scale;
+                            charCoords[total_coords++] = newCoords[1] * scale;
+                            charCoords[total_coords++] = 0;
+
                             start_vtx = total_coords - 3;
                             vtx_count = 1;
                         }
@@ -386,11 +388,11 @@ System.out.println("2nd copy " + second_curve_start +
                     break;
 
                 case PathIterator.SEG_LINETO:
+//System.out.println("line " + total_coords + " : " + newCoords[0] + " " + newCoords[1]);
                     charCoords[total_coords++] = newCoords[0] * scale;
                     charCoords[total_coords++] = newCoords[1] * scale;
                     charCoords[total_coords++] = 0;
                     vtx_count++;
-//System.out.println("line " + (total_coords - 3) + " : " + newCoords[0] + " " + newCoords[1]);
                     break;
 
                 case PathIterator.SEG_CLOSE:
@@ -402,7 +404,7 @@ System.out.println("2nd copy " + second_curve_start +
             glyph_path.next();
         }
 
-//System.out.println("final curve");
+//System.out.println("final curve: size " + charCoords.length + " vtx " + vtx_count + " total " + total_coords);
         if(second_curve_start > start_vtx)
         {
             int lower = second_curve_start - closest_point;
@@ -426,23 +428,28 @@ System.out.println("2nd copy " + second_curve_start +
                              closest_point + 3,
                              total_coords -
                               second_curve_start + lower + 3);
-
-//System.out.println("adjusting curve: closest " + closest_point +
-//   " total " + total_coords + " amt " + lower);
-//System.out.println("2nd copy " + second_curve_start +
-//   " to " + (closest_point + 3) +
-//   " amt " + (total_coords - second_curve_start + lower + 3));
-
+/*
+System.out.println("adjusting curve: closest " + closest_point +
+   " total " + total_coords + " amt " + lower);
+System.out.println("2nd copy " + second_curve_start +
+   " to " + (closest_point + 3) +
+   " amt " + (total_coords - second_curve_start + lower + 3));
+*/
             // Adjust for the extra replicated coordinate
             total_coords += 3;
             vtx_count++;
         }
+
         // Tesselate the final curve that has not be tesselated yet due
         // to not having the moveto command called.
         if(triOutputIndex.length < vtx_count * 3)
             triOutputIndex = new int[vtx_count * 3];
 
 //System.out.println("close at " + total_coords + " : " + start_vtx + " " + vtx_count);
+//for(int i = 0; i < vtx_count; i++)
+//  System.out.println(i + " " + charCoords[i * 3] + " " + charCoords[i * 3 + 1]);
+
+
         num_triangles =
             triangulator.triangulateConcavePolygon(charCoords,
                                                    start_vtx,
@@ -450,14 +457,18 @@ System.out.println("2nd copy " + second_curve_start +
                                                    triOutputIndex,
                                                    FACE_NORMAL);
 
-//System.out.println("num index post triangle = " + num_triangles);
-//System.out.println("old num tri " + num_triangles + " " + vtx_count + " " + start_vtx);
+//System.out.println("num index post triangle = " + num_triangles + " " + vtx_count + " " + start_vtx);
 
         if(num_triangles > 0)
         {
             num_triangles *= 3;
             for(int i = 0; i < num_triangles; i++)
                 triOutputIndex[i] /= 3;
+
+//for(int i = 0; i < num_triangles / 3; i++)
+//  System.out.println(i + " " + triOutputIndex[i * 3] +
+//                     " " + triOutputIndex[i * 3 + 1] +
+//                     " " + triOutputIndex[i * 3 + 2]);
 
             if(charIndex.length < total_index + num_triangles)
             {
