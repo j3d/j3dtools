@@ -25,6 +25,8 @@ import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 
 import javax.vecmath.Vector3f;
+import javax.vecmath.Vector3d;
+import javax.vecmath.Point3d;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -54,7 +56,7 @@ import org.j3d.util.SAXErrorHandler;
  * device running at a time.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class FileInputDevice implements InputDevice
 {
@@ -94,6 +96,9 @@ public class FileInputDevice implements InputDevice
     /** Attribute name that defines the time for the sensor info */
     private static final String TIME_ATTR = "time";
 
+    /** Attribute name of the position information */
+    private static final String POSITION_ATTR = "position";
+
     /** Attribute name that defines how many times to loop the sensor */
     private static final String SENSOR_LOOP_ATTR = "loops";
 
@@ -102,18 +107,6 @@ public class FileInputDevice implements InputDevice
 
     /** Attribute name defining the button value */
     private static final String BUTTON_VALUE_ATTR = "value";
-
-    /** Attribute name defining the press state of the button */
-    private static final String BUTTON_STATE_ATTR = "state";
-
-    /** Token value of the press button state */
-    private static final String PRESS_STATE = "press";
-
-    /** Token value of the on hold button state */
-    private static final String ON_STATE = "on";
-
-    /** Token value of the off hold button state */
-    private static final String OFF_STATE = "off";
 
     // Ordinary variables
 
@@ -139,6 +132,10 @@ public class FileInputDevice implements InputDevice
         mode = DEMAND_DRIVEN;
     }
 
+    //---------------------------------------------------------
+    // Methods required by the InputDevice
+    //---------------------------------------------------------
+
     /**
      * Initialise this instance. During this step, the initialisation will
      * attempt to load the XML file defined by the system property. If the
@@ -159,58 +156,109 @@ public class FileInputDevice implements InputDevice
             return false;
 
         // Zip through the document structure looking for setup information.
-
-        return true;
+        return parseDocument(doc);
     }
 
+    /**
+     * Get the number of sensors that this input device contains. If no sensors
+     * are registered by the file, this returns zero.
+     *
+     * @return The number of sensors used
+     */
     public int getSensorCount()
     {
         return sensorCount;
     }
 
+    /**
+     * Get the sensor at the given index. If the index is out of range an
+     * array index exception is given.
+     *
+     * @param index The sensor to get at the given position
+     * @return The sensor at the given index
+     * @throws ArrayIndexOutOfBoundsException The index was invalid
+     */
     public Sensor getSensor(int index)
     {
         return sensorList[index];
     }
 
+    /**
+     * Get the mode using for processing input to this event.
+     *
+     * @return The current processing mode
+     */
     public int getProcessingMode()
     {
         return mode;
     }
 
+    /**
+     * Set the processing mode to the given mode.
+     *
+     * @param mode The mode to now use
+     */
     public void setProcessingMode(int mode)
     {
         this.mode = mode;
     }
 
+    /**
+     * Set the current position as the default location of the sensor values.
+     * For each sensor it will use the current position at this point as the
+     * new hotspot on the Sensor object.
+     */
     public void setNominalPositionAndOrientation()
     {
+        Transform3D read = new Transform3D();
+        Point3d hotspot = new Point3d();
+        Vector3d trans = new Vector3d();
+        Sensor sensor;
+
+        for(int i = 0; i < sensorList.length; i++)
+        {
+            sensor = sensorList[i];
+
+            sensor.getRead(read);
+            read.get(trans);
+            hotspot.set(trans);
+
+            sensor.setHotspot(hotspot);
+        }
     }
 
+    /**
+     * Ignored by instruction of the InputDevice documentation.
+     */
     public void processStreamInput()
     {
     }
 
+    /**
+     * Process the input now and set the sensor values to a new value. This is
+     * called on demand depending on the processing mode by the J3D
+     *implementation.
+     */
     public void pollAndProcessInput()
     {
         long current_time = System.currentTimeMillis();
-/**
-        // do the processing here and setup values to be returned
-        translation.x = x0[leg_num] + delta_t * x_diff[leg_num];
-        translation.y = y0[leg_num] + delta_t * y_diff[leg_num];
-        translation.z = z0[leg_num] + delta_t * z_diff[leg_num];
+        float calc_time = 0;
 
-        position_tx.setTranslation(translation);
+        for(int i = 0; i < sensorList.length; i++)
+            sensorList[i].recalculate(current_time, calc_time);
+    }
 
-        sensor.setNextSensorRead(current_time,
-                                 position_tx,
-                                 EMPTY_BUTTONS);
-*/
-     }
-
+    /**
+     * Close the resources used by this device. This implementation has nothing
+     * to do.
+     */
     public void close()
     {
     }
+
+    //---------------------------------------------------------
+    // Miscellaneous local methods
+    //---------------------------------------------------------
 
     /**
      * Convenience method to find the URL of the file we are going to load.
@@ -249,6 +297,7 @@ public class FileInputDevice implements InputDevice
         {
             // This is just in case we find ourselves in an applet environment
             // and we can't read from disk.
+            System.err.println("Security exception reading local input file");
         }
         catch(MalformedURLException mue)
         {
@@ -369,6 +418,91 @@ public class FileInputDevice implements InputDevice
         int loops = Integer.parseInt(value);
 
         // if the index is dud or out of range, let the exception go
-        sensorList[index] = new FileInputSensor(this, buttons);
+        FileInputSensor file_sensor = new FileInputSensor(this, buttons);
+        sensorList[index] = file_sensor;
+
+        // Now let's read the sensor values.
+        NodeList data = sensor.getElementsByTagName(SENSOR_DATA_ELEMENT);
+
+        int i, j;
+        int old_index;
+        int size = data.getLength();
+        Element el;
+        String component;
+        float x, y, z;
+        float pos_time;
+
+        for(i = 0; i < size; i++)
+        {
+            el = (Element)data.item(i);
+            value = el.getAttribute(POSITION_ATTR);
+
+            index = value.indexOf(' ');
+            component = value.substring(0, index);
+
+            // what to do if we get a unparsable value? Recover and ignore?
+            try
+            {
+                x = Float.parseFloat(component);
+
+                old_index = index;
+                index = value.indexOf(' ', index);
+                component = value.substring(old_index + 1, index);
+
+                y = Float.parseFloat(component);
+                component = value.substring(index + 1);
+
+                z = Float.parseFloat(component);
+
+                pos_time = Float.parseFloat(el.getAttribute(TIME_ATTR));
+
+                file_sensor.addPositionData(x, y, z, pos_time);
+            }
+            catch(NumberFormatException nfe)
+            {
+                // ignore it and go to the next attribute.
+            }
+        }
+
+        // Read the button information.
+        data = sensor.getElementsByTagName(SENSOR_BUTTON_ELEMENT);
+
+        // what if this length doesn't equal buttons above?
+        size = data.getLength();
+        int button_index;
+        int button_size;
+        int button_state, button_value;
+        NodeList button_data;
+
+        for(i = 0; i < size; i++)
+        {
+            el = (Element)data.item(i);
+            value = el.getAttribute(INDEX_ATTR);
+
+            button_index = Integer.parseInt(value);
+
+            button_data = el.getElementsByTagName(BUTTON_DATA_ELEMENT);
+            button_size = button_data.getLength();
+
+            for(j = 0; j < button_size; j++)
+            {
+                try
+                {
+                    el = (Element)button_data.item(j);
+                    pos_time = Float.parseFloat(el.getAttribute(TIME_ATTR));
+
+                    value = el.getAttribute(BUTTON_VALUE_ATTR);
+                    button_value = Integer.parseInt(value);
+
+                    file_sensor.addButtonData(button_index,
+                                              pos_time,
+                                              button_value);
+                }
+                catch(NumberFormatException nfe)
+                {
+                    // ignore it and go to the next attribute.
+                }
+            }
+        }
     }
 }
