@@ -34,7 +34,7 @@ import javax.media.j3d.Texture2D;
  * the mouse feedback to put the user in that position.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class InteractiveTextureOverlay extends TextureOverlay
     implements InteractiveOverlay
@@ -43,7 +43,9 @@ public class InteractiveTextureOverlay extends TextureOverlay
     private InputRequester requester;
 
     /** A buffer to hold listeners till a requester is set */
-    private ArrayList buffList;
+    private ArrayList buffMouseList;
+    private ArrayList buffMotionList;
+    private ArrayList buffKeyList;
 
     /**
      * Constructs an overlay window. This window will not be visible
@@ -58,8 +60,8 @@ public class InteractiveTextureOverlay extends TextureOverlay
     public InteractiveTextureOverlay(Canvas3D canvas, Dimension size)
     {
         super(canvas, size);
-        if (buffList == null)
-            buffList = new ArrayList();
+
+        initLists();
     }
 
     /**
@@ -79,8 +81,7 @@ public class InteractiveTextureOverlay extends TextureOverlay
     {
         super(canvas, size, texture);
 
-        if (buffList == null)
-            buffList = new ArrayList();
+        initLists();
     }
 
     /**
@@ -105,8 +106,7 @@ public class InteractiveTextureOverlay extends TextureOverlay
     {
         super(canvas, size, hasAlpha, updateManager, texture);
 
-        if (buffList == null)
-            buffList = new ArrayList();
+        initLists();
     }
 
     //------------------------------------------------------------------------
@@ -126,24 +126,43 @@ public class InteractiveTextureOverlay extends TextureOverlay
         requester = req;
 
         Object listener;
-        for(int i=0; i < buffList.size();i++)
+        for(int i=0; i < buffMouseList.size();i++)
         {
-           listener = buffList.get(i);
-           if (listener instanceof MouseListener)
-              requester.addMouseListener((MouseListener)listener, this);
-           else if (listener instanceof MouseMotionListener)
-              requester.addMouseMotionListener((MouseMotionListener)listener, this);
-           else if (listener instanceof KeyListener)
-              requester.addKeyListener((KeyListener)listener, this);
-
+           listener = buffMouseList.get(i);
+           requester.addMouseListener((MouseListener)listener, this);
         }
 
-        buffList.clear();
+        for(int i=0; i < buffMotionList.size();i++)
+        {
+           listener = buffMotionList.get(i);
+           requester.addMouseMotionListener((MouseMotionListener)listener, this);
+        }
+
+        for(int i=0; i < buffKeyList.size();i++)
+        {
+           listener = buffKeyList.get(i);
+           requester.addKeyListener((KeyListener)listener, this);
+        }
+
+
+        buffMouseList = null;
+        buffMotionList = null;
+        buffKeyList = null;
     }
 
     //------------------------------------------------------------------------
     // Local convenience methods
     //------------------------------------------------------------------------
+
+    /**
+     * Initialize the buffered lists used to defer listeners setting.
+     */
+     private void initLists()
+     {
+        buffMouseList = new ArrayList();
+        buffMotionList = new ArrayList();
+        buffKeyList = new ArrayList();
+     }
 
     /**
      * Request that keyboard focus be sent to this listener object now.
@@ -168,7 +187,7 @@ public class InteractiveTextureOverlay extends TextureOverlay
         if(requester != null)
             requester.addMouseListener(l, this);
         else
-            buffList.add(l);
+            buffMouseList.add(l);
     }
 
     /**
@@ -183,7 +202,7 @@ public class InteractiveTextureOverlay extends TextureOverlay
         if(requester != null)
             requester.removeMouseListener(l, this);
         else
-            buffList.remove(l);
+            buffMouseList.remove(l);
     }
 
     /**
@@ -198,7 +217,7 @@ public class InteractiveTextureOverlay extends TextureOverlay
         if(requester != null)
             requester.addMouseMotionListener(l, this);
         else
-            buffList.add(l);
+            buffMotionList.add(l);
     }
 
     /**
@@ -213,7 +232,7 @@ public class InteractiveTextureOverlay extends TextureOverlay
         if(requester != null)
             requester.removeMouseMotionListener(l, this);
         else
-            buffList.remove(l);
+            buffMotionList.remove(l);
     }
 
     /**
@@ -228,7 +247,7 @@ public class InteractiveTextureOverlay extends TextureOverlay
         if(requester != null)
             requester.addKeyListener(l, this);
         else
-            buffList.add(l);
+            buffKeyList.add(l);
     }
 
     /**
@@ -242,6 +261,6 @@ public class InteractiveTextureOverlay extends TextureOverlay
         if(requester != null)
             requester.removeKeyListener(l, this);
         else
-            buffList.remove(l);
+            buffKeyList.remove(l);
     }
 }
