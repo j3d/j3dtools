@@ -13,11 +13,14 @@ SOURCE = GeometryData.java \
   SphereGenerator.java \
   CylinderGenerator.java \
   TorusGenerator.java \
+  SpringGenerator.java \
   IntersectionUtils.java \
   TestBoxGenerator.java \
   TestConeGenerator.java \
   TestCylinderGenerator.java \
   TestSphereGenerator.java \
+  TestTorusGenerator.java \
+  TestSpringGenerator.java \
 
 #		Cone.java \
 #         GIODCylinder.java \
@@ -30,10 +33,7 @@ SOURCE = GeometryData.java \
 #         Spring.java \
 #		 BoxGenerator.java \
 #		 MobiusGenerator.java \
-#		 SpringGenerator.java \
 #		 Axis.java \
-#		 TestTorusGenerator.java \
-#		 TestSpringGenerator.java \
 
 #         Torus.java	\
 
