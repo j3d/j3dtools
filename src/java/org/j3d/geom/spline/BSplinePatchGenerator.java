@@ -31,7 +31,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class BSplinePatchGenerator extends PatchGenerator
 {
@@ -65,7 +65,7 @@ public class BSplinePatchGenerator extends PatchGenerator
      */
     public BSplinePatchGenerator()
     {
-        this(DEFAULT_FACETS, DEFAULT_DEGREE, DEFAULT_DEGREE);
+        this(DEFAULT_FACETS, DEFAULT_FACETS, DEFAULT_DEGREE, DEFAULT_DEGREE);
     }
 
     /**
@@ -73,12 +73,13 @@ public class BSplinePatchGenerator extends PatchGenerator
      * over the side of the patch, regardless of extents and default degree
      * of 3 for both width and depth.
      *
-     * @param facets The number of facets on the side of the cone
+     * @param widthFacets The number of facets on the width of the patch
+     * @param depthFacets The number of facets on the width of the patch
      * @throws IllegalArgumentException The number of facets is less than 3
      */
-    public BSplinePatchGenerator(int facets)
+    public BSplinePatchGenerator(int widthFacets, int depthFacets)
     {
-        this(facets, DEFAULT_DEGREE, DEFAULT_DEGREE);
+        this(widthFacets, depthFacets, DEFAULT_DEGREE, DEFAULT_DEGREE);
     }
 
     /**
@@ -86,13 +87,14 @@ public class BSplinePatchGenerator extends PatchGenerator
      * over the side of the patch, regardless of extents and the same degree
      * for both width and depth.
      *
-     * @param facets The number of facets on the side of the cone
+     * @param widthFacets The number of facets on the width of the patch
+     * @param depthFacets The number of facets on the width of the patch
      * @param t The degree of the curve > 1
      * @throws IllegalArgumentException The number of facets is less than 3
      */
-    public BSplinePatchGenerator(int facets, int t)
+    public BSplinePatchGenerator(int widthFacets, int depthFacets, int t)
     {
-        this(facets, t, t);
+        this(widthFacets, depthFacets, t, t);
     }
 
     /**
@@ -105,10 +107,16 @@ public class BSplinePatchGenerator extends PatchGenerator
      * @param tDepth The degree of the curve in the depth direction > 1
      * @throws IllegalArgumentException The number of facets is less than 3
      */
-    public BSplinePatchGenerator(int facets, int tWidth, int tDepth)
+    public BSplinePatchGenerator(int widthFacets,
+                                 int depthFacets,
+                                 int tWidth,
+                                 int tDepth)
     {
-        if(facets < 3)
-            throw new IllegalArgumentException("Number of facets is < 3");
+        if(widthFacets < 3)
+            throw new IllegalArgumentException("Number of width facets is < 3");
+
+        if(depthFacets < 3)
+            throw new IllegalArgumentException("Number of depth facets is < 3");
 
         if(tWidth < 2)
             throw new IllegalArgumentException("Width degree is < 2");
@@ -117,7 +125,8 @@ public class BSplinePatchGenerator extends PatchGenerator
             throw new IllegalArgumentException("Depth degree is < 2");
 
         patchChanged = true;
-        facetCount = facets;
+        widthFacetCount = widthFacets;
+        depthFacetCount = depthFacets;
 
         widthDegree = tWidth;
         depthDegree = tDepth;
@@ -195,13 +204,13 @@ public class BSplinePatchGenerator extends PatchGenerator
             throw new IllegalArgumentException("Width degree is < 2");
 
         if(wKnots.length < (numWidthControlPoints + tWidth + 1))
-            throw new IllegalArgumentException("Width Knots < 3");
+            throw new IllegalArgumentException("wknts.length < n + k + 1");
 
         if(tDepth < 2)
             throw new IllegalArgumentException("Depth degree is < 2");
 
         if(dKnots.length < (numDepthControlPoints + tDepth + 1))
-            throw new IllegalArgumentException("Depth Knots < 3");
+            throw new IllegalArgumentException("dknts.length < n + k + 1");
 
         widthDegree = tWidth;
         depthDegree = tDepth;
@@ -214,10 +223,10 @@ public class BSplinePatchGenerator extends PatchGenerator
 
         int i;
 
-        for(i = 0; i < tWidth; i++)
+        for(i = 0; i < wKnots.length; i++)
             widthKnots[i] = (float)wKnots[i];
 
-        for(i = 0; i < tDepth; i++)
+        for(i = 0; i < dKnots.length; i++)
             depthKnots[i] = (float)dKnots[i];
 
         numWidthKnots = wKnots.length;
@@ -292,7 +301,7 @@ public class BSplinePatchGenerator extends PatchGenerator
     public void generateSmoothKnots()
     {
         // resize if necessary
-        numWidthKnots = numWidthControlPoints + widthDegree;
+        numWidthKnots = numWidthControlPoints + widthDegree + 1;
         if(widthKnots.length < numWidthKnots)
             widthKnots = new float[numWidthKnots];
 
@@ -300,7 +309,7 @@ public class BSplinePatchGenerator extends PatchGenerator
 
         for(j = 0; j < numWidthKnots; j++)
         {
-            if(j < widthDegree)
+            if(j <= widthDegree)
                 widthKnots[j] = 0;
             else if(j < numWidthControlPoints)
                 widthKnots[j] = j - widthDegree + 1;
@@ -308,13 +317,13 @@ public class BSplinePatchGenerator extends PatchGenerator
                 widthKnots[j] = numWidthControlPoints - widthDegree + 1;
         }
 
-        numDepthKnots = numDepthControlPoints + depthDegree;
+        numDepthKnots = numDepthControlPoints + depthDegree + 1;
         if(depthKnots.length < numDepthKnots)
             depthKnots = new float[numDepthKnots];
 
         for(j = 0; j < numDepthKnots; j++)
         {
-            if(j < depthDegree)
+            if(j <= depthDegree)
                 depthKnots[j] = 0;
             else if(j < numDepthControlPoints)
                 depthKnots[j] = j - depthDegree + 1;
@@ -333,13 +342,13 @@ public class BSplinePatchGenerator extends PatchGenerator
             return;
 
         patchChanged = false;
-        numPatchValues = (facetCount + 1) * 3;
+        numPatchValues = (widthFacetCount + 1) * 3;
 
         if((patchCoordinates == null) ||
            (numPatchValues > patchCoordinates.length) ||
            (numPatchValues > patchCoordinates[0].length))
         {
-            patchCoordinates = new float[facetCount + 1][numPatchValues];
+            patchCoordinates = new float[depthFacetCount + 1][numPatchValues];
         }
 
 
@@ -360,20 +369,19 @@ public class BSplinePatchGenerator extends PatchGenerator
         double bi, bj;
         double x, y, z;
         int cnt, p_cnt;
-        int last = facetCount * 3;
-        int last_depth = (numDepthControlPoints - 1) * 3;
-        int last_width = numWidthControlPoints - 1;
+        int w_order = widthDegree + 1;
+        int d_order = depthDegree + 1;
 
         // Step size along the curve
-        i_inc = (numWidthControlPoints - widthDegree + 1) / (double)facetCount;
-        j_inc = (numDepthControlPoints - depthDegree + 1) / (double)facetCount;
+        i_inc = widthKnots[numWidthKnots - 1] / (double)(widthFacetCount + 1);
+        j_inc = depthKnots[numDepthKnots - 1] / (double)(depthFacetCount + 1);
 
         i_inter = 0;
-        for(i = 0; i < facetCount; i++)
+        for(i = 0; i <= widthFacetCount; i++)
         {
             j_inter = 0;
             p_cnt = 0;
-            for(j = 0; j < facetCount; j++)
+            for(j = 0; j <= depthFacetCount; j++)
             {
                 x = 0;
                 y = 0;
@@ -386,8 +394,8 @@ public class BSplinePatchGenerator extends PatchGenerator
                     cnt = 0;
                     for(kj = 0; kj < numDepthControlPoints; kj++)
                     {
-                        bi = splineBlend(ki, widthDegree, false, i_inter);
-                        bj = splineBlend(kj, depthDegree, true, j_inter);
+                        bi = splineBlend(ki, w_order, false, i_inter);
+                        bj = splineBlend(kj, d_order, true, j_inter);
 
                         x += controlPointCoordinates[ki][cnt++] * bi * bj;
                         y += controlPointCoordinates[ki][cnt++] * bi * bj;
@@ -404,66 +412,6 @@ public class BSplinePatchGenerator extends PatchGenerator
 
             i_inter += i_inc;
         }
-
-
-        // Process the last row along the depth.
-        i_inter = 0;
-
-        for(i = 0; i < facetCount; i++)
-        {
-            x = 0;
-            y = 0;
-            z = 0;
-
-            for(ki = 0; ki < numWidthControlPoints; ki++)
-            {
-                bi = splineBlend(ki, widthDegree, false, i_inter);
-                x += controlPointCoordinates[ki][last_depth] * bi;
-                y += controlPointCoordinates[ki][last_depth + 1] * bi;
-                z += controlPointCoordinates[ki][last_depth + 2] * bi;
-            }
-
-            patchCoordinates[i][last] = (float)x;
-            patchCoordinates[i][last + 1] = (float)y;
-            patchCoordinates[i][last + 2] = (float)z;
-            i_inter += i_inc;
-        }
-
-        patchCoordinates[facetCount][last] =
-            controlPointCoordinates[last_width][last_depth];
-        patchCoordinates[facetCount][last + 1] =
-            controlPointCoordinates[last_width][last_depth + 1];
-        patchCoordinates[facetCount][last + 2] =
-            controlPointCoordinates[last_width][last_depth + 2];
-
-        // Process the last row along the width.
-        j_inter = 0;
-        for(j = 0; j < facetCount; j++)
-        {
-            x = 0;
-            y = 0;
-            z = 0;
-            cnt = 0;
-            for(kj = 0; kj < numDepthControlPoints; kj++)
-            {
-                bj = splineBlend(kj, depthDegree, true, j_inter);
-                x += controlPointCoordinates[last_width][cnt++] * bj;
-                y += controlPointCoordinates[last_width][cnt++] * bj;
-                z += controlPointCoordinates[last_width][cnt++] * bj;
-            }
-
-            patchCoordinates[facetCount][j * 3] = (float)x;
-            patchCoordinates[facetCount][j * 3 + 1] = (float)y;
-            patchCoordinates[facetCount][j * 3 + 2] = (float)z;
-            j_inter += j_inc;
-        }
-
-        patchCoordinates[facetCount][last] =
-            controlPointCoordinates[last_width][last_depth];
-        patchCoordinates[facetCount][last + 1] =
-            controlPointCoordinates[last_width][last_depth + 1];
-        patchCoordinates[facetCount][last + 2] =
-            controlPointCoordinates[last_width][last_depth + 2];
     }
 
     /**
@@ -478,20 +426,19 @@ public class BSplinePatchGenerator extends PatchGenerator
         double x, y, z, denom;
         float w;
         int cnt, p_cnt;
-        int last = facetCount * 3;
-        int last_depth = (numDepthControlPoints - 1) * 3;
-        int last_width = numWidthControlPoints - 1;
+        int w_order = widthDegree + 1;
+        int d_order = depthDegree + 1;
 
         // Step size along the curve
-        i_inc = (numWidthControlPoints - widthDegree + 1) / (double)facetCount;
-        j_inc = (numDepthControlPoints - depthDegree + 1) / (double)facetCount;
+        i_inc = widthKnots[numWidthKnots - 1] / (double)(widthFacetCount + 1);
+        j_inc = depthKnots[numDepthKnots - 1] / (double)(depthFacetCount + 1);
 
         i_inter = 0;
-        for(i = 0; i < facetCount; i++)
+        for(i = 0; i <= widthFacetCount; i++)
         {
             j_inter = 0;
             p_cnt = 0;
-            for(j = 0; j < facetCount; j++)
+            for(j = 0; j <= depthFacetCount; j++)
             {
                 x = 0;
                 y = 0;
@@ -505,8 +452,8 @@ public class BSplinePatchGenerator extends PatchGenerator
                     cnt = 0;
                     for(kj = 0; kj < numDepthControlPoints; kj++)
                     {
-                        bi = splineBlend(ki, widthDegree, false, i_inter);
-                        bj = splineBlend(kj, depthDegree, true, j_inter);
+                        bi = splineBlend(ki, w_order, false, i_inter);
+                        bj = splineBlend(kj, d_order, true, j_inter);
                         w = controlPointWeights[ki][kj];
 
                         x += controlPointCoordinates[ki][cnt++] * bi * bj * w;
@@ -535,122 +482,41 @@ public class BSplinePatchGenerator extends PatchGenerator
 
             i_inter += i_inc;
         }
-
-
-        // Process the last row along the depth.
-        i_inter = 0;
-
-        for(i = 0; i < facetCount; i++)
-        {
-            x = 0;
-            y = 0;
-            z = 0;
-            denom = 0;
-
-            for(ki = 0; ki < numWidthControlPoints; ki++)
-            {
-                bi = splineBlend(ki, widthDegree, false, i_inter);
-                w = controlPointWeights[ki][numDepthControlPoints];
-
-                x += controlPointCoordinates[ki][last_depth] * bi * w;
-                y += controlPointCoordinates[ki][last_depth + 1] * bi * w;
-                z += controlPointCoordinates[ki][last_depth + 2] * bi * w;
-
-                denom += bi * w;
-            }
-
-            if(denom != 0)
-            {
-                patchCoordinates[i][last] = (float)(x / denom);
-                patchCoordinates[i][last + 1] = (float)(y / denom);
-                patchCoordinates[i][last + 2] = (float)(z / denom);
-            }
-            else
-            {
-                patchCoordinates[i][last] = (float)x;
-                patchCoordinates[i][last + 1] = (float)y;
-                patchCoordinates[i][last + 2] = (float)z;
-            }
-
-            i_inter += i_inc;
-        }
-
-        // Process the last row along the width.
-        j_inter = 0;
-        for(j = 0; j < facetCount; j++)
-        {
-            x = 0;
-            y = 0;
-            z = 0;
-            cnt = 0;
-            denom = 0;
-
-            for(kj = 0; kj < numDepthControlPoints; kj++)
-            {
-                bj = splineBlend(kj, depthDegree, true, j_inter);
-                w = controlPointWeights[last_width][kj];
-                x += controlPointCoordinates[last_width][cnt++] * bj * w;
-                y += controlPointCoordinates[last_width][cnt++] * bj * w;
-                z += controlPointCoordinates[last_width][cnt++] * bj * w;
-
-                denom += bj * w;
-            }
-
-            if(denom != 0)
-            {
-                patchCoordinates[facetCount][j * 3] = (float)(x / denom);
-                patchCoordinates[facetCount][j * 3 + 1] = (float)(y / denom);
-                patchCoordinates[facetCount][j * 3 + 2] = (float)(z / denom);
-            }
-            else
-            {
-                patchCoordinates[facetCount][j * 3] = (float)x;
-                patchCoordinates[facetCount][j * 3 + 1] = (float)y;
-                patchCoordinates[facetCount][j * 3 + 2] = (float)z;
-            }
-
-            j_inter += j_inc;
-        }
-
-        patchCoordinates[facetCount][last] =
-            controlPointCoordinates[last_width][last_depth];
-        patchCoordinates[facetCount][last + 1] =
-            controlPointCoordinates[last_width][last_depth + 1];
-        patchCoordinates[facetCount][last + 2] =
-            controlPointCoordinates[last_width][last_depth + 2];
     }
-
 
     /**
      * Calculate the blending value for the spline recursively.
      * If the numerator and denominator are 0 the result is 0.
+     *
+     * @param i The basis function to check
+     * @param k The order of the curve
+     * @param t The position along the curve to check ie N(t)
      */
-    private double splineBlend(int k, int t, boolean useDepth, double v)
+    private double splineBlend(int i, int k, boolean useDepth, double t)
     {
         double ret_val;
 
         // Do this just to make the maths traceable with the std algorithm
         float[] u = useDepth ? depthKnots : widthKnots;
 
-        if(t == 1)
+        if(k == 1)
         {
-            ret_val = ((u[k] <= v) && (v < u[k+1])) ? 1 : 0;
+            ret_val = ((u[i] <= t) && (t < u[i+1])) ? 1 : 0;
         }
         else
         {
-            if((u[k+t-1] == u[k]) && (u[k+t] == u[k+1]))
-                ret_val = 0;
-            else if(u[k+t-1] == u[k])
-                ret_val = (u[k+t] - v) /
-                          (u[k+t] - u[k+1]) * splineBlend(k+1, t-1, useDepth, v);
-            else if(u[k+t] == u[k+1])
-                ret_val = (v - u[k]) /
-                          (u[k+t-1] - u[k]) * splineBlend(k, t-1, useDepth, v);
-            else
-                ret_val = (v - u[k]) /
-                          (u[k+t-1] - u[k]) * splineBlend(k, t-1, useDepth, v) +
-                          (u[k+t] - v) /
-                          (u[k+t] - u[k+1]) * splineBlend(k+1, t-1, useDepth, v);
+            double b1 = splineBlend(i, k-1, useDepth, t);
+            double b2 = splineBlend(i+1, k-1, useDepth, t);
+
+            double d1 = u[i+k-1] - u[i];
+            double d2 = u[i+k] - u[i+1];
+
+            double e, f;
+
+            e = (b1 != 0) ? (t - u[i]) / d1 * b1 : 0;
+            f = (b2 != 0) ? (u[i+k] - t) / d2  * b2 : 0;
+
+            ret_val = e + f;
         }
 
         return ret_val;

@@ -30,7 +30,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * at http://astronomy.swin.edu.au/~pbourke/curves/spline/.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class BSplineGenerator extends GeometryGenerator
 {
@@ -338,10 +338,18 @@ public class BSplineGenerator extends GeometryGenerator
 
         // Adjust the control point weight size if needed.
         if((controlPointWeights == null) ||
-           (controlPoints.length != controlPointWeights.length))
+           (numValid > controlPointWeights.length))
         {
             float[] tmp = new float[controlPoints.length];
-            System.arraycopy(controlPointWeights, 0, tmp, 0, numValid);
+
+            if(controlPointWeights.length != 0) {
+                int cnt = numValid < controlPointWeights.length ?
+                          numValid :
+                          controlPointWeights.length;
+
+                System.arraycopy(controlPointWeights, 0, tmp, 0, cnt);
+            }
+
             controlPointWeights = tmp;
         }
 
@@ -365,21 +373,32 @@ public class BSplineGenerator extends GeometryGenerator
         if(numValid * 3 > controlPointCoordinates.length)
             controlPointCoordinates = new float[numValid * 3];
 
-        for(int i = 0; i < numValid; )
+        for(int i = 0; i < numValid * 3; )
         {
-            controlPointCoordinates[i++] = (float)controlPoints[i];
-            controlPointCoordinates[i++] = (float)controlPoints[i];
-            controlPointCoordinates[i++] = (float)controlPoints[i];
+            controlPointCoordinates[i] = (float)controlPoints[i];
+            i++;
+            controlPointCoordinates[i] = (float)controlPoints[i];
+            i++;
+            controlPointCoordinates[i] = (float)controlPoints[i];
+            i++;
         }
 
         numControlPoints = numValid;
 
         // Adjust the control point weight size if needed.
         if((controlPointWeights == null) ||
-           (controlPoints.length != controlPointWeights.length))
+           (numValid > controlPointWeights.length))
         {
-            float[] tmp = new float[controlPoints.length];
-            System.arraycopy(controlPointWeights, 0, tmp, 0, numValid);
+            float[] tmp = new float[numValid];
+
+            if(controlPointWeights.length != 0) {
+                int cnt = numValid < controlPointWeights.length ?
+                          numValid :
+                          controlPointWeights.length;
+
+                System.arraycopy(controlPointWeights, 0, tmp, 0, cnt);
+            }
+
             controlPointWeights = tmp;
         }
 
@@ -457,11 +476,14 @@ public class BSplineGenerator extends GeometryGenerator
         if(numValid * 3 > controlPointCoordinates.length)
             controlPointCoordinates = new float[numValid * 3];
 
-        for(int i = 0; i < numValid; )
+        for(int i = 0; i < numValid * 3; )
         {
-            controlPointCoordinates[i++] = (float)controlPoints[i];
-            controlPointCoordinates[i++] = (float)controlPoints[i];
-            controlPointCoordinates[i++] = (float)controlPoints[i];
+            controlPointCoordinates[i] = (float)controlPoints[i];
+            i++;
+            controlPointCoordinates[i] = (float)controlPoints[i];
+            i++;
+            controlPointCoordinates[i] = (float)controlPoints[i];
+            i++;
         }
 
         numControlPoints = numValid;
@@ -488,19 +510,15 @@ public class BSplineGenerator extends GeometryGenerator
      * @param t The degree of the curve
      * @param knts The knot values to control the curve
      */
-    public void setKnots(int t, float[] knts)
+    public void setKnots(int n, float[] knts)
     {
-        if(t < 2)
+        if(n < 2)
             throw new IllegalArgumentException("Degree is < 2");
 
-        if(knts.length < (numControlPoints + t + 1))
-            throw new IllegalArgumentException("Knots < 3");
+        if(knts.length < (numControlPoints + n + 1))
+            throw new IllegalArgumentException("knts.length < n + k + 1");
 
-        if(t != degree)
-        {
-            degree = t;
-            curveChanged = true;
-        }
+        degree = n;
 
         if(knts.length > knots.length)
             knots = new float[knts.length];
@@ -508,7 +526,6 @@ public class BSplineGenerator extends GeometryGenerator
         System.arraycopy(knts, 0, knots, 0, knts.length);
 
         numKnots = knots.length;
-
         curveChanged = true;
     }
 
@@ -517,22 +534,18 @@ public class BSplineGenerator extends GeometryGenerator
      * greater. If the array is not of minimum length 3 an exception is
      * generated.
      *
-     * @param t The degree of the curve
+     * @param n The degree of the curve
      * @param knts The knot values to control the curve
      */
-    public void setKnots(int t, double[] knts)
+    public void setKnots(int n, double[] knts)
     {
-        if(t < 2)
+        if(n < 2)
             throw new IllegalArgumentException("Degree is < 2");
 
-        if(knts.length < (numControlPoints + t + 1))
-            throw new IllegalArgumentException("Knots < 3");
+        if(knts.length < (numControlPoints + n + 1))
+            throw new IllegalArgumentException("knts.length < n + k + 1");
 
-        if(t != degree)
-        {
-            degree = t;
-            curveChanged = true;
-        }
+        degree = n;
 
         if(knts.length > knots.length)
             knots = new float[knts.length];
@@ -541,7 +554,6 @@ public class BSplineGenerator extends GeometryGenerator
             knots[i] = (float)knts[i];
 
         numKnots = knots.length;
-
         curveChanged = true;
     }
 
@@ -591,7 +603,7 @@ public class BSplineGenerator extends GeometryGenerator
     public void generateSmoothKnots()
     {
         // resize if necessary
-        numKnots = numControlPoints + degree;
+        numKnots = numControlPoints + degree + 1;
         if(knots.length < numKnots)
             knots = new float[numKnots];
 
@@ -599,7 +611,7 @@ public class BSplineGenerator extends GeometryGenerator
 
         for(j = 0; j < numKnots; j++)
         {
-            if(j < degree)
+            if(j <= degree)
                 knots[j] = 0;
             else if(j < numControlPoints)
                 knots[j] = j - degree + 1;
@@ -1039,12 +1051,12 @@ public class BSplineGenerator extends GeometryGenerator
         }
 
         double interval = 0;
-        double increment = (numControlPoints - degree + 1) / (double)facetCount;
+        double increment = knots[numKnots - 1] / (double)(facetCount + 1);
         int coord = 0;
 
         if(useControlPointWeights)
         {
-            for(int i = 0; i < facetCount; i++)
+            for(int i = 0; i <= facetCount; i++)
             {
                 calcSingleRationalPoint(interval, coord);
                 interval += increment;
@@ -1053,35 +1065,32 @@ public class BSplineGenerator extends GeometryGenerator
         }
         else
         {
-            for(int i = 0; i < facetCount; i++)
+            for(int i = 0; i <= facetCount; i++)
             {
                 calcSingleNonRationalPoint(interval, coord);
                 interval += increment;
                 coord += 3;
             }
         }
-
-        int ncp = numControlPoints * 3;
-        curveCoordinates[facetCount * 3] = controlPointCoordinates[ncp - 3];
-        curveCoordinates[facetCount * 3 + 1] = controlPointCoordinates[ncp - 2];
-        curveCoordinates[facetCount * 3 + 2] = controlPointCoordinates[ncp - 1];
     }
 
     /**
      * Calculate the position of a single point on the spline curve.
      * The parameter "v" indicates the position, it ranges from 0 to n-t+2
      *
-     * @param v the position along the curve
+     * @param t the position along the curve
      * @param out The location to put the curve point in the output array
      */
-    private void calcSingleNonRationalPoint(double v, int out)
+    private void calcSingleNonRationalPoint(double t, int out)
     {
         double x = 0;
         double y = 0;
         double z = 0;
+        int order = degree + 1;
 
         for(int k = 0; k < numControlPoints; k++) {
-            double b = splineBlend(k, degree, v);
+            double b = splineBlend(k, order, t);
+
             x += controlPointCoordinates[k * 3] * b;
             y += controlPointCoordinates[k * 3 + 1] * b;
             z += controlPointCoordinates[k * 3 + 2] * b;
@@ -1096,19 +1105,20 @@ public class BSplineGenerator extends GeometryGenerator
      * Calculate the position of a single point on the rational spline curve.
      * The parameter "v" indicates the position, it ranges from 0 to n-t+2
      *
-     * @param v the position along the curve
+     * @param t the position along the curve
      * @param out The location to put the curve point in the output array
      */
-    private void calcSingleRationalPoint(double v, int out)
+    private void calcSingleRationalPoint(double t, int out)
     {
         double x = 0;
         double y = 0;
         double z = 0;
         double w = 0;
         double denom = 0;
+        int order = degree + 1;
 
         for(int k = 0; k < numControlPoints; k++) {
-            double b = splineBlend(k, degree, v);
+            double b = splineBlend(k, order, t);
             w = controlPointWeights[k];
 
             x += controlPointCoordinates[k * 3] * b * w;
@@ -1137,30 +1147,46 @@ public class BSplineGenerator extends GeometryGenerator
      *  If the numerator and denominator are 0 the expression is 0.
      *  If the deonimator is 0 the expression is 0.
      *
-     *
+     * @param i The basis function to check
+     * @param k The order of the curve
+     * @param t The position along the curve to check ie N(t)
      */
-    private double splineBlend(int k, int t, double v)
+    private double splineBlend(int i, int k, double t)
     {
         double ret_val;
 
         // Do this just to make the maths traceable with the std algorithm
         float[] u = knots;
 
-        if(t == 1)
+        if(k == 1)
         {
-            ret_val = ((u[k] <= v) && (v < u[k+1])) ? 1 : 0;
+            ret_val = ((u[i] <= t) && (t < u[i+1])) ? 1 : 0;
         }
         else
         {
-            if((u[k+t-1] == u[k]) && (u[k+t] == u[k+1]))
+            double b1 = splineBlend(i, k-1, t);
+            double b2 = splineBlend(i+1, k-1, t);
+
+            double d1 = u[i+k-1] - u[i];
+            double d2 = u[i+k] - u[i+1];
+
+            double e, f;
+
+            e = (b1 != 0) ? (t - u[i]) / d1 * b1 : 0;
+            f = (b2 != 0) ? (u[i+k] - t) / d2  * b2 : 0;
+
+            ret_val = e + f;
+/*
+            if(d1 == 0 && d2 == 0)
                 ret_val = 0;
-            else if (u[k+t-1] == u[k])
-                ret_val = (u[k+t] - v) / (u[k+t] - u[k+1]) * splineBlend(k+1, t-1, v);
-            else if (u[k+t] == u[k+1])
-                ret_val = (v - u[k]) / (u[k+t-1] - u[k]) * splineBlend(k, t-1, v);
+            else if(d1 == 0)
+                ret_val = (u[i+k] - t) / d2 * splineBlend(i+1, k-1, t);
+            else if(d2 == 0)
+                ret_val = (t - u[i]) / d1 * splineBlend(i, k-1, t);
             else
-                ret_val = (v - u[k]) / (u[k+t-1] - u[k]) * splineBlend(k, t-1, v) +
-                          (u[k+t] - v) / (u[k+t] - u[k+1]) * splineBlend(k+1, t-1, v);
+                ret_val = (t - u[i]) / d1 * splineBlend(i, k-1, t) +
+                          (u[i+k] - t) / d2 * splineBlend(i+1, k-1, t);
+*/
         }
 
         return ret_val;

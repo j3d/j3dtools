@@ -38,7 +38,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * the size is the same as previously set, then the weights are left alone.
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public abstract class PatchGenerator extends GeometryGenerator
 {
@@ -84,11 +84,11 @@ public abstract class PatchGenerator extends GeometryGenerator
     /** Flag indicating base values have changed */
     protected boolean texCoordsChanged;
 
-    /**
-     * The number of sections used around the patch. Assumes square
-     * tesselation resolution.
-     */
-    protected int facetCount;
+    /** The number of sections used around the patch width */
+    protected int widthFacetCount;
+
+    /** The number of sections used around the patch depth */
+    protected int depthFacetCount;
 
     /** Should we use control point weights. Defaults to false. */
     protected boolean useControlPointWeights;
@@ -118,21 +118,32 @@ public abstract class PatchGenerator extends GeometryGenerator
      * the geometry to be regenerated next time they are asked for.
      * The minimum number of facets is 3.
      *
-     * @param facets The number of facets on the side of the cone
+     * @param widthFacets The number of facets on the width of the patch
+     * @param depthFacets The number of facets on the width of the patch
      * @throws IllegalArgumentException The number of facets is less than 3
      */
-    public void setFacetCount(int facets)
+    public void setFacetCount(int widthFacets, int depthFacets)
     {
-        if(facets < 3)
-            throw new IllegalArgumentException("Number of facets is < 3");
+        if(widthFacets < 3)
+            throw new IllegalArgumentException("Number of width facets is < 3");
 
-        if(facetCount != facets) {
+        if(depthFacets < 3)
+            throw new IllegalArgumentException("Number of depth facets is < 3");
+
+        if(widthFacetCount != widthFacets) {
             patchChanged = true;
             normalsChanged = true;
             texCoordsChanged = true;
         }
 
-        facetCount = facets;
+        if(depthFacetCount != depthFacets) {
+            patchChanged = true;
+            normalsChanged = true;
+            texCoordsChanged = true;
+        }
+
+        widthFacetCount = widthFacets;
+        depthFacetCount = depthFacets;
     }
 
     /**
@@ -1075,15 +1086,15 @@ public abstract class PatchGenerator extends GeometryGenerator
         switch(data.geometryType)
         {
             case GeometryData.TRIANGLES:
-                ret_val = facetCount * facetCount * 6 ;
+                ret_val = widthFacetCount * depthFacetCount * 6 ;
                 break;
             case GeometryData.QUADS:
-                ret_val = facetCount * facetCount * 4;
+                ret_val = widthFacetCount * depthFacetCount * 4;
                 break;
 
             // These all have the same vertex count
             case GeometryData.TRIANGLE_STRIPS:
-                ret_val = (facetCount + 1) * facetCount * 2;
+                ret_val = (widthFacetCount + 1) * depthFacetCount * 2;
                 break;
 
             case GeometryData.TRIANGLE_FANS:
@@ -1091,7 +1102,7 @@ public abstract class PatchGenerator extends GeometryGenerator
             case GeometryData.INDEXED_QUADS:
             case GeometryData.INDEXED_TRIANGLE_STRIPS:
             case GeometryData.INDEXED_TRIANGLE_FANS:
-                ret_val = (facetCount + 1) * (facetCount + 1);
+                ret_val = (widthFacetCount + 1) * (depthFacetCount + 1);
                 break;
 
             default:
@@ -1215,7 +1226,7 @@ public abstract class PatchGenerator extends GeometryGenerator
             generateIndexedTexture3D(data);
 
         // now let's do the index list
-        int index_size = (facetCount * facetCount) * 4;
+        int index_size = (widthFacetCount * widthFacetCount) * 4;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -1230,16 +1241,16 @@ public abstract class PatchGenerator extends GeometryGenerator
         int vtx = 0;
 
         // each face consists of an anti-clockwise
-        for(int i = (facetCount * facetCount); --i >= 0; )
+        for(int i = (widthFacetCount * depthFacetCount); --i >= 0; )
         {
             indexes[idx++] = vtx;
-            indexes[idx++] = vtx + facetCount + 1;
-            indexes[idx++] = vtx + facetCount + 2;
+            indexes[idx++] = vtx + widthFacetCount + 1;
+            indexes[idx++] = vtx + widthFacetCount + 2;
             indexes[idx++] = vtx + 1;
 
             vtx++;
 
-            if((i % facetCount) == 0)
+            if((i % widthFacetCount) == 0)
                 vtx++;
         }
     }
@@ -1265,7 +1276,7 @@ public abstract class PatchGenerator extends GeometryGenerator
             generateIndexedTexture3D(data);
 
         // now let's do the index list
-        int index_size = (facetCount * facetCount) * 6;
+        int index_size = (widthFacetCount * widthFacetCount) * 6;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -1280,21 +1291,21 @@ public abstract class PatchGenerator extends GeometryGenerator
         int vtx = 0;
 
         // each face consists of an anti-clockwise triangle
-        for(int i = (facetCount * facetCount); --i >= 0; )
+        for(int i = (widthFacetCount * depthFacetCount); --i >= 0; )
         {
             // triangle 1
             indexes[idx++] = vtx;
-            indexes[idx++] = vtx + facetCount + 2;
+            indexes[idx++] = vtx + widthFacetCount + 2;
             indexes[idx++] = vtx + 1;
 
             // triangle 2
-            indexes[idx++] = vtx + facetCount + 1;
-            indexes[idx++] = vtx + facetCount + 2;
+            indexes[idx++] = vtx + widthFacetCount + 1;
+            indexes[idx++] = vtx + widthFacetCount + 2;
             indexes[idx++] = vtx;
 
             vtx++;
 
-            if((i % facetCount) == 0)
+            if((i % widthFacetCount) == 0)
                 vtx++;
         }
     }
@@ -1320,7 +1331,7 @@ public abstract class PatchGenerator extends GeometryGenerator
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateUnindexedTriTexture3D(data);
 
-        int num_strips = facetCount;
+        int num_strips = widthFacetCount;
 
         if(data.stripCounts == null)
             data.stripCounts = new int[num_strips];
@@ -1330,7 +1341,7 @@ public abstract class PatchGenerator extends GeometryGenerator
                                                 num_strips);
 
         for(int i = num_strips; --i >= 0; )
-            data.stripCounts[i] = (facetCount + 1) * 2;
+            data.stripCounts[i] = (widthFacetCount + 1) * 2;
     }
 
     /**
@@ -1369,8 +1380,8 @@ public abstract class PatchGenerator extends GeometryGenerator
             generateIndexedTexture3D(data);
 
         // now let's do the index list
-        int index_size = (facetCount + 1) * facetCount * 2;
-        int num_strips = facetCount;
+        int index_size = (widthFacetCount + 1) * widthFacetCount * 2;
+        int num_strips = widthFacetCount;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -1392,19 +1403,19 @@ public abstract class PatchGenerator extends GeometryGenerator
         data.numStrips = num_strips;
         int idx = 0;
         int vtx = 0;
-        int total_points = (facetCount + 1) * facetCount;
+        int total_points = (widthFacetCount + 1) * depthFacetCount;
 
         // The side is one big strip
         for(int i = total_points; --i >= 0; )
         {
             indexes[idx++] = vtx;
-            indexes[idx++] = vtx + (facetCount + 1);
+            indexes[idx++] = vtx + (widthFacetCount + 1);
 
             vtx++;
         }
 
         for(int i = num_strips; --i >= 0; )
-            stripCounts[i] = (facetCount + 1) * 2;
+            stripCounts[i] = (widthFacetCount + 1) * 2;
   }
 
     /**
@@ -1431,8 +1442,8 @@ public abstract class PatchGenerator extends GeometryGenerator
             generateIndexedTexture3D(data);
 
         // now let's do the index list
-        int index_size = (facetCount * facetCount) * 4;
-        int num_strips = facetCount * facetCount;
+        int index_size = (widthFacetCount * widthFacetCount) * 4;
+        int num_strips = widthFacetCount * widthFacetCount;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -1456,10 +1467,10 @@ public abstract class PatchGenerator extends GeometryGenerator
         int vtx = 0;
 
         // each face consists of an anti-clockwise quad
-        for(int i = (facetCount * facetCount); --i >= 0; )
+        for(int i = (widthFacetCount * depthFacetCount); --i >= 0; )
         {
-            indexes[idx++] = vtx + facetCount + 1;
-            indexes[idx++] = vtx + facetCount + 2;
+            indexes[idx++] = vtx + widthFacetCount + 1;
+            indexes[idx++] = vtx + widthFacetCount + 2;
             indexes[idx++] = vtx + 1;
             indexes[idx++] = vtx;
 
@@ -1467,7 +1478,7 @@ public abstract class PatchGenerator extends GeometryGenerator
 
             vtx++;
 
-            if((i % facetCount) == 0)
+            if((i % widthFacetCount) == 0)
                 vtx++;
         }
     }
@@ -1505,10 +1516,10 @@ public abstract class PatchGenerator extends GeometryGenerator
         // now just build a grid of coordinates
         int cnt;
         int vtx = 0;
-        for(int i = 0; i < facetCount; i++)
+        for(int i = 0; i < depthFacetCount; i++)
         {
             cnt = 0;
-            for(int j = 0; j < facetCount; j++)
+            for(int j = 0; j < widthFacetCount; j++)
             {
                 coords[vtx++] = patchCoordinates[i][cnt + 3];
                 coords[vtx++] = patchCoordinates[i][cnt + 4];
@@ -1569,10 +1580,10 @@ public abstract class PatchGenerator extends GeometryGenerator
         // now just build a grid of coordinates
         int cnt;
         int vtx = 0;
-        for(int i = 0; i < facetCount; i++)
+        for(int i = 0; i < depthFacetCount; i++)
         {
             cnt = 0;
-            for(int j = 0; j < facetCount; j++)
+            for(int j = 0; j < widthFacetCount; j++)
             {
                 coords[vtx++] = patchCoordinates[i][cnt + 3];
                 coords[vtx++] = patchCoordinates[i][cnt + 4];
@@ -1628,11 +1639,11 @@ public abstract class PatchGenerator extends GeometryGenerator
 
         // Start of with one less row (width) here because we don't have two
         // sets of coordinates for those.
-        for(i = 0; i < facetCount; i++)
+        for(i = 0; i < depthFacetCount; i++)
         {
             base_count = 0;
 
-            for(j = 0; j < facetCount + 1; j++)
+            for(j = 0; j < widthFacetCount + 1; j++)
             {
                 coords[count++] = patchCoordinates[i][base_count];
                 coords[count++] = patchCoordinates[i][base_count + 1];
@@ -1675,7 +1686,7 @@ public abstract class PatchGenerator extends GeometryGenerator
 
         int offset = 0;
 
-        for(int i = 0; i <= facetCount; i++)
+        for(int i = 0; i <= widthFacetCount; i++)
         {
             System.arraycopy(patchCoordinates[i],
                              0,
@@ -1719,10 +1730,10 @@ public abstract class PatchGenerator extends GeometryGenerator
         float[] normals = data.normals;
         int cnt;
         int vtx = 0;
-        for(int i = 0; i < facetCount; i++)
+        for(int i = 0; i < depthFacetCount; i++)
         {
             cnt = 0;
-            for(int j = 0; j < facetCount; j++)
+            for(int j = 0; j < widthFacetCount; j++)
             {
                 normals[vtx++] = patchNormals[i][cnt + 3];
                 normals[vtx++] = patchNormals[i][cnt + 4];
@@ -1784,10 +1795,10 @@ public abstract class PatchGenerator extends GeometryGenerator
         float[] normals = data.normals;
         int cnt;
         int vtx = 0;
-        for(int i = 0; i < facetCount; i++)
+        for(int i = 0; i < depthFacetCount; i++)
         {
             cnt = 0;
-            for(int j = 0; j < facetCount; j++)
+            for(int j = 0; j < widthFacetCount; j++)
             {
                 normals[vtx++] = patchNormals[i][cnt + 3];
                 normals[vtx++] = patchNormals[i][cnt + 4];
@@ -1824,7 +1835,7 @@ public abstract class PatchGenerator extends GeometryGenerator
     private void generateUnindexedTriStripNormals(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = facetCount * (facetCount + 1) * 6;
+        int vtx_cnt = widthFacetCount * (widthFacetCount + 1) * 6;
 
         if(data.normals == null)
             data.normals = new float[vtx_cnt];
@@ -1842,11 +1853,11 @@ public abstract class PatchGenerator extends GeometryGenerator
 
         // Start of with one less row (width) here because we don't have two
         // sets of coordinates for those.
-        for(i = 0; i < facetCount; i++)
+        for(i = 0; i < depthFacetCount; i++)
         {
             base_count = 0;
 
-            for(j = 0; j < facetCount + 1; j++)
+            for(j = 0; j < widthFacetCount + 1; j++)
             {
                 normals[count++] = patchNormals[i][base_count];
                 normals[count++] = patchNormals[i][base_count + 1];
@@ -1892,7 +1903,7 @@ public abstract class PatchGenerator extends GeometryGenerator
         float[] normals = data.normals;
         int offset = 0;
 
-        for(int i = 0; i <= facetCount; i++)
+        for(int i = 0; i <= widthFacetCount; i++)
         {
             System.arraycopy(patchNormals[i],
                              0,
@@ -1936,10 +1947,10 @@ public abstract class PatchGenerator extends GeometryGenerator
         int cnt;
         int vtx = 0;
 
-        for(int i = 0; i < facetCount; i++)
+        for(int i = 0; i < depthFacetCount; i++)
         {
             cnt = 0;
-            for(int j = 0; j < facetCount; j++)
+            for(int j = 0; j < widthFacetCount; j++)
             {
                 tex_coords[vtx++] = patchTexcoords[i][cnt + 2];
                 tex_coords[vtx++] = patchTexcoords[i][cnt + 3];
@@ -1994,10 +2005,10 @@ public abstract class PatchGenerator extends GeometryGenerator
         float[] tex_coords = data.textureCoordinates;
         int cnt;
         int vtx = 0;
-        for(int i = 0; i < facetCount; i++)
+        for(int i = 0; i < depthFacetCount; i++)
         {
             cnt = 0;
-            for(int j = 0; j < facetCount; j++)
+            for(int j = 0; j < widthFacetCount; j++)
             {
                 tex_coords[vtx++] = patchTexcoords[i][cnt + 2];
                 tex_coords[vtx++] = patchTexcoords[i][cnt + 3];
@@ -2030,7 +2041,7 @@ public abstract class PatchGenerator extends GeometryGenerator
     private void generateUnindexedTriStripTexture2D(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = facetCount * (facetCount + 1) * 4;
+        int vtx_cnt = widthFacetCount * (widthFacetCount + 1) * 4;
 
         if(data.textureCoordinates == null)
             data.textureCoordinates = new float[vtx_cnt];
@@ -2048,11 +2059,11 @@ public abstract class PatchGenerator extends GeometryGenerator
 
         // Start of with one less row (width) here because we don't have two
         // sets of coordinates for those.
-        for(i = 0; i < facetCount; i++)
+        for(i = 0; i < depthFacetCount; i++)
         {
             base_count = 0;
 
-            for(j = 0; j < facetCount + 1; j++)
+            for(j = 0; j < widthFacetCount + 1; j++)
             {
                 texcoords[count++] = patchTexcoords[i][base_count];
                 texcoords[count++] = patchTexcoords[i][base_count + 1];
@@ -2092,7 +2103,7 @@ public abstract class PatchGenerator extends GeometryGenerator
         float[] tex_coords = data.textureCoordinates;
         int offset = 0;
 
-        for(int i = 0; i <= facetCount; i++)
+        for(int i = 0; i <= widthFacetCount; i++)
         {
             System.arraycopy(patchTexcoords[i],
                              0,
@@ -2194,7 +2205,7 @@ public abstract class PatchGenerator extends GeometryGenerator
     private void generateUnindexedTriStripTexture3D(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = facetCount * (facetCount + 1) * 6;
+        int vtx_cnt = widthFacetCount * (widthFacetCount + 1) * 6;
 
         if(data.textureCoordinates == null)
             data.textureCoordinates = new float[vtx_cnt];
@@ -2212,11 +2223,11 @@ public abstract class PatchGenerator extends GeometryGenerator
 
         // Start of with one less row (width) here because we don't have two
         // sets of coordinates for those.
-        for(i = 0; i < facetCount; i++)
+        for(i = 0; i < depthFacetCount; i++)
         {
             base_count = 0;
 
-            for(j = 0; j < facetCount + 1; j++)
+            for(j = 0; j < widthFacetCount + 1; j++)
             {
                 texcoords[count++] = patchTexcoords[i][base_count];
                 texcoords[count++] = patchTexcoords[i][base_count + 1];
@@ -2245,10 +2256,10 @@ public abstract class PatchGenerator extends GeometryGenerator
         numNormalValues = numPatchValues;
 
         if((patchNormals == null) ||
-           (patchNormals.length <= facetCount) ||
+           (patchNormals.length <= widthFacetCount) ||
            (patchNormals[0].length < numNormalValues))
         {
-            patchNormals = new float[facetCount + 1][numNormalValues];
+            patchNormals = new float[widthFacetCount + 1][numNormalValues];
         }
 
         Vector3f norm;
@@ -2263,7 +2274,7 @@ public abstract class PatchGenerator extends GeometryGenerator
         patchNormals[0][count++] = norm.y;
         patchNormals[0][count++] = norm.z;
 
-        for(i = 1; i < facetCount; i++)
+        for(i = 1; i < widthFacetCount; i++)
         {
             norm = calcSideAverageNormal(0, count,
                                          0, count + 3,
@@ -2286,7 +2297,7 @@ public abstract class PatchGenerator extends GeometryGenerator
         patchNormals[0][count++] = norm.z;
 
         // Now, process all of the internal points
-        for(i = 1; i < facetCount; i++)
+        for(i = 1; i < widthFacetCount; i++)
         {
             count = 0;
             norm = calcSideAverageNormal(i, count,
@@ -2298,7 +2309,7 @@ public abstract class PatchGenerator extends GeometryGenerator
             patchNormals[i][count++] = norm.y;
             patchNormals[i][count++] = norm.z;
 
-            for(j = 1; j < facetCount; j++)
+            for(j = 1; j < widthFacetCount; j++)
             {
 
                 norm = calcQuadAverageNormal(i, count,
@@ -2327,35 +2338,35 @@ public abstract class PatchGenerator extends GeometryGenerator
         // corner point - normal based on only that face
         count = 0;
         norm = createFaceNormal(patchCoordinates,
-                                facetCount, count,
-                                facetCount - 1, count,
-                                facetCount, count + 3);
+                                widthFacetCount, count,
+                                widthFacetCount - 1, count,
+                                widthFacetCount, count + 3);
 
-        patchNormals[facetCount][count++] = norm.x;
-        patchNormals[facetCount][count++] = norm.y;
-        patchNormals[facetCount][count++] = norm.z;
+        patchNormals[widthFacetCount][count++] = norm.x;
+        patchNormals[widthFacetCount][count++] = norm.y;
+        patchNormals[widthFacetCount][count++] = norm.z;
 
-        for(i = 1; i < facetCount; i++)
+        for(i = 1; i < widthFacetCount; i++)
         {
             norm = calcSideAverageNormal(i, count,
                                          i, count - 3,
                                          i - 1, count,
                                          i, count + 3);
 
-            patchNormals[facetCount][count++] = norm.x;
-            patchNormals[facetCount][count++] = norm.y;
-            patchNormals[facetCount][count++] = norm.z;
+            patchNormals[widthFacetCount][count++] = norm.x;
+            patchNormals[widthFacetCount][count++] = norm.y;
+            patchNormals[widthFacetCount][count++] = norm.z;
         }
 
         // Last corner point of the first row
         norm = createFaceNormal(patchCoordinates,
-                                facetCount, count,
-                                facetCount, count - 3,
-                                facetCount - 1, count);
+                                widthFacetCount, count,
+                                widthFacetCount, count - 3,
+                                widthFacetCount - 1, count);
 
-        patchNormals[facetCount][count++] = norm.x;
-        patchNormals[facetCount][count++] = norm.y;
-        patchNormals[facetCount][count++] = norm.z;
+        patchNormals[widthFacetCount][count++] = norm.x;
+        patchNormals[widthFacetCount][count++] = norm.y;
+        patchNormals[widthFacetCount][count++] = norm.z;
     }
 
     /**
@@ -2462,27 +2473,27 @@ public abstract class PatchGenerator extends GeometryGenerator
 
         texCoordsChanged = false;
 
-        numTexcoordValues = (facetCount + 1) * 2;
+        numTexcoordValues = (widthFacetCount + 1) * 2;
 
         if((patchTexcoords == null) ||
-           (patchTexcoords.length <= facetCount) ||
+           (patchTexcoords.length <= widthFacetCount) ||
            (patchTexcoords[0].length < numTexcoordValues))
         {
-            patchTexcoords = new float[facetCount + 1][numTexcoordValues];
+            patchTexcoords = new float[widthFacetCount + 1][numTexcoordValues];
         }
 
         int count;
         float w;
         float d = 0;
-        float width_inc = 1.0f / facetCount;
-        float depth_inc = 1.0f / facetCount;
+        float width_inc = 1.0f / widthFacetCount;
+        float depth_inc = 1.0f / widthFacetCount;
 
-        for(int i = 0; i < facetCount; i++)
+        for(int i = 0; i < widthFacetCount; i++)
         {
             count = 0;
             w = 0;
 
-            for(int j = 0;  j < facetCount; j++)
+            for(int j = 0;  j < widthFacetCount; j++)
             {
                 patchTexcoords[i][count++] = w;
                 patchTexcoords[i][count++] = d;
@@ -2499,15 +2510,15 @@ public abstract class PatchGenerator extends GeometryGenerator
         count = 0;
         w = 0;
 
-        for(int j = 0;  j < facetCount; j++)
+        for(int j = 0;  j < widthFacetCount; j++)
         {
-            patchTexcoords[facetCount][count++] = w;
-            patchTexcoords[facetCount][count++] = 1;
+            patchTexcoords[widthFacetCount][count++] = w;
+            patchTexcoords[widthFacetCount][count++] = 1;
 
             w += width_inc;
         }
 
-        patchTexcoords[facetCount][count++] = 1;
-        patchTexcoords[facetCount][count++] = 1;
+        patchTexcoords[widthFacetCount][count++] = 1;
+        patchTexcoords[widthFacetCount][count++] = 1;
     }
 }

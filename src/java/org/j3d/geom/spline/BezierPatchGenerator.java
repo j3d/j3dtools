@@ -30,7 +30,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class BezierPatchGenerator extends PatchGenerator
 {
@@ -43,22 +43,27 @@ public class BezierPatchGenerator extends PatchGenerator
      */
     public BezierPatchGenerator()
     {
-        this(DEFAULT_FACETS);
+        this(DEFAULT_FACETS, DEFAULT_FACETS);
     }
 
     /**
      * Construct a new generator with the specified number of tessellations
      * over the side of the patch, regardless of extents.
      *
-     * @param facets The number of facets on the side of the cone
+     * @param widthFacets The number of facets on the width of the patch
+     * @param depthFacets The number of facets on the width of the patch
      * @throws IllegalArgumentException The number of facets is less than 3
      */
-    public BezierPatchGenerator(int facets)
+    public BezierPatchGenerator(int widthFacets, int depthFacets)
     {
-        if(facets < 3)
-            throw new IllegalArgumentException("Number of facets is < 3");
+        if(widthFacets < 3)
+            throw new IllegalArgumentException("Number of width facets is < 3");
 
-        facetCount = facets;
+        if(depthFacets < 3)
+            throw new IllegalArgumentException("Number of depth facets is < 3");
+
+        widthFacetCount = widthFacets;
+        depthFacetCount = depthFacets;
     }
 
     /**
@@ -71,13 +76,13 @@ public class BezierPatchGenerator extends PatchGenerator
             return;
 
         patchChanged = false;
-        numPatchValues = (facetCount + 1) * 3;
+        numPatchValues = (widthFacetCount + 1) * 3;
 
         if((patchCoordinates == null) ||
            (numPatchValues > patchCoordinates.length) ||
            (numPatchValues > patchCoordinates[0].length))
         {
-            patchCoordinates = new float[facetCount + 1][numPatchValues];
+            patchCoordinates = new float[depthFacetCount + 1][numPatchValues];
         }
 
         if(useControlPointWeights)
@@ -95,13 +100,13 @@ public class BezierPatchGenerator extends PatchGenerator
         int cnt;
         float x, y, z;
 
-        for(int i = 0; i < facetCount; i++)
+        for(int i = 0; i < depthFacetCount; i++)
         {
-            mui = i / (double)facetCount;
+            mui = i / (double)depthFacetCount;
             cnt = 0;
-            for(int j = 0; j < facetCount; j++)
+            for(int j = 0; j < widthFacetCount; j++)
             {
-                muj = j / (double)facetCount;
+                muj = j / (double)widthFacetCount;
                 x = 0;
                 y = 0;
                 z = 0;
@@ -152,9 +157,9 @@ public class BezierPatchGenerator extends PatchGenerator
         // Calculate the last set of coordinates just based on the width values
         // as a simple bezier curve rather than a surface. mui == 1;
         cnt = 0;
-        for(int j = 0; j < facetCount; j++)
+        for(int j = 0; j < widthFacetCount; j++)
         {
-            muj = j / (double)facetCount;
+            muj = j / (double)widthFacetCount;
             x = 0;
             y = 0;
             z = 0;
@@ -173,17 +178,17 @@ public class BezierPatchGenerator extends PatchGenerator
                 }
             }
 
-            patchCoordinates[facetCount][cnt++] = x;
-            patchCoordinates[facetCount][cnt++] = y;
-            patchCoordinates[facetCount][cnt++] = z;
+            patchCoordinates[depthFacetCount][cnt++] = x;
+            patchCoordinates[depthFacetCount][cnt++] = y;
+            patchCoordinates[depthFacetCount][cnt++] = z;
         }
 
         int ncp = numDepthControlPoints * 3;
-        patchCoordinates[facetCount][cnt++] =
+        patchCoordinates[depthFacetCount][cnt++] =
             controlPointCoordinates[numWidthControlPoints - 1][ncp - 3];
-        patchCoordinates[facetCount][cnt++] =
+        patchCoordinates[depthFacetCount][cnt++] =
             controlPointCoordinates[numWidthControlPoints - 1][ncp - 2];
-        patchCoordinates[facetCount][cnt++] =
+        patchCoordinates[depthFacetCount][cnt++] =
             controlPointCoordinates[numWidthControlPoints - 1][ncp - 1];
     }
 
@@ -198,13 +203,13 @@ public class BezierPatchGenerator extends PatchGenerator
         float w, denom;
         int pos;
 
-        for(int i = 0; i < facetCount; i++)
+        for(int i = 0; i < depthFacetCount; i++)
         {
-            mui = i / (double)facetCount;
+            mui = i / (double)depthFacetCount;
             cnt = 0;
-            for(int j = 0; j < facetCount; j++)
+            for(int j = 0; j < widthFacetCount; j++)
             {
-                muj = j / (double)facetCount;
+                muj = j / (double)widthFacetCount;
                 x = 0;
                 y = 0;
                 z = 0;
@@ -283,9 +288,9 @@ public class BezierPatchGenerator extends PatchGenerator
         // Calculate the last set of coordinates just based on the width values
         // as a simple bezier curve rather than a surface. mui == 1;
         cnt = 0;
-        for(int j = 0; j < facetCount; j++)
+        for(int j = 0; j < widthFacetCount; j++)
         {
-            muj = j / (double)facetCount;
+            muj = j / (double)widthFacetCount;
             x = 0;
             y = 0;
             z = 0;
@@ -311,24 +316,24 @@ public class BezierPatchGenerator extends PatchGenerator
 
             if(denom != 0)
             {
-                patchCoordinates[facetCount][cnt++] = x / denom;
-                patchCoordinates[facetCount][cnt++] = y / denom;
-                patchCoordinates[facetCount][cnt++] = z / denom;
+                patchCoordinates[depthFacetCount][cnt++] = x / denom;
+                patchCoordinates[depthFacetCount][cnt++] = y / denom;
+                patchCoordinates[depthFacetCount][cnt++] = z / denom;
             }
             else
             {
-                patchCoordinates[facetCount][cnt++] = x;
-                patchCoordinates[facetCount][cnt++] = y;
-                patchCoordinates[facetCount][cnt++] = z;
+                patchCoordinates[depthFacetCount][cnt++] = x;
+                patchCoordinates[depthFacetCount][cnt++] = y;
+                patchCoordinates[depthFacetCount][cnt++] = z;
             }
         }
 
         int ncp = numDepthControlPoints * 3;
-        patchCoordinates[facetCount][cnt++] =
+        patchCoordinates[depthFacetCount][cnt++] =
             controlPointCoordinates[numWidthControlPoints - 1][ncp - 3];
-        patchCoordinates[facetCount][cnt++] =
+        patchCoordinates[depthFacetCount][cnt++] =
             controlPointCoordinates[numWidthControlPoints - 1][ncp - 2];
-        patchCoordinates[facetCount][cnt++] =
+        patchCoordinates[depthFacetCount][cnt++] =
             controlPointCoordinates[numWidthControlPoints - 1][ncp - 1];
     }
 
