@@ -28,7 +28,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {
@@ -695,6 +695,7 @@ public class CylinderGenerator extends GeometryGenerator
                                                 num_strips);
 
         data.stripCounts[0] = (1 + facetCount) * 2;
+        data.numStrips = num_strips;
 
         int scnt=1;
 
@@ -739,6 +740,7 @@ public class CylinderGenerator extends GeometryGenerator
 
         data.stripCounts[num_strips - 2] = facetCount + 2;
         data.stripCounts[num_strips - 1] = facetCount + 2;
+        data.numStrips = num_strips;
     }
 
     /**
@@ -802,6 +804,7 @@ public class CylinderGenerator extends GeometryGenerator
         data.numStrips = num_strips;
         int idx = 0;
         int vtx = 0;
+        int s_idx = 1;
 
         stripCounts[0] = (facetCount + 1) * 2;
 
@@ -818,8 +821,7 @@ public class CylinderGenerator extends GeometryGenerator
         int middle;
         if(useTop)
         {
-            stripCounts[1] = (facetCount + 1) * 2;
-            stripCounts[2] = (facetCount + 1) * 2;
+            stripCounts[s_idx++] = (facetCount + 1) * 2;
 
             // Do the top face as one strip
             middle = vtx++;
@@ -834,9 +836,12 @@ public class CylinderGenerator extends GeometryGenerator
             indexes[idx++] = middle;
 
         }
-        if (useBottom) {
-            // Now the bottom face as one fan. Must wind it backwards compared
+        if(useBottom)
+        {
+            // Now the bottom face as one strip. Must wind it backwards compared
             // to the top.
+            stripCounts[s_idx] = (facetCount + 1) * 2;
+
             middle = vtx++;
 
             for(int i = facetCount; --i >= 0; )
