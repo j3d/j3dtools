@@ -24,7 +24,7 @@ package org.j3d.util.interpolator;
  * and compute correct values.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class Interpolator
 {
@@ -85,6 +85,15 @@ public abstract class Interpolator
         keys = new float[size];
     }
 
+    /**
+     * Reset the interpolator to be empty so that new key values are replacing
+     * the old ones.
+     */
+    public void clear()
+    {
+        currentSize = 0;
+    }
+
     //---------------------------------------------------------------
     // Misc Internal methods
     //---------------------------------------------------------------
@@ -123,7 +132,7 @@ public abstract class Interpolator
         // Differs a little from a classical binary search
         // in that we cannot discard the middle value from
         // the search when key>keys[mid] (because keys[mid] may
-        // turn out to be the best solution, and we cannot 
+        // turn out to be the best solution, and we cannot
         // terminate when key==keys[mid] (because there may be
         // more than one i with keys[i]==key, and we must find the
         // first one.
