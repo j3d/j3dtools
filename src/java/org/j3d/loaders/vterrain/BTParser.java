@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                            (c) j3d.org 2002
+ *                            (c) j3d.org 2002-2004
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -9,12 +9,12 @@
 
 package org.j3d.loaders.vterrain;
 
-// Standard imports
+// Externla imports
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 
-// Application specific parser
+// Local parser
 import org.j3d.loaders.HeightMapSource;
 
 /**
@@ -30,7 +30,7 @@ import org.j3d.loaders.HeightMapSource;
  * </a>
  *
  * @author  Paul Byrne, Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class BTParser implements HeightMapSource
 {
@@ -94,6 +94,17 @@ public class BTParser implements HeightMapSource
             input = new BufferedInputStream(is);
 
         dataReady = false;
+        header = null;
+        heights = null;
+    }
+
+    /**
+     * Clear the internal data structures used by this parser.
+     */
+    public void clear()
+    {
+        dataReady = false;
+        input = null;
         header = null;
         heights = null;
     }

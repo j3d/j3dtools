@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                            (c) j3d.org 2002
+ *                            (c) j3d.org 2002-2004
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -9,7 +9,7 @@
 
 package org.j3d.loaders.dem;
 
-// Standard imports
+// External imports
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -18,7 +18,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-// Application specific parser
+// Local parser
 import org.j3d.loaders.HeightMapSource;
 import org.j3d.util.CharHashMap;
 
@@ -36,7 +36,7 @@ import org.j3d.util.CharHashMap;
  * </a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DEMParser implements HeightMapSource
 {
@@ -160,6 +160,22 @@ public class DEMParser implements HeightMapSource
             inputReader = new BufferedReader(rdr);
 
         charBuffer = new char[1024];
+    }
+
+    /**
+     * Force a clear of the data that has been previous read by this parser.
+     */
+    public void clear()
+    {
+        dataReady = false;
+        header = null;
+        heights = null;
+        statistics = null;
+
+        hasTypeC = false;
+        inputStream = null;
+        inputReader = null;
+        charBuffer = null;
     }
 
     /**
