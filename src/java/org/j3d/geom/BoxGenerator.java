@@ -44,7 +44,7 @@ package org.j3d.geom;
  * corner of the front face, while 1, 1, 1 is at the top right, rear corner.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BoxGenerator extends GeometryGenerator
 {
@@ -407,7 +407,7 @@ public class BoxGenerator extends GeometryGenerator
             coords[i * 12 + 8] = tmp_z;
         }
 
-        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0) 
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
         {
 
             for(int i = 6; --i >= 0; )
@@ -871,9 +871,9 @@ public class BoxGenerator extends GeometryGenerator
 
         // bottom face
         texCoords[60] = 0; texCoords[61] = 0; texCoords[62] = 1;
-        texCoords[63] = 0; texCoords[64] = 1; texCoords[65] = 1;
-        texCoords[66] = 1; texCoords[67] = 1; texCoords[68] = 1;
-        texCoords[69] = 1; texCoords[70] = 0; texCoords[71] = 1;
+        texCoords[63] = 1; texCoords[64] = 0; texCoords[65] = 1;
+        texCoords[66] = 1; texCoords[67] = 0; texCoords[68] = 0;
+        texCoords[69] = 0; texCoords[70] = 0; texCoords[71] = 0;
     }
 
     // Special case stuff for unindexed triangles.
@@ -1192,11 +1192,11 @@ public class BoxGenerator extends GeometryGenerator
 
         // bottom face
         texCoords[90] = 0; texCoords[91] = 0; texCoords[92] = 1;
-        texCoords[93] = 0; texCoords[94] = 1; texCoords[95] = 1;
-        texCoords[96] = 1; texCoords[97] = 1; texCoords[98] = 1;
+        texCoords[93] = 1; texCoords[94] = 0; texCoords[95] = 1;
+        texCoords[96] = 1; texCoords[97] = 0; texCoords[98] = 0;
 
-        texCoords[99] = 1; texCoords[100]= 1; texCoords[101]= 1;
-        texCoords[102]= 1; texCoords[103]= 0; texCoords[104]= 1;
+        texCoords[99] = 1; texCoords[100]= 0; texCoords[101]= 0;
+        texCoords[102]= 0; texCoords[103]= 0; texCoords[104]= 0;
         texCoords[105]= 0; texCoords[106]= 0; texCoords[107]= 1;
     }
 }
