@@ -788,7 +788,8 @@ public class NavigationHandler
                                               0,
                                               geom,
                                               local_tx,
-                                              wkPoint))
+                                              wkPoint,
+                                              false))
             {
                 diffVec.sub(locationPoint, wkPoint);
 
@@ -905,7 +906,8 @@ public class NavigationHandler
                                                    length,
                                                    geom,
                                                    local_tx,
-                                                   wkPoint);
+                                                   wkPoint,
+                                                   true);
             }
 
             ret_val = !real_collision;
@@ -958,7 +960,8 @@ public class NavigationHandler
                                               0,
                                               geom,
                                               local_tx,
-                                              wkPoint))
+                                              wkPoint,
+                                              false))
             {
                 diffVec.sub(locationPoint, wkPoint);
 

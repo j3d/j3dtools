@@ -40,6 +40,13 @@ import javax.vecmath.Vector3d;
  * data that you want returned. For the higher level methods that allow you
  * <p>
  *
+ * If you need the intersection tools for collision detection only, then you
+ * can tell the routines that you only need to know if they intersect. That is
+ * as soon as you detect one polygon that intersects, exit immediately. This is
+ * useful for doing collision detection because you really don't care where on
+ * the object you collide, just that you have.
+ * <p>
+ *
  * The ray/polygon intersection test is a combination test. Firstly it will
  * check for the segment intersection if requested. Then, for an infinite ray
  * or an intersecting segment, we use the algorithm defined from the Siggraph
@@ -49,7 +56,7 @@ import javax.vecmath.Vector3d;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class IntersectionUtils
 {
@@ -62,6 +69,10 @@ public class IntersectionUtils
     private Vector3d v1;
     private Vector3d normal;
     private Vector3d diffVec;
+
+    /** Transformed pick items */
+    private Point3d pickStart;
+    private Vector3d pickDir;
 
     /** The current coordinate list that we work from */
     private float[] workingCoords;
@@ -91,6 +102,9 @@ public class IntersectionUtils
         diffVec = new Vector3d();
         wkPolygon = new float[12];
         reverseTx = new Transform3D();
+
+        pickStart = new Point3d();
+        pickDir = new Vector3d();
     }
 
     /**
@@ -121,6 +135,8 @@ public class IntersectionUtils
      *   the value is zero, it is ignored
      * @param geom The geometry to test against
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayUnknownGeometry(Point3d origin,
@@ -128,7 +144,8 @@ public class IntersectionUtils
                                       float length,
                                       GeometryArray geom,
                                       Transform3D vworldTransform,
-                                      Point3d point)
+                                      Point3d point,
+                                      boolean intersectOnly)
     {
         if(geom instanceof TriangleArray)
         {
@@ -137,7 +154,8 @@ public class IntersectionUtils
                                     length,
                                     (TriangleArray)geom,
                                     vworldTransform,
-                                    point);
+                                    point,
+                                    intersectOnly);
         }
         else if(geom instanceof QuadArray)
         {
@@ -146,7 +164,8 @@ public class IntersectionUtils
                                 length,
                                 (QuadArray)geom,
                                 vworldTransform,
-                                point);
+                                point,
+                                intersectOnly);
         }
         else if(geom instanceof TriangleStripArray)
         {
@@ -155,7 +174,8 @@ public class IntersectionUtils
                                          length,
                                          (TriangleStripArray)geom,
                                          vworldTransform,
-                                         point);
+                                         point,
+                                         intersectOnly);
         }
         else if(geom instanceof TriangleFanArray)
         {
@@ -164,7 +184,8 @@ public class IntersectionUtils
                                        length,
                                        (TriangleFanArray)geom,
                                        vworldTransform,
-                                       point);
+                                       point,
+                                       intersectOnly);
         }
         else if(geom instanceof IndexedTriangleArray)
         {
@@ -173,7 +194,8 @@ public class IntersectionUtils
                                            length,
                                            (IndexedTriangleArray)geom,
                                            vworldTransform,
-                                           point);
+                                           point,
+                                           intersectOnly);
         }
         else if(geom instanceof IndexedQuadArray)
         {
@@ -182,7 +204,8 @@ public class IntersectionUtils
                                        length,
                                        (IndexedQuadArray)geom,
                                        vworldTransform,
-                                       point);
+                                       point,
+                                       intersectOnly);
         }
 
         return false;
@@ -200,13 +223,16 @@ public class IntersectionUtils
      * @param geom The geometry to test against
      * @param point The intersection point for returning
      * @return true if there was an intersection, false if not
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      */
     public boolean rayTriangleArray(Point3d origin,
                                     Vector3d direction,
                                     float length,
                                     TriangleArray geom,
                                     Transform3D vworldTransform,
-                                    Point3d point)
+                                    Point3d point,
+                                    boolean intersectOnly)
     {
         if(!geom.getCapability(GeometryArray.ALLOW_COORDINATE_READ))
             throw new IllegalStateException("Not allowed to read coordinates");
@@ -226,13 +252,15 @@ public class IntersectionUtils
         geom.getCoordinates(0, workingCoords);
 
         transformCoords(vtx_count, vworldTransform);
+        //transformPicks(vworldTransform, origin, direction);
 
         return rayTriangleArray(origin,
                                 direction,
                                 length,
                                 workingCoords,
                                 vtx_count / 3,
-                                point);
+                                point,
+                                intersectOnly);
     }
 
     /**
@@ -246,6 +274,8 @@ public class IntersectionUtils
      *   the value is zero, it is ignored
      * @param geom The geometry to test against
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayQuadArray(Point3d origin,
@@ -253,7 +283,8 @@ public class IntersectionUtils
                                 float length,
                                 QuadArray geom,
                                 Transform3D vworldTransform,
-                                Point3d point)
+                                Point3d point,
+                                boolean intersectOnly)
     {
         if(!geom.getCapability(GeometryArray.ALLOW_COORDINATE_READ))
             throw new IllegalStateException("Not allowed to read coordinates");
@@ -272,13 +303,15 @@ public class IntersectionUtils
         geom.getCoordinates(0, workingCoords);
 
         transformCoords(vtx_count, vworldTransform);
+        //transformPicks(vworldTransform, origin, direction);
 
         return rayQuadArray(origin,
                             direction,
                             length,
                             workingCoords,
                             vtx_count / 4,
-                            point);
+                            point,
+                            intersectOnly);
     }
 
     /**
@@ -292,6 +325,8 @@ public class IntersectionUtils
      *   the value is zero, it is ignored
      * @param geom The geometry to test against
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayTriangleStripArray(Point3d origin,
@@ -299,7 +334,8 @@ public class IntersectionUtils
                                          float length,
                                          TriangleStripArray geom,
                                          Transform3D vworldTransform,
-                                         Point3d point)
+                                         Point3d point,
+                                         boolean intersectOnly)
     {
         if(!geom.getCapability(GeometryArray.ALLOW_COORDINATE_READ))
             throw new IllegalStateException("Not allowed to read coordinates");
@@ -322,8 +358,8 @@ public class IntersectionUtils
         geom.getCoordinates(0, workingCoords);
         geom.getStripVertexCounts(workingStrips);
 
-
         transformCoords(vtx_count, vworldTransform);
+        //transformPicks(vworldTransform, origin, direction);
 
         boolean ret_val = rayTriangleStripArray(origin,
                                                 direction,
@@ -331,7 +367,8 @@ public class IntersectionUtils
                                                 workingCoords,
                                                 workingStrips,
                                                 strip_count,
-                                                point);
+                                                point,
+                                                intersectOnly);
 
         return ret_val;
     }
@@ -347,6 +384,8 @@ public class IntersectionUtils
      *   the value is zero, it is ignored
      * @param geom The geometry to test against
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayTriangleFanArray(Point3d origin,
@@ -354,7 +393,8 @@ public class IntersectionUtils
                                        float length,
                                        TriangleFanArray geom,
                                        Transform3D vworldTransform,
-                                       Point3d point)
+                                       Point3d point,
+                                       boolean intersectOnly)
     {
         if(!geom.getCapability(GeometryArray.ALLOW_COORDINATE_READ))
             throw new IllegalStateException("Not allowed to read coordinates");
@@ -386,7 +426,8 @@ public class IntersectionUtils
                                               workingCoords,
                                               workingStrips,
                                               strip_count,
-                                              point);
+                                              point,
+                                              intersectOnly);
 
         return ret_val;
     }
@@ -402,6 +443,8 @@ public class IntersectionUtils
      *   the value is zero, it is ignored
      * @param geom The geometry to test against
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayIndexedTriangleArray(Point3d origin,
@@ -409,7 +452,8 @@ public class IntersectionUtils
                                            float length,
                                            IndexedTriangleArray geom,
                                            Transform3D vworldTransform,
-                                           Point3d point)
+                                           Point3d point,
+                                           boolean intersectOnly)
     {
         if(!geom.getCapability(GeometryArray.ALLOW_COORDINATE_READ))
             throw new IllegalStateException("Not allowed to read coordinates");
@@ -443,7 +487,8 @@ public class IntersectionUtils
                                                   workingCoords,
                                                   workingIndicies,
                                                   index_count,
-                                                  point);
+                                                  point,
+                                                  intersectOnly);
 
         return ret_val;
     }
@@ -459,14 +504,17 @@ public class IntersectionUtils
      *   the value is zero, it is ignored
      * @param geom The geometry to test against
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayIndexedQuadArray(Point3d origin,
-                                           Vector3d direction,
-                                           float length,
-                                           IndexedQuadArray geom,
-                                           Transform3D vworldTransform,
-                                           Point3d point)
+                                       Vector3d direction,
+                                       float length,
+                                       IndexedQuadArray geom,
+                                       Transform3D vworldTransform,
+                                       Point3d point,
+                                       boolean intersectOnly)
     {
         if(!geom.getCapability(GeometryArray.ALLOW_COORDINATE_READ))
             throw new IllegalStateException("Not allowed to read coordinates");
@@ -500,7 +548,8 @@ public class IntersectionUtils
                                               workingCoords,
                                               workingIndicies,
                                               index_count,
-                                              point);
+                                              point,
+                                              intersectOnly);
 
         return ret_val;
     }
@@ -518,6 +567,8 @@ public class IntersectionUtils
      * @param coords The coordinates of the triangles
      * @param numTris The number of triangles to use from the array
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayTriangleArray(Point3d origin,
@@ -525,7 +576,8 @@ public class IntersectionUtils
                                     float length,
                                     float[] coords,
                                     int numTris,
-                                    Point3d point)
+                                    Point3d point,
+                                    boolean intersectOnly)
     {
         if(coords.length < numTris * 9)
             throw new IllegalArgumentException("coords too small for numCoords");
@@ -558,6 +610,9 @@ public class IntersectionUtils
                 {
                     shortest_length = this_length;
                     point.set(wkPoint);
+
+                    if(intersectOnly)
+                        break;
                 }
             }
         }
@@ -578,6 +633,8 @@ public class IntersectionUtils
      * @param coords The coordinates of the quads
      * @param numQuads The number of quads to use from the array
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayQuadArray(Point3d origin,
@@ -585,7 +642,8 @@ public class IntersectionUtils
                                 float length,
                                 float[] coords,
                                 int numQuads,
-                                Point3d point)
+                                Point3d point,
+                                boolean intersectOnly)
     {
         if(coords.length < numQuads * 12)
             throw new IllegalArgumentException("coords too small for numCoords");
@@ -618,6 +676,9 @@ public class IntersectionUtils
                 {
                     shortest_length = this_length;
                     point.set(wkPoint);
+
+                    if(intersectOnly)
+                        break;
                 }
             }
         }
@@ -639,6 +700,8 @@ public class IntersectionUtils
      * @param stripCounts The number of polygons in each strip
      * @param numStrips The number of strips to use from the array
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayTriangleStripArray(Point3d origin,
@@ -647,7 +710,8 @@ public class IntersectionUtils
                                          float[] coords,
                                          int[] stripCounts,
                                          int numStrips,
-                                         Point3d point)
+                                         Point3d point,
+                                         boolean intersectOnly)
     {
         // Add all the strip lengths up first
         int total_coords = 0;
@@ -691,6 +755,9 @@ public class IntersectionUtils
                     {
                         shortest_length = this_length;
                         point.set(wkPoint);
+
+                        if(intersectOnly)
+                            break;
                     }
                 }
             }
@@ -713,6 +780,8 @@ public class IntersectionUtils
      * @param stripCounts The number of polygons in each fan
      * @param numStrips The number of strips to use from the array
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayTriangleFanArray(Point3d origin,
@@ -721,7 +790,8 @@ public class IntersectionUtils
                                        float[] coords,
                                        int[] stripCounts,
                                        int numStrips,
-                                       Point3d point)
+                                       Point3d point,
+                                       boolean intersectOnly)
     {
         // Add all the strip lengths up first
         int total_coords = 0;
@@ -777,6 +847,9 @@ public class IntersectionUtils
                     {
                         shortest_length = this_length;
                         point.set(wkPoint);
+
+                        if(intersectOnly)
+                            break;
                     }
                 }
             }
@@ -800,6 +873,8 @@ public class IntersectionUtils
      * @param indexes The list of indexes to use to construct triangles
      * @param numIndex The number of indexes to use from the array
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayIndexedTriangleArray(Point3d origin,
@@ -808,7 +883,8 @@ public class IntersectionUtils
                                            float[] coords,
                                            int[] indexes,
                                            int numIndex,
-                                           Point3d point)
+                                           Point3d point,
+                                           boolean intersectOnly)
     {
         // assign the working coords to be big enough for a quadrilateral as
         // that is what we are most likely to see as the biggest item
@@ -854,6 +930,9 @@ public class IntersectionUtils
                 {
                     shortest_length = this_length;
                     point.set(wkPoint);
+
+                    if(intersectOnly)
+                        break;
                 }
             }
         }
@@ -876,6 +955,8 @@ public class IntersectionUtils
      * @param indexes The list of indexes to use to construct triangles
      * @param numIndex The number of indexes to use from the array
      * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
      */
     public boolean rayIndexedQuadArray(Point3d origin,
@@ -884,7 +965,8 @@ public class IntersectionUtils
                                        float[] coords,
                                        int[] indexes,
                                        int numIndex,
-                                       Point3d point)
+                                       Point3d point,
+                                       boolean intersectOnly)
     {
         // assign the working coords to be big enough for a quadrilateral as
         // that is what we are most likely to see as the biggest item
@@ -935,6 +1017,9 @@ public class IntersectionUtils
                 {
                     shortest_length = this_length;
                     point.set(wkPoint);
+
+                    if(intersectOnly)
+                        break;
                 }
             }
         }
@@ -1217,5 +1302,16 @@ public class IntersectionUtils
             workingCoords[cnt++] = (float)wkPoint.y;
             workingCoords[cnt++] = (float)wkPoint.z;
         }
+    }
+
+    /**
+     * Convenience method to transform the picking coordinates to the local
+     * coordinates of the geometry. Takes the coordinates and stores them in
+     * the picking variables used internally
+     */
+    private void transformPicks(Transform3D vw, Point3d start, Vector3d dir)
+    {
+        vw.transform(start, pickStart);
+        vw.transform(dir, pickDir);
     }
 }
