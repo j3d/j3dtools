@@ -31,7 +31,7 @@ import org.j3d.util.ImageUtils;
  * <p>
  *
  * @author Justin Couch, Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class FixedTextureCache extends AbstractTextureCache
 {
@@ -70,7 +70,7 @@ class FixedTextureCache extends AbstractTextureCache
                 componentMap.put(filename, img);
             }
 
-            int format = getTextureFormat(img);
+            int format = texUtils.getTextureFormat(img);
 
             if(img instanceof ImageComponent2D)
             {
@@ -120,7 +120,7 @@ class FixedTextureCache extends AbstractTextureCache
                 componentMap.put(file_path, img);
             }
 
-            int format = getTextureFormat(img);
+            int format = texUtils.getTextureFormat(img);
 
             if(img instanceof ImageComponent2D)
             {

@@ -32,7 +32,7 @@ import org.j3d.util.ImageUtils;
  * <p>
  *
  * @author Justin Couch, Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class WeakRefTextureCache extends AbstractTextureCache
 {
@@ -74,7 +74,7 @@ class WeakRefTextureCache extends AbstractTextureCache
                 componentMap.put(filename, ref);
             }
 
-            int format = getTextureFormat(img);
+            int format = texUtils.getTextureFormat(img);
 
             if(img instanceof ImageComponent2D)
             {
@@ -126,7 +126,7 @@ class WeakRefTextureCache extends AbstractTextureCache
                 componentMap.put(file_path, ref);
             }
 
-            int format = getTextureFormat(img);
+            int format = texUtils.getTextureFormat(img);
 
             if(img instanceof ImageComponent2D)
             {

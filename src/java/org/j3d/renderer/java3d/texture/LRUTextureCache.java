@@ -45,7 +45,7 @@ import org.j3d.util.Queue;
  * This property must be set before this class is first referenced.
  *
  * @author Justin Couch, Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class LRUTextureCache extends AbstractTextureCache
 {
@@ -128,7 +128,7 @@ class LRUTextureCache extends AbstractTextureCache
                 componentQueue.add(filename);
             }
 
-            int format = getTextureFormat(img);
+            int format = texUtils.getTextureFormat(img);
 
             if(img instanceof ImageComponent2D)
             {
@@ -192,7 +192,7 @@ class LRUTextureCache extends AbstractTextureCache
                 componentQueue.add(file_path);
             }
 
-            int format = getTextureFormat(img);
+            int format = texUtils.getTextureFormat(img);
 
             if(img instanceof ImageComponent2D)
             {

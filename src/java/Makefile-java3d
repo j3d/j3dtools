@@ -34,7 +34,6 @@ BUILD_ORDER = org.j3d.util \
     org.j3d.renderer.java3d.geom \
     org.j3d.renderer.java3d.loaders \
     org.j3d.renderer.java3d.texture \
-    org.j3d.renderer.java3d.overlay \
     org.j3d.renderer.java3d.terrain \
     org.j3d.renderer.java3d.terrain.roam \
 
