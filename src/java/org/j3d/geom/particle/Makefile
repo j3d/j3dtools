@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -20,7 +20,7 @@ SOURCE = \
 	PointArrayByRefParticle.java \
 	TriangleArrayByRefParticle.java \
 	QuadArrayByRefParticle.java \
-	MovementFunction.java \
+	ParticleFunction.java \
 	WindMovementFunction.java \
 	GravityMovementFunction.java \
 	BoundingBoxMovementFunction.java \
@@ -40,7 +40,7 @@ SOURCE = \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
-EXTRA = 
+EXTRA = particle-factory.properties
 
 # If the package requires extra classes outside the JDK, the JAR files that 
 # are required are listed here. These should be found in ${PROJECT_ROOT}/lib

@@ -9,6 +9,8 @@
 
 package org.j3d.geom.particle;
 
+import java.util.Map;
+
 /**
  * ParticleFactory interface defines a mechanism to
  * create instances of Particles. A ParticleFactory
@@ -17,9 +19,9 @@ package org.j3d.geom.particle;
  * physical entity being modelled (rain, dust, stones etc.)
  *
  * @author Daniel Selman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface ParticleFactory
 {
-   public Particle createParticle( int index );
+    public Particle createParticle( Map env, String name, int index );
 }

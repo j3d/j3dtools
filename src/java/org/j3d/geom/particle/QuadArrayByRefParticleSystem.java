@@ -9,57 +9,19 @@
 
 package org.j3d.geom.particle;
 
-import java.util.Map;
-
-import javax.media.j3d.Texture;
-import javax.media.j3d.Appearance;
-import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.QuadArray;
-
-import javax.media.j3d.TransparencyAttributes;
-import javax.media.j3d.TextureAttributes;
-import javax.media.j3d.Transform3D;
-
-import com.sun.j3d.utils.image.TextureLoader;
-
-import javax.vecmath.Color4f;
+import java.util.Map;
 
 /**
  * A particle system that uses a BYREF QuadArray
  * to represent the ParticleSystem.
  *
  * @author Daniel Selman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class QuadArrayByRefParticleSystem extends ByRefParticleSystem
 {
-    public static final int QUAD_ARRAY_BYREF_PARTICLE_SYSTEM = 1;
-
-    private static PolygonAttributes polygonAttributes;
-    private static TransparencyAttributes transparencyAttributes;
-    private static TextureAttributes textureAttributes;
-
-    /**
-     * Static initializer to create the attribute classes once for all
-     * to share.
-     */
-    static
-    {
-        polygonAttributes =
-            new PolygonAttributes( PolygonAttributes.POLYGON_FILL,
-                                   PolygonAttributes.CULL_NONE, 0 );
-
-        transparencyAttributes =
-            new TransparencyAttributes( TransparencyAttributes.NICEST, 0.0f );
-
-        textureAttributes =
-            new TextureAttributes( TextureAttributes.REPLACE,
-                                   new Transform3D(),
-                                   new Color4f(),
-                                   TextureAttributes.FASTEST );
-    }
-
     /**
      * Create a new particle system with the given number of particles.
      *
@@ -67,14 +29,14 @@ public class QuadArrayByRefParticleSystem extends ByRefParticleSystem
      * @param particleInitializer Initialised to create the particles
      * @param environment Environment setup information
      */
-    public QuadArrayByRefParticleSystem(int particleCount,
-                                       ParticleInitializer particleInitializer,
-                                       Map environment)
+    public QuadArrayByRefParticleSystem( String name, int particleCount,
+                                         ParticleInitializer particleInitializer,
+                                         Map environment )
     {
-       super( QUAD_ARRAY_BYREF_PARTICLE_SYSTEM,
-              particleInitializer,
-              particleCount,
-              environment );
+        super( name,
+               particleInitializer,
+               particleCount,
+               environment );
     }
 
     /**
@@ -85,43 +47,13 @@ public class QuadArrayByRefParticleSystem extends ByRefParticleSystem
     public GeometryArray createGeometryArray()
     {
         GeometryArray geomArray =
-         new QuadArray( particleCount * QuadArrayByRefParticle.NUM_VERTICES_PER_PARTICLE,
-                        GeometryArray.COORDINATES |
-                        GeometryArray.NORMALS |
-                        GeometryArray.TEXTURE_COORDINATE_2 |
-                        GeometryArray.BY_REFERENCE |
-                        GeometryArray.COLOR_4 );
+                new QuadArray( particleCount * QuadArrayByRefParticle.NUM_VERTICES_PER_PARTICLE,
+                               GeometryArray.COORDINATES |
+                               GeometryArray.NORMALS |
+                               GeometryArray.TEXTURE_COORDINATE_2 |
+                               GeometryArray.BY_REFERENCE |
+                               GeometryArray.COLOR_4 );
         return geomArray;
-    }
-
-    /**
-     * Create the appearance used to render the objects with. This appearance
-     * should have all appropriate information set - including textures.
-     *
-     * @return The appearance object to use with this system
-     */
-    public Appearance createAppearance()
-    {
-        Appearance app = new Appearance();
-        app.setPolygonAttributes( polygonAttributes );
-        app.setTransparencyAttributes( transparencyAttributes );
-        app.setTextureAttributes( textureAttributes );
-
-        // load the texture image and assign to the appearance
-        Object prop = environment.get(PARTICLE_TEXTURE);
-        Texture tex = null;
-
-        if(prop instanceof String)
-        {
-            // do stuff with the texture cache
-        }
-        else if(prop instanceof Texture)
-        {
-            tex = (Texture)prop;
-        }
-
-        app.setTexture( tex );
-        return app;
     }
 
     /**
@@ -130,9 +62,9 @@ public class QuadArrayByRefParticleSystem extends ByRefParticleSystem
      * @param index The id of the particle
      * @return A particle corresponding to the given index
      */
-    public Particle createParticle( int index )
+    public Particle createParticle( Map env, String name, int index )
     {
-        return new QuadArrayByRefParticle( shape,
+        return new QuadArrayByRefParticle( env, shape,
                                            index,
                                            positionRefArray,
                                            colorRefArray,

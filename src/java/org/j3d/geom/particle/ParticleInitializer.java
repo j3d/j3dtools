@@ -15,18 +15,18 @@ package org.j3d.geom.particle;
  * be recycled, as well as reinitializing the Particle.
  *
  * @author Daniel Selman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface ParticleInitializer
 {
 
-   /**
-    * @return true if the ParticleSytem should keep running.
-    */
-   public boolean initialize( Particle particle );
+    /**
+     * @return true if the ParticleSytem should keep running.
+     */
+    public boolean initialize( Particle particle );
 
-   /**
-    * @return false if the Particle needs to be reinitialized.
-    */
-   public boolean isAlive( Particle particle );
+    /**
+     * @return false if the Particle needs to be reinitialized.
+     */
+    public boolean isAlive( Particle particle );
 }
