@@ -35,8 +35,11 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * Points are defined in the height arrays in width first order. Normals, are
  * always smooth blended.
  *
+ * Alan: There are some cases where texture generation is not complete.  
+ * Especially in regards to 3D textures.
+ *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ElevationGridGenerator extends GeometryGenerator
 {
@@ -79,17 +82,26 @@ public class ElevationGridGenerator extends GeometryGenerator
     /** The number of terrain coordinates in use */
     private int numTerrainValues;
 
+    /** The number of texture coordinates in use */
+    private int numTexcoordValues;
+
     /** The array holding all of the vertices after use */
     private float[] terrainCoordinates;
 
     /** The array holding all of the normals after use */
     private float[] terrainNormals;
 
+    /** The array holding all of the texture coordinates after use */
+    private float[] terrainTexcoords;
+
     /** Flag to indicate the terrain values have changed */
     private boolean terrainChanged;
 
     /** Flag to indicate the terrain values have changed */
     private boolean normalsChanged;
+
+    /** Flag to indicate the terrain values have changed */
+    private boolean texcoordsChanged;
 
     /** The number of quads in the terrain */
     private int facetCount;
@@ -163,6 +175,7 @@ public class ElevationGridGenerator extends GeometryGenerator
 
         terrainChanged = true;
         normalsChanged = true;
+        texcoordsChanged = true;
     }
 
     /**
@@ -204,6 +217,7 @@ public class ElevationGridGenerator extends GeometryGenerator
 
         terrainChanged = true;
         normalsChanged = true;
+        texcoordsChanged = true;
     }
 
     /**
@@ -236,6 +250,7 @@ public class ElevationGridGenerator extends GeometryGenerator
         {
             terrainChanged = true;
             normalsChanged = true;
+            texcoordsChanged = true;
             terrainDepth = d;
             terrainWidth = w;
         }
@@ -244,6 +259,7 @@ public class ElevationGridGenerator extends GeometryGenerator
         {
             terrainChanged = true;
             normalsChanged = true;
+            texcoordsChanged = true;
             widthPoints = wPnts;
             depthPoints = dPnts;
 
@@ -419,7 +435,7 @@ public class ElevationGridGenerator extends GeometryGenerator
             generateUnindexedQuadNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
+            generateUnindexedQuadTexture2D(data);
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
     }
@@ -547,7 +563,7 @@ public class ElevationGridGenerator extends GeometryGenerator
             generateUnindexedTriStripNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
+            generateUnindexedTriStripTexture2D(data);
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
 
@@ -1297,11 +1313,102 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
     //------------------------------------------------------------------------
     // Texture coordinate generation routines
     //------------------------------------------------------------------------
+    /**
+     * Generates new set of unindexed texture coordinates for triangles strips. 
+     * The array consists of one strip per width row.
+     *
+     * @param data The data to base the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedTriStripTexture2D(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = widthPoints * (depthPoints - 1) * 2;
+
+        if(data.textureCoordinates == null)
+            data.textureCoordinates = new float[vtx_cnt * 2];
+        else if(data.textureCoordinates.length < vtx_cnt * 2)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.textureCoordinates.length,
+                                                vtx_cnt * 2);
+
+        float[] coords = data.textureCoordinates;
+
+        regenerateTexcoords();
+
+        int i;
+        int count = 0;
+        int base_count = 0;
+        int width_inc = widthPoints * 2;
+        int total_points = widthPoints * (depthPoints - 1);
+
+        // Start of with one less row (width) here because we don't have two
+        // sets of coordinates for those.
+        for(i = total_points; --i >= 0; )
+        {
+            coords[count++] = terrainTexcoords[base_count];
+            coords[count++] = terrainTexcoords[base_count + 1];
+
+            coords[count++] = terrainTexcoords[base_count + width_inc];
+            coords[count++] = terrainTexcoords[base_count + width_inc + 1];
+
+            base_count += 2;
+        }
+    }
 
     /**
-     * Generate a new set of texCoords for a normal set of unindexed points. Each
-     * normal faces directly perpendicular for each point. This makes each face
-     * seem flat.
+     * Generates new set of unindexed texture coordinates for quads. The array 
+     * consists of one strip per width row.
+     *
+     * @param data The data to base the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedQuadTexture2D(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = facetCount * 4;
+
+        if(data.textureCoordinates == null)
+            data.textureCoordinates = new float[vtx_cnt * 2];
+        else if(data.textureCoordinates.length < vtx_cnt * 2)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.textureCoordinates.length,
+                                                vtx_cnt * 2);
+
+        float[] coords = data.textureCoordinates;
+
+        regenerateTexcoords();
+
+        int count = 0;
+        int i = 0;
+        int base_count = 0;
+        int width_inc = widthPoints * 2;
+
+        for(i = facetCount; --i >= 0; )
+        {
+            coords[count++] = terrainTexcoords[base_count];
+            coords[count++] = terrainTexcoords[base_count + 1];
+
+            coords[count++] = terrainTexcoords[base_count + width_inc];
+            coords[count++] = terrainTexcoords[base_count + width_inc + 1];
+
+            coords[count++] = terrainTexcoords[base_count + width_inc + 2];
+            coords[count++] = terrainTexcoords[base_count + width_inc + 3];
+
+            coords[count++] = terrainTexcoords[base_count + 2];
+            coords[count++] = terrainTexcoords[base_count + 3];
+
+            base_count += 2;
+
+            if((i % (widthPoints - 1)) == 0)
+                base_count += 2;
+        }
+    }
+
+    /**
+     * Generate a new set of texCoords for a set of unindexed points. 
      * <p>
      * This must always be called after the coordinate generation.
      *
@@ -1321,13 +1428,14 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
                                                 data.textureCoordinates.length,
                                                 vtx_cnt);
 
-        float[] texCoords = data.textureCoordinates;
+        regenerateTexcoords();
+
+        System.out.println("Unhandled textured generation case in " +
+            "ElevationGridGenerator");
     }
 
     /**
-     * Generate a new set of texCoords for a normal set of unindexed points. Each
-     * normal faces directly perpendicular for each point. This makes each face
-     * seem flat.
+     * Generate a new set of texCoords for a set of unindexed points. 
      * <p>
      * This must always be called after the coordinate generation.
      *
@@ -1348,6 +1456,9 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
                                                 vtx_cnt);
 
         float[] texCoords = data.textureCoordinates;
+
+        System.out.println("Unhandled textured generation case in " +
+            "ElevationGridGenerator");
     }
 
     /**
@@ -1671,5 +1782,65 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
         norm.normalize();
 
         return norm;
+    }
+
+    /**
+     * Regenerate the texture coordinate points. 
+     * Assumes regenerateBase has been called before this
+     */
+    private final void regenerateTexcoords()
+    {
+        if(!texcoordsChanged)
+            return;
+
+        texcoordsChanged = false;
+
+        numTexcoordValues = widthPoints * depthPoints * 2;
+
+        if((terrainTexcoords == null) ||
+           (numTexcoordValues > terrainTexcoords.length))
+        {
+            terrainTexcoords = new float[numTexcoordValues];
+        }
+
+        float d = 0;
+        float w = 0;
+        float width_inc = 1.0f / (widthPoints - 1);
+        float depth_inc = 1.0f / (depthPoints - 1);
+
+        int count = 0;
+
+        if(flatHeights != null)
+        {
+            int num = numTerrainValues / 3;
+            for(int i = 1; i <= num; i++)
+            {
+                terrainTexcoords[count++] = w;
+                terrainTexcoords[count++] = d;
+                w += width_inc;
+
+                if(((i % (widthPoints)) == 0))
+                {
+                    d += depth_inc;
+                    w = 0;
+                }
+            }
+        }
+        else
+        {
+            for(int i = 0; i < depthPoints; i++)
+            {
+                for(int j = 0;  j < widthPoints; j++)
+                {
+                    terrainTexcoords[count++] = w;
+                    terrainTexcoords[count++] = d;
+
+                    w += width_inc;
+                }
+
+                d += depth_inc;
+                w = 0;
+            }
+        }
     }
 }
