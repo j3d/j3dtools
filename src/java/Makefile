@@ -15,6 +15,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.device.input.spaceball.transformation \
 	org.j3d.device.input.spaceball.driver \
 	org.j3d.device.input.spaceball \
+	org.j3d.device.input.vfx \
 	org.j3d.texture \
 	org.j3d.geom \
 	org.j3d.geom.terrain \
@@ -47,6 +48,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.util.frustum \
 	org.j3d.device.input.spaceball \
 	org.j3d.device.input.spaceball.transformation \
+	org.j3d.device.input.vfx \
 	org.j3d.texture \
 	org.j3d.geom \
 	org.j3d.geom.terrain \
@@ -81,6 +83,11 @@ JARS = j3d-org-util.jar \
 	j3d-org-terrain.jar \
 	j3d-org-texture.jar \
 	j3d-org-all.jar
+
+# List of packages that have native code libraries in use and require
+# JNI header generation
+NATIVE_PACKAGES = org.j3d.device.input.vfx
+
 
 # 3rd party libraries that need including.
 JARS_3RDPARTY=
