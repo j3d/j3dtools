@@ -14,7 +14,7 @@ BUILD_ORDER = org.j3d.util \
     org.j3d.device.input.spaceball \
     org.j3d.device.input.vfx \
     org.j3d.device.input.polhemus \
-    org.j3d.device.output.elumens \    
+    org.j3d.device.output.elumens \
     org.j3d.geom \
     org.j3d.geom.terrain \
     org.j3d.geom.hanim \
@@ -53,7 +53,7 @@ JAVADOC_PACKAGES = org.j3d.util \
     org.j3d.device.input.spaceball \
     org.j3d.device.input.vfx \
     org.j3d.device.input.polhemus \
-    org.j3d.device.output.elumens \    
+    org.j3d.device.output.elumens \
     org.j3d.geom \
     org.j3d.geom.hanim \
     org.j3d.geom.particle \
