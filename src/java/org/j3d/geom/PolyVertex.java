@@ -20,21 +20,21 @@ import javax.vecmath.Point3d;
  * routines.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-class PolyVertex {
-
+class PolyVertex
+{
     /** the index from the source array this vertex corresponds to */
     public int vertexIndex;
 
-	/** Index of the normal from the source data */
-	public int normalIndex;
+    /** Index of the normal from the source data */
+    public int normalIndex;
 
-	/** Index of the normal from the source data */
-	public int colorIndex;
+    /** Index of the normal from the source data */
+    public int colorIndex;
 
-	/** Index of the normal from the source data */
-	public int texCoordIndex;
+    /** Index of the normal from the source data */
+    public int texCoordIndex;
 
     /** X coordinate of the vertex */
     public float x;
@@ -50,4 +50,27 @@ class PolyVertex {
 
     /** Pointer to the previous segment */
     public PolyVertex prev;
+
+    /**
+     * Prints out the details of this vertex.
+     */
+    public String toString()
+    {
+        StringBuffer buf = new StringBuffer("PolyVertex ");
+        buf.append(vertexIndex);
+        buf.append(" ni ");
+        buf.append(normalIndex);
+        buf.append(" ci ");
+        buf.append(colorIndex);
+        buf.append(" ti ");
+        buf.append(texCoordIndex);
+        buf.append(" x ");
+        buf.append(x);
+        buf.append(" y ");
+        buf.append(y);
+        buf.append(" z ");
+        buf.append(z);
+
+        return buf.toString();
+    }
 }
