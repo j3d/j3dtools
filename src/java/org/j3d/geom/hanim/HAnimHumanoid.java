@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import javax.vecmath.Matrix4f;
 
 // Local imports
-// None
+import org.j3d.util.ErrorReporter;
 
 /**
  * Common base representation of a H-Anim Humanoid object.
@@ -29,7 +29,7 @@ import javax.vecmath.Matrix4f;
  * critical is the output object.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class HAnimHumanoid extends HAnimObject
     implements HAnimObjectParent
@@ -155,6 +155,8 @@ public abstract class HAnimHumanoid extends HAnimObject
      */
     protected boolean skeletonChanged;
 
+    /** Counter for the number of children that have requested IDs */
+    protected int objectCount;
 
     /**
      * Create a new, default instance of the site.
@@ -202,6 +204,38 @@ public abstract class HAnimHumanoid extends HAnimObject
             updatedChildren.add(child);
 
         hasChildUpdates = true;
+    }
+
+    /**
+     * Get the object's index into the greater list of things. For example, a
+     * joint needs to be able to update it's matrix in a large array of
+     * matrices and it needs to update the same matrix every time.
+     *
+     * @return The index of the object into global lists
+     */
+    public synchronized int requestNextObjectIndex()
+    {
+        return objectCount++;
+    }
+
+    //----------------------------------------------------------
+    // Methods defined by HAnimObject
+    //----------------------------------------------------------
+
+    /**
+     * Register an error reporter with the object so that any errors generated
+     * by the object can be reported in a nice, pretty fashion.
+     * Setting a value of null will clear the currently set reporter. If one
+     * is already set, the new value replaces the old.
+     *
+     * @param reporter The instance to use or null
+     */
+    public void setErrorReporter(ErrorReporter reporter)
+    {
+        super.setErrorReporter(reporter);
+
+        for(int i = 0; i < numSkeleton; i++)
+            skeleton[i].setErrorReporter(errorReporter);
     }
 
     //----------------------------------------------------------

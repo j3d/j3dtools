@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import javax.vecmath.Matrix4f;
 
 // Local imports
-// None
+import org.j3d.util.ErrorReporter;
 
 /**
  * Representation of a H-Anim Joint object.
@@ -30,7 +30,7 @@ import javax.vecmath.Matrix4f;
  * we've added fields and support for it anyway.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class HAnimJoint extends HAnimObject
     implements HAnimObjectParent
@@ -113,7 +113,7 @@ public class HAnimJoint extends HAnimObject
     protected Matrix4f globalMatrix;
 
     /** The parent of this joint */
-    private HAnimObjectParent parent;
+    protected HAnimObjectParent parent;
 
     /**
      * Flag to indicate the root matrix values have changed, thus needing
@@ -152,6 +152,12 @@ public class HAnimJoint extends HAnimObject
      * user implementation.
      */
     protected Object outputNormals;
+
+    /**
+     * Index of this joint into the global array of values. A value of -1
+     * means that there is not the ability to know at this stage.
+     */
+    protected int objectIndex;
 
     /**
      * Create a new, default instance of the joint.
@@ -199,6 +205,38 @@ public class HAnimJoint extends HAnimObject
 
             updateSent = true;
         }
+    }
+
+    /**
+     * Get the object's index into the greater list of things. For example, a
+     * joint needs to be able to update it's matrix in a large array of
+     * matrices and it needs to update the same matrix every time.
+     *
+     * @return The index of the object into global lists
+     */
+    public int requestNextObjectIndex()
+    {
+        return (parent != null) ? parent.requestNextObjectIndex() : -1;
+    }
+
+    //----------------------------------------------------------
+    // Methods defined by HAnimObject
+    //----------------------------------------------------------
+
+    /**
+     * Register an error reporter with the object so that any errors generated
+     * by the object can be reported in a nice, pretty fashion.
+     * Setting a value of null will clear the currently set reporter. If one
+     * is already set, the new value replaces the old.
+     *
+     * @param reporter The instance to use or null
+     */
+    public void setErrorReporter(ErrorReporter reporter)
+    {
+        super.setErrorReporter(reporter);
+
+        for(int i = 0; i < numChildren; i++)
+            children[i].setErrorReporter(errorReporter);
     }
 
     //----------------------------------------------------------
@@ -781,6 +819,7 @@ public class HAnimJoint extends HAnimObject
         }
 
         children[numChildren++] = kid;
+        kid.setErrorReporter(errorReporter);
 
         if(kid instanceof HAnimJoint)
             ((HAnimJoint)kid).setParent(this,
@@ -940,6 +979,9 @@ public class HAnimJoint extends HAnimObject
         numSourceCoords = numCoords;
         numSourceNormals = numNormals;
 
+        // Fetch an object ID for ourselves
+        objectIndex = parent.requestNextObjectIndex();
+
         for(int i = 0; i < numChildren; i++)
         {
             if(children[i] instanceof HAnimJoint)
@@ -953,6 +995,7 @@ public class HAnimJoint extends HAnimObject
             else if(children[i] instanceof HAnimSite)
                 ((HAnimSite)children[i]).setParent(this);
         }
+
     }
 
     /**
