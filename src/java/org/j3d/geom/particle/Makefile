@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.4 $
+# Version: $Revision: 1.5 $
 #
 #*********************************************************************
 
@@ -28,10 +28,12 @@ SOURCE = \
    LineArrayByRefParticle.java \
    QuadArrayByRefParticle.java \
    TriangleArrayByRefParticle.java \
+   TriangleFanByRefParticle.java \
    PointArrayByRefParticleSystem.java \
    LineArrayByRefParticleSystem.java \
    QuadArrayByRefParticleSystem.java \
    TriangleArrayByRefParticleSystem.java \
+   TriangleFanByRefParticleSystem.java \
    PhysicsFunction.java \
    WindParticleFunction.java \
    BoundingBoxParticleFunction.java \
