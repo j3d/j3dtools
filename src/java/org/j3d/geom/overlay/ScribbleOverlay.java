@@ -10,6 +10,7 @@
 package org.j3d.geom.overlay;
 
 // Standard imports
+import java.awt.*;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -30,7 +31,7 @@ import javax.media.j3d.TransformGroup;
  * <P>
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ScribbleOverlay extends MouseOverlay
 {
@@ -93,6 +94,7 @@ public class ScribbleOverlay extends MouseOverlay
         lineList.add(currentLineDetails);
     }
 
+
     /**
      * Paint the overlay with the given graphics context. All lines are drawn in
      * their alloted colors.
@@ -104,13 +106,6 @@ public class ScribbleOverlay extends MouseOverlay
         int i, j;
         int color_total = lineList.size();
         int lines_total;
-
-        g.setColor(Color.yellow);
-        g.drawRect(0, 0, overlayBounds.width - 1, overlayBounds.height -1);
-        g.setColor(Color.blue);
-int[] xp = new int[] { 0, 30, 50, 50, 100};
-int[] yp = new int[] { 0, 30, 30, 50, 130 };
-g.drawPolyline(xp, yp, 5);
 
         for(i = 0; i < color_total; i++)
         {
@@ -204,6 +199,9 @@ g.drawPolyline(xp, yp, 5);
     public void clear()
     {
         lineList.clear();
+
+        currentLineDetails = new LineDetails(currentColor);
+        lineList.add(currentLineDetails);
         repaint();
     }
 }
