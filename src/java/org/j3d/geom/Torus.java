@@ -1,6 +1,6 @@
 /*****************************************************************************
- *  J3D.org Copyright (c) 2000
- *   Java Source
+ *                   J3D.org Copyright (c) 2000
+ *                          Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
  * Please read http://www.gnu.org/copyleft/lgpl.html for more information
@@ -12,284 +12,234 @@ package org.j3d.geom;
 // Standard imports
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Shape3D;
-import javax.media.j3d.QuadArray;
-
-import javax.vecmath.Vector3f;
+import javax.media.j3d.TriangleStripArray;
 
 // Application specific imports
+// none
 
 /**
- * A torus where you specify inner radius, outer radius, arclength of an
- * average quad, coordinates, and appearance
+ * A simple torus that uses triangle strips.
  * <p>
  *
- * @author Unknown
- * @version $Revision: 1.1 $
+ * The created torus does not have any capabilities set except for the
+ * ability to write the geometry - needed so that we can modify the geometry
+ * when you change the height or radius. If you know that you are not going
+ * to be changing the geometry you can turn this off.
+ * <P>
+ *
+ * As we assume you may want to use this as a collidable object, we store the
+ * {@link GeometryData} instance that is used to create the object in the
+ * userData of the underlying {@link javax.media.j3d.TriangleStripArray}. The
+ * geometry does not have texture coordinates set.
+ *
+ * @author Justin Couch
+ * @version $Revision: 1.2 $
  */
-public class Torus
+public class Torus extends Shape3D
 {
-    private static final float INNERRADIUS = 1.0f;
-    private static final float OUTERRADIUS = 3.0f;
-    private static final float ARCLENGTH = 0.1f;
-    private static final float XPOSITION = 0.0f;
-    private static final float YPOSITION = 0.0f;
-    private static final float ZPOSITION = 0.0f;
+    /** The default outer radius of the torus */
+    private static final float DEFAULT_ORADIUS = 1.0f;
 
-    private Shape3D storus;
-    private float[] qverts;
-    private float x, y, z, theta, t, previousx, previousz,
-        calct, rlower, rupper, num, mag, x1, x2, x3, x4, y1, y2, y3, y4,
-        z1, z2, z3, z4, xn, yn, zn, secr, yval, r;
-    private int half, numcirc, upcount = 1;
-    private int vertCount = 0;
-    private int normalcount = 0;
+    /** The default inner radius of the torus */
+    private static final float DEFAULT_IRADIUS = 0.25f;
 
-    private Vector3f[] normals;
+    /** Default number of segments used in the outer radius */
+    private static final int DEFAULT_OFACETS = 16;
 
+    /** Default number of segments used in the inner radius */
+    private static final int DEFAULT_IFACETS = 16;
 
-    /**
-    *     Constructs a Torus of inner radius 1, outer radius 3,
-    *     arclength of a quad 0.1,
-    *     at coordinates 0, 0, 0,
-    *     with null Appearance
-    **/
-    public  Torus()
-    {
-        this(INNERRADIUS, OUTERRADIUS, ARCLENGTH,
-            XPOSITION, YPOSITION, ZPOSITION, null);
-    }
+    /** The generator used to modify the geometry */
+    private TorusGenerator generator;
+
+    /** Data used to regenerate the torus */
+    private GeometryData data;
 
     /**
-    *     Constructs a Torus of inner radius 'ir', outer radius 'or',
-    *     arclength of a quad 0.1,
-    *     at coordinates 0, 0, 0,
-    *     with null Appearance
-    **/
-    public  Torus(float ir, float or)
-    {
-        this(ir, or, ARCLENGTH,
-            XPOSITION, YPOSITION, ZPOSITION, null);
-    }
-
-    /**
-    *     Constructs a Torus of inner radius 1, outer radius 3,
-    *     arclength of a quad 0.1,
-    *     at coordinates 0, 0, 0,
-    *     with Appearance torusAppearance
-    **/
-    public  Torus(Appearance torusAppearance)
-    {
-        this(INNERRADIUS, OUTERRADIUS, ARCLENGTH,
-            XPOSITION, YPOSITION, ZPOSITION, torusAppearance);
-    }
-
-    /**
-    *     Constructs a Torus of inner radius 'ir', outer radius 'or',
-    *     arclength of a quad 'arclength',
-    *     at coordinates 0, 0, 0,
-    *     with null Appearance
-    **/
-    public  Torus(float ir, float or, float arclength)
-    {
-        this(ir, or, arclength,
-            XPOSITION, YPOSITION, ZPOSITION, null);
-    }
-
-    /**
-    *     Constructs a Torus of inner radius 'ir', outer radius 'or',
-    *     arclength of a quad 0.1,
-    *     at coordinates 0, 0, 0,
-    *     with Appearance torusAppearance
-    **/
-    public  Torus(float ir, float or, Appearance torusAppearance)
-    {
-        this(ir, or, ARCLENGTH,
-            XPOSITION, YPOSITION, ZPOSITION, torusAppearance);
-    }
-
-    /**
-    *     Constructs a Torus of inner radius 'ir', outer radius 'or',
-    *     arclength of a quad 'arclength',
-    *     at coordinates 0, 0, 0,
-    *     with Appearance torusAppearance
-    **/
-    public  Torus(float ir, float or, float arclength,
-        Appearance torusAppearance)
-    {
-        this(ir, or, arclength,
-            XPOSITION, YPOSITION, ZPOSITION, torusAppearance);
-    }
-
-    /**
-    *     Constructs a Torus centered at 'xpos', 'ypos', 'zpos',
-    *     with inner radius 'ir', outer radius 'or',
-    *     arclength of a quad 'arclength',
-    *     and Appearance 'torusAppearance'
-    **/
-    public  Torus(float ir, float or, float arclength,
-        float xpos, float ypos, float zpos, Appearance torusAppearance)
-    {
-        if (arclength <= 0.0)
-        {
-            arclength = 0.5f;
-        }
-        t = arclength;
-        r = (or - ir) / 2;
-        num = ((float) (2*Math.PI*r)/t);
-        numcirc = (int) num;
-
-        // Change the arclength to the closest value that fits.
-        calct = ((float) (2*Math.PI*r)/numcirc);
-        t = calct;
-        theta = t/r;
-        half = (int) ((r*Math.PI)/t)+1;
-
-        // In case theres too many quads...
-        if ( 2*(half*(6*(2*numcirc))) > 600000)
-        {
-            System.out.println("Too detailed! Choose a bigger" +
-                " arclength or smaller radiuses.");
-            System.exit(0);
-        }
-
-        qverts = new float[2*(half*(6*(2*(numcirc+1))))];
-
-        rlower = or;// radius of first loop
-        rupper = or - (r - (r*((float) Math.cos(theta))));// radius of second loop
-
-        // upper half
-        for (int k=0; k < half; k++)
-        {
-            for (int i=0 ; i < numcirc+1; i++)
-            {
-                x1 =  rlower*((float) Math.cos(theta*i));
-                coordinates[vertCount] = x1;
-
-                y1 = r*((float) Math.sin(theta*(k)));
-                coordinates[vertCount] = y1;
-
-                z1 =  rlower*((float) Math.sin(theta*i));
-                coordinates[vertCount] = -z1;
-
-                x2 =  rlower*((float) Math.cos(theta*(i+1)));
-                coordinates[vertCount] = x2;
-
-                y2 = r*((float) Math.sin(theta*(k)));
-                coordinates[vertCount] = y2;
-
-                z2 =  rlower*((float) Math.sin(theta*(i+1)));
-                coordinates[vertCount] = -z2;
-
-                x3 =  rupper*((float) Math.cos(theta*(i+1)));
-                coordinates[vertCount] = x3;
-
-                y3 =  r*((float) Math.sin(theta*(k+1)));
-                coordinates[vertCount] = y3;
-
-                z3 =  rupper*((float) Math.sin(theta*(i+1)));
-                coordinates[vertCount] = -z3;
-
-                x4 =  rupper*((float) Math.cos(theta*i));
-                coordinates[vertCount] = x4;
-
-                y4 =  r*((float) Math.sin(theta*(k+1)));
-                coordinates[vertCount] = y4;
-
-                z4 =  rupper*((float) Math.sin(theta*i));
-                coordinates[vertCount] = -z4;
-            }
-
-            rlower = rupper;
-            upcount++;
-            rupper = or - (r - (r*((float) Math.cos(theta*upcount))));
-        }
-
-        rlower = or;// radius of first loop
-        rupper = or - (r - (r*((float) Math.cos(theta))));// radius of second loop
-        upcount = 0;
-
-        // lower half just mirrors the upper half on y axis but we have to
-        // change the winding so that they all remain with the same clockwise
-        // ordering of vertices
-        int tempVertCount = vertCount;
-        for ( int k =0; k < tempVertCount; k = k+12)
-        {
-            coordinates[vertCount+0+3*0] =   coordinates[k+0+3*0];
-            coordinates[vertCount+1+3*0] = -(coordinates[k+1+3*0]);
-            coordinates[vertCount+2+3*0] =   coordinates[k+2+3*0];
-            coordinates[vertCount+0+3*1] =   coordinates[k+0+3*3];
-            coordinates[vertCount+1+3*1] = -(coordinates[k+1+3*3]);
-            coordinates[vertCount+2+3*1] =   coordinates[k+2+3*3];
-            coordinates[vertCount+0+3*2] =   coordinates[k+0+3*2];
-            coordinates[vertCount+1+3*2] = -(coordinates[k+1+3*2]);
-            coordinates[vertCount+2+3*2] =   coordinates[k+2+3*2];
-            coordinates[vertCount+0+3*3] =   coordinates[k+0+3*1];
-            coordinates[vertCount+1+3*3] = -(coordinates[k+1+3*1]);
-            coordinates[vertCount+2+3*3] =   coordinates[k+2+3*1];
-            vertCount += 12;
-        }
-    }
-
-    /**
-     * Generate a new set of normals. If the dimensions have not changed since
-     * the last call, the identical array will be returned. Note that you
-     * should make a copy of this if you intend to call this method more than
-     * once as it will replace the old values with the new ones and not
-     * reallocate the array.
-     *
-     * @return An array of points representing the geometry normals
+     * Construct a default torus with no appearance set. The default size
+     * of the torus is:<BR>
+     * Outer radius: 2.0<BR>
+     * Inner radius: 1.0<BR>
+     * Outer radius Faces:  16<BR>
+     * Inner radius Faces:  16<BR>
      */
-    public float[] generateUnindexedNormals()
+    public Torus()
     {
-        if(!normalsDimensionsChanged && !normalsCountChanged)
-            return normals;
-        else
-            normalsDimensionsChanged = false;
+        this(DEFAULT_ORADIUS,
+             DEFAULT_IRADIUS,
+             DEFAULT_OFACETS,
+             DEFAULT_IFACETS,
+             null);
+    }
 
-        if((normals == null) || normalsCountChanged)
-        {
-            // Normals depend on the facets for the calculations. If the
-            // normals have changed then we really want to recalculate the
-            // geometry first.
-            generateUnindexedCoordinates();
-            normalsCountChanged = false;
+    /**
+     * Construct a default torus with the given appearance. The default size
+     * of the torus is:<BR>
+     * Outer radius: 2.0<BR>
+     * Inner radius: 1.0<BR>
+     * Outer radius Faces:  16<BR>
+     * Inner radius Faces:  16<BR>
+     *
+     * @param app The appearance to use
+     */
+    public Torus(Appearance app)
+    {
+        this(DEFAULT_IRADIUS,
+             DEFAULT_ORADIUS,
+             DEFAULT_IFACETS,
+             DEFAULT_OFACETS,
+             app);
+    }
 
-            if((normals == null) || (normals.length != vertexCount * 3))
-                normals = new float[vertexCount * 3];
-        }
+    /**
+     * Construct a default torus with no appearance set and a custom
+     * number of faces.<BR>
+     * Outer radius: 2.0<BR>
+     * Inner radius: 1.0<BR>
+     *
+     * @param inner The number of faces to use around the inner radius
+     * @param outer The number of faces to use around the outer radius
+     */
+    public Torus(int inner, int outer)
+    {
+        this(DEFAULT_IRADIUS, DEFAULT_ORADIUS, inner, outer, null);
+    }
 
-        float x_coord;
-        float y_coord;
-        float z_coord;
-        float mag;
-        int count = 0;
+    /**
+     * Construct a default torus with no appearance set. The height and
+     * radius as set to the new value and uses the default face count of:<BR>
+     * Outer radius Faces:  16<BR>
+     * Inner radius Faces:  16<BR>
+     *
+     * @param innerRadius The inner radius of the torus
+     * @param outerRadius The outer radius of the torus
+     */
+    public Torus(float innerRadius, float outerRadius)
+    {
+        this(innerRadius, outerRadius, DEFAULT_IFACETS, DEFAULT_OFACETS, null);
+    }
 
-        // Calculate normals of all points.
-        for(int w = 0; w < coordinates.length;)
-        {
-            x_coord = coordinates[w++];
-            y_coord = coordinates[w++];
-            z_coord = coordinates[w++];
+    /**
+     * Construct a default torus with the given appearance and a custom
+     * number of faces.<BR>
+     * Outer radius: 2.0<BR>
+     * Inner radius: 1.0<BR>
+     *
+     * @param inner The number of faces to use around the inner radius
+     * @param outer The number of faces to use around the outer radius
+     * @param app The appearance to use
+     */
+    public Torus(int inner, int outer, Appearance app)
+    {
+        this(DEFAULT_ORADIUS, DEFAULT_IRADIUS, inner, outer, app);
+    }
 
-            mag = x_coord * x_coord +
-                  y_coord * y_coord +
-                  z_coord * z_coord;
+    /**
+     * Construct a default torus with the given appearance. The height and
+     * radius as set to the new value and uses the default face count of
+     * Outer radius Faces:  16<BR>
+     * Inner radius Faces:  16<BR>
+     *
+     * @param innerRadius The inner radius of the torus
+     * @param outerRadius The outer radius of the torus
+     * @param app The appearance to use
+     */
+    public Torus(float innerRadius, float outerRadius, Appearance app)
+    {
+        this(innerRadius, outerRadius, DEFAULT_IFACETS, DEFAULT_OFACETS, app);
+    }
 
-            if(mag != 0.0)
-            {
-                mag = 1 / ((float)Math.sqrt(mag));
-                normals[count++] = x_coord * mag;
-                normals[count++] = y_coord * mag;
-                normals[count++] = z_coord * mag;
-            }
-            else
-            {
-                normals[count++] = 0;
-                normals[count++] = 0;
-                normals[count++] = 0;
-            }
-        }
+    /**
+     * Construct a torus with all the values customisable
+     *
+     * @param innerRadius The inner radius of the torus
+     * @param outerRadius The outer radius of the torus
+     * @param inner The number of faces to use around the inner radius
+     * @param outer The number of faces to use around the outer radius
+     * @param app The appearance to use
+     */
+    public Torus(float innerRadius,
+                 float outerRadius,
+                 int inner,
+                 int outer,
+                 Appearance app)
+    {
+        data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLE_STRIPS;
+        data.geometryComponents = GeometryData.NORMAL_DATA;
 
-        return normals;
+        generator = new TorusGenerator(innerRadius, outerRadius, inner, outer);
+
+        generator.generate(data);
+
+        int format = TriangleStripArray.COORDINATES |
+                     TriangleStripArray.NORMALS;
+
+        TriangleStripArray geometry =
+            new TriangleStripArray(data.vertexCount, format, data.stripCounts);
+
+        geometry.setCoordinates(0, data.coordinates);
+        geometry.setNormals(0, data.normals);
+        geometry.setUserData(data);
+
+        setCapability(ALLOW_GEOMETRY_WRITE);
+
+        setAppearance(app);
+        setGeometry(geometry);
+    }
+
+    /**
+     * Change the radius and height of the torus to the new values. If the
+     * geometry write capability has been turned off, this will not do
+     * anything.
+     *
+     * @param innerRadius The inner radius of the torus
+     * @param outerRadius The outer radius of the torus
+     */
+    public void setDimensions(float innerRadius, float outerRadius)
+    {
+        if(!getCapability(ALLOW_GEOMETRY_WRITE))
+            return;
+
+        generator.setDimensions(innerRadius, outerRadius);
+        generator.generate(data);
+
+        int format = TriangleStripArray.COORDINATES |
+                     TriangleStripArray.NORMALS;
+
+        TriangleStripArray geometry =
+            new TriangleStripArray(data.vertexCount, format, data.stripCounts);
+
+        geometry.setCoordinates(0, data.coordinates);
+        geometry.setNormals(0, data.normals);
+        geometry.setUserData(data);
+        setGeometry(geometry);
+    }
+
+    /**
+     * Set the facet count of the torus to the new value. If the geometry
+     * write capability has been turned off, this will not do anything.
+     *
+     * @param inner The number of faces to use around the inner radius
+     * @param outer The number of faces to use around the outer radius
+     */
+    public void setFacetCount(int inner, int outer)
+    {
+        if(!getCapability(ALLOW_GEOMETRY_WRITE))
+            return;
+
+        generator.setFacetCount(inner, outer);
+        generator.generate(data);
+
+        int format = TriangleStripArray.COORDINATES |
+                     TriangleStripArray.NORMALS;
+
+        TriangleStripArray geometry =
+            new TriangleStripArray(data.vertexCount, format, data.stripCounts);
+
+        geometry.setCoordinates(0, data.coordinates);
+        geometry.setNormals(0, data.normals);
+        geometry.setUserData(data);
+        setGeometry(geometry);
     }
 }
