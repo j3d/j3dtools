@@ -10,6 +10,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.io \
 	org.j3d.util.device \
 	org.j3d.util.interpolator \
+	org.j3d.util.frustum \
 	org.j3d.device.input \
 	org.j3d.device.input.spaceball.transformation \
 	org.j3d.device.input.spaceball.driver \
@@ -42,6 +43,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.io \
 	org.j3d.util.device \
 	org.j3d.util.interpolator \
+	org.j3d.util.frustum \
 	org.j3d.device.input.spaceball \
 	org.j3d.device.input.spaceball.transformation \
 	org.j3d.texture \
