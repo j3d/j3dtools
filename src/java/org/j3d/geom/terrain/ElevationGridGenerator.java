@@ -32,11 +32,12 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * the terrain.
  * <p>
  *
- * Points are defined in the height arrays in width first order. Normals, are
- * always smooth blended.
+ * Points are defined in the height arrays in width first order. Width is along
+ * the X axis and depth is the Y axis. Normals are always smooth blended.
+ * Perhaps a future implementation will include crease angle information.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ElevationGridGenerator extends GeometryGenerator
 {
@@ -1395,7 +1396,9 @@ System.out.println("Total strip index count " + (num_strips * widthPoints * 2));
 
         if(flatHeights != null)
         {
-            for(int i = 0; i < numTerrainValues; i++)
+            int num_values = numTerrainValues / 3;
+
+            for(int i = 0; i < num_values; i++)
             {
                 terrainCoordinates[count++] = w;
                 terrainCoordinates[count++] = flatHeights[i];
