@@ -13,55 +13,66 @@ package org.j3d.geom.spline;
 // none
 
 // Application specific imports
+import org.j3d.geom.InvalidArraySizeException;
+import org.j3d.geom.GeometryData;
 import org.j3d.geom.GeometryGenerator;
+import org.j3d.geom.UnsupportedTypeException;
 
 
 /**
- * Geometry generator for generating rectangular Bezier patches.
+ * Geometry generator for generating a single Bezier curve.
  * <P>
  *
- * Bezier patches of all orders are permitted. Order information is derived
- * from the provided knot coordinates. When generating a patch, the values
- * for the coordinates are nominally provided in the X and Z plane although no
- * explicit checking is performed to ensure that knot coordinates do not
- * self-intersect or do anything nasty. Normals are always generated as the
- * average between the adjacent edges.
+ * Bezier curves of all orders are permitted. Order information is derived
+ * from the provided knot coordinates.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class BezierPatchGenerator extends GeometryGenerator
+public class BezierGenerator extends GeometryGenerator
 {
     /** Default number of segments used in the cone */
     private static final int DEFAULT_FACETS = 16;
 
+    /** An array of factorial values. Resized as needed */
+    private static int[] FACTORIALS = { 1, 1, 2, 6, 24, 120, 720 };
+
     /** The number of sections used around the cone */
     private int facetCount;
 
-    /** Knot values used to generate patches */
-    private float[][] knotCoordinates;
+    /** Knot values used to generate patches in flat array */
+    private float[] knotCoordinates;
+
+    /** Coordinates of the generated curve */
+    private float[] curveCoordinates;
+
+    /** The number of valid values in the curve array (facetCount + 1 * 3) */
+    private int numCurveValues;
+
+    /** Flag to say the curve setup has changed */
+    private boolean curveChanged;
 
     /**
-     * Construct a new generator with default settings of 20 grid squares over
-     * the length of one surface.
+     * Construct a new generator with default settings of 16 line segments over
+     * the length of one curve.
      */
-    public BezierPatchGenerator()
+    public BezierGenerator()
     {
     }
 
     /**
      * Construct a new generator with the specified number of tessellations
-     * over the side of the patch, regardless of extents.
+     * over the length of the curve, regardless of extents.
      *
-     * @param facets The number of facets on the side of the cone
+     * @param facets The number of facets on the side of the curve
      * @throws IllegalArgumentException The number of facets is less than 3
      */
-    public BezierPatchGenerator(int facets)
+    public BezierGenerator(int facets)
     {
         if(facets < 3)
             throw new IllegalArgumentException("Number of facets is < 3");
 
-        patchChanged = true;
+        curveChanged = true;
         facetCount = facets;
     }
 
@@ -79,90 +90,64 @@ public class BezierPatchGenerator extends GeometryGenerator
             throw new IllegalArgumentException("Number of facets is < 3");
 
         if(facetCount != facets)
-            patchChanged = true;
+            curveChanged = true;
 
         facetCount = facets;
     }
 
     /**
-     * Set the bezier patch knots. The array is presented as [depth][width]
-     * with the coordinates flattened as [Xn, Yn, Zn] in the width array. The
-     * order of the patch is determined by the passed array. If the arrays are
-     * not of minimum length 3 and equal length an exception is generated.
+     * Set the bezier curve knots. The array is presented with the coordinates
+     * flattened as [Xn, Yn, Zn] in the width array. The order of the patch is
+     * determined by the passed array. If the arrays are not of minimum length
+     * 3 and equal length an exception is generated.
      *
      * @param knots The knot coordinate values
      */
-    public void setPatchKnots(float[][] knots)
+    public void setKnots(float[] knots)
     {
-        int min_length = knots[0].length;
-
-        if((knots.length < 3) || (knots[0].length < 3))
+        if(knots.length < 3)
             throw new IllegalArgumentException("Depth patch size < 3");
 
         // second check for consistent lengths of the width patches
         int i;
 
-        for(i = 1; i < knots.length; i++)
+        if(knots.length != knotCoordinates.length)
+
         {
-            if(knots[i].length != min_length)
-                throw new IllegalArgumentException("Non-equal array lengths");
+            knotCoordinates = new float[knots.length];
         }
 
-        if((knots.length != knotCoordinates.length) &&
-           (min_length != knotCoordinates[0].length))
-        {
-            if(knots.length != knotCoordinates.length)
-            {
-                knotCoordinates = new float[knots.length][min_length];
-            }
-            else
-            {
-                for(int i = 0; i < knots.length; i++)
-                    knotCoordinates[i] = new float[min_length];
-            }
-        }
+        System.arraycopy(knots,
+                         0,
+                         knotCoordinates,
+                         0,
+                         knots.length);
 
-        for(int i = 0; i < knots.length; i++)
-        {
-            System.arraycopy(knots[i],
-                             0,
-                             knotCoordinates[i],
-                             0,
-                             min_length);
-        }
-
-        patchChanged = true;
+        curveChanged = true;
     }
 
     /**
      * Get the number of vertices that this generator will create for the
-     * shape given in the definition.
+     * curve. This is just the number of facets + 1.
      *
-     * @param data The data to patch the calculations on
      * @return The vertex count for the object
      * @throws UnsupportedTypeException The generator cannot handle the type
-     *   of geometry you have requested.
+     *   of geometry you have requested
      */
     public int getVertexCount(GeometryData data)
         throws UnsupportedTypeException
     {
+        int ret_val = 0;
+
         switch(data.geometryType)
         {
-            case GeometryData.TRIANGLES:
-                ret_val = facetCount * facetCount * 3 ;
+            case GeometryData.LINES:
+                ret_val = facetCount * 2;
                 break;
-            case GeometryData.QUADS:
-                ret_val = facetCount * facetCount * 4;
-                break;
-
-            // These all have the same vertex count
-            case GeometryData.TRIANGLE_STRIPS:
-            case GeometryData.TRIANGLE_FANS:
-            case GeometryData.INDEXED_TRIANGLES:
-            case GeometryData.INDEXED_QUADS:
-            case GeometryData.INDEXED_TRIANGLE_STRIPS:
-            case GeometryData.INDEXED_TRIANGLE_FANS:
-                ret_val = facetCount * facetCount;
+            case GeometryData.LINE_STRIPS:
+            case GeometryData.INDEXED_LINES:
+            case GeometryData.INDEXED_LINE_STRIPS:
+                ret_val = facetCount + 1;
                 break;
 
             default:
@@ -190,30 +175,18 @@ public class BezierPatchGenerator extends GeometryGenerator
     {
         switch(data.geometryType)
         {
-            case GeometryData.TRIANGLES:
-                unindexedTriangles(data);
+            case GeometryData.LINES:
+                unindexedLines(data);
                 break;
-//            case GeometryData.QUADS:
-//                unindexedQuads(data);
-//                break;
-//            case GeometryData.TRIANGLE_STRIPS:
-//                triangleStrips(data);
-//                break;
-//            case GeometryData.TRIANGLE_FANS:
-//                triangleFans(data);
-//                break;
-//            case GeometryData.INDEXED_QUADS:
-//                indexedQuads(data);
-//                break;
-//            case GeometryData.INDEXED_TRIANGLES:
-//                indexedTriangles(data);
-//                break;
-//            case GeometryData.INDEXED_TRIANGLE_STRIPS:
-//                indexedTriangleStrips(data);
-//                break;
-//            case GeometryData.INDEXED_TRIANGLE_FANS:
-//                indexedTriangleFans(data);
-//                break;
+            case GeometryData.LINE_STRIPS:
+                lineStrips(data);
+                break;
+            case GeometryData.INDEXED_LINES:
+                indexedLines(data);
+                break;
+            case GeometryData.INDEXED_LINE_STRIPS:
+                indexedLineStrips(data);
+                break;
 
             default:
                 throw new UnsupportedTypeException("Unknown geometry type: " +
@@ -228,54 +201,20 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void unindexedTriangles(GeometryData data)
+    private void unindexedLines(GeometryData data)
         throws InvalidArraySizeException
     {
-        generateUnindexedTriCoordinates(data);
+        generateUnindexedLineCoordinates(data);
 
         if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateUnindexedTriNormals(data);
+            generateUnindexedLineNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
+            generateLineTexture2D(data);
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
-            generateTriTexture3D(data);
+            generateLineTexture3D(data);
     }
 
-
-    /**
-     * Generate a new set of points for an unindexed quad array
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void unindexedQuads(GeometryData data)
-        throws InvalidArraySizeException
-    {
-    }
-
-    /**
-     * Generate a new set of points for an indexed quad array. Uses the same
-     * points as an indexed triangle, but repeats the top coordinate index.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void indexedQuads(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        generateIndexedTriCoordinates(data);
-
-        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateIndexedTriNormals(data);
-
-        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
-        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
-            generateTriTexture3D(data);
-    }
 
     /**
      * Generate a new set of points for an indexed triangle array
@@ -284,19 +223,38 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void indexedTriangles(GeometryData data)
+    private void indexedLines(GeometryData data)
         throws InvalidArraySizeException
     {
-        generateIndexedTriCoordinates(data);
+        generateIndexedLineCoordinates(data);
 
         if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateIndexedTriNormals(data);
+            generateIndexedLineNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
+            generateLineTexture2D(data);
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
-            generateTriTexture3D(data);
+            generateLineTexture3D(data);
 
+        int idx_cnt = (facetCount + 1) * 2;
+
+        if(data.indexes == null)
+            data.indexes = new int[idx_cnt];
+        else if(data.indexes.length < idx_cnt)
+            throw new InvalidArraySizeException("Index values",
+                                                data.coordinates.length,
+                                                idx_cnt);
+
+        int[] indexes = data.indexes;
+        data.indexesCount = idx_cnt;
+
+        int idx = 0;
+
+        for(int i = 0; i < idx_cnt; )
+        {
+            indexes[i++] = idx++;
+            indexes[i++] = idx;
+        }
     }
 
     /**
@@ -307,22 +265,28 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void triangleStrips(GeometryData data)
+    private void lineStrips(GeometryData data)
         throws InvalidArraySizeException
     {
-    }
+        generateIndexedLineCoordinates(data);
 
-    /**
-     * Generate a new set of points for a triangle fan array. Each facet on the
-     * side of the cone is a single fan, but the patch is one big fan.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void triangleFans(GeometryData data)
-        throws InvalidArraySizeException
-    {
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
+            generateIndexedLineNormals(data);
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+            generateLineTexture2D(data);
+        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+            generateLineTexture3D(data);
+
+        if(data.stripCounts == null)
+            data.stripCounts = new int[1];
+        else if(data.stripCounts.length < 1)
+            throw new InvalidArraySizeException("Strip counts",
+                                                data.stripCounts.length,
+                                                1);
+
+        data.numStrips = 1;
+        data.stripCounts[0] = facetCount + 1;
     }
 
     /**
@@ -334,33 +298,48 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void indexedTriangleStrips(GeometryData data)
+    private void indexedLineStrips(GeometryData data)
         throws InvalidArraySizeException
     {
-    }
-
-    /**
-     * Generate a new set of points for an indexed triangle fan array. We
-     * build the strip from the existing points, and there's no need to
-     * re-order the points for the indexes this time. As for the simple fan,
-     * we use the first index, the lower-right corner as the apex for the fan.
-     *
-     * @param data The data to patch the calculations on
-     * @throws InvalidArraySizeException The array is not big enough to contain
-     *   the requested geometry
-     */
-    private void indexedTriangleFans(GeometryData data)
-        throws InvalidArraySizeException
-    {
-        generateIndexedTriCoordinates(data);
+        generateIndexedLineCoordinates(data);
 
         if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
-            generateIndexedTriNormals(data);
+            generateIndexedLineNormals(data);
 
         if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
-            generateTriTexture2D(data);
+            generateLineTexture2D(data);
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
-            generateTriTexture3D(data);
+            generateLineTexture3D(data);
+
+        int idx_cnt = (facetCount + 1) * 2;
+
+        if(data.indexes == null)
+            data.indexes = new int[idx_cnt];
+        else if(data.indexes.length < idx_cnt)
+            throw new InvalidArraySizeException("Index values",
+                                                data.indexes.length,
+                                                idx_cnt);
+
+        int[] indexes = data.indexes;
+        data.indexesCount = idx_cnt;
+
+        int idx = 0;
+
+        for(int i = 0; i < idx_cnt; )
+        {
+            indexes[i++] = idx++;
+            indexes[i++] = idx;
+        }
+
+        if(data.stripCounts == null)
+            data.stripCounts = new int[1];
+        else if(data.stripCounts.length < 1)
+            throw new InvalidArraySizeException("Strip counts",
+                                                data.stripCounts.length,
+                                                1);
+
+        data.numStrips = 1;
+        data.stripCounts[0] = facetCount + 1;
     }
 
     //------------------------------------------------------------------------
@@ -376,7 +355,7 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void generateUnindexedTriCoordinates(GeometryData data)
+    private void generateUnindexedLineCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
         int vtx_cnt = getVertexCount(data);
@@ -391,8 +370,28 @@ public class BezierPatchGenerator extends GeometryGenerator
         float[] coords = data.coordinates;
         data.vertexCount = vtx_cnt;
 
-        regeneratePatch();
+        regenerateCurve();
 
+        int vtx = 0;
+        int c_count = 0;
+
+        for(int i = 0; i < vtx_cnt; i++)
+        {
+            coords[vtx] = curveCoordinates[c_count];
+            vtx++;
+            coords[vtx] = curveCoordinates[c_count + 1];
+            vtx++;
+            coords[vtx] = curveCoordinates[c_count + 2];
+            vtx++;
+
+            coords[vtx] = curveCoordinates[c_count + 3];
+            vtx++;
+            coords[vtx] = curveCoordinates[c_count + 4];
+            vtx++;
+            coords[vtx] = curveCoordinates[c_count + 5];
+
+            c_count += 3;
+        }
     }
 
     /**
@@ -404,7 +403,7 @@ public class BezierPatchGenerator extends GeometryGenerator
      * start at vertexCount / 2 with the first value as 0,0,0 (the center of
      * the patch) and then all the following values as the patch.
      */
-    private void generateIndexedTriCoordinates(GeometryData data)
+    private void generateIndexedLineCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
         int vtx_cnt = getVertexCount( data);
@@ -419,8 +418,10 @@ public class BezierPatchGenerator extends GeometryGenerator
         float[] coords = data.coordinates;
         data.vertexCount = vtx_cnt;
 
-        regeneratePatch();
+        regenerateCurve();
 
+        // Copy the raw coords, the make the set of indicies for it
+        System.arraycopy(curveCoordinates, 0, coords, 0, numCurveValues);
     }
 
     //------------------------------------------------------------------------
@@ -439,7 +440,7 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void generateUnindexedTriNormals(GeometryData data)
+    private void generateUnindexedLineNormals(GeometryData data)
         throws InvalidArraySizeException
     {
         int vtx_cnt = data.vertexCount * 3;
@@ -465,7 +466,7 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void generateIndexedTriNormals(GeometryData data)
+    private void generateIndexedLineNormals(GeometryData data)
         throws InvalidArraySizeException
     {
         int vtx_cnt = data.vertexCount * 3;
@@ -493,7 +494,7 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void generateTriTexture2D(GeometryData data)
+    private void generateLineTexture2D(GeometryData data)
         throws InvalidArraySizeException
     {
         int vtx_cnt = data.vertexCount * 2;
@@ -519,7 +520,7 @@ public class BezierPatchGenerator extends GeometryGenerator
      * @throws InvalidArraySizeException The array is not big enough to contain
      *   the requested geometry
      */
-    private void generateTriTexture3D(GeometryData data)
+    private void generateLineTexture3D(GeometryData data)
         throws InvalidArraySizeException
     {
         int vtx_cnt = data.vertexCount * 2;
@@ -539,19 +540,110 @@ public class BezierPatchGenerator extends GeometryGenerator
      * makes up the patch of the code. The coordinates are generated patchd on
      * the 2 PI divided by the number of facets to generate.
      */
-    private final void regeneratePatch()
+    private final void regenerateCurve()
     {
-        if(!patchChanged)
+        if(!curveChanged)
             return;
 
-        patchChanged = false;
+        curveChanged = false;
 
-        if((patchCoordinates == null) ||
-           (facetCount * 2 > patchCoordinates.length))
+        numCurveValues = (facetCount + 1) * 3;
+
+        if((curveCoordinates == null) ||
+           (numCurveValues > curveCoordinates.length))
         {
-            patchCoordinates = new float[facetCount * 2];
+            curveCoordinates = new float[numCurveValues];
         }
 
-        numPatchValues = facetCount * 2;
+        int icount = 0;
+        int jcount = 0;
+        float t = 0;
+        float step = 1 / ((float)(knotCoordinates.length - 1));
+        int num_vertex = facetCount + 1;
+
+        // Iterate through all the points, but instead of being recursive,
+        // use a loop.
+        for(int i1 = 1; i1 <= knotCoordinates.length; i1++)
+        {
+
+            // Smooth out the last point to make it exact.
+            if((1.0f - t) < 5e-6)
+                t = 1.0f;
+
+            for(int j = 1; j <= 3; j++)
+            { // generate a point on the curve
+                jcount = j;
+                curveCoordinates[icount + j] = 0;
+
+                for(int i = 1; i <= num_vertex; i++)
+                {
+                    // Do x,y,z components */
+                    curveCoordinates[icount + j] = curveCoordinates[icount + j] +
+                                                   calcBasis(num_vertex -1, i - 1, t) *
+                                                   knotCoordinates[jcount];
+                    jcount = jcount + 3;
+                }
+            }
+
+            icount = icount + 3;
+            t = t + step;
+        }
+    }
+
+    /**
+     * Evaluate the Bernstein basis function.
+     */
+    private float calcBasis(int n, int i, float t)
+    {
+        // Special case handling with Math.pow
+
+        // t^i
+        float ti = (t == 0. && i == 0) ? 1 : (float)Math.pow(t, i);
+
+        // (1 - t)^i
+        float tni = (n == i && t == 1) ? 1 : (float)Math.pow((1 - t), (n - i));
+
+        // n! / (i! * (n - i)!)
+        float ni = factorial(n) / (float)(factorial(i) * factorial(n - i));
+
+        // Calculate Bernstein basis function as the return value
+        return ni * ti * tni;
+    }
+
+    /**
+     * Calculate the factorial value for the given value ie n!
+     *
+     * @param n The value to calculate n! for
+     * @return the value of n!
+     */
+    private int factorial(int n)
+    {
+        int ret_val = 0;
+
+        // look for a precalculated value first. If none, calculate as needed
+        if(n < FACTORIALS.length)
+        {
+            ret_val = FACTORIALS[n];
+        }
+        else
+        {
+            int cnt = FACTORIALS.length;
+
+            // if used heavily, this may cause an issue with multithreading.
+            // May need to put into a mutex block.
+            int[] tmp = new int[n + 1];
+            System.arraycopy(FACTORIALS, 0, tmp, 0, FACTORIALS.length);
+            FACTORIALS = tmp;
+
+            while(cnt <= n)
+            {
+                FACTORIALS[cnt] = FACTORIALS[cnt - 1] * cnt;
+                cnt++;
+            }
+
+            ret_val = FACTORIALS[n];
+        }
+
+        return ret_val;
     }
 }
