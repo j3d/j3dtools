@@ -144,7 +144,7 @@ import org.j3d.util.UserSupplementData;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class NavigationHandler
 {
@@ -839,17 +839,26 @@ public class NavigationHandler
 
         for(int i = 0; i < ground.length; i++)
         {
-            // Firstly, check the path to see if this is eligible for picking.
+            // Firstly, check the path to see if this is eligible for picking
+            // Look at the picked item first, then do a depth traversal of the
+            // path from the root down to the the node.
+            Node end = ground[i].getObject();
+            Object user_data = end.getUserData();
+
+            if(user_data instanceof UserSupplementData &&
+               !((UserSupplementData)user_data).isTerrain)
+                    continue;
+
             int num_path_items = ground[i].nodeCount();
             boolean not_eligible = false;
 
             for(int j = 0; j < num_path_items && !not_eligible; j++)
             {
                 Node group = ground[i].getNode(j);
-                Object user_data = group.getUserData();
+                user_data = group.getUserData();
 
                 if(user_data instanceof UserSupplementData)
-                    not_eligible = ((UserSupplementData)user_data).isTerrain;
+                    not_eligible = !((UserSupplementData)user_data).isTerrain;
             }
 
             if(not_eligible)
@@ -866,7 +875,7 @@ public class NavigationHandler
             // source use that to determine the terrain, otherwise pass it
             // through to the geometry intersection handling. Inside that
             // Also check to see what geometry is being used
-            Object user_data = i_shape.getUserData();
+            user_data = i_shape.getUserData();
             HeightDataSource hds = null;
             GeometryData geom_data = null;
 
@@ -1075,17 +1084,25 @@ public class NavigationHandler
         boolean real_collision = false;
         float length = (float)collisionVector.length();
 
-
         for(int i = 0; (i < closest.length) && !real_collision; i++)
         {
             // Firstly, check the path to see if this is eligible for picking
+            // Look at the picked item first, then do a depth traversal of the
+            // path from the root down to the the node.
+            Node end = closest[i].getObject();
+            Object user_data = end.getUserData();
+
+            if(user_data instanceof UserSupplementData &&
+               !((UserSupplementData)user_data).collidable)
+                    continue;
+
             int num_path_items = closest[i].nodeCount();
             boolean not_eligible = false;
 
             for(int j = 0; j < num_path_items && !not_eligible; j++)
             {
                 Node group = closest[i].getNode(j);
-                Object user_data = group.getUserData();
+                user_data = group.getUserData();
 
                 if(user_data instanceof UserSupplementData)
                     not_eligible = !((UserSupplementData)user_data).collidable;
@@ -1100,12 +1117,8 @@ public class NavigationHandler
             // might actually have just walked through something like an
             // archway.
             Transform3D local_tx = closest[i].getTransform();
-
             Shape3D i_shape = (Shape3D)closest[i].getObject();
-
             Enumeration geom_list = i_shape.getAllGeometries();
-
-            Object user_data = null;
             GeometryData geom_data = null;
 
             while(geom_list.hasMoreElements() && !real_collision)
@@ -1203,16 +1216,23 @@ public class NavigationHandler
         for(int i = 0; i < ground.length; i++)
         {
             // Firstly, check the path to see if this is eligible for picking.
+            Node end = ground[i].getObject();
+            Object user_data = end.getUserData();
+
+            if(user_data instanceof UserSupplementData &&
+               !((UserSupplementData)user_data).isTerrain)
+                    continue;
+
             int num_path_items = ground[i].nodeCount();
             boolean not_eligible = false;
 
             for(int j = 0; j < num_path_items && !not_eligible; j++)
             {
                 Node group = ground[i].getNode(j);
-                Object user_data = group.getUserData();
+                user_data = group.getUserData();
 
                 if(user_data instanceof UserSupplementData)
-                    not_eligible = ((UserSupplementData)user_data).isTerrain;
+                    not_eligible = !((UserSupplementData)user_data).isTerrain;
             }
 
             if(not_eligible)
@@ -1227,7 +1247,7 @@ public class NavigationHandler
             // source use that to determine the terrain, otherwise pass it
             // through to the geometry intersection handling. Inside that
             // Also check to see what geometry is being used
-            Object user_data = i_shape.getUserData();
+            user_data = i_shape.getUserData();
             HeightDataSource hds = null;
             GeometryData geom_data = null;
 
