@@ -31,7 +31,7 @@ import javax.vecmath.Vector3f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class SpringGenerator extends GeometryGenerator
 {
@@ -42,13 +42,13 @@ public class SpringGenerator extends GeometryGenerator
     private static final float DEFAULT_OUTER_RADIUS = 1.0f;
 
     /** Default number of faces around the inner radius */
-    private static final int DEFAULT_INNER_FACETS = 4;
+    private static final int DEFAULT_INNER_FACETS = 16;
 
     /** Default number of faces around the outer radius of one loop */
-    private static final int DEFAULT_OUTER_FACETS = 4;
+    private static final int DEFAULT_OUTER_FACETS = 16;
 
     /** Default number of loops to generate */
-    private static final int DEFAULT_LOOP_COUNT = 2;
+    private static final int DEFAULT_LOOP_COUNT = 4;
 
     /** Default spacing between loops */
     private static final float DEFAULT_LOOP_SPACING = 1.0f;
