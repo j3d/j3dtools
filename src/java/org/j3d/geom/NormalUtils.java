@@ -26,7 +26,7 @@ import javax.vecmath.Vector3f;
  * class with synchronised methods would be very bad for performance.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class NormalUtils
 {
@@ -53,7 +53,7 @@ public class NormalUtils
      *
      * @return The current instance
      */
-    public NormalUtils getSharedInstance()
+    public static NormalUtils getSharedInstance()
     {
         if(sharedInstance == null)
             sharedInstance = new NormalUtils();
