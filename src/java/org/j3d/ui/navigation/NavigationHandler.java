@@ -141,7 +141,7 @@ import org.j3d.util.UserSupplementData;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class NavigationHandler
 {
@@ -505,6 +505,21 @@ public class NavigationHandler
         centerOfRotation.x = center[0];
         centerOfRotation.y = center[1];
         centerOfRotation.z = center[2];
+
+        viewTg.getTransform(viewTx);
+        viewTx.get(viewTranslation);
+
+        double x = viewTranslation.x - centerOfRotation.x;
+        double z = viewTranslation.z - centerOfRotation.z;
+
+        rotationRadius = Math.sqrt(x * x + z * z);
+        lastAngle = Math.atan2(z, x);
+
+        locationPoint.set(viewTranslation);
+
+        viewTx.lookAt(locationPoint, centerOfRotation, Y_UP);
+        viewTx.invert();
+        viewTg.setTransform(viewTx);
     }
 
     /**
@@ -848,7 +863,6 @@ public class NavigationHandler
 
             viewTx.lookAt(locationPoint, centerOfRotation, Y_UP);
             viewTx.invert();
-
             viewTg.setTransform(viewTx);
         }
     }
