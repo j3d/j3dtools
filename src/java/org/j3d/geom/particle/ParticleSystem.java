@@ -28,7 +28,7 @@ import java.util.ArrayList;
  * <p>
  *
  * @author Justin Couch, based on code by Daniel Selman
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
@@ -201,9 +201,9 @@ public abstract class ParticleSystem implements ParticleFactory
         frameTime = (int)(cur_time - timeNow);
         timeNow = cur_time;
 
+        createParticles();
         updateParticleFunctions();
         runParticleFunctions();
-        createParticles();
         updateGeometry();
 
         return true;
