@@ -72,7 +72,7 @@ import javax.vecmath.Vector3d;
  * the overlays.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public abstract class OverlayBase
     implements Overlay, ScreenComponent, ComponentListener
@@ -576,6 +576,19 @@ public abstract class OverlayBase
     public void setUpdateManager(UpdateManager mgr)
     {
         updateManager = mgr;
+
+        if(updateManager == null)
+            return;
+
+        // if we have anything dirty, request an update immediately
+        for(int i = 0; i < dirtyCheck.length; i++)
+        {
+            if(dirtyCheck[i])
+            {
+                updateManager.updateRequested(this);
+                break;
+            }
+        }
     }
 
     //------------------------------------------------------------------------
@@ -754,8 +767,6 @@ public abstract class OverlayBase
         dirtyCheck[property] = true;
         if(updateManager != null)
             updateManager.updateRequested(this);
-        else
-            System.err.println("Null update manager in: " + this);
     }
 
     /**
