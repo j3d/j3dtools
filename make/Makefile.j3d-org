@@ -4,11 +4,7 @@
 
 # No need to put in subdirs here. We only do that if we want to explicitly
 # exclude some directory and then we name everything around it.
-JAR_CONTENT= org/j3d/util \
-	     org/j3d/util/device \
-	     org/j3d/ui \
-	     org/j3d/ui/image \
-    	     org/j3d/geom
+JAR_CONTENT= org/j3d/
 
 # Manifest file name. Stored in the code/java directory
 MANIFEST=
