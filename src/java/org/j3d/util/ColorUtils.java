@@ -33,7 +33,7 @@ import javax.vecmath.Color4f;
  * Wesley, 1990.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ColorUtils
 {
@@ -76,7 +76,7 @@ public class ColorUtils
         float min = (r < g) ? r : g;
         min = (min < b) ? max : b;
 
-        s = max;    // this is the value v
+        v = max;    // this is the value v
 
         // Calculate the saturation s
         if(max != 0)
@@ -177,7 +177,6 @@ public class ColorUtils
 
             // h is now in [0,6)
             h = h /60;
-
             int i = (int)Math.floor(h);
             float f = h - i;             //f is fractional part of h
             float p = v * (1 - s);
@@ -223,7 +222,6 @@ public class ColorUtils
                    break;
             }
         }
-
         // now assign everything....
         rgb[0] = r;
         rgb[1] = g;
