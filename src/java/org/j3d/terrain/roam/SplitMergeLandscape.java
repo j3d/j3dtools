@@ -67,7 +67,7 @@ import org.j3d.terrain.*;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class SplitMergeLandscape extends Landscape
 {
@@ -78,6 +78,14 @@ public class SplitMergeLandscape extends Landscape
     /** Message for when patchSize is not a ^2 */
     private static final String NOT_POW2_MSG =
         "The patchSize is not a power of two";
+
+    /** Message for the static grid size is not a 2^n + 1 */
+    private static final String GRID_W_SIZE_MSG =
+        "The grid width is not (n * patchSize + 1) in size: ";
+
+    /** Message for the static grid size is not a 2^n + 1 */
+    private static final String GRID_D_SIZE_MSG =
+        "The grid depth is not (n * patchSize + 1) in size: ";
 
     /** Patch size in grid points if the user doesn't supply one */
     private static final int DEFAULT_PATCH_SIZE = 64;
@@ -114,6 +122,7 @@ public class SplitMergeLandscape extends Landscape
      *
      * @param view The view frustum looking at this landscape
      * @param data The raw data for the terrain
+     * @throws IllegalArgumentException The static grid is not n^2 + 1 in size
      */
     public SplitMergeLandscape(ViewFrustum view, TerrainData data)
     {
@@ -121,21 +130,7 @@ public class SplitMergeLandscape extends Landscape
 
         terrainDataType = data.getSourceDataType();
 
-        switch(terrainDataType)
-        {
-            case TerrainData.STATIC_DATA:
-            case TerrainData.FREEFORM_DATA:
-                patchSize = DEFAULT_PATCH_SIZE;
-                break;
-
-            case TerrainData.TILED_DATA:
-                patchSize = ((TiledTerrainData)data).getTileSize();
-                break;
-
-            default:
-                patchSize = 0;
-                System.out.println("Unknown terrain type");
-        }
+        this.patchSize = init(data, DEFAULT_PATCH_SIZE);
     }
 
     /**
@@ -157,19 +152,15 @@ public class SplitMergeLandscape extends Landscape
     {
         super(view, data);
 
-        if(patchSize >= 0)
+        if(patchSize <= 0)
             throw new IllegalArgumentException(NEG_PATCH_SIZE_MSG);
 
         if(!power2Check(patchSize))
             throw new IllegalArgumentException(NOT_POW2_MSG);
 
-        // check for a power of two.
         terrainDataType = data.getSourceDataType();
 
-        if(terrainDataType == TerrainData.TILED_DATA)
-            this.patchSize = patchSize;
-        else
-            this.patchSize = ((TiledTerrainData)data).getTileSize();
+        this.patchSize = init(data, patchSize);
     }
 
     /**
@@ -191,21 +182,7 @@ public class SplitMergeLandscape extends Landscape
 
         terrainDataType = data.getSourceDataType();
 
-        switch(terrainDataType)
-        {
-            case TerrainData.STATIC_DATA:
-            case TerrainData.FREEFORM_DATA:
-                patchSize = DEFAULT_PATCH_SIZE;
-                break;
-
-            case TerrainData.TILED_DATA:
-                patchSize = ((TiledTerrainData)data).getTileSize();
-                break;
-
-            default:
-                patchSize = 0;
-                System.out.println("Unknown terrain type");
-        }
+        this.patchSize = init(data, DEFAULT_PATCH_SIZE);
     }
 
     /**
@@ -227,19 +204,15 @@ public class SplitMergeLandscape extends Landscape
     {
         super(view, data, gen);
 
-        if(patchSize >= 0)
+        if(patchSize <= 0)
             throw new IllegalArgumentException(NEG_PATCH_SIZE_MSG);
 
         if(!power2Check(patchSize))
             throw new IllegalArgumentException(NOT_POW2_MSG);
 
-        // check for a power of two.
         terrainDataType = data.getSourceDataType();
 
-        if(terrainDataType == TerrainData.TILED_DATA)
-            this.patchSize = patchSize;
-        else
-            this.patchSize = ((TiledTerrainData)data).getTileSize();
+        this.patchSize = init(data, patchSize);
     }
 
     /**
@@ -358,6 +331,55 @@ public class SplitMergeLandscape extends Landscape
         queueManager.clear();
     }
 
+    //----------------------------------------------------------
+    // Internal convenience methods
+    //----------------------------------------------------------
+
+    /**
+     * Common initialisation code the constructors of this class. Expects that
+     * the class var <code>terrainDataType</code> has alredy been called.
+     *
+     * @param data The source terrain to work with
+     * @param ps The patch size if nothing else provided
+     * @return The patch size to actually use
+     * @throws IllegalArgumentException The patch size doesn't fit the width
+     *    of the static data.
+     */
+    private int init(TerrainData data, int ps)
+    {
+        int ret_val = ps;
+
+        switch(terrainDataType)
+        {
+            case TerrainData.STATIC_DATA:
+                StaticTerrainData s_data = (StaticTerrainData)data;
+
+                int w = s_data.getGridWidth();
+                int h = s_data.getGridDepth();
+
+                if(!checkPatchSide(w, ps))
+                    throw new IllegalArgumentException(GRID_W_SIZE_MSG + w);
+
+                if(!checkPatchSide(h, ps))
+                    throw new IllegalArgumentException(GRID_D_SIZE_MSG + h);
+
+                break;
+
+            case TerrainData.FREEFORM_DATA:
+                break;
+
+            case TerrainData.TILED_DATA:
+                ret_val = ((TiledTerrainData)data).getTileSize();
+                break;
+
+            default:
+                ret_val = 0;
+                System.out.println("Unknown terrain type");
+        }
+
+        return ret_val;
+    }
+
     /**
      * Create patches for a tiled terrain.
      *
@@ -457,6 +479,11 @@ System.out.println("Free-form terrain not implemented yet");
         int depth = t_data.getGridDepth() - patchSize;
         int width = t_data.getGridWidth() - patchSize;
 
+        if((depth < 0) || (width < 0))
+            throw new IllegalArgumentException("Patch size is greater than " +
+                                               "the grid cell size");
+
+
         Patch[] westPatchNeighbour = new Patch[width];
         Patch southPatchNeighbour = null;
         Patch p = null;
@@ -467,21 +494,20 @@ System.out.println("Free-form terrain not implemented yet");
         app = app_gen.createAppearance();
         app.setTexture(t_data.getTexture());
 
-        float patch_1 = 1 / (float)patchSize;
-
-        for(int east = 0 ; east <= width; east += patchSize)
+        // We meed to special case the handling for a 1 cell wide grid.
+        // Here there is no west patch neighbour and so we avoid the
+        // array assignments.
+        if(width == 0)
         {
             for(int north = 0; north <= depth; north += patchSize)
             {
-                int w_pos = (int)(north * patch_1);
-
                 p = new Patch(terrainData,
                               patchSize,
-                              east,
+                              0,
                               north,
                               app,
                               landscapeView,
-                              westPatchNeighbour[w_pos],
+                              null,
                               southPatchNeighbour);
 
                 patches.add(p);
@@ -490,10 +516,40 @@ System.out.println("Free-form terrain not implemented yet");
                 addChild(p.getShape3D());
 
                 southPatchNeighbour = p;
-                westPatchNeighbour[w_pos] = p;
             }
 
             southPatchNeighbour = null;
+        }
+        else
+        {
+            float patch_1 = 1 / (float)patchSize;
+
+            for(int east = 0 ; east <= width; east += patchSize)
+            {
+                for(int north = 0; north <= depth; north += patchSize)
+                {
+                    int w_pos = (int)(north * patch_1);
+
+                    p = new Patch(terrainData,
+                                  patchSize,
+                                  east,
+                                  north,
+                                  app,
+                                  landscapeView,
+                                  westPatchNeighbour[w_pos],
+                                  southPatchNeighbour);
+
+                    patches.add(p);
+
+                    triCount += 2;
+                    addChild(p.getShape3D());
+
+                    southPatchNeighbour = p;
+                    westPatchNeighbour[w_pos] = p;
+                }
+
+                southPatchNeighbour = null;
+            }
         }
     }
 
@@ -512,7 +568,22 @@ System.out.println("Free-form terrain not implemented yet");
 
         // Now, is the remaining value non-zero. If it is, then it wasn't a
         // power of two.
-        return (shift_val == 0);
+        return ((shift_val | 0x01) == 0x01);
+    }
+
+    /**
+     * Convenience method to check that the side of a set of patches is a
+     * multiple + 1 number of points of the patch size
+     *
+     * @param size The number of raw points
+     * @param ps The patch size
+     * @return true The size is correct for the patch size
+     */
+    private boolean checkPatchSide(int size, int ps)
+    {
+        int val = size - 1;
+
+        return ((val % ps) == 0);
     }
 
     /**
