@@ -39,7 +39,7 @@ import javax.vecmath.Vector3f;
  * that the normal points directly away from the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class SphereGenerator extends GeometryGenerator
 {
@@ -741,26 +741,26 @@ public class SphereGenerator extends GeometryGenerator
                 coords[count++] = quadCoordinates[pos + facet_inc + 1];
                 coords[count++] = quadCoordinates[pos + facet_inc + 2];
 
-                coords[count++] = quadCoordinates[pos + 3];
-                coords[count++] = quadCoordinates[pos + 4];
-                coords[count++] = quadCoordinates[pos + 5];
-
                 coords[count++] = quadCoordinates[pos];
                 coords[count++] = quadCoordinates[pos + 1];
                 coords[count++] = quadCoordinates[pos + 2];
+
+                coords[count++] = quadCoordinates[pos + 3];
+                coords[count++] = quadCoordinates[pos + 4];
+                coords[count++] = quadCoordinates[pos + 5];
 
                 // triangle 2
                 coords[count++] = quadCoordinates[pos + facet_inc];
                 coords[count++] = quadCoordinates[pos + facet_inc + 1];
                 coords[count++] = quadCoordinates[pos + facet_inc + 2];
 
-                coords[count++] = quadCoordinates[pos + facet_inc + 3];
-                coords[count++] = quadCoordinates[pos + facet_inc + 4];
-                coords[count++] = quadCoordinates[pos + facet_inc + 5];
-
                 coords[count++] = quadCoordinates[pos + 3];
                 coords[count++] = quadCoordinates[pos + 4];
                 coords[count++] = quadCoordinates[pos + 5];
+
+                coords[count++] = quadCoordinates[pos + facet_inc + 3];
+                coords[count++] = quadCoordinates[pos + facet_inc + 4];
+                coords[count++] = quadCoordinates[pos + facet_inc + 5];
             }
         }
 
@@ -1096,14 +1096,14 @@ public class SphereGenerator extends GeometryGenerator
                 tex_coords[count++] = texCoordinates2D[pos + 3];
 
                 // triangle 2
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc];
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
+
                 tex_coords[count++] = texCoordinates2D[pos + 2];
                 tex_coords[count++] = texCoordinates2D[pos + 3];
 
                 tex_coords[count++] = texCoordinates2D[pos + facet_inc + 2];
                 tex_coords[count++] = texCoordinates2D[pos + facet_inc + 3];
-
-                tex_coords[count++] = texCoordinates2D[pos + facet_inc];
-                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
             }
 
             // now the last remaing shape that uses tex_coords 0 & 1
@@ -1113,18 +1113,18 @@ public class SphereGenerator extends GeometryGenerator
             tex_coords[count++] = texCoordinates2D[pos + facet_inc];
             tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
 
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[k_facet + 1];
+
             tex_coords[count++] = texCoordinates2D[pos];
             tex_coords[count++] = texCoordinates2D[pos + 1];
 
-            tex_coords[count++] = 1;
-            tex_coords[count++] = texCoordinates2D[k_facet + 1];
-
             // triangle 2
             tex_coords[count++] = 1;
-            tex_coords[count++] = texCoordinates2D[k_facet + 1];
+            tex_coords[count++] = texCoordinates2D[k_facet + facet_inc + 1];
 
             tex_coords[count++] = 1;
-            tex_coords[count++] = texCoordinates2D[k_facet + facet_inc + 1];
+            tex_coords[count++] = texCoordinates2D[k_facet + 1];
 
             tex_coords[count++] = texCoordinates2D[pos + facet_inc];
             tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
@@ -1143,7 +1143,6 @@ public class SphereGenerator extends GeometryGenerator
             {
                 pos = 2 * i + k_facet + offset;
 
-                // triangle 1
                 tex_coords[count++] = texCoordinates2D[pos + 2];
                 tex_coords[count++] = texCoordinates2D[pos + 3];
 
@@ -1154,38 +1153,38 @@ public class SphereGenerator extends GeometryGenerator
                 tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
 
                 // triangle 2
-                tex_coords[count++] = texCoordinates2D[pos + facet_inc];
-                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
-
                 tex_coords[count++] = texCoordinates2D[pos + facet_inc + 2];
                 tex_coords[count++] = texCoordinates2D[pos + facet_inc + 3];
 
                 tex_coords[count++] = texCoordinates2D[pos + 2];
                 tex_coords[count++] = texCoordinates2D[pos + 3];
+
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc];
+                tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
             }
 
             // now the last remaing shape that uses tex_coords 0 & 1
-            pos = i * 2 + k_facet + offset;
+            pos = 2 * i + k_facet + offset;
 
             // triangle 1
-            tex_coords[count++] = texCoordinates2D[offset + k_facet];
-            tex_coords[count++] = texCoordinates2D[offset + k_facet + 1];
-
             tex_coords[count++] = texCoordinates2D[pos];
             tex_coords[count++] = texCoordinates2D[pos + 1];
 
             tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[k_facet + offset + 1];
+
+            tex_coords[count++] = texCoordinates2D[pos + facet_inc];
             tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
 
             // triangle 2
-            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[pos + facet_inc];
             tex_coords[count++] = texCoordinates2D[pos + facet_inc + 1];
 
             tex_coords[count++] = 1;
-            tex_coords[count++] = texCoordinates2D[offset + k_facet + facet_inc + 1];
+            tex_coords[count++] = texCoordinates2D[k_facet + offset + 1];
 
-            tex_coords[count++] = texCoordinates2D[offset + k_facet];
-            tex_coords[count++] = texCoordinates2D[offset + k_facet + 1];
+            tex_coords[count++] = 1;
+            tex_coords[count++] = texCoordinates2D[k_facet + offset + facet_inc + 1];
         }
     }
 
