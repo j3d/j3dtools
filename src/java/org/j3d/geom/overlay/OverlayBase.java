@@ -38,7 +38,7 @@ import javax.vecmath.Vector3d;
  * screen after the resize.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class OverlayBase
     implements Overlay,
@@ -54,6 +54,7 @@ public class OverlayBase
     /** Position of the overlay relative to the canvas */
     protected int[] relativePosition = {PLACE_LEFT, PLACE_TOP};
 
+    /** The image that sits in the background of the overlay */
     private BufferedImage backgroundImage;
     private boolean hasAlpha;
     private boolean visible;
@@ -62,7 +63,11 @@ public class OverlayBase
 
     /** Canvas bounds occupied by this overlay. */
     protected Rectangle overlayBounds;
+
+    /** Offset in screen coordinates */
     private Dimension offset;
+
+    /** The update manager for keeping us in sync */
     private UpdateManager updateManager;
 
     /** Canvas we are displayed on */
@@ -71,7 +76,7 @@ public class OverlayBase
     /** Drawing area that we scribble our stuff on */
     protected BufferedImage canvas;
 
-    /** Background colour of the image */
+    /** Background colour of the overlay */
     protected Color backgroundColor;
 
     /**
@@ -111,6 +116,7 @@ public class OverlayBase
     public final static int DIRTY_ACTIVE_BUFFER = 2;
     public final static int DIRTY_SIZE = 3;
 
+    /** List of the dirty flag settings */
     private boolean[] dirtyCheck = new boolean[DIRTY_SIZE + 1];
 
     /**
@@ -369,6 +375,9 @@ public class OverlayBase
     /**
      * Sets the relative offset of the overlay. How this translates into
      * screen coordinates depends on the value of relativePosition()
+     *
+     * @param width The width (X axis in 3D space) position
+     * @param height The height (Y axis in 3D space) position
      */
     public void setOffset(int width, int height)
     {
@@ -416,6 +425,8 @@ public class OverlayBase
      * Return the root of the overlay and its sub-overlays so it can be
      * added to the scene graph. This should be added to the view transform
      * group of the parent application.
+     *
+     * @return The J3D branch group that holds the overlay
      */
     public BranchGroup getRoot()
     {
@@ -424,6 +435,8 @@ public class OverlayBase
 
     /**
      * Sets whether drawing onto this Overlay is anialiased.
+     *
+     * @param antialiased The new setting for anti-aliasing.
      */
     public void setAntialiased(boolean antialiased)
     {
@@ -456,6 +469,8 @@ public class OverlayBase
 
     /**
      * Changes the visibility of the overlay.
+     *
+     * @param visible The new visibility state
      */
     public void setVisible(boolean visible)
     {
@@ -483,6 +498,8 @@ public class OverlayBase
      * In general you should only use background images if this is an overlay that is
      * called frequently, since you could always paint it inside the paint()method.
      * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
+     *
+     * @param color The new color to use
      */
     public void setBackgroundColor(Color color)
     {
@@ -530,6 +547,8 @@ public class OverlayBase
      * Sets the background mode.  BACKGROUND_COPY will copy the raster data from the
      * background into the canvas before paint()is called. BACKGROUND_NONE will cause
      * the background to be disabled and not used.
+     *
+     * @param mode The new mode to use for the background
      */
     public void setBackgroundMode(int mode)
     {
@@ -540,22 +559,14 @@ public class OverlayBase
         }
     }
 
-    /**
-     * Mark a specific property as being dirty and needing to be rechecked.
-     */
-    public void dirty(int property)
-    {
-        dirtyCheck[property] = true;
-        if(updateManager != null)
-            updateManager.updateRequested();
-        else
-            System.err.println("Null update manager in: " + this);
-    }
-
     //------------------------------------------------------------------------
     // Methods from the UpdatableEntity interface
     //------------------------------------------------------------------------
 
+    /**
+     * Notification from the update manager that something has changed and we
+     * should fix up the appropriate bits.
+     */
     public void update()
     {
         // Always size first as that may reset the position and we don't need
@@ -592,7 +603,9 @@ public class OverlayBase
     //------------------------------------------------------------------------
 
     /**
+     * Notification that the component has been resized.
      *
+     * @param e The event that caused this method to be called
      */
     public void componentResized(ComponentEvent e)
     {
@@ -602,16 +615,32 @@ public class OverlayBase
             dirty(DIRTY_SIZE);
     }
 
-    public void componentShown(ComponentEvent e)
-    {
-        repaint();
-    }
-
+    /**
+     * Notification that the component has been moved.
+     *
+     * @param e The event that caused this method to be called
+     */
     public void componentMoved(ComponentEvent e)
     {
         dirty(DIRTY_POSITION);
     }
 
+    /**
+     * Notification that the component has been shown. This is the component
+     * being shown, not the window that it is contained in.
+     *
+     * @param e The event that caused this method to be called
+     */
+    public void componentShown(ComponentEvent e)
+    {
+        repaint();
+    }
+
+    /**
+     * Notification that the component has been hidden.
+     *
+     * @param e The event that caused this method to be called
+     */
     public void componentHidden(ComponentEvent e)
     {
     }
@@ -620,23 +649,138 @@ public class OverlayBase
     // Local convenience methods
     //------------------------------------------------------------------------
 
-    public void initialize() {
+    /**
+     * Empty method that can be used to provide post construction
+     * initialisation. Never called by the overlay code, but derived overlays
+     * may make use of it.
+     */
+    public void initialize()
+    {
     }
 
+    /**
+     * Add a new mouse listener to this overlay. Each instance can only be
+     * added once and null values are ignored.
+     *
+     * @param listener The listener instance to add
+     */
     public void addMouseListener(MouseListener listener)
     {
         mouseManager.addMouseListener(listener);
     }
 
+    /**
+     * Remove a previously registered mouse listener. If the listener is not
+     * registered or null is passed, the request is silently ignored.
+     *
+     * @param listener The listener instance to remove
+     */
     public void removeMouseListener(MouseListener listener)
     {
         mouseManager.removeMouseListener(listener);
     }
 
-    protected void setActiveBuffer(int activeBuffer)
+    /**
+     * Mark a specific property as being dirty and needing to be rechecked.
+     *
+     * @param property The index of the property to be updated
+     */
+    protected void dirty(int property)
     {
-        this.activeBuffer = activeBuffer;
+        dirtyCheck[property] = true;
+        if(updateManager != null)
+            updateManager.updateRequested();
+        else
+            System.err.println("Null update manager in: " + this);
+    }
+
+    /**
+     * Set the active buffer to the new index.
+     *
+     * @param bufferIndex The index of the buffer to use
+     */
+    protected void setActiveBuffer(int bufferIndex)
+    {
+        activeBuffer = bufferIndex;
         dirty(DIRTY_ACTIVE_BUFFER);
+    }
+
+    /**
+     * Prepares the canvas to be painted.  This should only be called internally
+     * or from an owner like the ScrollingOverlay class. paint(Graphics2D g)
+     * should be used to paint the OverlayBase.
+     *
+     * @return The current graphics context to work with
+     */
+    protected Graphics2D getGraphics()
+    {
+        if(backgroundMode == BACKGROUND_COPY && backgroundImage != null)
+            canvas.setData(backgroundImage.getRaster());
+
+        Graphics2D g = (Graphics2D)canvas.getGraphics();
+
+        if(antialiased)
+        {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                               RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                               RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
+
+        return g;
+    }
+
+    /**
+     * This is where the actualy drawing of the window takes place.  Override
+     * this to alter the contents of what is shown in the window.
+     *
+     * @param g The graphics context to paint with
+     */
+    public void paint(Graphics2D g)
+    {
+    }
+
+    /**
+     * This is called to trigger a repaint of the overlay. This will return once
+     * the back buffer has been built, but before the swap.
+     */
+    public void repaint()
+    {
+        if(!painting)
+        {
+            painting = true;
+
+            Graphics2D g = getGraphics();
+            paint(g);
+            g.dispose();
+
+            updateBuffer(canvas, SubOverlay.NEXT_BUFFER);
+            setActiveBuffer(SubOverlay.NEXT_BUFFER);
+
+            painting = false;
+        }
+        else
+        {
+            System.err.println("Skipped paint in: " + this);
+        }
+    }
+
+    /**
+     * Force an update of the nominated buffer with the contents of the given
+     * image.
+     *
+     * @param image The contents to display as the image
+     * @param bufferIndex The buffer to update
+     */
+    protected void updateBuffer(BufferedImage image, int bufferIndex)
+    {
+        synchronized(subOverlay)
+        {
+            for(int i = subOverlay.length - 1; i >= 0; i--)
+            {
+                subOverlay[i].updateBuffer(image, bufferIndex);
+            }
+        }
     }
 
     /**
@@ -661,12 +805,19 @@ public class OverlayBase
         repaint();
     }
 
+    /**
+     * Update the visibility state to either turn on or off the overlay.
+     */
     private void syncVisible()
     {
         renderAttributes.setVisible(visible);
         dirtyCheck[DIRTY_VISIBLE] = false;
     }
 
+    /**
+     * Update the active buffer to be the new index. Means that someone has
+     * requested an update and this is making it happen.
+     */
     private void syncActiveBuffer()
     {
         synchronized(subOverlay)
@@ -678,6 +829,12 @@ public class OverlayBase
         }
     }
 
+    /**
+     * Update the position of the overlay in the overall window. Note that it
+     * does not change the size of the overlay, just re-adjusts the transforms
+     * in the scene graph so that the overlay maintains the correct position
+     * relative the canvas.
+     */
     private void syncPosition()
     {
         synchronized(overlayBounds)
@@ -792,72 +949,5 @@ public class OverlayBase
 
         // now sync the position again as we've replaced the transform
         syncPosition();
-    }
-
-    /**
-     * Prepares the canvas to be painted.  This should only be called internally
-     * or from an owner like the ScrollingOverlay class. paint(Graphics2D g)
-     * should be used to paint the OverlayBase.
-     */
-    protected Graphics2D getGraphics()
-    {
-        if(backgroundMode == BACKGROUND_COPY && backgroundImage != null)
-            canvas.setData(backgroundImage.getRaster());
-
-        Graphics2D g = (Graphics2D)canvas.getGraphics();
-
-        if(antialiased)
-        {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                               RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                               RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        }
-
-        return g;
-    }
-
-    /**
-     * This is where the actualy drawing of the window takes place.  Override
-     * this to alter the contents of what is shown in the window.
-     */
-    public void paint(Graphics2D g)
-    {
-    }
-
-    /**
-     * This is called to trigger a repaint of the overlay. This will return once
-     * the back buffer has been built, but before the swap.
-     */
-    public void repaint()
-    {
-        if(!painting)
-        {
-            painting = true;
-
-            Graphics2D g = getGraphics();
-            paint(g);
-            g.dispose();
-
-            updateBuffer(canvas, SubOverlay.NEXT_BUFFER);
-            setActiveBuffer(SubOverlay.NEXT_BUFFER);
-
-            painting = false;
-        }
-        else
-        {
-            System.err.println("Skipped paint in: " + this);
-        }
-    }
-
-    protected void updateBuffer(BufferedImage image, int bufferIndex)
-    {
-        synchronized(subOverlay)
-        {
-            for(int i = subOverlay.length - 1; i >= 0; i--)
-            {
-                subOverlay[i].updateBuffer(image, bufferIndex);
-            }
-        }
     }
 }
