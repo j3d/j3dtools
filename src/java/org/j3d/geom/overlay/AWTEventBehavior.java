@@ -31,7 +31,7 @@ import java.util.HashMap;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class AWTEventBehavior extends Behavior
     implements InputRequester
@@ -612,8 +612,11 @@ class AWTEventBehavior extends Behavior
      */
     private void adjustMousePosition(MouseEvent evt, Overlay overlay)
     {
-        Rectangle bounds = overlay.getBounds();
+        // Ignore initial null overlay
+        if (overlay == null)
+            return;
 
+        Rectangle bounds = overlay.getBounds();
         evt.translatePoint(bounds.x, bounds.y);
     }
 }
