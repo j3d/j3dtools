@@ -24,7 +24,7 @@ import javax.vecmath.*;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class MatrixUtils
 {
@@ -34,11 +34,23 @@ public class MatrixUtils
     /** Work variable for the fallback lookat calculations. */
     private AxisAngle4d orientd;
 
+    /** A temp 3x3 matrix used during the invert() routines */
+    private float[] tempMat3;
+
+    /** A temp 4x4 matrix used during the invert() routines */
+    private float[] tempMat4;
+
+    /** A temp 4x4 matrix used during the invert() routines */
+    private float[] resMat4;
+
     /**
      * Construct a default instance of this class.
      */
     public MatrixUtils()
     {
+        tempMat3 = new float[9];
+        tempMat4 = new float[16];
+        resMat4 = new float[16];
     }
 
     /**
@@ -360,6 +372,113 @@ public class MatrixUtils
         mat.m31 = 0;
         mat.m33 = 1;
         mat.m32 = 0;
+    }
+
+    /**
+     * Calculate the inverse of a 4x4 matrix and place it in the output. The
+     * implementation uses the algorithm from
+     * http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q24
+     *
+     * @param src The source matrix to read the values from
+     * @param dest The place to put the inverted matrix
+     * @return true if the inversion was successful
+     */
+    public boolean inverse(Matrix4f src, Matrix4f dest)
+    {
+        float mdet = src.determinant();
+
+        if(Math.abs(mdet) < 0.0005)
+            return false;
+
+        mdet = 1 / mdet;
+
+        // copy the matrix into an array for faster calcs
+        tempMat4[0] = src.m00;
+        tempMat4[1] = src.m01;
+        tempMat4[2] = src.m02;
+        tempMat4[3] = src.m03;
+
+        tempMat4[4] = src.m10;
+        tempMat4[5] = src.m11;
+        tempMat4[6] = src.m12;
+        tempMat4[7] = src.m13;
+
+        tempMat4[8] = src.m20;
+        tempMat4[9] = src.m21;
+        tempMat4[10] = src.m22;
+        tempMat4[11] = src.m23;
+
+        tempMat4[12] = src.m30;
+        tempMat4[13] = src.m31;
+        tempMat4[14] = src.m32;
+        tempMat4[15] = src.m33;
+
+        for(int i = 0; i < 4; i++)
+        {
+            for(int j = 0; j < 4; j++)
+            {
+                int sign = 1 - ((i + j) % 2) * 2;
+                submatrix(i, j);
+                resMat4[i + j * 4] = determinant3x3() * sign * mdet;
+            }
+        }
+
+        // Now copy it back to the destination
+        dest.m00 = resMat4[0];
+        dest.m01 = resMat4[1];
+        dest.m02 = resMat4[2];
+        dest.m03 = resMat4[3];
+
+        dest.m10 = resMat4[4];
+        dest.m11 = resMat4[5];
+        dest.m12 = resMat4[6];
+        dest.m13 = resMat4[7];
+
+        dest.m20 = resMat4[8];
+        dest.m21 = resMat4[9];
+        dest.m22 = resMat4[10];
+        dest.m23 = resMat4[11];
+
+        dest.m30 = resMat4[12];
+        dest.m31 = resMat4[13];
+        dest.m32 = resMat4[14];
+        dest.m33 = resMat4[15];
+
+        return true;
+    }
+
+
+    /**
+     * Find the 3x3 submatrix for the 4x4 matrix given the intial start and
+     * end positions. This uses the class-level temp matrices for input.
+     */
+    private void submatrix(int i, int j)
+    {
+        // loop through 3x3 submatrix
+        for(int di = 0; di < 3; di++)
+        {
+            for(int dj = 0; dj < 3; dj++)
+            {
+                // map 3x3 element (destination) to 4x4 element (source)
+                int si = di + ((di >= i) ? 1 : 0);
+                int sj = dj + ((dj >= j) ? 1 : 0);
+
+                 // copy element
+                tempMat3[di * 3 + dj] = tempMat4[si * 4 + sj];
+            }
+        }
+    }
+
+    /**
+     * Calculate the determinant of the 3x3 temp matrix.
+     *
+     * @return the determinant value
+     */
+    private float determinant3x3()
+    {
+      return tempMat3[0] * (tempMat3[4] * tempMat3[8] - tempMat3[7] * tempMat3[5]) -
+             tempMat3[1] * (tempMat3[3] * tempMat3[8] - tempMat3[6] * tempMat3[5]) +
+             tempMat3[2] * (tempMat3[3] * tempMat3[7] - tempMat3[6] * tempMat3[4]);
     }
 
     /**
