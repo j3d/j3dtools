@@ -45,7 +45,7 @@ import javax.vecmath.Vector3f;
  * just be too great.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class GeometryGenerator
 {
@@ -108,6 +108,41 @@ public abstract class GeometryGenerator
         v1.x = coords[p]     - coords[p2];
         v1.y = coords[p + 1] - coords[p2 + 1];
         v1.z = coords[p + 2] - coords[p2 + 2];
+
+        normal.cross(v0, v1);
+        normal.normalize();
+
+        return normal;
+    }
+
+
+    /**
+     * Convenience method to create a normal for the given vertex coordinates
+     * and normal array and using a 2D array of coordinate values. This
+     * performs a cross product of the two vectors described by the middle
+     * and two end points.
+     *
+     * @param coords The coordinate array to read values from
+     * @param w The reference into the first array dimension for p
+     * @param p The index of the middle point
+     * @param w1 The reference into the first array dimension for p1
+     * @param p1 The index of the first point
+     * @param w2 The reference into the first array dimension for p2
+     * @param p2 The index of the second point
+     * @return A temporary value containing the normal value
+     */
+    protected Vector3f createFaceNormal(float[][] coords,
+                                        int w, int p,
+                                        int w1, int p1,
+                                        int w2, int p2)
+    {
+        v0.x = coords[w1][p1]     - coords[w][p];
+        v0.y = coords[w1][p1 + 1] - coords[w][p + 1];
+        v0.z = coords[w1][p1 + 2] - coords[w][p + 2];
+
+        v1.x = coords[w][p]     - coords[w2][p2];
+        v1.y = coords[w][p + 1] - coords[w2][p2 + 1];
+        v1.z = coords[w][p + 2] - coords[w2][p2 + 2];
 
         normal.cross(v0, v1);
         normal.normalize();
@@ -231,8 +266,9 @@ public abstract class GeometryGenerator
                     System.out.print(data.textureCoordinates[i * 3 + 1]);
                 }
 
-                System.out.println();
             }
+
+            System.out.println();
         }
     }
 }
