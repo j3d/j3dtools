@@ -44,9 +44,36 @@ import com.sun.j3d.loaders.Loader;
  * obligated to follow these rules. If the key is not defined here, then the
  * loader is free to set exactly what they want. Any other behaviours are
  * defined in the individual methods.
+ * <p>
+ *
+ * <b>Note</b> If both required and capability maps are set then override
+ * settings will be use in preference to required settings for that mapping.
+ * So, given the following method calls, override capability bits will be set
+ * but required frequency bits will be used for all subsequent calls to
+ * <code>load()</code>.
+ * <pre>
+ *   myLoader.setCapabilityOverrideMap(overrideBits, null);
+ *   myLoader.setCapabilityRequiredMap(requiredBits, requiredFreqs);
+ * </pre>
+ * <p>
+ *
+ * Calling any method with null will clear that requirement. So, if the user
+ * then called
+ * <pre>
+ *   myLoader.setCapabilityOverrideMap(null, null);
+ * </pre>
+ * <p>
+ *
+ * after the two previous calls, the override mappings are gone, but the
+ * required mappings still exist and are valid.
+ * <p>
+ *
+ * <b.Extra Note!</b> Capability bits are only available in Java3D 1.3. If
+ * the loader is built using java3d 1.2, the frquency bit mapping information
+ * is ignored. C
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface ManagedLoader extends Loader
 {
