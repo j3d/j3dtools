@@ -16,6 +16,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.device.input.spaceball.driver \
 	org.j3d.device.input.spaceball \
 	org.j3d.device.input.vfx \
+	org.j3d.device.input.polhemus \
 	org.j3d.texture \
 	org.j3d.geom \
 	org.j3d.geom.terrain \
@@ -49,6 +50,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.device.input.spaceball \
 	org.j3d.device.input.spaceball.transformation \
 	org.j3d.device.input.vfx \
+	org.j3d.device.input.polhemus \
 	org.j3d.texture \
 	org.j3d.geom \
 	org.j3d.geom.terrain \
