@@ -33,35 +33,48 @@ endif
 EMPTY         =
 SPACE         = $(EMPTY) $(EMPTY)
 
+ifeq ("cygwin", "$(strip $(OSTYPE))")
+  PATH_SEP=';'
+else
+  PATH_SEP=':'
+endif
+
 ifdef JARS
 	LOCAL_JARTMP  = $(patsubst %,$(JAR_DIR)/%,$(JARS))
-	LOCAL_JARLIST = $(subst $(SPACE),:,$(LOCAL_JARTMP))
+	LOCAL_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(LOCAL_JARTMP))
 endif
 
 ifdef JARS_3RDPARTY
-	OTHER_JARTMP  = $(patsubst %,$(JAR_DIR)/%,$(JARS_3RDPARTY))
-	OTHER_JARLIST = $(subst $(SPACE),:,$(OTHER_JARTMP))
+	OTHER_JARTMP  = $(patsubst %,$(LIB_DIR)/%,$(JARS_3RDPARTY))
+	OTHER_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(OTHER_JARTMP))
 endif
 
-SOURCEPATH    = $(JAVA_SRC_DIR)
+SOURCEPATH = $(JAVA_SRC_DIR)
 
-CLASSPATH     = $(CLASS_DIR)
+CP = $(CLASS_DIR)
 
 ifdef LOCAL_JARLIST
-  ifdef CLASSPATH
-    CLASSPATH +=:$(LOCAL_JARLIST)
+  ifdef CP
+    CP+=$(PATH_SEP)$(LOCAL_JARLIST)
   else
-    CLASSPATH = $(LOCAL_JARLIST)
+    CP=$(LOCAL_JARLIST)
   endif
 endif
 
 ifdef OTHER_JARLIST
   ifdef CLASSPATH
-    CLASSPATH +=:$(OTHER_JARLIST)
+    CP1=$(CP)$(PATH_SEP)$(OTHER_JARLIST)
   else
-    CLASSPATH = $(OTHER_JARLIST)
+    CP1=$(OTHER_JARLIST)
   endif
 endif
+
+ifdef CP1
+  CLASSPATH=$(CP1)
+else
+  CLASSPATH=$(CP)
+endif
+
 
 #
 # Build rules.
@@ -74,14 +87,14 @@ CLASS_FILES     = $(JAVA_FILES:%.java=$(PACKAGE_DIR)/%.class)
 OTHER_FILES     = $(NONJAVA_FILES:%=$(PACKAGE_DIR)/%)
 JNI_CLASS_FILES = $(JNI_SOURCE:%.java=$(PACKAGE_DIR)/%.class)
 JNI_HEADERS     = $(JNI_SOURCE:%.java=%.h)
-JAR_CONTENT_CMD = -C $(CLASS_DIR) .
+JAR_CONTENT_CMD = $(patsubst %, -C $(CLASS_DIR) %, $(JAR_CONTENT))
 LINK_FILES      = $(patsubst %, -link %,$(LINK_URLS))
 
 # Make a list of all packages involved
 ifdef PACKAGE
-PACKAGE_LIST    = $(subst .,/,$(PACKAGE))
-else
-PACKAGE_LIST    = $(subst .,/,$(PACKAGES)) $(subst .,/,$(NODOC_PACKAGES))
+  PACKAGE_LIST  = $(subst .,/,$(PACKAGE))
+else           
+  PACKAGE_LIST  = $(subst .,/,$(PACKAGES)) $(subst .,/,$(NODOC_PACKAGES))
 endif
 
 PLIST_CLEAN     = $(patsubst %,$(JAVA_SRC_DIR)/%/.clean,$(PACKAGE_LIST))
@@ -111,8 +124,12 @@ JAVADOC_OPTIONS  = \
      -windowtitle $(WINDOWTITLE) \
      -doctitle $(DOCTITLE) \
      -header $(HEADER) \
-     -bottom $(BOTTOM) \
+	 -bottom $(BOTTOM) \
      $(LINK_FILES)	 
+
+ifdef OVERVIEW
+  JAVADOC_OPTIONS += -overview $(OVERVIEW)
+endif
 
 #
 # General build rules
@@ -197,7 +214,6 @@ clean : $(PLIST_CLEAN)
 	$(MAKEDIR) $(JAR_DIR)
 	$(DELETE) $(JAR_DIR)/$*
 	$(JAR) $(JAR_OPTIONS) $(JAR_MANIFEST) $(JAR_DIR)/$* $(JAR_CONTENT_CMD)
-#       $(JAR) -i $(JAR_DIR)/$@
 
 
 # Rule 14. Create given jar file by invoking its Makefile which triggers
