@@ -32,17 +32,20 @@ import javax.vecmath.Vector3f;
  * generating the normals as you have to check every face and build a lot of
  * extra data before you start doing normal calculations.
  * <p>
- * This library takes a much simplified approach - either the user wants
- * smoothed normals or not. There is no need to guess for each shape whether
- * or not the normals are correctly generated. Just as for a smooth surface,
- * and you will get it assuming the underlying geometry supports it. Obvious
- * limitations to thisa are shapes like the cube or degenerate cone that ends
- * up as a pyramid. The smoothing of normals may be there, but no matter how
- * hard you try, the differences between the face angles will just be too
- * great.
+ *
+ * This library takes a much simplified approach - let the geometry generator
+ * implementation decide. Our aim is for speed here and if we have to decide
+ * in a general fashion for every normal calculation, that could be a huge
+ * impact.
+ * <P>
+ *
+ * Obvious limitations to this are shapes like the cube or a near-degenerate
+ * cone that ends up as a pyramid. The smoothing of normals may be there, but
+ * no matter how hard you try, the differences between the face angles will
+ * just be too great.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class GeometryGenerator
 {
