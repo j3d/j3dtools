@@ -43,7 +43,7 @@ import javax.vecmath.Vector3d;
  * </pre>
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class TextureOverlay implements Overlay, ComponentListener
 {
@@ -253,9 +253,8 @@ public class TextureOverlay implements Overlay, ComponentListener
         // define the rendering attributes used by all sub-overlays
         renderAttributes = new RenderingAttributes();
 
-        // Disabled because orderedGroup interaction not working.  Using PolygonOffset for now.
-        //renderAttributes.setDepthBufferEnable(false);
-        //renderAttributes.setDepthBufferWriteEnable(false);
+        renderAttributes.setDepthBufferEnable(false);
+        renderAttributes.setDepthBufferWriteEnable(true);
         renderAttributes.setIgnoreVertexColors(true);
         renderAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_READ);
         renderAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);
@@ -263,8 +262,6 @@ public class TextureOverlay implements Overlay, ComponentListener
         // define the polygon attributes for all the sub-overlays
         pa = new PolygonAttributes();
         pa.setBackFaceNormalFlip(false);
-        // This value is not always correct, need to base on front/back clipping
-        pa.setPolygonOffset(-9000000);
         pa.setCullFace(PolygonAttributes.CULL_NONE);
         pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
 
@@ -687,7 +684,8 @@ public class TextureOverlay implements Overlay, ComponentListener
 
         if((overlayBounds.width != 0) && (overlayBounds.height != 0))
         {
-            renderAttributes.setVisible(true);
+            if (visible)
+                renderAttributes.setVisible(true);
 
             float[] vertices =
             {
