@@ -16,24 +16,20 @@ import javax.vecmath.Color4f;
 // none
 
 /**
- * An interpolator that works with color components.
+ * An set of utility functions that convert from one color space to another.
  * <P>
- *
- * The interpolation routine is just a simple linear interpolation between
- * each of the points. The interpolator may take arbitrarily spaced keyframes
- * and compute correct values.
- * <p>
- * Color interpolation can be done in the standard RGB space (LINEAR) or using
- * the additional type of HSV_LINEAR. This internally converts all color values
- * to HSV space and then interpolates over that instead.
- * <p>
  *
  * The RGB<->HSV color space conversions have been taken from Foley & van Dam
  * <i>Computer Graphics Principles and Practice, 2nd Edition</i>, Addison
  * Wesley, 1990.
+ * <p>
+ *
+ * The RGB <-> YUV colorspace conversion is based on the formulas found at
+ * <a href="http://astronomy.swin.edu.au/~pbourke/colour/convert/">
+ * http://astronomy.swin.edu.au/~pbourke/colour/convert/</a>
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ColorUtils
 {
@@ -42,9 +38,8 @@ public class ColorUtils
         "Invalid h (it has a value) value when s is zero";
 
     /**
-     * Change an RGB color to HSV color. The value is left in the sharedVector
-     * array for copying. We don't bother converting the alpha as that stays
-     * the same regardless of color space.
+     * Change an RGB color to HSV color. We don't bother converting the alpha
+     * as that stays the same regardless of color space.
      *
      * @param rgb The array of RGB components to convert
      * @param hsv An array to return the colour values with
@@ -55,13 +50,12 @@ public class ColorUtils
     }
 
     /**
-     * Change an RGB color to HSV color. The value is left in the sharedVector
-     * array for copying. We don't bother converting the alpha as that stays
-     * the same regardless of color space.
+     * Change an RGB color to HSV color. We don't bother converting the alpha
+     * as that stays the same regardless of color space.
      *
-     * @param r The r component of the color at this key
-     * @param g The g component of the color at this key
-     * @param b The b component of the color at this key
+     * @param r The r component of the color
+     * @param g The g component of the color
+     * @param b The b component of the color
      * @param hsv An array to return the HSV colour values in
      */
     public static void convertRGBtoHSV(float r, float g, float b, float[] hsv)
@@ -119,13 +113,12 @@ public class ColorUtils
     }
 
     /**
-     * Change an RGB color to HSV color. The value is left in the sharedVector
-     * array for copying. We don't bother converting the alpha as that stays
-     * the same regardless of color space.
+     * Change an HSV color to RGB color. We don't bother converting the alpha
+     * as that stays the same regardless of color space.
      *
-     * @param h The h component of the color at this key
-     * @param s The s component of the color at this key
-     * @param v The v component of the color at this key
+     * @param h The h component of the color
+     * @param s The s component of the color
+     * @param v The v component of the color
      * @param rgb An array to return the RGB colour values in
      */
     public static void convertHSVtoRGB(float[] hsv, float[] rgb)
@@ -134,13 +127,12 @@ public class ColorUtils
     }
 
     /**
-     * Change an RGB color to HSV color. The value is left in the sharedVector
-     * array for copying. We don't bother converting the alpha as that stays
-     * the same regardless of color space.
+     * Change an HSV color to RGB color. We don't bother converting the alpha
+     * as that stays the same regardless of color space.
      *
-     * @param h The h component of the color at this key
-     * @param s The s component of the color at this key
-     * @param v The v component of the color at this key
+     * @param h The h component of the color
+     * @param s The s component of the color
+     * @param v The v component of the color
      * @param rgb An array to return the RGB colour values in
      */
     public static void convertHSVtoRGB(float h, float s, float v, float[] rgb)
@@ -224,5 +216,77 @@ public class ColorUtils
         rgb[0] = r;
         rgb[1] = g;
         rgb[2] = b;
+    }
+
+    /**
+     * Change an RGB color to YUV (YCrCb) color. The colour value conversion is
+     * independent of the colour range. Colours could be 0-1 or 0-255.
+     *
+     * @param rgb The array of RGB components to convert
+     * @param yuv An array to return the colour values with
+     */
+    public static void convertRGBtoYUV(float[] rgb, float[] yuv)
+    {
+        float r = rgb[0];
+        float g = rgb[1];
+        float b = rgb[2];
+
+        yuv[0] = (0.299f * r) + (0.587f * g) + (0.114f * b);
+        yuv[1] = (-0.169f * r) - (0.331f * g) + (0.5f * b);
+        yuv[2] = (0.5f * r) - (0.419f * g) - (0.081f * b);
+    }
+
+    /**
+     * Change an YUV (YCrCb) color to RGB color. The colour value conversion is
+     * independent of the colour range. Colours could be 0-1 or 0-255.
+     *
+     * @param yuv The array of YUV components to convert
+     * @param rgb An array to return the colour values with
+     */
+    public static void convertYUVtoRGB(float[] yuv, float[] rgb)
+    {
+        float y = yuv[0];
+        float u = yuv[1];
+        float v = yuv[2];
+
+        rgb[0] = y + 1.140f * v;
+        rgb[1] = y - 0.394f * u - 0.581f * v;
+        rgb[2] = y + 2.028f * u;
+    }
+
+    /**
+     * Change an RGB color to YIQ (JPEG) color. The colour value conversion is
+     * independent of the colour range. Colours could be 0-1 or 0-255.
+     *
+     * @param rgb The array of RGB components to convert
+     * @param yiq An array to return the colour values with
+     */
+    public static void convertRGBtoYIQ(float[] rgb, float[] yiq)
+    {
+        float r = rgb[0];
+        float g = rgb[1];
+        float b = rgb[2];
+
+        yiq[0] = (0.299f * r) + (0.587f * g) + (0.114f * b);
+        yiq[1] = (0.596f * r) - (0.274f * g) - (0.322f * b);
+        yiq[2] = (0.212f * r) - (0.523f * g) - (0.311f * b);
+    }
+
+    /**
+     * Change an YIQ (JPEG) color to RGB color. The colour value conversion is
+     * independent of the colour range. Colours could be 0-1 or 0-255.
+     *
+     * @param yiq The array of YIQ components to convert
+     * @param rgb An array to return the colour values with
+     */
+    public static void convertYIQtoRGB(float[] yiq, float[] rgb)
+    {
+        float y = yiq[0];
+        float i = yiq[1];
+        float q = yiq[2];
+
+        rgb[0] = y + 0.956f * i + 0.621f * q;
+        rgb[1] = y - 0.272f * i - 0.647f * q;
+        rgb[2] = y - 1.105f * i + 1.702f * q;
     }
 }
