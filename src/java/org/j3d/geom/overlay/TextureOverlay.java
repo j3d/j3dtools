@@ -42,7 +42,7 @@ import javax.vecmath.Vector3d;
  * </pre>
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class TextureOverlay implements Overlay, ComponentListener
 {
@@ -251,7 +251,7 @@ public class TextureOverlay implements Overlay, ComponentListener
         // define the rendering attributes used by all sub-overlays
         renderAttributes = new RenderingAttributes();
         renderAttributes.setDepthBufferEnable(false);
-        renderAttributes.setDepthBufferWriteEnable(true);
+        renderAttributes.setDepthBufferWriteEnable(false);
         renderAttributes.setIgnoreVertexColors(true);
         renderAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_READ);
         renderAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);

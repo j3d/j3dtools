@@ -72,7 +72,7 @@ import javax.vecmath.Vector3d;
  * the overlays.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public abstract class OverlayBase
     implements Overlay, ScreenComponent, ComponentListener
@@ -364,7 +364,7 @@ public abstract class OverlayBase
         }
 
         renderAttributes.setDepthBufferEnable(false);
-        renderAttributes.setDepthBufferWriteEnable(true);
+        renderAttributes.setDepthBufferWriteEnable(false);
         renderAttributes.setIgnoreVertexColors(true);
         renderAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_READ);
         renderAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);
@@ -821,7 +821,7 @@ public abstract class OverlayBase
      */
     public void repaint()
     {
-        if(!painting)
+        if(!painting && initComplete)
         {
             painting = true;
 
@@ -833,10 +833,6 @@ public abstract class OverlayBase
             setActiveBuffer(SubOverlay.NEXT_BUFFER);
 
             painting = false;
-        }
-        else
-        {
-            System.err.println("Skipped paint in: " + this);
         }
     }
 
