@@ -19,6 +19,7 @@ import javax.vecmath.Vector3f;
 // Application specific imports
 import org.j3d.ui.navigation.FrameUpdateListener;
 import org.j3d.ui.navigation.HeightMapGeometry;
+import org.j3d.util.frustum.ViewFrustum;
 
 /**
  * Representation of a piece of rendered terrain data.
@@ -61,7 +62,7 @@ import org.j3d.ui.navigation.HeightMapGeometry;
  * implementation is free to do what it likes.
  *
  * @author Justin Couch, based on original ideas from Paul Byrne
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public abstract class Landscape extends javax.media.j3d.BranchGroup
     implements FrameUpdateListener, HeightMapGeometry

@@ -44,7 +44,7 @@
  * any nuclear facility.
  */
 
-package org.j3d.terrain;
+package org.j3d.util.frustum;
 
 // Standard imports
 import javax.media.j3d.Transform3D;
@@ -71,7 +71,7 @@ import javax.vecmath.Matrix4d;
  * The frustum is for the previous Java3D frame that has just been rendered.
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.1 $
  */
 public class ViewFrustum
 {
@@ -141,6 +141,25 @@ public class ViewFrustum
     {
         for(int i=0; i<canvases.length; i++)
             computeFrustumPlanes(i);
+    }
+
+    /**
+     * Manually re-orient the view frustum by this given matrix. This is used
+     * for doing predictive work about where the user will be in the next
+     * rendered frame.
+     *
+     * @param tx The transform used to modify the points with
+     */
+    public void manualPlatformMove(Matrix4d tx)
+    {
+        tx.transform(frustumPoints[0]);
+        tx.transform(frustumPoints[1]);
+        tx.transform(frustumPoints[2]);
+        tx.transform(frustumPoints[3]);
+        tx.transform(frustumPoints[4]);
+        tx.transform(frustumPoints[5]);
+        tx.transform(frustumPoints[6]);
+        tx.transform(frustumPoints[7]);
     }
 
     /**

@@ -25,6 +25,8 @@ import javax.vecmath.Vector3f;
 // Application specific imports
 import org.j3d.terrain.*;
 
+import org.j3d.util.frustum.ViewFrustum;
+
 /**
  * ROAM implmentation of a landscape using the split-merge combination
  * algorithm.
@@ -34,7 +36,7 @@ import org.j3d.terrain.*;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class SplitMergeLandscape extends Landscape
 {

@@ -44,7 +44,7 @@
  * any nuclear facility.
  */
 
-package org.j3d.terrain;
+package org.j3d.util.frustum;
 
 import javax.vecmath.Point4d;
 import javax.vecmath.Point3d;
@@ -60,6 +60,9 @@ import javax.media.j3d.Canvas3D;
  * <p>
  *
  * The frustum is for the previous Java3D frame that has just been rendered.
+ *
+ * @author Paul Byrne, Justin Couch
+ * @version $Revision: 1.1 $
  */
 class Canvas3DFrustum
 {

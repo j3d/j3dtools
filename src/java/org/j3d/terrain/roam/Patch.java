@@ -24,8 +24,8 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Tuple3f;
 
 // Application specific imports
-import org.j3d.terrain.ViewFrustum;
 import org.j3d.terrain.TerrainData;
+import org.j3d.util.frustum.ViewFrustum;
 
 /**
  * A patch represents a single piece of terrain geometry that can be

@@ -15,8 +15,8 @@ import java.util.LinkedList;
 import javax.vecmath.Tuple3f;
 
 // Application specific imports
-import org.j3d.terrain.ViewFrustum;
 import org.j3d.terrain.TerrainData;
+import org.j3d.util.frustum.ViewFrustum;
 
 /**
  * Represents a single node of the triangle mesh of the patch.
