@@ -15,6 +15,7 @@ package org.j3d.texture;
 // Standard imports
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.ImageProducer;
 import java.net.URL;
 import java.io.File;
@@ -40,7 +41,7 @@ import org.j3d.util.ImageUtils;
  * methods that most implementations will find useful.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class AbstractTextureCache implements TextureCache
 {
@@ -95,10 +96,13 @@ public abstract class AbstractTextureCache implements TextureCache
             case ImageComponent.FORMAT_RGB5:
             case ImageComponent.FORMAT_RGB5_A1:
 //            case ImageComponent.FORMAT_RGB8:
+                ret_val = Texture.RGB;
+                break;
+
             case ImageComponent.FORMAT_RGBA:
             case ImageComponent.FORMAT_RGBA4:
 //            case ImageComponent.FORMAT_RGBA8:
-                ret_val = Texture.RGB;
+                ret_val = Texture.RGBA;
                 break;
         }
 
@@ -165,6 +169,9 @@ public abstract class AbstractTextureCache implements TextureCache
         else
             image = ImageUtils.createBufferedImage((Image)content);
 
+        ColorModel cm = image.getColorModel();
+        boolean alpha = cm.hasAlpha();
+
         int format = ImageComponent2D.FORMAT_RGBA;
 
         switch(image.getType())
@@ -191,7 +198,10 @@ public abstract class AbstractTextureCache implements TextureCache
                 break;
 
             case BufferedImage.TYPE_BYTE_INDEXED:
-                format = ImageComponent2D.FORMAT_R3_G3_B2;
+                if(alpha)
+                    format = ImageComponent2D.FORMAT_RGBA;
+                else
+                    format = ImageComponent2D.FORMAT_RGB;
                 break;
 
             case BufferedImage.TYPE_USHORT_555_RGB:
