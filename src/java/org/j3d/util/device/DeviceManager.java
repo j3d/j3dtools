@@ -32,11 +32,103 @@ import org.j3d.util.ErrorHandler;
  * of the resources that are not core to the Java 3D system in an abstract
  * manner.
  * <P>
+ *
  * Definitions of the classes to be loaded by this class are kept in the file
  * named <CODE>j3d_devices.properties</CODE>. This class will be located in
  * the CLASSPATH somewhere. If the file cannot be found then any queries will
  * return empty lists.
+ * <P>
  *
+ * The following properties can be defined in the properties file:
+ * <TABLE>
+ * <TR><TH>Property</TH><TH>Description</TH></TR>
+ * <TR>
+ *   <TD><CODE>input.list</CODE></TD>
+ *   <TD>The list of names (no whitespace) of input device properties to
+ *       read and load.
+ *   </TD>
+ * </TR>
+ * <TR>
+ *   <TD><CODE>audio.list</CODE></TD>
+ *   <TD>The list of names (no whitespace) of audio device properties to
+ *       read and load.
+ *   </TD>
+ * </TR>
+ * <TR>
+ *   <TD><CODE>loader.list</CODE></TD>
+ *   <TD>The list of names (no whitespace) of file loader properties to
+ *       read and load.
+ *   </TD>
+ * </TR>
+ * <TR>
+ *   <TD><CODE><I>list item</I>.name</CODE></TD>
+ *   <TD>A short text descriptive name of the item to be loaded</TD>
+ * </TR>
+ * <TR>
+ *   <TD><CODE><I>list item</I>.desc</CODE></TD>
+ *   <TD>A long text descriptive item of the item to be loaded</TD>
+ * </TR>
+ * <TR>
+ *   <TD><CODE><I>list item</I>.class</CODE></TD>
+ *   <TD>The fully qualified class name of the item to be loaded</TD>
+ * </TR>
+ * <TR>
+ *   <TD><CODE><I>list item</I>.mime</CODE></TD>
+ *   <TD>The mime type for files handled by the file loader</TD>
+ * </TR>
+ * <TR>
+ *   <TD><CODE><I>list item</I>.ext</CODE></TD>
+ *   <TD>The file extension for files loaded by the file loader</TD>
+ * </TR>
+ * </TABLE>
+ * <P>
+ *
+ * <B>AudioDevices</B>
+ * <P>
+ *
+ * Audio devices must implement the {@link javax.media.j3d.AudioDevice}
+ * interface.
+ * <P>
+ * Properties used by the loader:
+ * <UL>
+ * <LI><CODE>.name</CODE></LI>
+ * <LI><CODE>.desc</CODE></LI>
+ * <LI><CODE>.class</CODE></LI>
+ * </UL>
+ * <P>
+ *
+ * <B>InputDevices</B>
+ * <P>
+ *
+ * Input devices must implement the {@link javax.media.j3d.InputDevice}
+ * interface.
+ * <P>
+ * Properties used by the loader:
+ * <UL>
+ * <LI><CODE>.name</CODE></LI>
+ * <LI><CODE>.desc</CODE></LI>
+ * <LI><CODE>.class</CODE></LI>
+ * </UL>
+ * <P>
+ *
+ * <B>File Loaders</B>
+ * <P>
+ *
+ * File loaders must implement the Sun utility interface
+ * {@link com.sun.j3d.loaders.Loader}
+ *
+ * <P>
+ * Properties used by the loader:
+ * <UL>
+ * <LI><CODE>.name</CODE></LI>
+ * <LI><CODE>.desc</CODE></LI>
+ * <LI><CODE>.class</CODE></LI>
+ * <LI><CODE>.mime</CODE></LI>
+ * <LI><CODE>.ext</CODE></LI>
+ * </UL>
+ *
+ * @author Justin Couch
+ * @version $Revision: 1.2 $
  */
 public class DeviceManager
 {
@@ -186,7 +278,7 @@ public class DeviceManager
 
         while(itr.hasNext())
         {
-          String device = (String)itr.next();
+          String device = ((String)itr.next()).trim();
 
           String name = device_props.getProperty(device + NAME_PART);
           String desc = device_props.getProperty(device + DESCRIPTION_PART);
@@ -267,7 +359,7 @@ public class DeviceManager
 
         while(itr.hasNext())
         {
-          String device = (String)itr.next();
+          String device = ((String)itr.next()).trim();
 
           String name = device_props.getProperty(device + NAME_PART);
           String desc = device_props.getProperty(device + DESCRIPTION_PART);
@@ -348,7 +440,7 @@ public class DeviceManager
 
         while(itr.hasNext())
         {
-          String device = (String)itr.next();
+          String device = ((String)itr.next()).trim();
 
           String name = device_props.getProperty(device + NAME_PART);
           String desc = device_props.getProperty(device + DESCRIPTION_PART);
