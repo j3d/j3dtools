@@ -21,26 +21,26 @@ DESTINATION   = $(PROJECT_ROOT)/classes
 # Built up tool information
 #
 ifdef JAVA_HOME
-JAVAC    = $(JAVA_HOME)/bin/javac
-JAR      = $(JAVA_HOME)/bin/jar
-JAVADOC  = $(JAVA_HOME)/bin/javadoc
+	JAVAC    = $(JAVA_HOME)/bin/javac
+	JAR      = $(JAVA_HOME)/bin/jar
+	JAVADOC  = $(JAVA_HOME)/bin/javadoc
 else
-JAVAC    = javac
-JAR      = jar
-JAVADOC  = javadoc
+	JAVAC    = javac
+	JAR      = jar
+	JAVADOC  = javadoc
 endif
 
 EMPTY         =
 SPACE         = $(EMPTY) $(EMPTY)
 
 ifdef JARS
-LOCAL_JARTMP  = $(patsubst %,$(JAR_DIR)/%,$(JARS))
-LOCAL_JARLIST = $(subst $(SPACE),:,$(LOCAL_JARTMP))
+	LOCAL_JARTMP  = $(patsubst %,$(JAR_DIR)/%,$(JARS))
+	LOCAL_JARLIST = $(subst $(SPACE),:,$(LOCAL_JARTMP))
 endif
 
 ifdef JARS_3RDPARTY
-OTHER_JARTMP  = $(patsubst %,$(JAR_DIR)/%,$(JARS_3RDPARTY))
-OTHER_JARLIST = $(subst $(SPACE),:,$(OTHER_JARTMP))
+	OTHER_JARTMP  = $(patsubst %,$(JAR_DIR)/%,$(JARS_3RDPARTY))
+	OTHER_JARLIST = $(subst $(SPACE),:,$(OTHER_JARTMP))
 endif
 
 SOURCEPATH    = $(JAVA_SRC_DIR)
@@ -64,6 +64,30 @@ ifdef OTHER_JARLIST
 endif
 
 #
+# Build rules.
+#
+PACKAGE_LOC     = $(subst .,/,$(PACKAGE))
+PACKAGE_DIR     = $(DESTINATION)/$(PACKAGE_LOC)
+JAVA_FILES      = $(filter  %.java,$(SOURCE))
+NONJAVA_FILES   = $(patsubst %.java,,$(SOURCE))
+CLASS_FILES     = $(JAVA_FILES:%.java=$(PACKAGE_DIR)/%.class)
+OTHER_FILES     = $(NONJAVA_FILES:%=$(PACKAGE_DIR)/%)
+JNI_CLASS_FILES = $(JNI_SOURCE:%.java=$(PACKAGE_DIR)/%.class)
+JNI_HEADERS     = $(JNI_SOURCE:%.java=%.h)
+JAR_CONTENT_CMD = -C $(CLASS_DIR) .
+LINK_FILES      = $(patsubst %, -link %,$(LINK_URLS))
+
+# Make a list of all packages involved
+ifdef PACKAGE
+PACKAGE_LIST    = $(subst .,/,$(PACKAGE))
+else
+PACKAGE_LIST    = $(subst .,/,$(PACKAGES)) $(subst .,/,$(NODOC_PACKAGES))
+endif
+
+PLIST_CLEAN     = $(patsubst %,$(JAVA_SRC_DIR)/%/.clean,$(PACKAGE_LIST))
+PLIST_BUILD     = $(patsubst %,$(JAVA_SRC_DIR)/%/.build,$(PACKAGE_LIST))
+
+#
 # Option listing for the various commands
 #
 JAVAC_OPTIONS = -d $(DESTINATION) -classpath $(CLASSPATH) \
@@ -71,10 +95,10 @@ JAVAC_OPTIONS = -d $(DESTINATION) -classpath $(CLASSPATH) \
 JAVAH_OPTIONS = -d $(INCLUDE_DIR) -classpath $(CLASSPATH)
 
 ifdef MANIFEST
-JAR_OPTIONS = -cvmf
-JAR_MANIFEST = $(JAVA_SRC_DIR)/$(MANIFEST)
+	JAR_OPTIONS = -cvmf
+	JAR_MANIFEST = $(JAVA_SRC_DIR)/$(MANIFEST)
 else
-JAR_OPTIONS = -cvf
+	JAR_OPTIONS = -cvf
 endif
 
 JAVADOC_OPTIONS  = \
@@ -87,30 +111,8 @@ JAVADOC_OPTIONS  = \
      -windowtitle $(WINDOWTITLE) \
      -doctitle $(DOCTITLE) \
      -header $(HEADER) \
-     -bottom $(BOTTOM)
-
-#
-# Build rules.
-#
-PACKAGE_LOC     = $(subst .,/,$(PACKAGE))
-PACKAGE_DIR     = $(DESTINATION)/$(PACKAGE_LOC)
-JAVA_FILES      = $(filter  %.java,$(SOURCE))
-NONJAVA_FILES   = $(patsubst %.java,,$(SOURCE))
-CLASS_FILES     = $(JAVA_FILES:%.java=$(PACKAGE_DIR)/%.class)
-OTHER_FILES     = $(NONJAVA_FILES:%=$(PACKAGE_DIR)/%)
-JNI_CLASS_FILES = $(JNI_SOURCE:%.java=$(PACKAGE_DIR)/%.class)
-JNI_HEADERS     = $(JNI_SOURCE:%.java=%.h)
-JAR_CONTENT_CMD = -C $(CLASS_DIR) *
-
-# Make a list of all packages involved
-ifdef PACKAGE
-PACKAGE_LIST    = $(subst .,/,$(PACKAGE))
-else
-PACKAGE_LIST    = $(subst .,/,$(PACKAGES)) $(subst .,/,$(NODOC_PACKAGES))
-endif
-
-PLIST_CLEAN     = $(patsubst %,$(JAVA_SRC_DIR)/%/.clean,$(PACKAGE_LIST))
-PLIST_BUILD     = $(patsubst %,$(JAVA_SRC_DIR)/%/.build,$(PACKAGE_LIST))
+     -bottom $(BOTTOM) \
+     $(LINK_FILES)	 
 
 #
 # General build rules
