@@ -7,6 +7,7 @@
 # Names of packages to be compiled. These are declared in the order that
 # they are to be compiled in. We create one at a time
 BUILD_ORDER = org.j3d.util \
+	org.j3d.io \
 	org.j3d.util.device \
 	org.j3d.util.interpolator \
 	org.j3d.device.input \
@@ -38,6 +39,7 @@ BUILD_ORDER = org.j3d.util \
 
 # Names of packages that we want included in the javadoc
 JAVADOC_PACKAGES = org.j3d.util \
+	org.j3d.io \
 	org.j3d.util.device \
 	org.j3d.util.interpolator \
 	org.j3d.device.input.spaceball \
