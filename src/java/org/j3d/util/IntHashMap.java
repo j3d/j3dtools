@@ -15,45 +15,45 @@ package org.j3d.util;
 
 // Standard imports
 import java.util.Arrays;
+import java.util.ArrayList;
 
 // Application specific imports
 // None
 
 /**
  * A hash map that uses primitive ints for the key rather than objects.
- * <P>
+ * <p>
  *
+ * This implementation is not thread-safe, so caution must be exercised about how
+ * items are added and removed from the instance.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @see java.util.HashMap
  */
 public class IntHashMap
 {
-    /**
-     * The hash table data.
-     */
-    private transient Entry table[];
+    /** Error message when containsValue(null) was called */
+    private static final String NO_VALUE_ERR =
+        "No value was provided to compare against";
 
-    /**
-     * The total number of entries in the hash table.
-     */
+    /** The hash table data. */
+    private transient Entry[] table;
+
+    /** The total number of entries in the hash table. */
     private transient int count;
 
     /**
      * The table is rehashed when its size exceeds this threshold.  (The
      * value of this field is (int)(capacity * loadFactor).)
-     *
-     * @serial
      */
     private int threshold;
 
-    /**
-     * The load factor for the hashtable.
-     *
-     * @serial
-     */
+    /** The load factor for the hashtable. */
     private float loadFactor;
+
+    /** Cache of the entry instances to prevent excessive object creation */
+    private ArrayList entryCache;
 
     /**
      * Innerclass that acts as a datastructure to create a new entry in the
@@ -67,6 +67,13 @@ public class IntHashMap
         Entry next;
 
         /**
+         * Create a new default entry with nothing set.
+         */
+        protected Entry()
+        {
+        }
+
+        /**
          * Create a new entry with the given values.
          *
          * @param hash The code used to hash the object with
@@ -75,6 +82,22 @@ public class IntHashMap
          * @param next A reference to the next entry in the table
          */
         protected Entry(int hash, int key, Object value, Entry next)
+        {
+            this.hash = hash;
+            this.key = key;
+            this.value = value;
+            this.next = next;
+        }
+
+        /**
+         * Convenience method to set the entry with the given values.
+         *
+         * @param hash The code used to hash the object with
+         * @param key The key used to enter this in the table
+         * @param value The value for this key
+         * @param next A reference to the next entry in the table
+         */
+        protected void set(int hash, int key, Object value, Entry next)
         {
             this.hash = hash;
             this.key = key;
@@ -120,7 +143,7 @@ public class IntHashMap
             throw new IllegalArgumentException("Illegal Capacity: "+
                                                initialCapacity);
         if (loadFactor <= 0)
-            throw new IllegalArgumentException("Illegal Load: "+loadFactor);
+            throw new IllegalArgumentException("Illegal Load: " + loadFactor);
 
         if (initialCapacity == 0)
             initialCapacity = 1;
@@ -128,6 +151,8 @@ public class IntHashMap
         this.loadFactor = loadFactor;
         table = new Entry[initialCapacity];
         threshold = (int)(initialCapacity * loadFactor);
+
+        entryCache = new ArrayList(initialCapacity);
     }
 
     /**
@@ -159,32 +184,27 @@ public class IntHashMap
      * Note that this method is identical in functionality to containsValue,
      * (which is part of the Map interface in the collections framework).
      *
-     * @param      value   a value to search for.
-     * @return     <code>true</code> if and only if some key maps to the
-     *             <code>value</code> argument in this hashtable as
-     *             determined by the <tt>equals</tt> method;
-     *             <code>false</code> otherwise.
+     * @param value   a value to search for.
+     * @return <code>true</code> if and only if some key maps to the
+     *     <code>value</code> argument in this hashtable as determined by the
+     *     <tt>equals</tt> method;  <code>false</code> otherwise.
      * @throws  NullPointerException  if the value is <code>null</code>.
-     * @see        #containsKey(int)
-     * @see        #containsValue(Object)
-     * @see        java.util.Map
+     * @see #containsKey(int)
+     * @see #containsValue(Object)
+     * @see java.util.Map
      */
     public boolean contains(Object value)
     {
-        if (value == null)
-        {
-            throw new NullPointerException();
-        }
+        if(value == null)
+            throw new NullPointerException(NO_VALUE_ERR);
 
-        Entry tab[] = table;
-        for (int i = tab.length ; i-- > 0 ;)
+        Entry[] tab = table;
+        for(int i = tab.length ; i-- > 0 ; )
         {
-            for (Entry e = tab[i] ; e != null ; e = e.next)
+            for(Entry e = tab[i] ; e != null ; e = e.next)
             {
-                if (e.value.equals(value))
-                {
+                if(e.value.equals(value))
                     return true;
-                }
             }
         }
         return false;
@@ -219,12 +239,10 @@ public class IntHashMap
         Entry tab[] = table;
         int hash = key;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next)
+        for(Entry e = tab[index] ; e != null ; e = e.next)
         {
-            if (e.hash == hash)
-            {
+            if(e.hash == hash)
                 return true;
-            }
         }
         return false;
     }
@@ -243,20 +261,19 @@ public class IntHashMap
         Entry tab[] = table;
         int hash = key;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next)
+        for(Entry e = tab[index] ; e != null ; e = e.next)
         {
-            if (e.hash == hash)
-            {
+            if(e.hash == hash)
                 return e.value;
-            }
         }
         return null;
     }
 
     /**
-     * Returns an array with all keys. The order of keys is unspecified.
+     * Returns an array with all keys. The order of keys is unspecified. A new
+     * array is generated for each request.
      *
-     * @return  the array with the keys
+     * @return The array with the keys
      */
     public int[] keySet()
     {
@@ -276,13 +293,65 @@ public class IntHashMap
     }
 
     /**
-     * Returns a sorted array with all keys. The keys are sorted ascending.
+     * Returns an array with all keys. The order of keys is unspecified. A new
+     * array is generated for each request. If the provided array is big
+     * enough, the values are copied directly to it and it is also used as the
+     * return value. If not, then a new array of the needed size is created and
+     * used as the return value and the provided array is ignored.
      *
-     * @return  the sorted array with the keys
+     * @param values An array to copy the values to
+     * @return The array with the keys
+     */
+    public int[] keySet(int[] values)
+    {
+        int[] result;
+
+        if((values == null) || values.length < count)
+            result = new int[count];
+        else
+            result = values;
+
+        int i = 0;
+
+        Entry[] tab = table;
+        for (int index = tab.length ; index-- > 0 ;)
+        {
+            for (Entry e = tab[index] ; e != null ; e = e.next)
+            {
+                result[i++] = e.key;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a sorted array with all keys. The keys are sorted ascending. A
+     * new array is generated for each request.
+     *
+     * @return The sorted array with the keys
      */
     public int[] keySetSorted()
     {
         int[] result = keySet();
+        Arrays.sort(result);
+
+        return result;
+    }
+
+    /**
+     * Returns a sorted array with all keys. The keys are sorted ascending. A
+     * new array is generated for each request. If the provided array is big
+     * enough, the values are copied directly to it and it is also used as the
+     * return value. If not, then a new array of the needed size is created and
+     * used as the return value and the provided array is ignored.
+     *
+     * @param values An array to copy the values to
+     * @return The sorted array with the keys
+     */
+    public int[] keySetSorted(int[] values)
+    {
+        int[] result = keySet(values);
         Arrays.sort(result);
 
         return result;
@@ -338,10 +407,10 @@ public class IntHashMap
     public Object put(int key, Object value)
     {
         // Makes sure the key is not already in the hashtable.
-        Entry tab[] = table;
+        Entry[] tab = table;
         int hash = key;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next)
+        for(Entry e = tab[index] ; e != null ; e = e.next)
         {
             if (e.hash == hash)
             {
@@ -351,7 +420,7 @@ public class IntHashMap
             }
         }
 
-        if (count >= threshold)
+        if(count >= threshold)
         {
             // Rehash the table if the threshold is exceeded
             rehash();
@@ -361,7 +430,9 @@ public class IntHashMap
         }
 
         // Creates the new entry.
-        Entry e = new Entry(hash, key, value, tab[index]);
+        Entry e = getNewEntry();
+        e.set(hash, key, value, tab[index]);
+
         tab[index] = e;
         count++;
         return null;
@@ -377,23 +448,27 @@ public class IntHashMap
      */
     public Object remove(int key)
     {
-        Entry tab[] = table;
+        Entry[] tab = table;
         int hash = key;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index], prev = null ; e != null ; prev = e, e = e.next)
+        for(Entry e = tab[index], prev = null ; e != null ; prev = e, e = e.next)
         {
-            if (e.hash == hash)
+            if(e.hash == hash)
             {
-                if (prev != null)
+                if(prev != null)
                 {
                     prev.next = e.next;
-                } else
+                }
+                else
                 {
                     tab[index] = e.next;
                 }
+
                 count--;
                 Object oldValue = e.value;
                 e.value = null;
+                releaseEntry(e);
+
                 return oldValue;
             }
         }
@@ -405,9 +480,59 @@ public class IntHashMap
      */
     public synchronized void clear()
     {
-        Entry tab[] = table;
-        for (int index = tab.length; --index >= 0; )
+        if(count == 0)
+            return;
+
+        Entry[] tab = table;
+        for(int index = tab.length; --index >= 0; )
+        {
+            Entry e = tab[index];
+
+            if(e == null)
+                continue;
+
+            while(e.next != null)
+            {
+                e.value = null;
+                releaseEntry(e);
+
+                Entry n = e.next;
+                e.next = null;
+                e = n;
+            }
+
             tab[index] = null;
+        }
+
         count = 0;
+    }
+
+    /**
+     * Grab a new entry. Check the cache first to see if one is available. If
+     * not, create a new instance.
+     *
+     * @return An instance of the Entry
+     */
+    private Entry getNewEntry()
+    {
+        Entry ret_val;
+
+        int size = entryCache.size();
+        if(size == 0)
+            ret_val = new Entry();
+        else
+            ret_val = (Entry)entryCache.remove(size - 1);
+
+        return ret_val;
+    }
+
+    /**
+     * Release an entry back into the cache.
+     *
+     * @param e The entry to put into the cache
+     */
+    private void releaseEntry(Entry e)
+    {
+        entryCache.add(e);
     }
 }
