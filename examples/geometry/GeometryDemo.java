@@ -22,6 +22,7 @@ import java.util.HashMap;
 import org.j3d.geom.*;
 
 import org.j3d.ui.navigation.MouseViewHandler;
+import org.j3d.ui.navigation.NavigationState;
 
 /**
  * Demonstration of the various pieces of standard geometry provided by
@@ -32,7 +33,7 @@ import org.j3d.ui.navigation.MouseViewHandler;
  * of the rendering attributes like the face set.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class GeometryDemo extends DemoFrame
     implements ActionListener, ItemListener
@@ -227,11 +228,11 @@ public class GeometryDemo extends DemoFrame
         viewHandler = new MouseViewHandler();
         viewHandler.setCanvas(canvas);
         viewHandler.setButtonNavigation(MouseEvent.BUTTON1_MASK,
-                                        MouseViewHandler.FLY_STATE);
+                                        NavigationState.FLY_STATE);
         viewHandler.setButtonNavigation(MouseEvent.BUTTON2_MASK,
-                                        MouseViewHandler.TILT_STATE);
+                                        NavigationState.TILT_STATE);
         viewHandler.setButtonNavigation(MouseEvent.BUTTON3_MASK,
-                                        MouseViewHandler.PAN_STATE);
+                                        NavigationState.PAN_STATE);
 
         // The rendering menu
         useLineStrip = false;

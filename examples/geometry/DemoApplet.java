@@ -24,7 +24,7 @@ import java.applet.Applet;
  * Base class representation of the applet for showing Java3D content.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class DemoApplet extends Applet
 {
@@ -70,6 +70,6 @@ public class DemoApplet extends Applet
      */
     public void stop()
     {
-        //canvas.stopRenderer();
+        canvas.stopRenderer();
     }
 }
