@@ -9,11 +9,12 @@
 
 package org.j3d.geom.particle;
 
-// Standard imports
+// External imports
 import java.util.ArrayList;
 
-// Application specific imports
-// None
+// Local imports
+import org.j3d.util.DefaultErrorReporter;
+import org.j3d.util.ErrorReporter;
 
 /**
  * The ParticleSystemManager is a simple manager that controls all of the
@@ -24,7 +25,7 @@ import java.util.ArrayList;
  * update method on each whenever it is triggered.
  *
  * @author Daniel Selman
- * @version $Revision: 2.0 $
+ * @version $Revision: 2.1 $
  */
 public class ParticleSystemManager
 {
@@ -33,6 +34,10 @@ public class ParticleSystemManager
 
     /** Listing of the recently added systems */
     private ArrayList newSystems = new ArrayList();
+
+    /** Local reporter to put errors in */
+    protected ErrorReporter errorReporter;
+
     /**
      * Create a new manager, with no systems registered.
      */
@@ -40,6 +45,31 @@ public class ParticleSystemManager
     {
         particleSystems = new ArrayList();
         newSystems = new ArrayList();
+        errorReporter = DefaultErrorReporter.getDefaultReporter();
+    }
+
+    /**
+     * Register an error reporter with the object so that any errors generated
+     * by the object can be reported in a nice, pretty fashion.
+     * Setting a value of null will clear the currently set reporter. If one
+     * is already set, the new value replaces the old.
+     *
+     * @param reporter The instance to use or null
+     */
+    public void setErrorReporter(ErrorReporter reporter)
+    {
+        errorReporter = reporter;
+
+        // Reset the default only if we are not shutting down the system.
+        if(reporter == null)
+            errorReporter = DefaultErrorReporter.getDefaultReporter();
+
+        int size = particleSystems.size();
+        for(int n = 0; n < size; n++)
+        {
+            ParticleSystem system = (ParticleSystem)particleSystems.get(n);
+            system.setErrorReporter(reporter);
+        }
     }
 
     /**
@@ -82,6 +112,7 @@ public class ParticleSystemManager
     {
         particleSystems.add(system);
         newSystems.add(system);
+        system.setErrorReporter(errorReporter);
     }
 
     /**

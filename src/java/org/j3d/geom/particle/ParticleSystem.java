@@ -13,7 +13,8 @@ package org.j3d.geom.particle;
 import java.util.ArrayList;
 
 // Local imports
-// None
+import org.j3d.util.DefaultErrorReporter;
+import org.j3d.util.ErrorReporter;
 
 /**
  * Abstract representation of a ParticleSystem.
@@ -28,7 +29,7 @@ import java.util.ArrayList;
  * <p>
  *
  * @author Justin Couch, based on code by Daniel Selman
- * @version $Revision: 2.0 $
+ * @version $Revision: 2.1 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
@@ -38,6 +39,9 @@ public abstract class ParticleSystem implements ParticleFactory
     /** Error message when the particle count is negative */
     private static final String NEG_PARTICLE_COUNT_MSG =
         "The max particle count value is negative. Must be non-negative.";
+
+    /** Local reporter to put errors in */
+    protected ErrorReporter errorReporter;
 
     /** * Identifier for this particle system type. */
     private String systemName;
@@ -128,6 +132,24 @@ public abstract class ParticleSystem implements ParticleFactory
 
         numActiveFunctions = 0;
         activeFunctions = new ParticleFunction[NUM_INIT_FUNCTIONS];
+        errorReporter = DefaultErrorReporter.getDefaultReporter();
+    }
+
+    /**
+     * Register an error reporter with the object so that any errors generated
+     * by the object can be reported in a nice, pretty fashion.
+     * Setting a value of null will clear the currently set reporter. If one
+     * is already set, the new value replaces the old.
+     *
+     * @param reporter The instance to use or null
+     */
+    public void setErrorReporter(ErrorReporter reporter)
+    {
+        errorReporter = reporter;
+
+        // Reset the default only if we are not shutting down the system.
+        if(reporter == null)
+            errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 
     /**
