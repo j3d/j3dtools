@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.terrain.roam directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.4 $
+# Version: $Revision: 1.5 $
 #
 #*********************************************************************
 
@@ -17,11 +17,14 @@ PACKAGE = org.j3d.terrain.roam
 SOURCE = DefaultAppearanceGenerator.java \
     VertexData.java \
     VarianceTree.java \
+	QueueItem.java \
 	QueueManager.java \
+	FastQueue.java \
 	TreeNode.java \
 	DiamondComparator.java \
 	TriangleComparator.java \
 	TreeQueueManager.java \
+	FastQueueManager.java \
 	Patch.java \
 	PatchGrid.java \
 	SplitMergeLandscape.java 

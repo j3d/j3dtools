@@ -79,8 +79,10 @@ class Patch implements GeometryUpdater
     private ViewFrustum viewFrustum;
 
     /** Neighbour references for calculations */
-    private Patch westPatchNeighbour;
-    private Patch southPatchNeighbour;
+    private Patch northNeighbour;
+    private Patch southNeighbour;
+    private Patch eastNeighbour;
+    private Patch westNeighbour;
 
     /** Raw vertex collection information */
     private VertexData vertexData;
@@ -280,8 +282,10 @@ class Patch implements GeometryUpdater
         NWTree = null;
         SETree = null;
 
-        setWestNeighbour(null);
+        setNorthNeighbour(null);
         setSouthNeighbour(null);
+        setEastNeighbour(null);
+        setWestNeighbour(null);
 
         // No need to clear out the variance tree as the only thing it really
         // cares about is the patchSize so that it can recompute the levels.
@@ -385,35 +389,17 @@ class Patch implements GeometryUpdater
 
         NWTree.baseNeighbour = SETree;
         SETree.baseNeighbour = NWTree;
-
-        if(westPatchNeighbour != null)
-        {
-            NWTree.leftNeighbour = westPatchNeighbour.SETree;
-            westPatchNeighbour.SETree.leftNeighbour = NWTree;
-        }
-
-        if(southPatchNeighbour != null)
-        {
-            SETree.rightNeighbour = southPatchNeighbour.NWTree;
-            southPatchNeighbour.NWTree.rightNeighbour = SETree;
-        }
     }
 
     /**
-     * Set the west neighbour of this patch to the new value. May be called
+     * Set the north neighbour of this patch to the new value. May be called
      * on an active or inactive patch.
      *
      * @param p The patch to set as the new neighbour
      */
-    void setWestNeighbour(Patch p)
+    void setNorthNeighbour(Patch p)
     {
-        westPatchNeighbour = p;
-
-        if(westPatchNeighbour != null)
-        {
-            NWTree.leftNeighbour = westPatchNeighbour.SETree;
-            westPatchNeighbour.SETree.leftNeighbour = NWTree;
-        }
+        northNeighbour = p;
     }
 
     /**
@@ -424,12 +410,136 @@ class Patch implements GeometryUpdater
      */
     void setSouthNeighbour(Patch p)
     {
-        southPatchNeighbour = p;
+        southNeighbour = p;
 
-        if(southPatchNeighbour != null)
+        if(southNeighbour != null)
         {
-            SETree.rightNeighbour = southPatchNeighbour.NWTree;
-            southPatchNeighbour.NWTree.rightNeighbour = SETree;
+            SETree.rightNeighbour = southNeighbour.NWTree;
+            southNeighbour.NWTree.rightNeighbour = SETree;
+        }
+    }
+
+    /**
+     * Set the east neighbour of this patch to the new value. May be called
+     * on an active or inactive patch.
+     *
+     * @param p The patch to set as the new neighbour
+     */
+    void setEastNeighbour(Patch p)
+    {
+        eastNeighbour = p;
+    }
+
+    /**
+     * Set the west neighbour of this patch to the new value. May be called
+     * on an active or inactive patch.
+     *
+     * @param p The patch to set as the new neighbour
+     */
+    void setWestNeighbour(Patch p)
+    {
+        westNeighbour = p;
+
+        if(westNeighbour != null)
+        {
+            NWTree.leftNeighbour = westNeighbour.SETree;
+            westNeighbour.SETree.leftNeighbour = NWTree;
+        }
+    }
+
+    /**
+     * Update this patch to merge in with its new neighbours. Should only be
+     * called after a patch has be brought back to activity and after
+     * makeActive() is called.
+     *
+     * @param position The current view location
+     * @param queueManager The queue to place newly generated items on
+     */
+    void updateEdges(Tuple3f position, QueueManager queueManager)
+    {
+        int old = -1;
+        int neu = -1;
+
+        if(southNeighbour != null)
+        {
+            while(old != 0 && neu != 0)
+            {
+                neu = SETree.edgeSplit(southNeighbour.NWTree,
+                                       TreeNode.RIGHT_TO_LEFT,
+                                       position,
+                                       viewFrustum,
+                                       queueManager);
+
+                old = southNeighbour.NWTree.edgeSplit(SETree,
+                                                      TreeNode.LEFT_TO_RIGHT,
+                                                      position,
+                                                      viewFrustum,
+                                                      queueManager);
+            }
+        }
+
+        if(northNeighbour != null)
+        {
+            old = -1;
+            neu = -1;
+
+            while(old != 0 && neu != 0)
+            {
+                neu = NWTree.edgeSplit(northNeighbour.SETree,
+                                       TreeNode.LEFT_TO_RIGHT,
+                                       position,
+                                       viewFrustum,
+                                       queueManager);
+
+                old = northNeighbour.SETree.edgeSplit(NWTree,
+                                                      TreeNode.RIGHT_TO_LEFT,
+                                                      position,
+                                                      viewFrustum,
+                                                      queueManager);
+
+            }
+        }
+
+        if(eastNeighbour != null)
+        {
+            old = -1;
+            neu = -1;
+
+            while(old != 0 && neu != 0)
+            {
+                neu = SETree.edgeSplit(eastNeighbour.NWTree,
+                                       TreeNode.LEFT_TO_RIGHT,
+                                       position,
+                                       viewFrustum,
+                                       queueManager);
+
+                old = eastNeighbour.NWTree.edgeSplit(SETree,
+                                                     TreeNode.RIGHT_TO_LEFT,
+                                                     position,
+                                                     viewFrustum,
+                                                     queueManager);
+            }
+        }
+
+        if(westNeighbour != null)
+        {
+            old = -1;
+            neu = -1;
+
+            while(old != 0 && neu != 0)
+            {
+                neu = NWTree.edgeSplit(westNeighbour.SETree,
+                                       TreeNode.RIGHT_TO_LEFT,
+                                       position,
+                                       viewFrustum,
+                                       queueManager);
+
+                old = westNeighbour.SETree.edgeSplit(NWTree,
+                                                     TreeNode.LEFT_TO_RIGHT,
+                                                     position,
+                                                     viewFrustum,
+                                                     queueManager);
+            }
         }
     }
 
@@ -500,15 +610,15 @@ class Patch implements GeometryUpdater
     {
         StringBuffer buf = new StringBuffer();
 
-        if(westPatchNeighbour != null)
-            buf.append(westPatchNeighbour.hashCode());
+        if(westNeighbour != null)
+            buf.append(westNeighbour.hashCode());
         else
             buf.append("-1");
 
         buf.append(',');
 
-        if(southPatchNeighbour != null)
-            buf.append(southPatchNeighbour.hashCode());
+        if(southNeighbour != null)
+            buf.append(southNeighbour.hashCode());
         else
             buf.append("-1");
 

@@ -197,19 +197,45 @@ class PatchGrid
         int local_y = tileY - northOffset;
 
         grid[local_x][local_y] = p;
+        Patch tp;
 
         if(local_x != 0)
-            p.setWestNeighbour(grid[local_x - 1][local_y]);
+        {
+            tp = grid[local_x - 1][local_y];
+            p.setWestNeighbour(tp);
 
-        if((local_x < numEast - 1) && (grid[local_x + 1][local_y] != null))
-            grid[local_x + 1][local_y].setWestNeighbour(p);
+            if(tp != null)
+                tp.setEastNeighbour(p);
+        }
 
+        if(local_x < numEast - 1)
+        {
+            tp = grid[local_x + 1][local_y];
+
+            if(tp != null)
+                tp.setWestNeighbour(p);
+
+            p.setEastNeighbour(tp);
+        }
 
         if(local_y != 0)
-            p.setSouthNeighbour(grid[local_x][local_y - 1]);
+        {
+            tp = grid[local_x][local_y - 1];
+            p.setSouthNeighbour(tp);
 
-        if((local_y < numNorth - 1) && (grid[local_x][local_y + 1] != null))
-            grid[local_x][local_y + 1].setSouthNeighbour(p);
+            if(tp != null)
+                tp.setNorthNeighbour(p);
+        }
+
+        if(local_y < numNorth - 1)
+        {
+            tp = grid[local_x][local_y + 1];
+
+            if(tp != null)
+                tp.setSouthNeighbour(p);
+
+            p.setNorthNeighbour(tp);
+        }
     }
 
     /**
