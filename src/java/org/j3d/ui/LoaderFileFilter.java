@@ -23,9 +23,11 @@ import org.j3d.util.device.FileLoaderDescriptor;
  *
  * The class takes information from the filter and builds filtering
  * information from that. It does not maintain a reference to the
- * descriptor.
+ * descriptor. The filter will accept matching files and also all directories
+ * so that you can navigate the directory structure.
  *
- * @version $Revision: 1.2 $
+ * @author Justin Couch
+ * @version $Revision: 1.3 $
  */
 public class LoaderFileFilter extends FileFilter
 {
@@ -35,6 +37,9 @@ public class LoaderFileFilter extends FileFilter
   /** The extension matching this loader type */
   private String extension;
 
+  /** The descriptor this file is using */
+  private FileLoaderDescriptor descriptor;
+
   /**
    * Construct an instance of the filter based on the given device
    * description.
@@ -43,8 +48,12 @@ public class LoaderFileFilter extends FileFilter
    */
   public LoaderFileFilter(FileLoaderDescriptor fld)
   {
+    descriptor = fld;
+
     description = fld.getDescription();
     extension = fld.getExtension();
+
+    description += " (*." + extension + ")";
   }
 
   /**
@@ -55,12 +64,25 @@ public class LoaderFileFilter extends FileFilter
    */
   public boolean accept(File f)
   {
-    String name = f.getName();
-    int index = name.lastIndexOf('.');
+    boolean ret_val = false;
 
-    String ext = name.substring(index);
+    if(f.isDirectory())
+      ret_val = true;
+    else
+    {
+      String name = f.getName();
+      int index = name.lastIndexOf('.');
 
-    return extension.equals(ext);
+      // Filename without an extension?
+      if(index != -1)
+      {
+        String ext = name.substring(index + 1);
+
+        ret_val = extension.equals(ext);
+      }
+    }
+
+    return ret_val;
   }
 
   /**
@@ -72,6 +94,17 @@ public class LoaderFileFilter extends FileFilter
   public String getDescription()
   {
     return description;
+  }
+
+  /**
+   * Get the descriptor used by this file filter so that we can ask for the
+   * needed loader later on.
+   *
+   * @return The descriptor this represents
+   */
+  public FileLoaderDescriptor getDescriptor()
+  {
+    return descriptor;
   }
 }
 
