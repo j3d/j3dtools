@@ -56,7 +56,7 @@ import javax.vecmath.Vector3d;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class IntersectionUtils
 {
@@ -167,7 +167,7 @@ public class IntersectionUtils
                                            pickDir,
                                            length,
                                            data.coordinates,
-                                           data.vertexCount,
+                                           data.vertexCount / 3,
                                            point,
                                            intersectOnly);
                 break;
@@ -177,7 +177,7 @@ public class IntersectionUtils
                                        pickDir,
                                        length,
                                        data.coordinates,
-                                       data.vertexCount,
+                                       data.vertexCount / 4,
                                        point,
                                        intersectOnly);
                 break;
