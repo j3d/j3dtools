@@ -28,7 +28,6 @@ import org.j3d.loaders.HeightMapTerrainData;
 
 import org.j3d.terrain.AppearanceGenerator;
 import org.j3d.terrain.Landscape;
-import org.j3d.terrain.ViewFrustum;
 import org.j3d.terrain.roam.SplitMergeLandscape;
 
 import org.j3d.texture.TextureCache;
@@ -39,13 +38,14 @@ import org.j3d.ui.navigation.NavigationStateManager;
 import org.j3d.ui.navigation.NavigationState;
 
 import org.j3d.util.interpolator.ColorInterpolator;
+import org.j3d.util.frustum.ViewFrustum;
 
 /**
  * Demonstration of the ROAM code.
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ROAMTest extends DemoFrame
     implements ItemListener, AppearanceGenerator
@@ -385,7 +385,11 @@ public class ROAMTest extends DemoFrame
             else
             {
                 // tiled terrain code to go here.
-                landscape = new SplitMergeLandscape(viewFrustum, terrain);
+                terrain = new HeightMapTerrainData(STATIC_HEIGHTS,
+                                                   false,
+                                                   STATIC_STEPS);
+
+                landscape = new SplitMergeLandscape(viewFrustum, terrain, 2);
             }
 
             landscape.setCapability(BranchGroup.ALLOW_DETACH);
