@@ -56,7 +56,7 @@ import javax.vecmath.Vector3d;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class IntersectionUtils
 {
@@ -919,8 +919,6 @@ public class IntersectionUtils
 
         for(int i = 0; i < numStrips; i++)
         {
-            offset = i * stripCounts[i] * 3;
-
             for(int j = 0; j < stripCounts[i] - 2; j++)
             {
                 System.arraycopy(coords, offset + j * 3, wkPolygon, 0, 9);
@@ -947,6 +945,8 @@ public class IntersectionUtils
                     }
                 }
             }
+
+            offset += stripCounts[i] * 3 - 1;
         }
 
         return (shortest_length != -1);
@@ -999,8 +999,6 @@ public class IntersectionUtils
 
         for(int i = 0; i < numStrips; i++)
         {
-            offset = i * stripCounts[i] * 3;
-
             // setup the constant first position
             wkPolygon[0] = coords[offset];
             wkPolygon[1] = coords[offset + 1];
@@ -1039,6 +1037,8 @@ public class IntersectionUtils
                     }
                 }
             }
+
+            offset += stripCounts[i] * 3 - 1;
         }
 
         return (shortest_length != -1);
