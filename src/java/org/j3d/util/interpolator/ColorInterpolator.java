@@ -33,7 +33,7 @@ import org.j3d.util.ColorUtils;
  * Wesley, 1990.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ColorInterpolator extends Interpolator
 {
@@ -166,7 +166,7 @@ public class ColorInterpolator extends Interpolator
         }
         else
         {
-            if((s == 0) && (h != Double.NaN))
+            if((s == 0) && (!Float.isNaN(h)))
                 throw new IllegalArgumentException(INVALID_H_MSG);
 
             addKeyFrame(key, h, s, v, a);
