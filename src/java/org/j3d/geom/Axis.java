@@ -29,46 +29,65 @@ import javax.vecmath.Color3f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Axis extends Group
 {
     /** The default length of the axis */
-    private static final int DEFAULT_AXIS_LENGTH = 5;
+    private static final float DEFAULT_AXIS_LENGTH = 5;
+
+    /** The size of the box shape on the end */
+    private static final float X_SIZE = 0.05f;
 
     /**
-     * Create a default axis object with each item length 5
+     * Create a default axis object with each item length 5 from the origin
      */
     public Axis()
     {
+        this(DEFAULT_AXIS_LENGTH);
+    }
+
+    /**
+     * Create an axis object with the given axis length from the origin.
+     *
+     * @param length The length to use. Must be positive
+     */
+    public Axis(float length)
+    {
+        if(length <= 0)
+            throw new IllegalArgumentException("Axis length is not positive");
+
         int format = GeometryArray.COORDINATES | GeometryArray.NORMALS;
-        BoxGenerator gen = new BoxGenerator(0.05f, 0.05f, 10f);
+        BoxGenerator gen = new BoxGenerator(X_SIZE, X_SIZE, length);
 
-        float[] coords = gen.generateUnindexedCoordinates();
-        float[] normals = gen.generateUnindexedNormals();
-        int vertex_count = gen.getVertexCount();
+        GeometryData data = new GeometryData();
+        data.geometryType = GeometryData.TRIANGLE_STRIPS;
+        data.geometryComponents = GeometryData.NORMAL_DATA;
 
-        QuadArray x_array = new QuadArray(vertex_count, format);
-        x_array.setCoordinates(0, coords);
-        x_array.setNormals(0, normals);
+        gen.generate(data);
 
-        gen.setDimensions(0.05f, 10f, 0.05f);
+        TriangleStripArray x_array =
+            new TriangleStripArray(data.vertexCount, format, data.stripCounts);
 
-        coords = gen.generateUnindexedCoordinates();
-        normals = gen.generateUnindexedNormals();
+        x_array.setCoordinates(0, data.coordinates);
+        x_array.setNormals(0, data.normals);
 
-        QuadArray y_array = new QuadArray(vertex_count, format);
-        y_array.setCoordinates(0, coords);
-        y_array.setNormals(0, normals);
+        gen.setDimensions(X_SIZE, length, X_SIZE);
+        gen.generate(data);
 
-        gen.setDimensions(10f, 0.05f, 0.05f);
+        TriangleStripArray y_array =
+            new TriangleStripArray(data.vertexCount, format, data.stripCounts);
+        y_array.setCoordinates(0, data.coordinates);
+        y_array.setNormals(0, data.normals);
 
-        coords = gen.generateUnindexedCoordinates();
-        normals = gen.generateUnindexedNormals();
+        gen.setDimensions(length, X_SIZE, X_SIZE);
+        gen.generate(data);
 
-        QuadArray z_array = new QuadArray(vertex_count, format);
-        z_array.setCoordinates(0, coords);
-        z_array.setNormals(0, normals);
+        TriangleStripArray z_array =
+            new TriangleStripArray(data.vertexCount, format, data.stripCounts);
+
+        z_array.setCoordinates(0, data.coordinates);
+        z_array.setNormals(0, data.normals);
 
         Color3f blue = new Color3f(0, 0, 0.8f);
         Material blue_material = new Material();

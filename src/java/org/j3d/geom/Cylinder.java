@@ -1,6 +1,6 @@
 /*****************************************************************************
- *      J3D.org Copyright (c) 2000
- *         Java Source
+ *                   J3D.org Copyright (c) 2000
+ *                          Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
  * Please read http://www.gnu.org/copyleft/lgpl.html for more information
@@ -12,16 +12,16 @@ package org.j3d.geom;
 // Standard imports
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Shape3D;
-import javax.media.j3d.TriangleArray;
+import javax.media.j3d.TriangleStripArray;
 
 // Application specific imports
 // none
 
 /**
- * A simple cone that uses triangles.
+ * A simple cylinder that uses cylinders.
  * <p>
  *
- * The created cone does not have any capabilities set except for the
+ * The created cylinder does not have any capabilities set except for the
  * ability to write the geometry - needed so that we can modify the geometry
  * when you change the height or radius. If you know that you are not going
  * to be changing the geometry you can turn this off.
@@ -29,83 +29,83 @@ import javax.media.j3d.TriangleArray;
  *
  * As we assume you may want to use this as a collidable object, we store the
  * {@link GeometryData} instance that is used to create the object in the
- * userData of the underlying {@link javax.media.j3d.TriangleArray}. The
+ * userData of the underlying {@link javax.media.j3d.TriangleStripArray}. The
  * geometry does not have texture coordinates set.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.1 $
  */
-public class Cone extends Shape3D
+public class Cylinder extends Shape3D
 {
-    /** The default height of the cone */
+    /** The default height of the cylinder */
     private static final float DEFAULT_HEIGHT = 2;
 
-    /** The default radius of the cone */
+    /** The default radius of the cylinder */
     private static final float DEFAULT_RADIUS = 1;
 
-    /** Default number of segments used in the cone */
+    /** Default number of segments used in the cylinder */
     private static final int DEFAULT_FACETS = 16;
 
     /** The generator used to modify the geometry */
-    private ConeGenerator generator;
+    private CylinderGenerator generator;
 
-    /** Data used to regenerate the cone */
+    /** Data used to regenerate the cylinder */
     private GeometryData data;
 
     /**
-     * Construct a default cone with no appearance set. The default size
-     * of the cone is:<BR>
+     * Construct a default cylinder with no appearance set. The default size
+     * of the cylinder is:<BR>
      * Height: 2.0<BR>
      * Radius: 1.0<BR>
      * Faces:  16
      */
-    public Cone()
+    public Cylinder()
     {
         this(DEFAULT_HEIGHT, DEFAULT_RADIUS, DEFAULT_FACETS, null);
     }
 
     /**
-     * Construct a default cone with the given appearance. The default size
-     * of the cone is:<BR>
+     * Construct a default cylinder with the given appearance. The default size
+     * of the cylinder is:<BR>
      * Height: 2.0<BR>
      * Radius: 1.0<BR>
      * Faces:  16
      *
      * @param app The appearance to use
      */
-    public Cone(Appearance app)
+    public Cylinder(Appearance app)
     {
         this(DEFAULT_HEIGHT, DEFAULT_RADIUS, DEFAULT_FACETS, app);
     }
 
     /**
-     * Construct a default cone with no appearance set and a custom
+     * Construct a default cylinder with no appearance set and a custom
      * number of faces.<BR>
      * Height: 2.0<BR>
      * Radius: 1.0<BR>
      *
      * @param faces The number of faces to use around the side
      */
-    public Cone(int faces)
+    public Cylinder(int faces)
     {
         this(DEFAULT_HEIGHT, DEFAULT_RADIUS, faces, null);
     }
 
     /**
-     * Construct a default cone with no appearance set. The height and
+     * Construct a default cylinder with no appearance set. The height and
      * radius as set to the new value and uses the default face count of
      * 16.
      *
-     * @param height The height of the cone
-     * @param radius The radius of the base of the cone
+     * @param height The height of the cylinder
+     * @param radius The radius of the base of the cylinder
      */
-    public Cone(float height, float radius)
+    public Cylinder(float height, float radius)
     {
         this(height, radius, DEFAULT_FACETS, null);
     }
 
     /**
-     * Construct a default cone with the given appearance and a custom
+     * Construct a default cylinder with the given appearance and a custom
      * number of faces.<BR>
      * Height: 2.0<BR>
      * Radius: 1.0<BR>
@@ -113,47 +113,48 @@ public class Cone extends Shape3D
      * @param faces The number of faces to use around the side
      * @param app The appearance to use
      */
-    public Cone(int faces, Appearance app)
+    public Cylinder(int faces, Appearance app)
     {
         this(DEFAULT_HEIGHT, DEFAULT_RADIUS, faces, app);
     }
 
     /**
-     * Construct a default cone with the given appearance. The height and
+     * Construct a default cylinder with the given appearance. The height and
      * radius as set to the new value and uses the default face count of
      * 16.
      *
-     * @param height The height of the cone
-     * @param radius The radius of the base of the cone
+     * @param height The height of the cylinder
+     * @param radius The radius of the base of the cylinder
      * @param app The appearance to use
      */
-    public Cone(float height, float radius, Appearance app)
+    public Cylinder(float height, float radius, Appearance app)
     {
         this(height, radius, DEFAULT_FACETS, app);
     }
 
     /**
-     * Construct a cone with all the values customisable
+     * Construct a cylinder with all the values customisable
      *
-     * @param height The height of the cone
-     * @param radius The radius of the base of the cone
+     * @param height The height of the cylinder
+     * @param radius The radius of the base of the cylinder
      * @param faces The number of faces to use around the side
      * @param app The appearance to use
      */
-    public Cone(float height, float radius, int faces, Appearance app)
+    public Cylinder(float height, float radius, int faces, Appearance app)
     {
         data = new GeometryData();
-        data.geometryType = GeometryData.TRIANGLES;
+        data.geometryType = GeometryData.TRIANGLE_STRIPS;
         data.geometryComponents = GeometryData.NORMAL_DATA;
 
-        generator = new ConeGenerator(height, radius, faces);
+        generator = new CylinderGenerator(height, radius, faces);
 
         generator.generate(data);
 
-        int format = TriangleArray.COORDINATES |
-                     TriangleArray.NORMALS;
+        int format = TriangleStripArray.COORDINATES |
+                     TriangleStripArray.NORMALS;
 
-        TriangleArray geometry = new TriangleArray(data.vertexCount, format);
+        TriangleStripArray geometry =
+            new TriangleStripArray(data.vertexCount, format, data.stripCounts);
 
         geometry.setCoordinates(0, data.coordinates);
         geometry.setNormals(0, data.normals);
@@ -166,12 +167,12 @@ public class Cone extends Shape3D
     }
 
     /**
-     * Change the radius and height of the cone to the new values. If the
+     * Change the radius and height of the cylinder to the new values. If the
      * geometry write capability has been turned off, this will not do
      * anything.
      *
-     * @param height The height of the cone
-     * @param radius The radius of the base of the cone
+     * @param height The height of the cylinder
+     * @param radius The radius of the base of the cylinder
      */
     public void setDimensions(float height, float radius)
     {
@@ -181,10 +182,11 @@ public class Cone extends Shape3D
         generator.setDimensions(height, radius, true);
         generator.generate(data);
 
-        int format = TriangleArray.COORDINATES |
-                     TriangleArray.NORMALS;
+        int format = TriangleStripArray.COORDINATES |
+                     TriangleStripArray.NORMALS;
 
-        TriangleArray geometry = new TriangleArray(data.vertexCount, format);
+        TriangleStripArray geometry =
+            new TriangleStripArray(data.vertexCount, format, data.stripCounts);
 
         geometry.setCoordinates(0, data.coordinates);
         geometry.setNormals(0, data.normals);
@@ -193,7 +195,7 @@ public class Cone extends Shape3D
     }
 
     /**
-     * Set the facet count of the cone to the new value. If the geometry
+     * Set the facet count of the cylinder to the new value. If the geometry
      * write capability has been turned off, this will not do anything.
      *
      * @param faces The number of faces to use around the side
@@ -206,10 +208,11 @@ public class Cone extends Shape3D
         generator.setFacetCount(faces);
         generator.generate(data);
 
-        int format = TriangleArray.COORDINATES |
-                     TriangleArray.NORMALS;
+        int format = TriangleStripArray.COORDINATES |
+                     TriangleStripArray.NORMALS;
 
-        TriangleArray geometry = new TriangleArray(data.vertexCount, format);
+        TriangleStripArray geometry =
+            new TriangleStripArray(data.vertexCount, format, data.stripCounts);
 
         geometry.setCoordinates(0, data.coordinates);
         geometry.setNormals(0, data.normals);
