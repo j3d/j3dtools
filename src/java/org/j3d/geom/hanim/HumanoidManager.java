@@ -13,7 +13,8 @@ package org.j3d.geom.hanim;
 import java.util.ArrayList;
 
 // Local imports
-// None
+import org.j3d.util.DefaultErrorReporter;
+import org.j3d.util.ErrorReporter;
 
 /**
  * Utility class for managing a collection of HAnimHumanoids in a scene.
@@ -25,12 +26,15 @@ import java.util.ArrayList;
  * to do the updates.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class HumanoidManager
 {
     /** Our collection of humanoids */
     private ArrayList humanoids;
+
+    /** Local reporter to put errors in */
+    private ErrorReporter errorReporter;
 
     /**
      * Create a new, empty, instance of the manager.
@@ -38,6 +42,24 @@ public class HumanoidManager
     public HumanoidManager()
     {
         humanoids = new ArrayList();
+        errorReporter = DefaultErrorReporter.getDefaultReporter();
+    }
+
+    /**
+     * Register an error reporter with the object so that any errors generated
+     * by the object can be reported in a nice, pretty fashion.
+     * Setting a value of null will clear the currently set reporter. If one
+     * is already set, the new value replaces the old.
+     *
+     * @param reporter The instance to use or null
+     */
+    public void setErrorReporter(ErrorReporter reporter)
+    {
+        errorReporter = reporter;
+
+        // Reset the default only if we are not shutting down the system.
+        if(reporter == null)
+            errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 
     /**
@@ -49,7 +71,10 @@ public class HumanoidManager
     public void addHumanoid(HAnimHumanoid human)
     {
         if(!humanoids.contains(human))
+        {
             humanoids.add(human);
+            human.setErrorReporter(errorReporter);
+        }
     }
 
     /**
