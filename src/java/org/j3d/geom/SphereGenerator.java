@@ -39,7 +39,7 @@ import javax.vecmath.Vector3f;
  * that the normal points directly away from the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class SphereGenerator extends GeometryGenerator
 {
@@ -559,6 +559,7 @@ public class SphereGenerator extends GeometryGenerator
                                                 data.stripCounts.length,
                                                 num_strips);
 
+        data.numStrips = num_strips;
         int strip_length = (facetCount + 1) << 1;
         int[] stripCounts = data.stripCounts;
 
