@@ -3,6 +3,37 @@
 Class for processing and generating terrain type geometry
 <P>
 
+The classes here are specifically aimed at the various tasks someone wanting
+to use or generate terrain information in their application. The code contains
+everything from a generic elevation grid creator to a fractal terrain
+generator.
+
+<H3>Using the code</H3>
+
+The classes here fit with the basic infrastructure defined in the parent
+package {@link org.j3d.geom} for the generator utilities. In addition to
+these, we add colorising capabilities. An example of all of the classes
+combined together can be seen in the following image.
+<P>
+<CENTER>
+<IMG SRC="doc-files/fractal_gen.png" WIDTH="619" HEIGHT="494">
+</CENTER>
+<P>
+The image is of the example terrain generator demo application included as
+part of the CVS module. you can see the parameters used for the
+{@link org.j3d.geom.terrain.FractalTerrainGenerator} on the right. In
+addition to this, it is using a
+{@link org.j3d.geom.terrain.ColorRampGenerator color ramp filter}
+with the following heights set.
+<P>
+<TABLE>
+<TR><TH>Height</TH><TH>Colour</TH></TR>
+<TR><TD>0</TD><TD>0,0,1</TD></TR>
+<TR><TD>0.2</TD><TD>1,1,0</TD></TR>
+<TR><TD>1</TD><TD>0,0.6,0</TD></TR>
+<TR><TD>3</TD><TD>0,1,0</TD></TR>
+<TR><TD>8</TD><TD>1,1,1</TD></TR>
+</TABLE>
 
 </BODY>
 </HTML>
