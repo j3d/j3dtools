@@ -53,8 +53,7 @@ import javax.media.j3d.Canvas3D;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.Shape3D;
 
-import javax.vecmath.Point2d;
-import javax.vecmath.Point3f;
+import javax.vecmath.Tuple3f;
 import javax.vecmath.Vector3f;
 
 // Application specific imports
@@ -108,7 +107,7 @@ public class SplitMergeLandscape extends Landscape
      * @param position The position of the camera
      * @param direction The direction the camera is looking
      */
-    public void setView(Point3f position, Vector3f direction)
+    public void setView(Tuple3f position, Vector3f direction)
     {
         queueManager.clear();
         landscapeView.viewingPlatformMoved();
@@ -122,7 +121,7 @@ public class SplitMergeLandscape extends Landscape
         {
             Patch p = (Patch)patches.get(i);
 
-            p.setView(position, direction, landscapeView, queueManager);
+            p.setView(position, landscapeView, queueManager);
         }
 
         done = false;
@@ -170,6 +169,7 @@ public class SplitMergeLandscape extends Landscape
             }
         }
 
+
         for(int i = 0; i < size; i++)
         {
             Patch p = (Patch)patches.get(i);
@@ -187,10 +187,11 @@ public class SplitMergeLandscape extends Landscape
         int width = terrainData.getGridWidth() - PATCH_SIZE;
 
         Appearance app = new Appearance();
-        app.setTexture(terrainData.getTexture());
+
+//        app.setTexture(terrainData.getTexture());
         PolygonAttributes polyAttr = new PolygonAttributes();
         polyAttr.setPolygonMode(PolygonAttributes.POLYGON_LINE);
-        //polyAttr.setCullFace(PolygonAttributes.CULL_NONE);
+//        polyAttr.setCullFace(PolygonAttributes.CULL_NONE);
         app.setPolygonAttributes(polyAttr);
 
         Patch[] westPatchNeighbour = new Patch[width];
