@@ -44,7 +44,7 @@ package org.j3d.geom;
  * corner of the front face, while 1, 1, 1 is at the top right, rear corner.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class BoxGenerator extends GeometryGenerator
 {
@@ -376,6 +376,8 @@ public class BoxGenerator extends GeometryGenerator
 
         int[] stripCounts = data.stripCounts;
         float[] coords = data.coordinates;
+        float[] normals = data.normals;
+        float[] texCoords = data.textureCoordinates;
         data.numStrips = index_size;
 
         // each face consists of two triangles, both declared anti-clockwise.
@@ -403,6 +405,69 @@ public class BoxGenerator extends GeometryGenerator
             coords[i * 12 + 6] = tmp_x;
             coords[i * 12 + 7] = tmp_y;
             coords[i * 12 + 8] = tmp_z;
+        }
+
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0) 
+        {
+
+            for(int i = 6; --i >= 0; )
+            {
+                tmp_x = normals[i * 12];
+                tmp_y = normals[i * 12 + 1];
+                tmp_z = normals[i * 12 + 2];
+
+                normals[i * 12]     = normals[i * 12 + 3];
+                normals[i * 12 + 1] = normals[i * 12 + 4];
+                normals[i * 12 + 2] = normals[i * 12 + 5];
+
+                normals[i * 12 + 3] = normals[i * 12 + 6];
+                normals[i * 12 + 4] = normals[i * 12 + 7];
+                normals[i * 12 + 5] = normals[i * 12 + 8];
+
+                normals[i * 12 + 6] = tmp_x;
+                normals[i * 12 + 7] = tmp_y;
+                normals[i * 12 + 8] = tmp_z;
+            }
+        }
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+        {
+            for(int i = 6; --i >= 0; )
+            {
+                tmp_x = texCoords[i * 8];
+                tmp_y = texCoords[i * 8 + 1];
+
+                texCoords[i * 8]     = texCoords[i * 8 + 2];
+                texCoords[i * 8 + 1] = texCoords[i * 8 + 3];
+
+                texCoords[i * 8 + 2] = texCoords[i * 8 + 4];
+                texCoords[i * 8 + 3] = texCoords[i * 8 + 5];
+
+                texCoords[i * 8 + 4] = tmp_x;
+                texCoords[i * 8 + 5] = tmp_y;
+            }
+        }
+
+        if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+        {
+            for(int i = 6; --i >= 0; )
+            {
+                tmp_x = coords[i * 12];
+                tmp_y = coords[i * 12 + 1];
+                tmp_z = coords[i * 12 + 2];
+
+                coords[i * 12]     = coords[i * 12 + 3];
+                coords[i * 12 + 1] = coords[i * 12 + 4];
+                coords[i * 12 + 2] = coords[i * 12 + 5];
+
+                coords[i * 12 + 3] = coords[i * 12 + 6];
+                coords[i * 12 + 4] = coords[i * 12 + 7];
+                coords[i * 12 + 5] = coords[i * 12 + 8];
+
+                coords[i * 12 + 6] = tmp_x;
+                coords[i * 12 + 7] = tmp_y;
+                coords[i * 12 + 8] = tmp_z;
+            }
         }
     }
 
