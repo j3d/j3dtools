@@ -16,6 +16,7 @@ SOURCE = FrameUpdateListener.java \
 	ViewpointToolbar.java \
 	NavigationHandler.java \
 	MouseViewHandler.java \
+	MouseViewBehavior.java \
 	NavigationStateManager.java	\
 	ViewpointManager.java
 

@@ -75,9 +75,58 @@ import org.j3d.geom.IntersectionUtils;
  *
  * If there is no terrain under the current eye position, or the next eye
  * position, it will not change the Y axis value at all.
+ * <P>
+ *
+ * If you do not wish to have terrain following for all modes, then pass a
+ * <code>null</code> value for the terrain parameter to setWorldInfo().
+ * <p>
+ *
  *
  * <b>Collision Detection</b>
  * <p>
+ *
+ * Collision detection is based on using a fixed point representation of the
+ * avatar - we do not have a volumetric body for it. A ray is cast in the
+ * direction that we are looking that is the length of the avatarSize plus the
+ * amount that we are due to move this next frame.
+ * <p>
+ *
+ * If you do not wish to have collision detection for all modes, then pass a
+ * <code>null</code> value for the collidables parameter to setWorldInfo().
+ * <p>
+ *
+ * <b>Navigation Modes</b>
+ * <p>
+ *
+ * NONE: All navigation is disabled. We ignore any requests from mouse or
+ * keyboard to move the viewpoint.
+ * <P>
+ *
+ * EXAMINE: The viewpoint is moved around the local origin provided by the
+ * View transform group. The view will then rotate around that object looking
+ * at the origin all the time. Note that if the local transform does not have
+ * any transformation information set, this will result in undefined behaviour
+ * (probably exceptions internally). There is no collision detection or terrain
+ * following in this mode.
+ * <P>
+ *
+ * FLY: The user moves through the scene that moves the eyepoint in forward,
+ * reverse and side to side movements. There is collision detection, but no
+ * terrain following.
+ * <P>
+ *
+ * WALK: The user moves through the scene with left/right options and forward
+ * reverse, but they are bound to the terrain and have collision detection.
+ * <P>
+ *
+ * PAN: The camera moves in a sliding fashion along the given axis - the local
+ * X or Z axis. There is not collision detection or terrain following.
+ * <P>
+ *
+ * TILT: The camera rotates around the local axis in an up/down, left/right
+ * fashion. It stays anchored in the one place and does not have terrain
+ * following or collision detection.
+ * <P>
  *
  *
  * <b>TODO</b>
