@@ -39,7 +39,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * Especially in regards to 3D textures.
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ElevationGridGenerator extends GeometryGenerator
 {
@@ -106,6 +106,9 @@ public class ElevationGridGenerator extends GeometryGenerator
     /** The number of quads in the terrain */
     private int facetCount;
 
+    /** Whether to use the center as origin or the left corner */
+    private boolean centerOrigin;
+
     /**
      * Construct a default terrain with the following properties:<BR>
      * Size: 100x100
@@ -118,7 +121,7 @@ public class ElevationGridGenerator extends GeometryGenerator
              DEFAULT_POINT_COUNT,
              DEFAULT_POINT_COUNT,
              (float[])null,
-             DEFAULT_HEIGHT);
+             DEFAULT_HEIGHT, true);
     }
 
     /**
@@ -134,7 +137,24 @@ public class ElevationGridGenerator extends GeometryGenerator
      */
     public ElevationGridGenerator(float w, float d, int wPnts, int dPnts)
     {
-        this(w, d, wPnts, dPnts, (float[])null, DEFAULT_HEIGHT);
+        this(w, d, wPnts, dPnts, (float[])null, DEFAULT_HEIGHT, true);
+    }
+
+    /**
+     * Construct a default terrain with the given dimensions and points
+     * in each direction.
+     *
+     * @param w The width of the terrain
+     * @param d The depth of the terrain
+     * @param wPnts The number of heights in the width
+     * @param dPnts The number of heights in the depth
+     * @param centerOrigin Whether to use a center origin or a left corner origin.  By default it will be center.
+     * @throws IllegalArgumentException One of the points were <= 1 or the
+     *   dimensions are non-positive
+     */
+    public ElevationGridGenerator(float w, float d, int wPnts, int dPnts, boolean centerOrigin)
+    {
+        this(w, d, wPnts, dPnts, (float[])null, DEFAULT_HEIGHT, centerOrigin);
     }
 
     /**
@@ -147,6 +167,7 @@ public class ElevationGridGenerator extends GeometryGenerator
      * @param dPnts The number of heights in the depth
      * @param heights The array of height values to use
      * @param baseHeight The base height for relative calcs. May be zero
+     * @param centerOrigin Whether to use a center origin or a left corner origin.  By default it will be center.
      * @throws IllegalArgumentException One of the points were <= 1 or the
      *   dimensions are non-positive
      */
@@ -155,7 +176,57 @@ public class ElevationGridGenerator extends GeometryGenerator
                                   int wPnts,
                                   int dPnts,
                                   float[] heights,
-                                  float baseHeight)
+                                  float baseHeight) {
+
+        this(w, d, wPnts, dPnts, heights, baseHeight, true);
+    }
+
+    /**
+     * Construct a default cylinder with the option of having end caps and
+     * selectable number of faces around the radius. The default height is 2
+     * and radius 1.The minimum number of facets is 3.
+     *
+     * @param w The width of the terrain
+     * @param d The depth of the terrain
+     * @param wPnts The number of heights in the width
+     * @param dPnts The number of heights in the depth
+     * @param heights The array of height values to use
+     * @param baseHeight The base height for relative calcs. May be zero
+     * @param centerOrigin Whether to use a center origin or a left corner origin
+     * @throws IllegalArgumentException One of the points were <= 1 or the
+     *   dimensions are non-positive
+     */
+    public ElevationGridGenerator(float w,
+                                  float d,
+                                  int wPnts,
+                                  int dPnts,
+                                  float[][] heights,
+                                  float baseHeight) {
+
+        this(w, d, wPnts, dPnts, heights, baseHeight, true);
+    }
+
+    /**
+     * Construct a customised terrain according to the full set of configurable
+     * data.
+     *
+     * @param w The width of the terrain
+     * @param d The depth of the terrain
+     * @param wPnts The number of heights in the width
+     * @param dPnts The number of heights in the depth
+     * @param heights The array of height values to use
+     * @param baseHeight The base height for relative calcs. May be zero
+     * @param centerOrigin Whether to use a center origin or a left corner origin
+     * @throws IllegalArgumentException One of the points were <= 1 or the
+     *   dimensions are non-positive
+     */
+    public ElevationGridGenerator(float w,
+                                  float d,
+                                  int wPnts,
+                                  int dPnts,
+                                  float[] heights,
+                                  float baseHeight,
+                                  boolean centerOrigin)
     {
         if((wPnts < 2) || (dPnts < 2))
             throw new IllegalArgumentException("Point count <= 1");
@@ -167,6 +238,7 @@ public class ElevationGridGenerator extends GeometryGenerator
         terrainDepth = d;
         widthPoints = wPnts;
         depthPoints = dPnts;
+        this.centerOrigin = centerOrigin;
 
         facetCount = (depthPoints - 1) * (widthPoints - 1);
 
@@ -189,6 +261,7 @@ public class ElevationGridGenerator extends GeometryGenerator
      * @param dPnts The number of heights in the depth
      * @param heights The array of height values to use
      * @param baseHeight The base height for relative calcs. May be zero
+     * @param centerOrigin Whether to use a center origin or a left corner origin
      * @throws IllegalArgumentException One of the points were <= 1 or the
      *   dimensions are non-positive
      */
@@ -197,7 +270,8 @@ public class ElevationGridGenerator extends GeometryGenerator
                                   int wPnts,
                                   int dPnts,
                                   float[][] heights,
-                                  float baseHeight)
+                                  float baseHeight,
+                                  boolean centerOrigin)
     {
         if((wPnts < 2) || (dPnts < 2))
             throw new IllegalArgumentException("Point count <= 1");
@@ -209,6 +283,7 @@ public class ElevationGridGenerator extends GeometryGenerator
         terrainDepth = d;
         widthPoints = wPnts;
         depthPoints = dPnts;
+        this.centerOrigin = centerOrigin;
 
         facetCount = (depthPoints - 1) * (widthPoints - 1);
 
@@ -1469,8 +1544,20 @@ public class ElevationGridGenerator extends GeometryGenerator
             terrainCoordinates = new float[numTerrainValues];
         }
 
-        float d = -terrainDepth / 2;
-        float w = -terrainWidth / 2;
+        float d;
+        float w;
+
+        if (centerOrigin)
+        {
+            d = -terrainDepth / 2;
+            w = -terrainWidth / 2;
+        }
+        else
+        {
+            d = 0;
+            w = 0;
+        }
+
         float width_inc = terrainWidth / (widthPoints - 1);
         float depth_inc = terrainDepth / (depthPoints - 1);
 
@@ -1490,7 +1577,10 @@ public class ElevationGridGenerator extends GeometryGenerator
                 if(((i % (widthPoints)) == 0))
                 {
                     d += depth_inc;
-                    w = -terrainWidth / 2;
+                    if (centerOrigin)
+                        w = -terrainWidth / 2;
+                    else
+                        w = 0;
                 }
             }
         }
@@ -1508,7 +1598,11 @@ public class ElevationGridGenerator extends GeometryGenerator
                 }
 
                 d += depth_inc;
-                w = -terrainWidth / 2;
+
+                if (centerOrigin)
+                    w = -terrainWidth / 2;
+                else
+                    w = 0;
             }
         }
     }
