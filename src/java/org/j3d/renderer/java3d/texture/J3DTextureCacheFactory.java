@@ -57,7 +57,7 @@ import org.j3d.texture.TextureCacheFactory;
  * further attempts will result in an exception.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class J3DTextureCacheFactory implements TextureCacheFactory
 {
@@ -111,7 +111,7 @@ public class J3DTextureCacheFactory implements TextureCacheFactory
      *
      * @return The default cache implementation
      */
-    public static TextureCache getCache()
+    public static J3DTextureCache getCache()
     {
         if(defaultCacheType == NO_CACHE_SET)
         {
@@ -143,9 +143,9 @@ public class J3DTextureCacheFactory implements TextureCacheFactory
      * @return A reference to the global cache of that type
      * @throws IllegalArgumentException The cacheType is not a valid type
      */
-    public static TextureCache getCache(int cacheType)
+    public static J3DTextureCache getCache(int cacheType)
     {
-        TextureCache ret_val = (TextureCache)cacheMap.get(cacheType);
+        J3DTextureCache ret_val = (J3DTextureCache)cacheMap.get(cacheType);
 
         if(ret_val == null)
         {
@@ -186,7 +186,7 @@ public class J3DTextureCacheFactory implements TextureCacheFactory
      * @param cache The instance of the cache to register
      * @throws IllegalArgumentException The cacheType is invalid
      */
-    public static void registerCacheType(int cacheType, TextureCache cache)
+    public static void registerCacheType(int cacheType, J3DTextureCache cache)
     {
         if(cacheType <= LAST_CACHE_ID)
             throw new IllegalArgumentException("Invalid cacheType value");
