@@ -71,7 +71,7 @@ import javax.vecmath.Matrix4d;
  * The frustum is for the previous Java3D frame that has just been rendered.
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ViewFrustum
 {
@@ -196,7 +196,7 @@ public class ViewFrustum
      */
     public int isTriangleInFrustum(Point3d p1, Point3d p2, Point3d p3)
     {
-        for(int i=0; i<frustums.length; i++)
+        for(int i = 0; i < frustums.length; i++)
         {
             if(frustums[i].isTriangleInFrustum(p1, p2, p3) != OUT)
                 return IN;
@@ -211,13 +211,49 @@ public class ViewFrustum
       */
     public int isPointInFrustum(Point3d p1)
     {
-        for(int i=0; i<frustums.length; i++)
+        for(int i = 0; i < frustums.length; i++)
         {
             if (frustums[i].isPointInFrustum(p1))
                 return IN;
         }
 
         return OUT;
+    }
+
+    /**
+     * Convenience method to fetch the axis-aligned bounding box that the
+     * view frustum encloses. The two structures passed in are filled with the
+     * appropriate information.
+     *
+     * @param min The min corner vertex (+X, +Y and +Z values)
+     * @param max The max corner vertex (+X, +Y and +Z values)
+     */
+    public void getBounds(Point3d min, Point3d max)
+    {
+        min.x = frustumPoints[0].x;
+        min.y = frustumPoints[0].y;
+        min.z = frustumPoints[0].z;
+
+        max.x = frustumPoints[0].x;
+        max.y = frustumPoints[0].y;
+        max.z = frustumPoints[0].z;
+
+        double x, y, z;
+
+        for(int i = 1; i < 7; i++)
+        {
+            x = frustumPoints[i].x;
+            y = frustumPoints[i].y;
+            z = frustumPoints[i].z;
+
+            min.x = (min.x < x) ? min.x : x;
+            min.y = (min.y < y) ? min.y : y;
+            min.z = (min.z < z) ? min.z : z;
+
+            max.x = (max.x > x) ? max.x : x;
+            max.y = (max.y > y) ? max.y : y;
+            max.z = (max.z > z) ? max.z : z;
+        }
     }
 
     //----------------------------------------------------------
@@ -267,12 +303,12 @@ public class ViewFrustum
 
         frustumPoints[0].set(-1.0, -1.0,  1.0, 1.0);  // lower-left-front
         frustumPoints[1].set(-1.0,  1.0,  1.0, 1.0);  // upper-left-front
-        frustumPoints[2].set(1.0,  1.0,  1.0, 1.0);  // upper-right-front
-        frustumPoints[3].set(1.0, -1.0,  1.0, 1.0);  // lower-right-front
+        frustumPoints[2].set( 1.0,  1.0,  1.0, 1.0);  // upper-right-front
+        frustumPoints[3].set( 1.0, -1.0,  1.0, 1.0);  // lower-right-front
         frustumPoints[4].set(-1.0, -1.0, -1.0, 1.0);  // lower-left-back
         frustumPoints[5].set(-1.0,  1.0, -1.0, 1.0);  // upper-left-back
-        frustumPoints[6].set(1.0,  1.0, -1.0, 1.0);  // upper-right-back
-        frustumPoints[7].set(1.0, -1.0, -1.0, 1.0);  // lower-right-back
+        frustumPoints[6].set( 1.0,  1.0, -1.0, 1.0);  // upper-right-back
+        frustumPoints[7].set( 1.0, -1.0, -1.0, 1.0);  // lower-right-back
 
         //ccToVworld.get(tMatrix);
         canvases[canvasId].getInverseVworldProjection(leftInverseProjection,

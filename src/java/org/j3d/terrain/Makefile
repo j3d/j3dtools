@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.terrain directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
 
@@ -17,7 +17,15 @@ PACKAGE = org.j3d.terrain
 SOURCE = Canvas3DFrustum.java \
     ViewFrustum.java \
 	AppearanceGenerator.java \
+	TextureTileGenerator.java \
 	TerrainData.java \
+	StaticTerrainData.java \
+	TiledTerrainData.java \
+	FreeFormTerrainData.java \
+	AbstractTerrainData.java \
+	AbstractStaticTerrainData.java \
+	AbstractTiledTerrainData.java \
+	AbstractFreeFormTerrainData.java \
 	Landscape.java 
 
 # The list of other files we need to copy from this directory to the classes

@@ -87,10 +87,15 @@ class TreeNode
     private float p2X, p2Y, p2Z;
     private float p3X, p3Y, p3Z;
 
-    // Texture coordinates or colour values
-    private float p1tS, p1tT, p1tR;
-    private float p2tS, p2tT, p2tR;
-    private float p3tS, p3tT, p3tR;
+    // Texture coordinates values
+    private float p1tS, p1tT;
+    private float p2tS, p2tT;
+    private float p3tS, p3tT;
+
+    // Color values
+    private float p1R, p1G, p1B;
+    private float p2R, p2G, p2B;
+    private float p3R, p3G, p3B;
 
     private TerrainData terrainData;
     private VarianceTree varianceTree;
@@ -198,8 +203,8 @@ class TreeNode
             rightChild = null;
         }
 
-        baseNeighbour =null;
-        leftNeighbour =null;
+        baseNeighbour = null;
+        leftNeighbour = null;
         rightNeighbour = null;
 
         visible = landscapeView.isTriangleInFrustum(p1X, p1Y, p1Z,
@@ -294,12 +299,6 @@ class TreeNode
     {
         int triCount = 0;
 
-        //System.out.println("-----------> Splitting "+node);
-
-        //if(mergedThisFrame)
-        //    System.out.println("SPLITTING Tri that has been merged");
-        //splitThisFrame = true;
-
         if(leftChild != null || rightChild != null)
         {
             throw new RuntimeException(" Triangle is already split "+node);
@@ -350,13 +349,6 @@ class TreeNode
     {
         int trisRemoved = 0;
 
-        //System.out.print("Merging ");
-        //printNode(this);
-
-        //if(splitThisFrame)
-        //    System.out.println("Merging Tri that was split this frame");
-        //mergedThisFrame = true;
-
         if(baseNeighbour != null && baseNeighbour.baseNeighbour != this)
         {
             System.out.println("++++++++++++ Illegal merge *********************************");
@@ -393,23 +385,37 @@ class TreeNode
         {
             if((visible != ViewFrustum.OUT) && (visible != UNDEFINED))
             {
-                if(vertexData.textured)
+                switch(vertexData.dataType)
                 {
-                    vertexData.addVertex(p1X, p1Y, p1Z,
-                                         p1tS, p1tT);
-                    vertexData.addVertex(p2X, p2Y, p2Z,
-                                         p2tS, p2tT);
-                    vertexData.addVertex(p3X, p3Y, p3Z,
-                                         p3tS, p3tT);
-                }
-                else
-                {
-                    vertexData.addVertex(p1X, p1Y, p1Z,
-                                         p1tS, p1tT, p1tR);
-                    vertexData.addVertex(p2X, p2Y, p2Z,
-                                         p2tS, p2tT, p2tR);
-                    vertexData.addVertex(p3X, p3Y, p3Z,
-                                         p3tS, p3tT, p3tR);
+                    case VertexData.COORD_ONLY:
+                        vertexData.addVertex(p1X, p1Y, p1Z);
+                        vertexData.addVertex(p2X, p2Y, p2Z);
+                        vertexData.addVertex(p3X, p3Y, p3Z);
+                        break;
+
+                    case VertexData.COLOR_ONLY:
+                        vertexData.addVertex(p1X, p1Y, p1Z, p1R, p1G, p1B);
+                        vertexData.addVertex(p2X, p2Y, p2Z, p2R, p2G, p2B);
+                        vertexData.addVertex(p3X, p3Y, p3Z, p3R, p3G, p3B);
+                        break;
+
+                    case VertexData.TEXTURE_ONLY:
+                        vertexData.addVertex(p1X, p1Y, p1Z, p1tS, p1tT);
+                        vertexData.addVertex(p2X, p2Y, p2Z, p2tS, p2tT);
+                        vertexData.addVertex(p3X, p3Y, p3Z, p3tS, p3tT);
+                        break;
+
+                    case VertexData.TEXTURE_AND_COLOR:
+                        vertexData.addVertex(p1X, p1Y, p1Z,
+                                             p1R, p1G, p1B,
+                                             p1tS, p1tT);
+                        vertexData.addVertex(p2X, p2Y, p2Z,
+                                             p2R, p2G, p2B,
+                                             p2tS, p2tT);
+                        vertexData.addVertex(p3X, p3Y, p3Z,
+                                             p3R, p3G, p3B,
+                                             p3tS, p3tT);
+                        break;
                 }
             }
         }
@@ -504,48 +510,120 @@ class TreeNode
     private void init(ViewFrustum landscapeView, int parentVisible)
     {
         float[] tmp = new float[3];
-        float[] texTmp = new float[3];
+        float[] tex = new float[2];
+        float[] col = new float[3];
 
-        boolean textured = terrainData.hasTexture();
+        int type = terrainData.hasTexture() ? 1 : 0;
 
-        if(textured)
-            terrainData.getCoordinateWithTexture(tmp, texTmp, leftX, leftY);
-        else
-            terrainData.getCoordinateWithColor(tmp, texTmp, leftX, leftY);
+        type += terrainData.hasColor()? 2 : 0;
+
+        switch(type)
+        {
+            case 0:   // No color or texture
+                terrainData.getCoordinate(tmp, leftX, leftY);
+                break;
+
+            case 1:   // Texture only
+                terrainData.getCoordinateWithTexture(tmp, tex, leftX, leftY);
+                p1tS = tex[0];
+                p1tT = tex[1];
+                break;
+
+            case 2:     // Color only
+                terrainData.getCoordinateWithColor(tmp, col, leftX, leftY);
+                p1R = col[0];
+                p1G = col[1];
+                p1B = col[2];
+
+                break;
+
+            case 3:     // Both texture and color.
+                terrainData.getCoordinate(tmp, tex, col, leftX, leftY);
+                p1tS = tex[0];
+                p1tT = tex[1];
+
+                p1R = col[0];
+                p1G = col[1];
+                p1B = col[2];
+                break;
+        }
 
         p1X = tmp[0];
         p1Y = tmp[1];
         p1Z = tmp[2];
 
-        p1tS = texTmp[0];
-        p1tT = texTmp[1];
-        p1tR = texTmp[2];
 
-        if(textured)
-            terrainData.getCoordinateWithTexture(tmp, texTmp, rightX, rightY);
-        else
-            terrainData.getCoordinateWithColor(tmp, texTmp, rightX, rightY);
+        switch(type)
+        {
+            case 0:   // No color or texture
+                terrainData.getCoordinate(tmp, rightX, rightY);
+                break;
+
+            case 1:   // Texture only
+                terrainData.getCoordinateWithTexture(tmp, tex, rightX, rightY);
+                p2tS = tex[0];
+                p2tT = tex[1];
+                break;
+
+            case 2:     // Color only
+                terrainData.getCoordinateWithColor(tmp, col, rightX, rightY);
+                p2R = col[0];
+                p2G = col[1];
+                p2B = col[2];
+
+                break;
+
+            case 3:     // Both texture and color.
+                terrainData.getCoordinate(tmp, tex, col, rightX, rightY);
+                p2tS = tex[0];
+                p2tT = tex[1];
+
+                p2R = col[0];
+                p2G = col[1];
+                p2B = col[2];
+                break;
+        }
 
         p2X = tmp[0];
         p2Y = tmp[1];
         p2Z = tmp[2];
 
-        p2tS = texTmp[0];
-        p2tT = texTmp[1];
-        p2tR = texTmp[2];
 
-        if(textured)
-            terrainData.getCoordinateWithTexture(tmp, texTmp, apexX, apexY);
-        else
-            terrainData.getCoordinateWithColor(tmp, texTmp, apexX, apexY);
+        switch(type)
+        {
+            case 0:   // No color or texture
+                terrainData.getCoordinate(tmp, apexX, apexY);
+                break;
+
+            case 1:   // Texture only
+                terrainData.getCoordinateWithTexture(tmp, tex, apexX, apexY);
+                p3tS = tex[0];
+                p3tT = tex[1];
+                break;
+
+            case 2:     // Color only
+                terrainData.getCoordinateWithColor(tmp, col, apexX, apexY);
+                p3R = col[0];
+                p3G = col[1];
+                p3B = col[2];
+
+                break;
+
+            case 3:     // Both texture and color.
+                terrainData.getCoordinate(tmp, tex, col, apexX, apexY);
+                p3tS = tex[0];
+                p3tT = tex[1];
+
+                p3R = col[0];
+                p3G = col[1];
+                p3B = col[2];
+                break;
+        }
 
         p3X = tmp[0];
         p3Y = tmp[1];
         p3Z = tmp[2];
 
-        p3tS = texTmp[0];
-        p3tT = texTmp[1];
-        p3tR = texTmp[2];
 
         // Check the visibility of this triangle
         if(parentVisible == UNDEFINED ||

@@ -31,9 +31,10 @@ need to do anything more. For more information on this code, have a look at the
 
 To implement a specific algorithm (eg ROAM) you would extend the
 <code>Landscape</code> class and implement the
-{@link Landscape#setView(Tuple3f, Vector3f)} method. Every time that the user's
-viewpoint changes, you will be notified by this method (assuming that you have
-implemented a navigation system that calls it!). That means you should perform
+{@link Landscape#setView(javax.vecmath.Tuple3f, javax.vecmath.Vector3f)} method.
+Every time that the user's viewpoint changes, you will be notified by this
+method (assuming that you have implemented a navigation system that calls
+it!). That means you should perform
 any culling/LOD and update the scene graph at this point. This will be
 called at most once per frame. As this class extends the Java3D
 {@link javax.media.j3d.BranchGroup} interface, it means that all your geometry
