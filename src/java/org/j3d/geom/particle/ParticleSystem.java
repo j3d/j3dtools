@@ -9,14 +9,22 @@
 
 package org.j3d.geom.particle;
 
-import com.sun.j3d.utils.image.TextureLoader;
-import org.j3d.texture.TextureCacheFactory;
+// Standard imports
+import java.util.*;
 
 import javax.media.j3d.*;
+
+import java.io.InputStream;
+import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import javax.vecmath.Color4f;
-import java.util.*;
-import java.io.FileInputStream;
-import java.net.URL;
+
+import com.sun.j3d.utils.image.TextureLoader;
+
+// Application specific imports
+import org.j3d.texture.TextureCacheFactory;
 
 /**
  * Abstract ParticleSystem. A ParticleSystem managed a List of Particles
@@ -33,10 +41,13 @@ import java.net.URL;
  * the current directory) to initialize their physical attributes and images.
  * <p>
  * @author Daniel Selman
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
+    /** Name of the property file that defines the setup information */
+    private static final String PROPERTY_FILE = "particle-factory.properties";
+
     /**
      * Name of the environment property that holds the texture to use
      * on the particle objects. The value may be either a string, which is a
@@ -91,7 +102,33 @@ public abstract class ParticleSystem implements ParticleFactory
     /**
      * ResourceBundle used to initialize Particle attributes.
      */
-    private static ResourceBundle resourceBundle;
+    private static Properties resources;
+
+    /**
+     * Do the class initialisation to load the global resources.
+     */
+    static
+    {
+        InputStream is = (InputStream)AccessController.doPrivileged(
+            new PrivilegedAction() {
+                public Object run() {
+                    return ClassLoader.getSystemResourceAsStream(PROPERTY_FILE);
+                }
+            }
+        );
+
+        resources = new Properties();
+
+        try
+        {
+            resources.load(is);
+            is.close();
+        }
+        catch(IOException ioe)
+        {
+            System.out.println("Error reading particle.properties");
+        }
+    }
 
     /**
      * Creates a ParticleSystem of the given type, using
@@ -104,22 +141,6 @@ public abstract class ParticleSystem implements ParticleFactory
         this.systemName = systemName;
         this.environment = new HashMap( environment );
         particleFactory = this;
-
-        if ( resourceBundle == null )
-        {
-            try
-            {
-                FileInputStream fileInputStream = new FileInputStream( "particle-factory.properties" );
-                resourceBundle = new PropertyResourceBundle( fileInputStream );
-            }
-            catch ( Exception e )
-            {
-                e.printStackTrace();
-            }
-            finally
-            {
-            }
-        }
     }
 
     /**
@@ -245,8 +266,11 @@ public abstract class ParticleSystem implements ParticleFactory
 
     private double loadDouble( String name )
     {
-        double basis = Double.parseDouble( resourceBundle.getString( name + ".average" ) );
-        double random = Double.parseDouble( resourceBundle.getString( name + ".random" ) );
+        String value = resources.getProperty( name + ".average" );
+        double basis = Double.parseDouble( value );
+
+        value = resources.getProperty( name + ".random" );
+        double random = Double.parseDouble( value );
 
         return Particle.getRandomNumber( basis, random );
     }
@@ -282,7 +306,9 @@ public abstract class ParticleSystem implements ParticleFactory
         {
 
             TextureLoader texLoader =
-                    new TextureLoader( resourceBundle.getString( systemName + ".texture" ), Texture.RGBA, null );
+                new TextureLoader( resources.getProperty( systemName + ".texture" ),
+                                   Texture.RGBA,
+                                   null );
             tex = texLoader.getTexture();
         }
 
