@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.util.device directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.3 $
+# Version: $Revision: 1.4 $
 #
 #*********************************************************************
 
@@ -14,11 +14,11 @@ PACKAGE = org.j3d.util.device
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-SOURCE = ErrorOutput.java \
-         DeviceDescriptor.java \
-         AudioDeviceDescriptor.java \
-         InputDeviceDescriptor.java \
-         FileLoaderDescriptor.java \
+SOURCE = \
+  DeviceDescriptor.java \
+  AudioDeviceDescriptor.java \
+  InputDeviceDescriptor.java \
+  FileLoaderDescriptor.java \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
