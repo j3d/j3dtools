@@ -74,7 +74,7 @@ import javax.media.j3d.Canvas3D;
  * the alpha channel.
  *
  * @author David Yazel, Will Holcomb
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface Overlay extends UpdatableEntity {
 
@@ -110,6 +110,13 @@ public interface Overlay extends UpdatableEntity {
      * y component.
      */
     public final static int Y_PLACEMENT = 1;
+
+    /**
+     * Post construction initialisation before turning the overlay live. Should
+     * always be called by the end user before starting to make use of this
+     * overlay instance.
+     */
+    public void initialize();
 
     /**
      * Returns the rectangular portion of the canvas that this overlay covers.

@@ -17,7 +17,7 @@ import javax.media.j3d.WakeupOnActivation;
 import javax.media.j3d.WakeupOnBehaviorPost;
 
 // Application specific imports
-// none
+import org.j3d.util.Queue;
 
 /**
  * An implementation of an update manager that uses the Java3D behaviour
@@ -26,19 +26,16 @@ import javax.media.j3d.WakeupOnBehaviorPost;
  *
  *
  * @author Will Holcomb
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class UpdateControlBehavior extends Behavior
     implements UpdateManager
 {
     /** Local ID value for the behavior post flag */
-    private int UPDATE_ID = 1;
+    private int UPDATE_ID = 10007;
 
     /** The wakeup condition to force the update */
     private WakeupOnBehaviorPost wakeup;
-
-    /** The entity we are managing */
-    private UpdatableEntity entity;
 
     /** Flag to indicate if we are processing update requests */
     private boolean updating = true;
@@ -49,15 +46,18 @@ public class UpdateControlBehavior extends Behavior
      */
     private boolean droppedUpdate = false;
 
+    /** A list of the items that are pending update. */
+    private Queue itemsToUpdate;
+
     /**
      * Create a new behavior that manages the update of a single entity
      *
      * @param entity The entity to process update requests for
      */
-    public UpdateControlBehavior( UpdatableEntity entity )
+    public UpdateControlBehavior()
     {
-        this.entity = entity;
         wakeup = new WakeupOnBehaviorPost(this, UPDATE_ID);
+        itemsToUpdate = new Queue();
     }
 
     //------------------------------------------------------------------------
@@ -88,19 +88,22 @@ public class UpdateControlBehavior extends Behavior
             this.updating = updating;
             if(updating && droppedUpdate)
             {
-                updateRequested();
+                postId(UPDATE_ID);
             }
         }
     }
 
 
     /**
-     * Request that the manager update all of the items being managed.
-     * This will be scheduled to happen as soon as possible, but won't
-     * necessarily happen immediately.
+     * Request that the manager update this item. This will be scheduled to
+     * happen as soon as possible, but won't necessarily happen immediately.
+     *
+     * @param ue The entity to be updated
      */
-    public void updateRequested()
+    public void updateRequested(UpdatableEntity ue)
     {
+        itemsToUpdate.add(ue);
+
         postId(UPDATE_ID);
     }
 
@@ -126,7 +129,14 @@ public class UpdateControlBehavior extends Behavior
     public void processStimulus(Enumeration conditions)
     {
         if(updating)
-            entity.update();
+        {
+            while(itemsToUpdate.hasNext())
+            {
+                UpdatableEntity entity =
+                    (UpdatableEntity)itemsToUpdate.getNext();
+                entity.update();
+            }
+        }
         else
             droppedUpdate = true;
 

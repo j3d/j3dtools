@@ -31,7 +31,7 @@ import javax.media.j3d.TransformGroup;
  * <P>
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ScribbleOverlay extends MouseOverlay
 {
@@ -80,7 +80,7 @@ public class ScribbleOverlay extends MouseOverlay
                            Rectangle bounds,
                            Color lineColor)
     {
-        super(canvas, bounds, true, true, true, true, true);
+        super(canvas, bounds);
 
         lineList = new ArrayList();
         worldPoint = new Point();
@@ -94,6 +94,16 @@ public class ScribbleOverlay extends MouseOverlay
         lineList.add(currentLineDetails);
     }
 
+    /**
+     * Initialise the overlay to build mouse input support
+     */
+    public void initialize()
+    {
+        addMouseListener(this);
+        addMouseMotionListener(this);
+
+        super.initialize();
+    }
 
     /**
      * Paint the overlay with the given graphics context. All lines are drawn in

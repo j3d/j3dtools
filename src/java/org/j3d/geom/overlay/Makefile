@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.overlay directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.5 $
+# Version: $Revision: 1.6 $
 #
 #*********************************************************************
 
@@ -14,17 +14,20 @@ PACKAGE = org.j3d.geom.overlay
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-SOURCE = UpdateManager.java \
+SOURCE = \
   UpdatableEntity.java \
-  UpdateControlBehavior.java \
+  UpdateManager.java \
   ScreenComponent.java \
-  ComponentMouseManager.java \
   Overlay.java \
+  InputRequester.java \
+  InteractiveOverlay.java \
+  AWTEventBehavior.java \
+  UpdateControlBehavior.java \
+  OverlayManager.java \
   OverlayUtilities.java \
-  ScrollEvent.java \
-  ScrollEventListener.java \
   SubOverlay.java \
   OverlayBase.java \
+  InteractiveOverlayBase.java \
   LabelOverlay.java \
   ImageOverlay.java \
   MouseOverlay.java \
@@ -32,6 +35,11 @@ SOURCE = UpdateManager.java \
   LineDetails.java \
   ScribbleOverlay.java \
   ImageButtonOverlay.java
+
+#  ComponentMouseManager.java \
+
+#  ScrollEvent.java \
+#  ScrollEventListener.java \
 
 #  ScrollingOverlay.java \
 #  FpsOverlay.java \

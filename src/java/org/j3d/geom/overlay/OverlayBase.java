@@ -62,7 +62,7 @@ import javax.vecmath.Vector3d;
  *
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class OverlayBase
     implements Overlay,
@@ -152,11 +152,11 @@ public class OverlayBase
      */
     private boolean fixedSize;
 
-    /** Fires appropriate mouse events */
-    private ComponentMouseManager mouseManager;
-
     /** Used to avoid calls to repaint backing up */
     private boolean painting = false;
+
+    /** Flag to say whether initialisation has been completed yet */
+    private boolean initComplete;
 
     /**
      * Creates a new overlay covering the given canvas bounds. It has two
@@ -253,6 +253,7 @@ public class OverlayBase
     {
         this.numBuffers = numBuffers;
 
+        initComplete = false;
         canvas3D = canvas;
 
         if(bounds == null)
@@ -280,8 +281,6 @@ public class OverlayBase
                                                      hasAlpha);
         }
 
-        mouseManager = new ComponentMouseManager(canvas3D, this);
-
         canvas3D.addComponentListener(this);
 
         // define the branch group where we are putting all the sub-overlays
@@ -298,15 +297,7 @@ public class OverlayBase
         overlayTexGrp.addChild(consoleTG);
         consoleBG.addChild(overlayTexGrp);
 
-        if(updateManager == null)
-        {
-            UpdateControlBehavior updateBehavior = new UpdateControlBehavior(this);
-            updateBehavior.setSchedulingBounds(new BoundingSphere());
-            consoleBG.addChild(updateBehavior);
-            this.updateManager = updateBehavior ;
-        }
-        else
-            this.updateManager = updateManager;
+        this.updateManager = updateManager;
 
         // define the rendering attributes used by all sub-overlays
         renderAttributes = new RenderingAttributes();
@@ -690,33 +681,11 @@ public class OverlayBase
 
     /**
      * Empty method that can be used to provide post construction
-     * initialisation. Never called by the overlay code, but derived overlays
-     * may make use of it.
+     * initialisation.
      */
     public void initialize()
     {
-    }
-
-    /**
-     * Add a new mouse listener to this overlay. Each instance can only be
-     * added once and null values are ignored.
-     *
-     * @param listener The listener instance to add
-     */
-    public void addMouseListener(MouseListener listener)
-    {
-        mouseManager.addMouseListener(listener);
-    }
-
-    /**
-     * Remove a previously registered mouse listener. If the listener is not
-     * registered or null is passed, the request is silently ignored.
-     *
-     * @param listener The listener instance to remove
-     */
-    public void removeMouseListener(MouseListener listener)
-    {
-        mouseManager.removeMouseListener(listener);
+        initComplete = true;
     }
 
     /**
@@ -726,9 +695,12 @@ public class OverlayBase
      */
     protected void dirty(int property)
     {
+        if(!initComplete)
+            return;
+
         dirtyCheck[property] = true;
         if(updateManager != null)
-            updateManager.updateRequested();
+            updateManager.updateRequested(this);
         else
             System.err.println("Null update manager in: " + this);
     }
@@ -920,8 +892,8 @@ public class OverlayBase
 
             Transform3D plane_offset = new Transform3D();
             Vector3d loc =
-                new Vector3d(-c_width / 2 + flipped_pt.getX()* scale,
-                             -c_height / 2 + flipped_pt.getY()* scale,
+                new Vector3d(-c_width / 2 + flipped_pt.x * scale,
+                             -c_height / 2 + flipped_pt.y * scale,
                              -CONSOLE_Z);
 
             plane_offset.setTranslation(loc);

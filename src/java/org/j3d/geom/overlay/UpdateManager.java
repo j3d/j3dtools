@@ -25,16 +25,17 @@ package org.j3d.geom.overlay;
  * while others might collect a bunch together.
  *
  * @author Will Holcomb
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface UpdateManager
 {
     /**
-     * Request that the manager update all of the items being managed.
-     * This will be scheduled to happen as soon as possible, but won't
-     * necessarily happen immediately.
+     * Request that the manager update this item. This will be scheduled to
+     * happen as soon as possible, but won't necessarily happen immediately.
+     *
+     * @param ue The entity to be updated
      */
-    public void updateRequested();
+    public void updateRequested(UpdatableEntity ue);
 
     /**
      * Check to see if the manager is making updates right now.

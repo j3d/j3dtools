@@ -18,14 +18,8 @@ import java.awt.font.TextLayout;
 import java.awt.font.TextAttribute;
 import java.text.AttributedString;
 import java.text.AttributedCharacterIterator;
-import java.util.Enumeration;
 
-import javax.media.j3d.Behavior;
-import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.Canvas3D;
-import javax.media.j3d.WakeupOnActivation;
-import javax.media.j3d.WakeupOnBehaviorPost;
-import javax.media.j3d.WakeupOnElapsedTime;
 
 // Application specific imports
 // none
@@ -37,7 +31,7 @@ import javax.media.j3d.WakeupOnElapsedTime;
  * The text is placed with the baseline at 3/4 of the height of the label.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class LabelOverlay extends OverlayBase
 {
