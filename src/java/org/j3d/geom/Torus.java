@@ -33,7 +33,7 @@ import javax.media.j3d.TriangleStripArray;
  * geometry does not have texture coordinates set.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Torus extends Shape3D
 {
@@ -57,7 +57,7 @@ public class Torus extends Shape3D
 
     /**
      * Construct a default torus with no appearance set. The default size
-     * of the torus is:<BR>
+     * of the torus is: <BR>
      * Outer radius: 2.0<BR>
      * Inner radius: 1.0<BR>
      * Outer radius Faces:  16<BR>
@@ -74,7 +74,7 @@ public class Torus extends Shape3D
 
     /**
      * Construct a default torus with the given appearance. The default size
-     * of the torus is:<BR>
+     * of the torus is: <BR>
      * Outer radius: 2.0<BR>
      * Inner radius: 1.0<BR>
      * Outer radius Faces:  16<BR>
@@ -93,7 +93,7 @@ public class Torus extends Shape3D
 
     /**
      * Construct a default torus with no appearance set and a custom
-     * number of faces.<BR>
+     * number of faces. <BR>
      * Outer radius: 2.0<BR>
      * Inner radius: 1.0<BR>
      *
@@ -121,7 +121,7 @@ public class Torus extends Shape3D
 
     /**
      * Construct a default torus with the given appearance and a custom
-     * number of faces.<BR>
+     * number of faces. <BR>
      * Outer radius: 2.0<BR>
      * Inner radius: 1.0<BR>
      *
@@ -150,7 +150,7 @@ public class Torus extends Shape3D
     }
 
     /**
-     * Construct a torus with all the values customisable
+     * Construct a torus with all the values customisable.
      *
      * @param innerRadius The inner radius of the torus
      * @param outerRadius The outer radius of the torus

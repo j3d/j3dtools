@@ -62,7 +62,7 @@ import javax.vecmath.Vector3d;
  *
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class OverlayBase
     implements Overlay,
@@ -512,7 +512,7 @@ public class OverlayBase
     /**
      * Returns the visiblity of the Overlay.
      *
-     * @returns true if the overlay is currently visible
+     * @return true if the overlay is currently visible
      */
     public boolean isVisible()
     {

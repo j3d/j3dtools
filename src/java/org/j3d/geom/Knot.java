@@ -20,14 +20,14 @@ import javax.vecmath.Vector3f;
 
 /**
  * A mobius strip with specified number of divisions per circle-strip, number
- * of divisions per strip (lengthwise), and appearance
+ * of divisions per strip (lengthwise), and appearance.
  * <p>
  * The algorithm was adapted from Tore Nordstrand's Math Image Gallery:
  * <A HREF="http://www.uib.no/people/nfytn/mathgal.htm">
  * http://www.uib.no/people/nfytn/mathgal.htm</A>
  *
  * @author Unknown
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Knot extends Object
 {

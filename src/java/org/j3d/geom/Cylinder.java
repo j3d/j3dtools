@@ -33,7 +33,7 @@ import javax.media.j3d.TriangleStripArray;
  * geometry does not have texture coordinates set.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Cylinder extends Shape3D
 {
@@ -80,7 +80,7 @@ public class Cylinder extends Shape3D
 
     /**
      * Construct a default cylinder with no appearance set and a custom
-     * number of faces.<BR>
+     * number of faces. <BR>
      * Height: 2.0<BR>
      * Radius: 1.0<BR>
      *
@@ -106,7 +106,7 @@ public class Cylinder extends Shape3D
 
     /**
      * Construct a default cylinder with the given appearance and a custom
-     * number of faces.<BR>
+     * number of faces. <BR>
      * Height: 2.0<BR>
      * Radius: 1.0<BR>
      *
@@ -133,7 +133,7 @@ public class Cylinder extends Shape3D
     }
 
     /**
-     * Construct a cylinder with all the values customisable
+     * Construct a cylinder with all the values customisable.
      *
      * @param height The height of the cylinder
      * @param radius The radius of the base of the cylinder

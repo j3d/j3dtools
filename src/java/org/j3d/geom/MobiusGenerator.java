@@ -17,7 +17,7 @@ package org.j3d.geom;
 
 /**
  * A mobius strip geometry generator with specified number of divisions per
- * strip, number of strips, position, and appearance
+ * strip, number of strips, position, and appearance.
  * <p>
  * The generator is used to create Mobius strip shapes as geometry. The output
  * are coordinates as quads suitable for use in an unindexed-quad array. The
@@ -38,7 +38,7 @@ package org.j3d.geom;
  * created. I'd like to fix it but don't know where to start yet.
  *
  * @author Justin Couch (heavily revised version of code from unknown source)
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MobiusGenerator extends GeometryGenerator
 {

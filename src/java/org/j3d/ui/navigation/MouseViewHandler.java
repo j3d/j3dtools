@@ -25,7 +25,7 @@ import javax.media.j3d.View;
 // none
 
 /**
- * An AWT based listener to drive navigation
+ * An AWT based listener to drive navigation.
  * <p>
  *
  * Instead of using behaviors this class does the job in a much smoother way
@@ -33,7 +33,7 @@ import javax.media.j3d.View;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class MouseViewHandler extends NavigationHandler
     implements MouseListener, MouseMotionListener

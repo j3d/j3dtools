@@ -73,7 +73,7 @@ import javax.media.j3d.Canvas3D;
  * the alpha channel.
  *
  * @author David Yazel, Will Holcomb
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface Overlay extends UpdatableEntity {
 
@@ -207,7 +207,7 @@ public interface Overlay extends UpdatableEntity {
     /**
      * Returns the visiblity of the Overlay.
      *
-     * @returns true if the overlay is currently visible
+     * @return true if the overlay is currently visible
      */
     public boolean isVisible();
 

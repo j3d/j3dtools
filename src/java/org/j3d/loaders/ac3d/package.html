@@ -1,44 +1,35 @@
 <HTML>
 <BODY>
-Class for processing and generating terrain type geometry
+Classes for parsing and loading AC3D files v3.0 and later.
 <P>
 
-The classes here are specifically aimed at the various tasks someone wanting
-to use or generate terrain information in their application. The code contains
-everything from a generic elevation grid creator to a fractal terrain
-generator.
+Ac3dLoader was originally written as two separate projects. The first project
+was a general purpose AC3D file parser that loaded the flat file into a
+hierarchical model for general-purpose use. The second project was the
+<CODE>Ac3dLoader</CODE> implementation, which essentially just provides
+mapping of the model generated in the parser to their Java 3D representation.
+Although both projects have been merged into the single Ac3dLoader project,
+the separate parsing functionality is still available.
 
-<H3>Using the code</H3>
+<H3>Acknowledgements</H3>
 
-The classes here fit with the basic infrastructure defined in the parent
-package {@link org.j3d.geom} for the generator utilities. In addition to
-these, we add colorising capabilities. An example of all of the classes
-combined together can be seen in the following image.
-<P>
-<CENTER>
-<IMG SRC="doc-files/fractal_gen.png" WIDTH="619" HEIGHT="494">
-</CENTER>
-<P>
-The image is of the example terrain generator demo application included as
-part of the CVS module. you can see the parameters used for the
-{@link org.j3d.geom.terrain.FractalTerrainGenerator} on the right. In
-addition to this, it is using a
-{@link org.j3d.geom.terrain.ColorRampGenerator color ramp filter}
-with the following heights set.
-<P>
-<TABLE>
-<TR><TH>Height</TH><TH>Colour</TH></TR>
-<TR><TD>0</TD><TD>0,0,1</TD></TR>
-<TR><TD>0.2</TD><TD>1,1,0</TD></TR>
-<TR><TD>1</TD><TD>0,0.6,0</TD></TR>
-<TR><TD>3</TD><TD>0,1,0</TD></TR>
-<TR><TD>8</TD><TD>1,1,1</TD></TR>
-</TABLE>
+This code was donated to the repository by Ryan Wilhm (ryan@entrophica.com).
+He no longer maintains the code. Maintenance is performed by the repository
+holders.
 
-Image processing code can act as a standalone, or preferably in combination
-with the {@link org.j3d.geom.terrain.ElevationGridGenerator} to create the
-geometry. For an example on this, see the ImageMapDemo in the examples/geometry
-directory.
+<H3>External Documentation</H3>
+
+<UL>
+<LI><A HREF="http://www.ac3d.org/">AC3D Homepage</A> This is the home page for
+    the AC3D modeling tool. It is available for many different platforms,
+    including Windows, Linux, and Solaris. There is a lot of very useful
+    information contained within these pages pertaining to the use of AC3D,
+    as well.
+</LI>
+<LI><A HREF="http://www.comp.lancs.ac.uk/computing/users/andy/ac3d/man/ac3dfileformat.html">AC3D
+    File Format Specification</A>
+</LI>
+</UL>
 
 </BODY>
 </HTML>

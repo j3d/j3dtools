@@ -16,11 +16,11 @@ import java.util.EventObject;
 // none
 
 /**
- * An event describing a scroll action or request
+ * An event describing a scroll action or request.
  * <p>
  *
  * @author Will Holcomb
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ScrollEvent extends EventObject
 {

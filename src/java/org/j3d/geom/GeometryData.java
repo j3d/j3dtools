@@ -16,7 +16,8 @@ package org.j3d.geom;
 // none
 
 /**
- * Data representation of geometry information
+ * Data representation of geometry information that is created through the
+ * various generator classes in this package.
  * <p>
  *
  * This data representation is used to hold information needed to generate
@@ -29,7 +30,7 @@ package org.j3d.geom;
  * generate 2D values if asked.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class GeometryData
 {

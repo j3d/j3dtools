@@ -33,7 +33,7 @@ import javax.media.j3d.TriangleStripArray;
  * geometry does not have texture coordinates set.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Sphere extends Shape3D
 {
@@ -75,7 +75,7 @@ public class Sphere extends Shape3D
 
     /**
      * Construct a default sphere with no appearance set and a custom
-     * number of faces.<BR>
+     * number of faces. <BR>
      * Radius: 1.0<BR>
      *
      * @param faces The number of faces to use around the side
@@ -99,7 +99,7 @@ public class Sphere extends Shape3D
 
     /**
      * Construct a default sphere with the given appearance and a custom
-     * number of faces.<BR>
+     * number of faces. <BR>
      * Radius: 1.0<BR>
      *
      * @param faces The number of faces to use around the side
@@ -124,7 +124,7 @@ public class Sphere extends Shape3D
     }
 
     /**
-     * Construct a sphere with all the values customisable
+     * Construct a sphere with all the values customisable.
      *
      * @param radius The radius of the base of the sphere
      * @param faces The number of faces to use around the side

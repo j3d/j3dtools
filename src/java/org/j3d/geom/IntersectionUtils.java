@@ -19,7 +19,7 @@ import javax.vecmath.Vector3d;
 //import org.j3d.util.IntHashMap;
 
 /**
- * A collection of utility methods to do geometry intersection tests
+ * A collection of utility methods to do geometry intersection tests.
  * <p>
  *
  * The design of the implementation is focused towards realtime intersection
@@ -56,7 +56,7 @@ import javax.vecmath.Vector3d;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class IntersectionUtils
 {

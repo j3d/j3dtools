@@ -20,7 +20,7 @@ import javax.vecmath.Vector3f;
 
 /**
  * A mobius strip with specified number of divisions per strip, number of
- * strips, position, and appearance
+ * strips, position, and appearance.
  * <p>
  * The algorithm was adapted from Tore Nordstrand's Math Image Gallery:
  * <A HREF="http://www.uib.no/people/nfytn/mathgal.htm">
@@ -29,7 +29,7 @@ import javax.vecmath.Vector3f;
  * with a small number of strips
  *
  * @author Unknown
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Mobius
 {

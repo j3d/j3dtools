@@ -33,7 +33,7 @@ import javax.media.j3d.TriangleArray;
  * geometry does not have texture coordinates set.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Cone extends Shape3D
 {
@@ -54,7 +54,7 @@ public class Cone extends Shape3D
 
     /**
      * Construct a default cone with no appearance set. The default size
-     * of the cone is:<BR>
+     * of the cone is: <BR>
      * Height: 2.0<BR>
      * Radius: 1.0<BR>
      * Faces:  16
@@ -66,7 +66,7 @@ public class Cone extends Shape3D
 
     /**
      * Construct a default cone with the given appearance. The default size
-     * of the cone is:<BR>
+     * of the cone is: <BR>
      * Height: 2.0<BR>
      * Radius: 1.0<BR>
      * Faces:  16
@@ -80,7 +80,7 @@ public class Cone extends Shape3D
 
     /**
      * Construct a default cone with no appearance set and a custom
-     * number of faces.<BR>
+     * number of faces. <BR>
      * Height: 2.0<BR>
      * Radius: 1.0<BR>
      *
@@ -106,7 +106,7 @@ public class Cone extends Shape3D
 
     /**
      * Construct a default cone with the given appearance and a custom
-     * number of faces.<BR>
+     * number of faces. <BR>
      * Height: 2.0<BR>
      * Radius: 1.0<BR>
      *
