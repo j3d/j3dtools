@@ -26,7 +26,9 @@ import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Matrix3d;
 
 // Application specific imports
+import org.j3d.geom.GeometryData;
 import org.j3d.geom.IntersectionUtils;
+import org.j3d.util.UserSupplementData;
 
 /**
  * A listener and handler responsible for executing all navigation commands
@@ -850,35 +852,154 @@ public class NavigationHandler
 
         for(int i = 0; i < ground.length; i++)
         {
+            // Firstly, check the path to see if this is eligible for picking.
+            int num_path_items = ground[i].nodeCount();
+            boolean not_eligible = false;
+
+            for(int j = 0; j < num_path_items && !not_eligible; j++)
+            {
+                Node group = ground[i].getNode(j);
+                Object user_data = group.getUserData();
+
+                if(user_data instanceof UserSupplementData)
+                    not_eligible = ((UserSupplementData)user_data).isTerrain;
+            }
+
+            if(not_eligible)
+                continue;
+
+            // So this is ok, let's look at the object to see whether we
+            // intersect with the actual geometry.
             Transform3D local_tx = ground[i].getTransform();
             local_tx.get(locationVector);
 
             Shape3D i_shape = (Shape3D)ground[i].getObject();
 
-            Enumeration geom_list = i_shape.getAllGeometries();
+            // Get the user data, if the user data contains a height data
+            // source use that to determine the terrain, otherwise pass it
+            // through to the geometry intersection handling. Inside that
+            // Also check to see what geometry is being used
+            Object user_data = i_shape.getUserData();
+            HeightDataSource hds = null;
+            GeometryData geom_data = null;
 
-            while(geom_list.hasMoreElements())
+            if(user_data instanceof UserSupplementData)
             {
-                GeometryArray geom = (GeometryArray)geom_list.nextElement();
+                UserSupplementData usd = (UserSupplementData)user_data;
 
-                if(geom == null)
-                    continue;
+                if(usd.geometryData instanceof HeightDataSource)
+                    hds = (HeightDataSource)usd.geometryData;
+                else if(usd.geometryData instanceof GeometryData)
+                    geom_data = (GeometryData)usd.geometryData;
+            }
+            else if(user_data instanceof HeightDataSource)
+            {
+                hds = (HeightDataSource)user_data;
+            }
+            else if(user_data instanceof GeometryData)
+                geom_data = (GeometryData)user_data;
 
-                if(terrainIntersect.rayUnknownGeometry(locationPoint,
-                                                  downVector,
-                                                  0,
-                                                  geom,
-                                                  local_tx,
-                                                  wkPoint,
-                                                  false))
+            if(hds != null)
+            {
+                intersectionPoint.x = locationVector.x;
+                intersectionPoint.y = locationVector.y;
+                intersectionPoint.z = hds.getHeight((float)locationVector.x,
+                                                    (float)locationVector.y);
+            }
+            else
+            {
+                // Do we have geometry data to play with at the shape level?
+                // If so, use that in preference to going down to the
+                // individual geometry arrays of the shape.
+                if(geom_data != null)
                 {
-                    diffVec.sub(locationPoint, wkPoint);
-
-                    if((shortest_length == -1) ||
-                       (diffVec.lengthSquared() < shortest_length))
+                    if(terrainIntersect.rayUnknownGeometry(locationPoint,
+                                                           downVector,
+                                                           0,
+                                                           geom_data,
+                                                           local_tx,
+                                                           wkPoint,
+                                                           false))
                     {
-                        shortest_length = diffVec.lengthSquared();
-                        intersectionPoint.set(wkPoint);
+                        diffVec.sub(locationPoint, wkPoint);
+
+                        if((shortest_length == -1) ||
+                           (diffVec.lengthSquared() < shortest_length))
+                        {
+                            shortest_length = diffVec.lengthSquared();
+                            intersectionPoint.set(wkPoint);
+                        }
+                    }
+                }
+                else
+                {
+                    Enumeration geom_list = i_shape.getAllGeometries();
+
+                    while(geom_list.hasMoreElements())
+                    {
+                        GeometryArray geom = (GeometryArray)geom_list.nextElement();
+
+                        if(geom == null)
+                            continue;
+
+                        user_data = geom.getUserData();
+                        geom_data = null;
+
+                        if(user_data instanceof UserSupplementData)
+                        {
+                            UserSupplementData usd = (UserSupplementData)user_data;
+
+                            if(usd.geometryData instanceof HeightDataSource)
+                                hds = (HeightDataSource)usd.geometryData;
+                            else if(usd.geometryData instanceof GeometryData)
+                                geom_data = (GeometryData)usd.geometryData;
+                        }
+                        else if(user_data instanceof HeightDataSource)
+                        {
+                            hds = (HeightDataSource)user_data;
+                        }
+                        else if(user_data instanceof GeometryData)
+                            geom_data = (GeometryData)user_data;
+
+
+                        boolean intersect = false;
+
+                        // Ah, finally. This is where we do the intersection
+                        // testing against either the raw geometry or the object.
+                        if(geom_data != null)
+                        {
+                            intersect =
+                                terrainIntersect.rayUnknownGeometry(locationPoint,
+                                                                  downVector,
+                                                                  0,
+                                                                  geom_data,
+                                                                  local_tx,
+                                                                  wkPoint,
+                                                                  false);
+                        }
+                        else
+                        {
+                            intersect =
+                                terrainIntersect.rayUnknownGeometry(locationPoint,
+                                                                  downVector,
+                                                                  0,
+                                                                  geom,
+                                                                  local_tx,
+                                                                  wkPoint,
+                                                                  false);
+                        }
+
+                        if(intersect)
+                        {
+                            diffVec.sub(locationPoint, wkPoint);
+
+                            if((shortest_length == -1) ||
+                               (diffVec.lengthSquared() < shortest_length))
+                            {
+                                shortest_length = diffVec.lengthSquared();
+                                intersectionPoint.set(wkPoint);
+                            }
+                        }
                     }
                 }
             }
@@ -969,6 +1090,22 @@ public class NavigationHandler
 
         for(int i = 0; (i < closest.length) && !real_collision; i++)
         {
+            // Firstly, check the path to see if this is eligible for picking
+            int num_path_items = closest[i].nodeCount();
+            boolean not_eligible = false;
+
+            for(int j = 0; j < num_path_items && !not_eligible; j++)
+            {
+                Node group = closest[i].getNode(j);
+                Object user_data = group.getUserData();
+
+                if(user_data instanceof UserSupplementData)
+                    not_eligible = !((UserSupplementData)user_data).collidable;
+            }
+
+            if(not_eligible)
+                continue;
+
             // OK, so we collided on the bounds, lets check on the geometry
             // directly to see if we had a real collision. Java3D just gives
             // us the collision based on the bounding box intersection. We
