@@ -59,7 +59,7 @@ import org.j3d.util.UserSupplementData;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class IntersectionUtils
 {
@@ -299,7 +299,8 @@ public class IntersectionUtils
         if(working2dCoords == null)
             working2dCoords = new float[8];
 
-        double shortest_length = -1;
+        double shortest_length = Double.POSITIVE_INFINITY;
+        boolean found = false;
         double this_length;
 
         for(int i = 0; i < numTris; i++)
@@ -313,12 +314,13 @@ public class IntersectionUtils
                                  3,
                                  wkPoint))
             {
+                found = true;
                 diffVec.sub(origin, wkPoint);
+                found = true;
 
                 this_length = diffVec.lengthSquared();
 
-                if((shortest_length == -1) ||
-                   (this_length < shortest_length))
+                if(this_length < shortest_length)
                 {
                     shortest_length = this_length;
                     point.set(wkPoint);
@@ -329,7 +331,7 @@ public class IntersectionUtils
             }
         }
 
-        return (shortest_length != -1);
+        return found;
     }
 
     /**
@@ -365,7 +367,8 @@ public class IntersectionUtils
         if(working2dCoords == null)
             working2dCoords = new float[8];
 
-        double shortest_length = -1;
+        double shortest_length = Double.POSITIVE_INFINITY;
+        boolean found = false;
         double this_length;
 
         for(int i = 0; i < numQuads; i++)
@@ -379,12 +382,12 @@ public class IntersectionUtils
                                  4,
                                  wkPoint))
             {
+                found = true;
                 diffVec.sub(origin, wkPoint);
 
                 this_length = diffVec.lengthSquared();
 
-                if((shortest_length == -1) ||
-                   (this_length < shortest_length))
+                if(this_length < shortest_length)
                 {
                     shortest_length = this_length;
                     point.set(wkPoint);
@@ -395,7 +398,7 @@ public class IntersectionUtils
             }
         }
 
-        return (shortest_length != -1);
+        return found;
     }
 
     /**
@@ -439,7 +442,8 @@ public class IntersectionUtils
         if(working2dCoords == null)
             working2dCoords = new float[8];
 
-        double shortest_length = -1;
+        double shortest_length = Double.POSITIVE_INFINITY;
+        boolean found = false;
         double this_length;
         int offset = 0;
 
@@ -447,7 +451,7 @@ public class IntersectionUtils
         {
             for(int j = 0; j < stripCounts[i] - 2; j++)
             {
-                System.arraycopy(coords, offset + j * 3, wkPolygon, 0, 9);
+                System.arraycopy(coords, offset, wkPolygon, 0, 9);
 
                 if(rayPolygonChecked(origin,
                                      direction,
@@ -456,12 +460,12 @@ public class IntersectionUtils
                                      3,
                                      wkPoint))
                 {
+                    found = true;
                     diffVec.sub(origin, wkPoint);
 
                     this_length = diffVec.lengthSquared();
 
-                    if((shortest_length == -1) ||
-                       (this_length < shortest_length))
+                    if(this_length < shortest_length)
                     {
                         shortest_length = this_length;
                         point.set(wkPoint);
@@ -470,12 +474,15 @@ public class IntersectionUtils
                             break;
                     }
                 }
+
+                offset += 3;
             }
 
-            offset += stripCounts[i] * 3;
+            // shift the offset onto the start of the next strip.
+            offset += 6;
         }
 
-        return (shortest_length != -1);
+        return found;
     }
 
     /**
@@ -519,7 +526,8 @@ public class IntersectionUtils
         if(working2dCoords == null)
             working2dCoords = new float[8];
 
-        double shortest_length = -1;
+        double shortest_length = Double.POSITIVE_INFINITY;
+        boolean found = false;
         double this_length;
         int offset = 0;
 
@@ -548,12 +556,12 @@ public class IntersectionUtils
                                      3,
                                      wkPoint))
                 {
+                    found = true;
                     diffVec.sub(origin, wkPoint);
 
                     this_length = diffVec.lengthSquared();
 
-                    if((shortest_length == -1) ||
-                       (this_length < shortest_length))
+                    if(this_length < shortest_length)
                     {
                         shortest_length = this_length;
                         point.set(wkPoint);
@@ -567,7 +575,7 @@ public class IntersectionUtils
             offset += stripCounts[i] * 3;
         }
 
-        return (shortest_length != -1);
+        return found;
     }
 
     /**
@@ -603,7 +611,8 @@ public class IntersectionUtils
         if(working2dCoords == null)
             working2dCoords = new float[8];
 
-        double shortest_length = -1;
+        double shortest_length = Double.POSITIVE_INFINITY;
+        boolean found = false;
         double this_length;
         int offset = 0;
         int i0, i1, i2;
@@ -633,12 +642,12 @@ public class IntersectionUtils
                                  3,
                                  wkPoint))
             {
+                found = true;
                 diffVec.sub(origin, wkPoint);
 
                 this_length = diffVec.lengthSquared();
 
-                if((shortest_length == -1) ||
-                   (this_length < shortest_length))
+                if(this_length < shortest_length)
                 {
                     shortest_length = this_length;
                     point.set(wkPoint);
@@ -649,7 +658,7 @@ public class IntersectionUtils
             }
         }
 
-        return (shortest_length != -1);
+        return found;
     }
 
     /**
@@ -685,7 +694,8 @@ public class IntersectionUtils
         if(working2dCoords == null)
             working2dCoords = new float[8];
 
-        double shortest_length = -1;
+        double shortest_length = Double.POSITIVE_INFINITY;
+        boolean found = false;
         double this_length;
         int offset = 0;
         int i0, i1, i2, i3;
@@ -720,12 +730,12 @@ public class IntersectionUtils
                                  4,
                                  wkPoint))
             {
+                found = true;
                 diffVec.sub(origin, wkPoint);
 
                 this_length = diffVec.lengthSquared();
 
-                if((shortest_length == -1) ||
-                   (this_length < shortest_length))
+                if(this_length < shortest_length)
                 {
                     shortest_length = this_length;
                     point.set(wkPoint);
@@ -736,7 +746,7 @@ public class IntersectionUtils
             }
         }
 
-        return (shortest_length != -1);
+        return found;
     }
 
     //----------------------------------------------------------
