@@ -23,6 +23,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.ui.navigation \
 	org.j3d.terrain \
 	org.j3d.terrain.roam \
+	org.j3d.texture \
 	org.j3d.loaders \
 	org.j3d.loaders.stl \
 	org.j3d.loaders.vterrain \
@@ -57,6 +58,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.ui.navigation \
 	org.j3d.terrain \
 	org.j3d.terrain.roam \
+	org.j3d.texture \
 	org.j3d.loaders \
 	org.j3d.loaders.ac3d \
 	org.j3d.loaders.stl \
@@ -66,19 +68,16 @@ JAVADOC_PACKAGES = org.j3d.util \
 # Names of JAR files we want to create
 JARS = j3d-org-util.jar \
 	j3d-org-geom-core.jar \
-	j3d-org-geom-overlay.jar \
 	j3d-org-geom-particle.jar \
 	j3d-org-geom-spline.jar \
 	j3d-org-geom-terrain.jar \
 	j3d-org-inputdevice.jar \
 	j3d-org-loader-core.jar \
-	j3d-org-loader-ac3d.jar \
 	j3d-org-loader-dem.jar \
 	j3d-org-loader-stl.jar \
 	j3d-org-loader-vterrain.jar \
 	j3d-org-navigation.jar \
 	j3d-org-terrain.jar \
-	j3d-org-texture.jar \
 	j3d-org-all.jar
 
 # List of packages that have native code libraries in use and require
