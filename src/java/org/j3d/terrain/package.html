@@ -30,23 +30,44 @@ need to do anything more. For more information on this code, have a look at the
 <p>
 
 To implement a specific algorithm (eg ROAM) you would extend the
-<code>Landscape</code> class and implement the
-{@link Landscape#setView(javax.vecmath.Tuple3f, javax.vecmath.Vector3f)} method.
-Every time that the user's viewpoint changes, you will be notified by this
-method (assuming that you have implemented a navigation system that calls
-it!). That means you should perform
+{@link org.j3d.terrain.Landscape} class and implement the
+{@link org.j3d.terrain.Landscape#setView(javax.vecmath.Tuple3f, javax.vecmath.Vector3f)}
+method. Every time that the user's viewpoint changes, you will be notified
+by this method (assuming that you have implemented a navigation system that
+calls it!). That means you should perform
 any culling/LOD and update the scene graph at this point. This will be
 called at most once per frame. As this class extends the Java3D
 {@link javax.media.j3d.BranchGroup} interface, it means that all your geometry
 of the scene should be added to this class.
 <p>
 
-For convenience, this class also implements {@link FrameUpdateListener} from
-the {@link org.j3d.ui.navigation} package so that you can have fast, quick
+For convenience, this class also implements
+{@link org.j3d.ui.navigation.FrameUpdateListener} from the
+{@link org.j3d.ui.navigation} package so that you can have fast, quick
 navigation implementation in your code. If you wish to use your own custom
 user input code, then there is no penalty for doing so. Simply call one of
 the <code>setView()</code> methods directly with the transformation
 information.
+
+<H3>Coordinate Systems</H3>
+
+There are multiple coordinate systems within the terrain rendering package and
+they don't all match. Apart from the traditional 3D graphics system, there is
+is the grid of the height values provided through the
+{@link org.j3d.terrain.TerrainData} interface. For some cases, where the
+height values cover a very large area, we may manage the terrain grid in larger
+chunks called tiles. Tiles also have their own coordinate system, which is
+overlaid on height values, as shown below.
+<p>
+
+<CENTER>
+<IMG SRC="doc-files/tile_coords.png" WIDTH="642" HEIGHT="444">
+</CENTER>
+
+Because terrain data may be effectively endless, both tile and grid systems
+will allow negative coordinates. This matches with map of the earth coordinate
+systems where you have an origin and then values positive and negative relative
+to that (eg UTM).
 
 <H3>Acknowledgements</H3>
 
