@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.15 $
+# Version: $Revision: 1.16 $
 #
 #*********************************************************************
 
@@ -27,7 +27,14 @@ SOURCE = GeometryData.java \
   TorusGenerator.java \
   SpringGenerator.java \
   SuperShapeGenerator.java \
+  SeidelNode.java \
+  SeidelTrapezoid.java \
+  SeidelSegment.java \
+  SeidelVertexChain.java \
+  SeidelMonotoneChain.java \
+  SeidelTriangulator.java \
   PolyVertex.java \
+  EarCutTriangulator.java \
   TriangulationUtils.java \
   IntersectionUtils.java \
   CharacterData.java \
