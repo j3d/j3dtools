@@ -24,7 +24,7 @@ import javax.vecmath.*;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MatrixUtils
 {
@@ -39,9 +39,9 @@ public class MatrixUtils
      * @param res The result to put the calculation into
      */
     public void lookAt(Point3f eye,
-                        Point3f center,
-                        Vector3f up,
-                        Matrix4f res)
+                       Point3f center,
+                       Vector3f up,
+                       Matrix4f res)
     {
         float f_x = center.x - eye.x;
         float f_y = center.y - eye.y;
