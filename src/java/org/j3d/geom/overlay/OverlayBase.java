@@ -32,13 +32,37 @@ import javax.vecmath.Vector3d;
  * a ready-made overlay system.
  * <P>
  *
+ * The implementation uses textured objects that are mapped to screen space
+ * coordinates. This can be both good and bad. The overlay can operate in
+ * one of two modes - fixed size or dynamic size according to the canvas.
+ * <P>
+ * <B>Fixed Size Overlays</B>
+ * <P>
+ * The size should be set to a value that is a power of two for
+ * the best performance. The code divides the supplied area into smaller
+ * sections, with a maximum size of 256 pixels in either direction. Left over
+ * pieces are then subdivided into lots that are power of two. The minimum size
+ * of one of these pieces is 16 pixels. If you have an odd size, sich as 55
+ * pixels, then you get weird artifacts appearing on screen.
+ * <P>
+ * <B>Resizable Overlays</B>
+ * <P>
+ * A resizable overlay is created when the bounds are set to null in the
+ * constructor. In this case the overlay then listens for resizing information
+ * from the component and resizes the internal subsections to accomodate this.
+ * For this system, in order to remain visually accurate, we subdivide down to
+ * shapes that are 1 pixel across. Obviously this impacts performance quite
+ * dramatically to have so many tiny objects.
+ * <P>
  * The class implements the AWT component listener interface so that it can
  * automatically resize the overlay's base image in response to the canvas
  * changing size. This will ensure that everything is correctly located on the
  * screen after the resize.
+ * <P>
+ *
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class OverlayBase
     implements Overlay,
@@ -60,6 +84,8 @@ public class OverlayBase
     private boolean visible;
     private boolean antialiased;
     private int numBuffers;
+
+    private final int minDivSize;
 
     /** Canvas bounds occupied by this overlay. */
     protected Rectangle overlayBounds;
@@ -233,11 +259,13 @@ public class OverlayBase
         {
             overlayBounds = canvas.getBounds();
             fixedSize = false;
+            minDivSize = 1;
         }
         else
         {
             overlayBounds = bounds;
             fixedSize = true;
+            minDivSize = 16;
         }
 
         visible = true;
@@ -315,7 +343,7 @@ public class OverlayBase
         }
 
         List overlays =
-            OverlayUtilities.subdivide(overlayBounds.getSize(), 16, 256);
+            OverlayUtilities.subdivide(overlayBounds.getSize(), minDivSize, 256);
 
         subOverlay = new SubOverlay[overlays.size()];
         int n = overlays.size();
@@ -914,8 +942,9 @@ public class OverlayBase
 
             overlayTexGrp.addChild(consoleTG);
 
-            List overlays =
-                OverlayUtilities.subdivide(overlayBounds.getSize(), 16, 256);
+            List overlays = OverlayUtilities.subdivide(overlayBounds.getSize(),
+                                                       minDivSize,
+                                                       256);
 
             subOverlay = new SubOverlay[overlays.size()];
             int n = overlays.size();
