@@ -30,7 +30,7 @@ import org.j3d.loaders.HeightMapSource;
  * </a>
  *
  * @author  Paul Byrne, Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class BTParser implements HeightMapSource
 {
@@ -245,52 +245,42 @@ public class BTParser implements HeightMapSource
      * @return A long value
      * @throws IOException An error occurred reading the stream
      */
-    private long readLong() throws IOException
+    private final long readLong() throws IOException
     {
         input.read(buffer, 0, 8);
-        long ret = buffer[7];
 
-        for(int i = 6; i >= 0; i--)
-        {
-            ret = ret << 8;
-            ret += buffer[i];
-        }
+        long l1 = (buffer[0] & 0xFF) | ((buffer[1] & 0xFF) << 8) |
+                  ((buffer[2] & 0xFF) << 16) | ((buffer[3] & 0xFF) << 24);
+        long l2 = ((buffer[4] & 0xFF)) | ((buffer[5] & 0xFF) << 8) |
+                  ((buffer[6] & 0xFF) << 16) | ((buffer[7] & 0xFF) << 24);
 
-        return ret;
+        return l1 + (l2 << 32);
     }
 
     /**
-     * Read a int value from the stream
+     * Read a int value from the stream.
      *
      * @return A int value
      * @throws IOException An error occurred reading the stream
      */
-    private int readInt() throws IOException
+    private final int readInt() throws IOException
     {
         input.read(buffer, 0, 4);
-        int ret = buffer[3];
-        for(int i = 2; i >= 0; i--)
-        {
-            ret = ret << 8;
-            ret += buffer[i];
-        }
 
-        return ret;
+        return (buffer[0] & 0xFF) | ((buffer[1] & 0xFF) << 8) |
+               ((buffer[2] & 0xFF) << 16) | ((buffer[3] & 0xFF) << 24);
     }
 
     /**
-     * Read a short value from the stream
+     * Read a short value from the stream.
      *
      * @return A short value
      * @throws IOException An error occurred reading the stream
      */
-    private short readShort() throws IOException
+    private final short readShort() throws IOException
     {
         input.read(buffer, 0, 2);
-        short ret = buffer[1];
-        ret = (short)(ret << 8);
-        ret += buffer[0];
-        return ret;
+        return (short)((buffer[0] & 0xFF) + ((buffer[1] & 0xFF) << 8));
     }
 
     /**
@@ -299,7 +289,7 @@ public class BTParser implements HeightMapSource
      * @return A float value
      * @throws IOException An error occurred reading the stream
      */
-    private float readFloat() throws IOException
+    private final float readFloat() throws IOException
     {
         return Float.intBitsToFloat(readInt());
     }
@@ -310,7 +300,7 @@ public class BTParser implements HeightMapSource
      * @return A double value
      * @throws IOException An error occurred reading the stream
      */
-    private double readDouble() throws IOException
+    private final double readDouble() throws IOException
     {
         return Double.longBitsToDouble(readLong());
     }
