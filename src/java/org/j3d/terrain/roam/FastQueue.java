@@ -170,9 +170,9 @@ class FastQueue
     private QueueItem getList(QueueItem node)
     {
         float value;
-        if(diamondQueue)
-            value = node.diamondVariance;
-        else
+//        if(diamondQueue)
+//            value = node.diamondVariance;
+//        else
             value = node.variance;
 
         if(value > TOP)
