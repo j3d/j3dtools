@@ -15,15 +15,15 @@ package org.j3d.ui.navigation;
 // Standard imports
 import javax.media.j3d.*;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
-import javax.swing.Timer;
+import java.util.Vector;
 
 import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+import javax.vecmath.AxisAngle4d;
+import javax.vecmath.Matrix3d;
 
 // Application specific imports
 import org.j3d.geom.IntersectionUtils;
@@ -43,7 +43,7 @@ import org.j3d.geom.IntersectionUtils;
  * the mouse button and drag to get the viewpoint moving. The more you drag
  * the button away from the start point, the faster the movement. The handler
  * does not recognize the use of the Shift key as a modifier to produce an * accelarated movement.
- * <p>
+ * <p>n
  *
  * This class will not change the cursor on the canvas in response to the
  * current mouse and navigation state. It will only notify the state change
@@ -51,9 +51,13 @@ import org.j3d.geom.IntersectionUtils;
  * <p>
  *
  * Separate states are allowed to be set for each button. Once one button is
- * pressed, all the other button presses are ignored. By default, <i>all the
- * buttons start with no state set</i>. The user will have to explicitly set
+ * pressed, all the other button presses are ignored. By default, all the
+ * buttons start with no state set. The user will have to explicitly set
  * the state for each button to get them to work.
+ * <p>
+ *
+ * The handler does not currently implement the Walk mode as it requires
+ * picking handling for gravity and collision detection.
  * <p>
  *
  * <b>Terrain Following</b>
@@ -92,10 +96,6 @@ import org.j3d.geom.IntersectionUtils;
  * <p>
  *
  * <b>Navigation Modes</b>
- * <p>
- *
- * These navigation mode constants can be found in the {@link NavigationState}
- * interface.
  * <p>
  *
  * NONE: All navigation is disabled. We ignore any requests from mouse or
@@ -140,12 +140,13 @@ import org.j3d.geom.IntersectionUtils;
  * @author per-frame movement algorithms by
  *   <a href="http://www.ife.no/vr/">Halden VR Centre, Institute for Energy Technology</a><br>
  *   Terrain/Collision implementation by Justin Couch
+ *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
+ *   Modified the tilt navigation mode : Svein Tore Edvardsen.
  * @version $Revision $
  */
 public class NavigationHandler
-    implements ActionListener
 {
-    /** The default height of the avatar */
+     /** The default height of the avatar */
     private static final float DEFAULT_AVATAR_HEIGHT = 1.8f;
 
     /*** The default size of the avatar for collisions */
@@ -167,21 +168,14 @@ public class NavigationHandler
     /** Intersection utilities used for terrain following */
     private IntersectionUtils collideIntersect;
 
-
-    /** Timer used to control smooth motion of the mouse */
-    private Timer timer;
-
     /** The view that we are moving about. */
     private View view;
 
     /** The transform group above the view that is being moved each frame */
-    private TransformGroup viewTg = new TransformGroup();
+    private TransformGroup viewTg;
 
     /** The transform that belongs to the view transform group */
-    private Transform3D viewTx = new Transform3D();
-
-    /** An observer for information about updates for this transition */
-    private FrameUpdateListener updateListener;
+    private Transform3D viewTx;
 
     /** An observer for navigation state change information */
     private NavigationStateListener navigationListener;
@@ -239,6 +233,9 @@ public class NavigationHandler
 
     /** The vector along which we do collision detection */
     private Vector3d collisionVector;
+
+    /** An observer for information about updates for this transition */
+    private FrameUpdateListener updateListener;
 
     /** The height of the avatar above the terrain */
     private float avatarHeight;
@@ -317,6 +314,98 @@ public class NavigationHandler
     /** Flag to indicate that we should do terrain following this time */
     private boolean allowTerrainFollowing;
 
+    /** Used to correct the rotations */
+    private double angle;
+
+    /** behavior that drives our updates to the screen */
+    private FrameTimerBehavior frameTimer;
+
+    /** Calculations for frame duration timing */
+    private long startFrameDurationCalc;
+
+    /**
+     * Inner class that replaces the old timer based event processing.
+     * This behavior drives the updates of the screen and assures that no
+     * new frame is rendered before the previous one is finished.
+     */
+    private class FrameTimerBehavior extends Behavior
+    {
+        protected WakeupCondition FPSCriterion;
+        protected long  frameDuration = 0;
+
+        public FrameTimerBehavior()
+        {
+            super();
+        }
+
+        /**
+        * Initialise this behavior to wake up on each frame that has elapsed.
+        */
+        public void initialize()
+        {
+            WakeupCriterion crit = new WakeupOnElapsedFrames( 0, false );
+            FPSCriterion = crit;
+
+            wakeupOn( FPSCriterion );
+        }
+
+        public void processStimulus( Enumeration criteria )
+        {
+            frameDuration = System.currentTimeMillis() - startFrameDurationCalc;
+            double motionDelay = 0.000005 * frameDuration;
+
+            oneFrameRotation.rotX(mouseRotationX * motionDelay);
+            viewTx.mul(oneFrameRotation);
+
+            //  RotateY:
+            oneFrameRotation.rotY(mouseRotationY * motionDelay);
+            viewTx.mul(oneFrameRotation);
+
+            //  Translation:
+            oneFrameTranslation.set(dragTranslationAmt);
+            oneFrameTranslation.scale(motionDelay);
+
+            viewTx.transform(oneFrameTranslation);
+
+            boolean collision = false;
+
+            // If we allow collisions, adjust it for the collision amount
+            if(allowCollisions)
+                collision = !checkCollisions();
+
+            if(allowTerrainFollowing && !collision)
+                collision = !checkTerrainFollowing();
+
+            if(collision)
+            {
+                if(collisionListener != null)
+                    collisionListener.avatarCollision();
+
+                oneFrameTranslation.z = 0;
+            }
+
+            // Now set the translation amounts that have been adjusted by any
+            // collisions.
+            viewTranslation.add(oneFrameTranslation);
+            viewTx.setTranslation(viewTranslation);
+
+            try
+            {
+                viewTg.setTransform(viewTx);
+            }
+            catch(Exception e)
+            {
+                //check for bad transform:
+                viewTx.rotX(0);
+                viewTg.setTransform(viewTx);
+                // e.printStackTrace();
+            }
+
+            startFrameDurationCalc = System.currentTimeMillis();
+            wakeupOn( FPSCriterion );
+        }
+    }
+
     /**
      * Create a new mouse handler with no view information set. This
      * handler will not do anything until the view transform
@@ -332,16 +421,12 @@ public class NavigationHandler
         buttonThreeState = NavigationState.NO_STATE;
         movementInProgress = false;
 
-        //  Timer:
-        timer = new Timer(1000, this);
-        timer.setInitialDelay(0);
-        timer.setRepeats(true);
-        timer.stop();
-        timer.setLogTimers(false);
-        timer.setCoalesce(false);
 
         terrainIntersect = new IntersectionUtils();
         collideIntersect = new IntersectionUtils();
+
+        viewTg = new TransformGroup();
+        viewTx = new Transform3D();
 
         worldEyeTransform = new Transform3D();
         downVector = new Vector3d();
@@ -377,6 +462,10 @@ public class NavigationHandler
         avatarStep = DEFAULT_STEP_HEIGHT;
         lastTerrainHeight = 0;
         speed = 0;
+
+        frameTimer = new FrameTimerBehavior();
+        frameTimer.setSchedulingBounds( new BoundingSphere() );
+        frameTimer.setEnable(false);
     }
 
     /**
@@ -503,17 +592,6 @@ public class NavigationHandler
     }
 
     /**
-     * Set the listener for frame update notifications. By setting a value of
-     * null it will clear the currently set instance
-     *
-     * @param l The listener to use for this transition
-     */
-    public void setFrameUpdateListener(FrameUpdateListener l)
-    {
-        updateListener = l;
-    }
-
-    /**
      * Set the listener for navigation state change notifications. By setting
      * a value of null it will clear the currently set instance
      *
@@ -622,7 +700,7 @@ public class NavigationHandler
     }
 
     /**
-     * Process a mouse press and set the timer going. This will cause the
+     * Process a mouse press and set the behavior running. This will cause the
      * navigation state to be set depending on the mouse button pressed.
      *
      * @param evt The event that caused this method to be called
@@ -653,8 +731,14 @@ public class NavigationHandler
 
         viewTg.getTransform(viewTx);
         viewTx.get(viewTranslation);
+
         startMousePos.set(evt.getX(), evt.getY());
-        timer.start();
+
+        //start the frame duration calculation
+        startFrameDurationCalc = System.currentTimeMillis();
+
+        //enable the behavior that controls navigation
+        frameTimer.setEnable(true);
 
         if(navigationState == NavigationState.WALK_STATE)
             setInitialTerrainHeight();
@@ -676,23 +760,22 @@ public class NavigationHandler
         if((viewTg == null) ||
            (movementInProgress &&
            ((button & MouseEvent.MOUSE_EVENT_MASK) != activeButton)))
+        {
             return;
+        }
 
         movementInProgress = false;
         allowCollisions = false;
         allowTerrainFollowing = false;
 
-        // There's a potential problem here of dealing with the user
-        // clicking button a, then also clicking button b, then releasing
-        // a followed by b. Both of the release events will trigger this a
-        // set the view transform, which we don't really want to do.
+        //disable behavior that controls navigation
+        frameTimer.setEnable(false);
 
-        timer.stop();
         viewTx.normalize();
 
         mouseRotationY = 0;
         mouseRotationX = 0;
-        oneFrameRotation.setIdentity();
+
         oneFrameRotation.setIdentity();
         dragTranslationAmt.scale(0);
 
@@ -702,84 +785,6 @@ public class NavigationHandler
 
         if(navigationListener != null)
             navigationListener.setNavigationState(previousState);
-    }
-
-    //----------------------------------------------------------
-    // Methods required by the ActionListener
-    //----------------------------------------------------------
-
-    /**
-     * Process an action event from the timer. This event is only for the time
-     * and should not be associated with any other sort of action event like
-     * menu callbacks.
-     *
-     * @param evt The event that caused this action to be called
-     */
-    public void actionPerformed(ActionEvent actionEvent)
-    {
-        // Some magic numbers here that I don't know where they came from.
-        // See the j3d.org implementation docs for more details from Lazlo.
-        int frameDelay = 10 + (int)(view.getLastFrameDuration() / 2.0);
-        double motionDelay = 0.000005 * frameDelay;
-
-        timer.setDelay(frameDelay);
-
-        // Firstly calculate where they should be in the next frame. Rotations
-        // are fine to pass through as they never cause a collision. The
-        // transforms we have to worry about so don't apply those until we've
-        // checked for a collision.
-
-        //  RotateX:
-        oneFrameRotation.rotX(mouseRotationX * motionDelay);
-        viewTx.mul(oneFrameRotation);
-
-        //  RotateY:
-        oneFrameRotation.rotY(mouseRotationY * motionDelay);
-        viewTx.mul(oneFrameRotation);
-
-        //  Translation:
-        oneFrameTranslation.set(dragTranslationAmt);
-        oneFrameTranslation.scale(motionDelay);
-
-        viewTx.transform(oneFrameTranslation);
-
-        boolean collision = false;
-
-        // If we allow collisions, adjust it for the collision amount
-        if(allowCollisions)
-            collision = !checkCollisions();
-
-        if(allowTerrainFollowing && !collision)
-            collision = !checkTerrainFollowing();
-
-        if(collision)
-        {
-            if(collisionListener != null)
-                collisionListener.avatarCollision();
-
-            oneFrameTranslation.z = 0;
-        }
-
-        // Now set the translation amounts that have been adjusted by any
-        // collisions.
-        viewTranslation.add(oneFrameTranslation);
-        viewTx.setTranslation(viewTranslation);
-
-        try
-        {
-            viewTg.setTransform(viewTx);
-        }
-        catch(Exception e)
-        {
-            //check for bad transform:
-            System.out.println("Transformgroup set invalid");
-            viewTx.rotX(0);
-            viewTg.setTransform(viewTx);
-            // e.printStackTrace();
-        }
-
-        if(updateListener != null)
-            updateListener.viewerPositionUpdated(viewTx);
     }
 
     /**
@@ -967,6 +972,18 @@ public class NavigationHandler
 
         return ret_val;
     }
+
+    /**
+     * Set the listener for frame update notifications. By setting a value of
+     * null it will clear the currently set instance
+     *
+     * @param l The listener to use for this transition
+     */
+    public void setFrameUpdateListener(FrameUpdateListener l)
+    {
+        updateListener = l;
+    }
+
 
     /**
      * Check the terrain height at the current position. This is done when
