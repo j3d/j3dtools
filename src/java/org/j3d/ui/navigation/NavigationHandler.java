@@ -863,13 +863,14 @@ public class NavigationHandler
         viewTg.getLocalToVworld(worldEyeTransform);
         worldEyeTransform.mul(viewTx);
 
+        // Where are we now?
         worldEyeTransform.get(locationVector);
+        locationPoint.set(locationVector);
 
+        // Where are we going to be soon?
         worldEyeTransform.transform(COLLISION_DIRECTION, collisionVector);
 
         collisionVector.scale(avatarSize);
-
-        locationPoint.add(locationVector, oneFrameTranslation);
 
         locationEndPoint.add(locationVector, collisionVector);
         locationEndPoint.add(oneFrameTranslation);
@@ -881,10 +882,12 @@ public class NavigationHandler
 
         SceneGraphPath[] closest = collidables.pickAllSorted(collisionPicker);
 
-        if(closest != null)
+        if((closest == null) || (closest.length == 0))
             return true;
 
-        for(int i = 0; i < closest.length; i++)
+        boolean real_collision = false;
+
+        for(int i = 0; (i < closest.length) && !real_collision; i++)
         {
             // OK, so we collided on the bounds, lets check on the geometry
             // directly to see if we had a real collision. Java3D just gives
@@ -898,7 +901,6 @@ public class NavigationHandler
             Shape3D i_shape = (Shape3D)closest[i].getObject();
 
             Enumeration geom_list = i_shape.getAllGeometries();
-            boolean real_collision = false;
 
             while(geom_list.hasMoreElements() && !real_collision)
             {
