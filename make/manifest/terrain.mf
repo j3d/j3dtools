@@ -1,4 +1,4 @@
-Class-Path: j3d-org-navigation.jar
+Class-Path: j3d-org-navigation.jar j3d-org-util.jar
 Extension-List: java3d
 java3d-Extension-Name: javax.media.j3d
 java3d-Specification-Version: 1.3
