@@ -24,6 +24,16 @@ import org.j3d.terrain.TerrainData;
  * or loader that supports a grid based data structure.
  * <p>
  *
+ * Supporting the height data source methods requires a bit of assumption about
+ * the data. Because we have data in quads, and we don't know how the
+ * underlying terrain rendering code is triangulating the data, we have to
+ * punt and take a guess. To interpolate a height value for a point that is
+ * not directly on a grid position, the code will take the average height of
+ * the grid square. This is a really horrible algorithm, but is the fastest to
+ * implement currently. We need to re-visit this to get something a little more
+ * accurate and is proportional to the position in the cell.
+ *
+ * <p>
  * The basic implementation here does not support a texture. If an application
  * wishes to use a texture, they should extend this class and override the
  * {@link #getTexture()} method. If you wish to provide a pre-loaded texture,
@@ -35,7 +45,7 @@ import org.j3d.terrain.TerrainData;
  * entire texture.
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class HeightMapTerrainData implements TerrainData
 {
@@ -131,6 +141,47 @@ public class HeightMapTerrainData implements TerrainData
         gridStep = new Point2d(stepDetails);
 
         hasTiledTextures = false;
+    }
+
+    //----------------------------------------------------------
+    // Methods required by HeightDataSource
+    //----------------------------------------------------------
+
+    /**
+     * Get the height at the given X,Z coordinate in the local coordinate
+     * system. The
+     *
+     * @param x The x coordinate for the height sampling
+     * @param z The z coordinate for the height sampling
+     * @return The height at the current point or NaN
+     */
+    public float getHeight(float x, float z)
+    {
+        // work out where we are in the grid first. Rememeber that we have
+        // to convert between coordinate systems
+        float rel_x_pos = x / (float)gridStep.x;
+        float rel_y_pos = z / (float)gridStep.y;
+
+        // fetch the coords of the four heights surrounding this point
+        int x_coord = (int)Math.floor(rel_x_pos);
+        int y_coord = (int)Math.floor(rel_y_pos);
+
+        // This algorithm sucks. It should be much nicer, but I'm lazy and
+        // want to do some other things ATM......
+
+        if((x_coord < 0) || (y_coord < 0) ||
+           (x_coord + 1 >= gridWidth) || (y_coord + 1 >= gridDepth))
+        {
+           return Float.NaN;
+        }
+
+        float h1 = heightMap[x_coord][y_coord];
+        float h2 = heightMap[x_coord][y_coord + 1];
+        float h3 = heightMap[x_coord + 1][y_coord];
+        float h4 = heightMap[x_coord + 1][y_coord + 1];
+
+        // return the average height
+        return (h1 + h2 + h3 + h4) * 0.25f;
     }
 
     //----------------------------------------------------------
