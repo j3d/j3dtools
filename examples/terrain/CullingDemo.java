@@ -18,17 +18,22 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
 // Application Specific imports
-import org.j3d.geom.Axis;
+import org.j3d.geom.Box;
 
 import org.j3d.loaders.HeightMapTerrainData;
-import org.j3d.loaders.vterrain.BTLoader;
+import org.j3d.loaders.SimpleTiledTerrainData;
+import org.j3d.loaders.vterrain.BTHeader;
+import org.j3d.loaders.vterrain.BTParser;
 
+import org.j3d.terrain.AbstractStaticTerrainData;
 import org.j3d.terrain.AppearanceGenerator;
 import org.j3d.terrain.Landscape;
+import org.j3d.terrain.TerrainData;
 import org.j3d.terrain.ViewFrustum;
 import org.j3d.terrain.roam.SplitMergeLandscape;
 
@@ -46,7 +51,7 @@ import org.j3d.util.interpolator.ColorInterpolator;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class CullingDemo extends DemoFrame
     implements ItemListener, AppearanceGenerator
@@ -77,6 +82,12 @@ public class CullingDemo extends DemoFrame
 
     /** The branchgroup to add our terrain to */
     private BranchGroup terrainGroup;
+
+    /** TG that holds the user view position. Used when new terrain set */
+    private TransformGroup gndViewTransform;
+
+    /** TG that holds the top-down user view position. Used when new terrain set */
+    private TransformGroup topViewTransform;
 
     private HashMap terrainFilesMap;
     private HashMap textureFilesMap;
@@ -128,6 +139,7 @@ public class CullingDemo extends DemoFrame
 
         terrainFilesMap.put(button, "ratcliff_1k.bt");
         textureFilesMap.put(button, "ratcliff_crater_2048.jpg");
+//        textureFilesMap.put(button, null);
 
         add(p1, BorderLayout.SOUTH);
 
@@ -174,6 +186,7 @@ public class CullingDemo extends DemoFrame
         groundNav.setButtonNavigation(MouseEvent.BUTTON3_MASK,
                                       NavigationState.PAN_STATE);
 
+
         NavigationStateManager gnd_nav_mgr =
             new NavigationStateManager(navCanvas);
         gnd_nav_mgr.setMouseHandler(groundNav);
@@ -197,6 +210,8 @@ public class CullingDemo extends DemoFrame
 
         polyAttr = new PolygonAttributes();
         polyAttr.setCapability(PolygonAttributes.ALLOW_MODE_WRITE);
+        polyAttr.setCullFace(PolygonAttributes.CULL_NONE);
+        polyAttr.setBackFaceNormalFlip(true);
 
         heightRamp = new ColorInterpolator(ColorInterpolator.HSV_SPACE);
         heightRamp.addRGBKeyFrame(-20,  0,    0,    1,     0);
@@ -207,7 +222,6 @@ public class CullingDemo extends DemoFrame
         heightRamp.addRGBKeyFrame(1000, 0.6f, 0.7f, 0,     0);
         heightRamp.addRGBKeyFrame(1500, 0.5f, 0.5f, 0.3f,  0);
         heightRamp.addRGBKeyFrame(2500, 1,    1,    1,     0);
-
     }
 
     //----------------------------------------------------------
@@ -290,6 +304,7 @@ public class CullingDemo extends DemoFrame
         DirectionalLight headlight = new DirectionalLight();
         headlight.setColor(white);
         headlight.setInfluencingBounds(light_bounds);
+        headlight.setEnable(true);
 
         //
         // View group for the ground navigation system that the
@@ -299,14 +314,14 @@ public class CullingDemo extends DemoFrame
         ViewPlatform gnd_camera = new ViewPlatform();
 
         Transform3D angle = new Transform3D();
-        angle.setTranslation(new Vector3d(0, 500, 10));
 
-        TransformGroup gnd_view_tg = new TransformGroup(angle);
-        gnd_view_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-        gnd_view_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        gndViewTransform = new TransformGroup();
+        gndViewTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+        gndViewTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 
-        gnd_view_tg.addChild(gnd_camera);
-        gnd_view_tg.addChild(headlight);
+        gndViewTransform.addChild(gnd_camera);
+        gndViewTransform.addChild(headlight);
+//        gndViewTransform.addChild(new Box(10, 10, 10));
 
         View gnd_view = new View();
         gnd_view.setBackClipDistance(BACK_CLIP_DISTANCE);
@@ -316,10 +331,10 @@ public class CullingDemo extends DemoFrame
         gnd_view.addCanvas3D(navCanvas);
         gnd_view.attachViewPlatform(gnd_camera);
 
-        groundNav.setViewInfo(gnd_view, gnd_view_tg);
+        groundNav.setViewInfo(gnd_view, gndViewTransform);
         groundNav.setNavigationSpeed(50.0f);
 
-        view_group.addChild(gnd_view_tg);
+        view_group.addChild(gndViewTransform);
         view_group.addChild(groundNav.getTimerBehavior());
 
         //
@@ -333,24 +348,21 @@ public class CullingDemo extends DemoFrame
         angle = new Transform3D();
         angle.setTranslation(new Vector3d(0, 0, 50));
 
-        TransformGroup god_trans_tg = new TransformGroup(angle);
-        god_trans_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-        god_trans_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        god_trans_tg.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
+        topViewTransform = new TransformGroup(angle);
+        topViewTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+        topViewTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        topViewTransform.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
 
-        god_trans_tg.addChild(god_camera);
-//        god_trans_tg.addChild(headlight.cloneNode(false));
+        topViewTransform.addChild(god_camera);
+//        topViewTransform.addChild(headlight.cloneNode(false));
 
         angle = new Transform3D();
-        Matrix3d look_down = new Matrix3d();
-        look_down.rotX(-Math.PI / 2);
-
-        angle.set(look_down);
+        angle.rotX(-Math.PI / 2);
 
         TransformGroup god_view_tg = new TransformGroup(angle);
         god_view_tg.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
         god_view_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-        god_view_tg.addChild(god_trans_tg);
+        god_view_tg.addChild(topViewTransform);
 
         View god_view = new View();
         god_view.setBackClipDistance(BACK_CLIP_DISTANCE);
@@ -360,14 +372,14 @@ public class CullingDemo extends DemoFrame
         god_view.addCanvas3D(topDownCanvas);
         god_view.attachViewPlatform(god_camera);
 
-        topDownNav.setViewInfo(god_view, god_trans_tg);
-        topDownNav.setNavigationSpeed(5.0f);
+        topDownNav.setViewInfo(god_view, topViewTransform);
+        topDownNav.setNavigationSpeed(500);
 
         view_group.addChild(god_view_tg);
         view_group.addChild(topDownNav.getTimerBehavior());
 
         // Just an axis for reference
-        world_object_group.addChild(new Axis());
+//        world_object_group.addChild(new Axis());
 
         // Create a new branchgroup that is for the geometry. Initially starts
         // with a null child at position zero so that we only need to write the
@@ -378,6 +390,18 @@ public class CullingDemo extends DemoFrame
 //        terrainGroup.addChild(null);
 
         world_object_group.addChild(terrainGroup);
+
+        Material mat = new Material(ambientBlue, ambientBlue, blue, specular, 0);
+        Appearance app = new Appearance();
+        app.setMaterial(mat);
+        Box box = new Box(50, 50, 1000, app);
+
+
+        angle.set(new Vector3f(0, 0, -500));
+        TransformGroup tg = new TransformGroup(angle);
+        tg.addChild(box);
+
+        gndViewTransform.addChild(tg);
 
         // Add everything to the locale
         locale.addBranchGraph(view_group);
@@ -394,8 +418,11 @@ public class CullingDemo extends DemoFrame
      */
     private void loadTerrain(String filename, String textureName)
     {
-        BTLoader ldr = new BTLoader();
+        BTParser ldr = new BTParser();
         File bt_file = new File(filename);
+
+        View v = navCanvas.getView();
+        v.stopView();
 
         try
         {
@@ -410,9 +437,25 @@ public class CullingDemo extends DemoFrame
 
             System.out.println("Loading terrain file. Please wait");
 
-            ldr.load(bt_file.toURL());
-            HeightMapTerrainData terrain = new HeightMapTerrainData(ldr);
-            terrain.setColorInterpolator(heightRamp);
+            ldr.reset(new FileInputStream(bt_file));
+            ldr.parse();
+
+            TerrainData terrain = null;
+
+            BTHeader header = ldr.getHeader();
+
+//            if(header.rows > 513)
+//            {
+                SimpleTiledTerrainData t = new SimpleTiledTerrainData(ldr);
+                t.setColorInterpolator(heightRamp);
+                terrain = t;
+//            }
+//           else
+//            {
+//                HeightMapTerrainData t = new HeightMapTerrainData(ldr);
+//                t.setColorInterpolator(heightRamp);
+//                terrain = t;
+//            }
 
             System.out.println("Terrain loading complete");
 
@@ -423,8 +466,11 @@ public class CullingDemo extends DemoFrame
                 TextureCache t_cache = TextureCacheFactory.getCache();
                 Texture texture = t_cache.fetchTexture(textureName);
 
-                if(texture != null)
-                    terrain.setTexture(texture);
+                if((texture != null) &&
+                   (terrain instanceof AbstractStaticTerrainData))
+                {
+                    ((AbstractStaticTerrainData)terrain).setTexture(texture);
+                }
 
                 System.out.println("Finished texture");
             }
@@ -435,11 +481,57 @@ public class CullingDemo extends DemoFrame
             landscape.setCapability(BranchGroup.ALLOW_DETACH);
             landscape.setAppearanceGenerator(this);
 
-            landscape.initialize(new Point3f(0, 0, 10), new Vector3f(0, 0, -1));
+            float[] origin = new float[3];
+            terrain.getCoordinate(origin, 1, 1);
+
+            Transform3D angle = new Transform3D();
+
+            // setup the top view by just raising it some amount and we want
+            Vector3f pos = new Vector3f();
+            pos.z += 5000;
+            pos.x = origin[0];
+            pos.y = origin[2];
+            angle.setTranslation(pos);
+
+            topViewTransform.setTransform(angle);
+
+            // the initial view to be some way off the ground too and rotate at
+            // 45 deg to look into the "middle" of the terrain.
+            terrain.getCoordinate(origin, 0, 0);
+            pos.set(origin);
+            pos.y += 100;
+            pos.x -= 100;
+            pos.z -= 100;
+            angle.rotY(Math.PI * -0.25); // 45 deg looking into the terrain
+            angle.setTranslation(pos);
+
+            gndViewTransform.setTransform(angle);
+
+
+            // Force a single render so that the view transform is updated
+            // and the projection matrix is correct for the view frustum.
+            v.renderOnce();
+
+            viewFrustum.viewingPlatformMoved();
+
+            Matrix3f mtx = new Matrix3f();
+            Vector3f orient = new Vector3f(0, 0, -1);
+
+            angle.get(mtx, pos);
+            mtx.transform(orient);
+
+            landscape.initialize(pos, orient);
 
             groundNav.setFrameUpdateListener(landscape);
 
+            terrainGroup.removeAllChildren();
             terrainGroup.addChild(landscape);
+
+            // Set the nav speed to be one grid square per second
+            groundNav.setNavigationSpeed((float)terrain.getGridXStep());
+
+
+            v.startView();
 
             System.out.println("Ready for rendering");
         }
