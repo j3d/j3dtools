@@ -16,7 +16,7 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
 // Application specific imports
-// none
+//import org.j3d.util.IntHashMap;
 
 /**
  * A collection of utility methods to do geometry intersection tests
@@ -56,7 +56,7 @@ import javax.vecmath.Vector3d;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class IntersectionUtils
 {
@@ -123,11 +123,147 @@ public class IntersectionUtils
         workingIndicies = null;
     }
 
+
+    /**
+     * Convenience method to process a {@link GeometryData} and ask the
+     * intersection code to find out what the real geometry type is and
+     * process it appropriately. If there is an intersection, the point will
+     * contain the exact intersection point on the geometry.
+     * <P>
+     *
+     * This code will be much more efficient than the other version because
+     * we do not need to reallocate internal arrays all the time or have the
+     * need to set capability bits, hurting performance optimisations. If the
+     * geometry array does not understand the provided geometry type, it will
+     * silently ignore the request and always return false.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param length An optional length for to make the ray a segment. If
+     *   the value is zero, it is ignored
+     * @param data The geometry to test against
+     * @param point The intersection point for returning
+     * @param intersectOnly true if we only want to know if we have a
+     *    intersection and don't really care which it is
+     * @return true if there was an intersection, false if not
+     */
+    public boolean rayUnknownGeometry(Point3d origin,
+                                      Vector3d direction,
+                                      float length,
+                                      GeometryData data,
+                                      Transform3D vworldTransform,
+                                      Point3d point,
+                                      boolean intersectOnly)
+    {
+        boolean ret_val = false;
+
+        reverseTx.invert(vworldTransform);
+        transformPicks(reverseTx, origin, direction);
+
+        switch(data.geometryType)
+        {
+            case GeometryData.TRIANGLES:
+                ret_val = rayTriangleArray(pickStart,
+                                           pickDir,
+                                           length,
+                                           data.coordinates,
+                                           data.vertexCount,
+                                           point,
+                                           intersectOnly);
+                break;
+
+            case GeometryData.QUADS:
+                ret_val = rayQuadArray(pickStart,
+                                       pickDir,
+                                       length,
+                                       data.coordinates,
+                                       data.vertexCount,
+                                       point,
+                                       intersectOnly);
+                break;
+
+            case GeometryData.TRIANGLE_STRIPS:
+                ret_val = rayTriangleStripArray(pickStart,
+                                                pickDir,
+                                                length,
+                                                data.coordinates,
+                                                data.stripCounts,
+                                                data.numStrips,
+                                                point,
+                                                intersectOnly);
+                break;
+
+            case GeometryData.TRIANGLE_FANS:
+                ret_val = rayTriangleFanArray(pickStart,
+                                              pickDir,
+                                              length,
+                                              data.coordinates,
+                                              data.stripCounts,
+                                              data.numStrips,
+                                              point,
+                                              intersectOnly);
+                break;
+
+            case GeometryData.INDEXED_QUADS:
+                ret_val = rayIndexedQuadArray(pickStart,
+                                              pickDir,
+                                              length,
+                                              data.coordinates,
+                                              data.indexes,
+                                              data.indexesCount,
+                                              point,
+                                              intersectOnly);
+                break;
+
+            case GeometryData.INDEXED_TRIANGLES:
+                ret_val = rayIndexedTriangleArray(pickStart,
+                                                  pickDir,
+                                                  length,
+                                                  data.coordinates,
+                                                  data.indexes,
+                                                  data.indexesCount,
+                                                  point,
+                                                  intersectOnly);
+                break;
+/*
+            case GeometryData.INDEXED_TRIANGLE_STRIPS:
+                ret_val = rayTriangleArray(pickStart,
+                                           pickDir,
+                                           length,
+                                           data.coordinates,
+                                           data.vertexCount,
+                                           point,
+                                           intersectOnly);
+                break;
+
+            case GeometryData.INDEXED_TRIANGLE_FANS:
+                ret_val = rayTriangleArray(pickStart,
+                                           pickDir,
+                                           length,
+                                           data.coordinates,
+                                           data.vertexCount,
+                                           point,
+                                           intersectOnly);
+                break;
+*/
+        }
+
+        if(ret_val)
+            vworldTransform.transform(point);
+
+        return ret_val;
+    }
+
     /**
      * Convenience method to pass in an item of geometry and ask the
      * intersection code to find out what the real geometry type is and
      * process it appropriately. If there is an intersection, the point will
      * contain the exact intersection point on the geometry.
+     * <P>
+     *
+     * If the userData object for this geometry is an instance of
+     * {@link GeometryData} we will use that in preferences to the actual
+     * geometry.
      *
      * @param origin The origin of the ray
      * @param direction The direction of the ray
@@ -147,7 +283,19 @@ public class IntersectionUtils
                                       Point3d point,
                                       boolean intersectOnly)
     {
-        if(geom instanceof TriangleArray)
+        Object userdata = geom.getUserData();
+
+        if(userdata instanceof GeometryData)
+        {
+            return rayUnknownGeometry(origin,
+                                      direction,
+                                      length,
+                                      (GeometryData)userdata,
+                                      vworldTransform,
+                                      point,
+                                      intersectOnly);
+        }
+        else if(geom instanceof TriangleArray)
         {
             return rayTriangleArray(origin,
                                     direction,
@@ -251,18 +399,6 @@ public class IntersectionUtils
 
         geom.getCoordinates(0, workingCoords);
 
-/*
-        transformCoords(vtx_count, vworldTransform);
-
-        return rayTriangleArray(origin,
-                                direction,
-                                length,
-                                workingCoords,
-                                vtx_count / 3,
-                                point,
-                                intersectOnly);
-*/
-
         reverseTx.invert(vworldTransform);
 
         transformPicks(reverseTx, origin, direction);
@@ -320,18 +456,6 @@ public class IntersectionUtils
             workingCoords = new float[vtx_count * 3];
 
         geom.getCoordinates(0, workingCoords);
-
-/*
-        transformCoords(vtx_count, vworldTransform);
-
-        return rayQuadArray(origin,
-                            direction,
-                            length,
-                            workingCoords,
-                            vtx_count / 4,
-                            point,
-                            intersectOnly);
-*/
 
         reverseTx.invert(vworldTransform);
 
@@ -395,20 +519,7 @@ public class IntersectionUtils
 
         geom.getCoordinates(0, workingCoords);
         geom.getStripVertexCounts(workingStrips);
-/*
-        transformCoords(vtx_count, vworldTransform);
 
-        boolean ret_val = rayTriangleStripArray(origin,
-                                                direction,
-                                                length,
-                                                workingCoords,
-                                                workingStrips,
-                                                strip_count,
-                                                point,
-                                                intersectOnly);
-
-        return ret_val;
-*/
         reverseTx.invert(vworldTransform);
 
         transformPicks(reverseTx, origin, direction);
@@ -473,20 +584,6 @@ public class IntersectionUtils
         geom.getCoordinates(0, workingCoords);
         geom.getStripVertexCounts(workingStrips);
 
-/*
-        transformCoords(vtx_count, vworldTransform);
-
-        boolean ret_val = rayTriangleFanArray(origin,
-                                              direction,
-                                              length,
-                                              workingCoords,
-                                              workingStrips,
-                                              strip_count,
-                                              point,
-                                              intersectOnly);
-
-        return ret_val;
-*/
         reverseTx.invert(vworldTransform);
 
         transformPicks(reverseTx, origin, direction);
@@ -555,20 +652,6 @@ public class IntersectionUtils
         geom.getCoordinates(0, workingCoords);
         geom.getCoordinateIndices(0, workingIndicies);
 
-/*
-        transformCoords(vtx_count, vworldTransform);
-
-        boolean ret_val = rayIndexedTriangleArray(origin,
-                                                  direction,
-                                                  length,
-                                                  workingCoords,
-                                                  workingIndicies,
-                                                  index_count,
-                                                  point,
-                                                  intersectOnly);
-
-        return ret_val;
-*/
         reverseTx.invert(vworldTransform);
 
         transformPicks(reverseTx, origin, direction);
@@ -637,20 +720,6 @@ public class IntersectionUtils
         geom.getCoordinates(0, workingCoords);
         geom.getCoordinateIndices(0, workingIndicies);
 
-/*
-        transformCoords(vtx_count, vworldTransform);
-
-        boolean ret_val = rayIndexedQuadArray(origin,
-                                              direction,
-                                              length,
-                                              workingCoords,
-                                              workingIndicies,
-                                              index_count,
-                                              point,
-                                              intersectOnly);
-
-        return ret_val;
-*/
         reverseTx.invert(vworldTransform);
 
         transformPicks(reverseTx, origin, direction);
@@ -1389,36 +1458,6 @@ public class IntersectionUtils
         // Note that we have already stored the intersection point way back up
         // the start.
         return ((crossings % 2) == 1);
-    }
-
-    /**
-     * Convenience method to transform a bunch of coordinates by the vworld
-     * coordinates. Operates on the current workingCoords.
-     *
-     * @param vtxCount The number of verticies to transform
-     * @param vworld The coordinate transform to apply
-     */
-    private void transformCoords(int vtxCount, Transform3D vworld)
-    {
-        // Now transform them to the world coordinates in place if we have a
-        // non-identity matrix
-        if(vworld.getBestType() == Transform3D.IDENTITY)
-            return;
-
-        int cnt = 0;
-
-        for(int i = vtxCount; --i >= 0; )
-        {
-            wkPoint.x = workingCoords[cnt];
-            wkPoint.y = workingCoords[cnt + 1];
-            wkPoint.z = workingCoords[cnt + 2];
-
-            vworld.transform(wkPoint);
-
-            workingCoords[cnt++] = (float)wkPoint.x;
-            workingCoords[cnt++] = (float)wkPoint.y;
-            workingCoords[cnt++] = (float)wkPoint.z;
-        }
     }
 
     /**
