@@ -75,6 +75,7 @@ JARS = j3d-org-util.jar \
 	j3d-org-navigation.jar \
 	j3d-org-terrain.jar \
 	j3d-org-texture.jar \
+	j3d-org-all.jar
 
 # 3rd party libraries that need including.
 JARS_3RDPARTY=
