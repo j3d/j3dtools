@@ -22,7 +22,7 @@ import javax.media.j3d.*;
  * Demonstration of a mouse navigation in a world.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class DemoFrame extends Frame implements WindowListener
 {
@@ -33,21 +33,52 @@ public class DemoFrame extends Frame implements WindowListener
     {
         super(title);
 
+        canvas = createCanvas();
+        add(canvas, BorderLayout.CENTER);
+
+        setSize(400, 400);
+        setLocation(40, 40);
+        addWindowListener(this);
+    }
+
+    /**
+     * Create a new demo frame that has the option of creating a
+     * canvas for use. If it does, it is assigned to the center of the
+     * frame.
+     */
+    public DemoFrame(String title, boolean useCanvas)
+    {
+        super(title);
+
+        if(useCanvas)
+        {
+            canvas = createCanvas();
+            add(canvas, BorderLayout.CENTER);
+        }
+
+        setSize(400, 400);
+        setLocation(40, 40);
+        addWindowListener(this);
+    }
+
+    /**
+     * Create a 3D canvas for us to use.
+     *
+     * @return A new canvas to use
+     */
+    protected Canvas3D createCanvas()
+    {
         GraphicsConfigTemplate3D template = new GraphicsConfigTemplate3D();
         template.setDoubleBuffer(template.REQUIRED);
         GraphicsEnvironment env =
             GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice dev = env.getDefaultScreenDevice();
 
-        canvas = new Canvas3D(dev.getBestConfiguration(template));
-        canvas.setStereoEnable(false);
-        canvas.setDoubleBufferEnable(true);
+        Canvas3D cv = new Canvas3D(dev.getBestConfiguration(template));
+        cv.setStereoEnable(false);
+        cv.setDoubleBufferEnable(true);
 
-        add(canvas, BorderLayout.CENTER);
-
-        setSize(400, 400);
-        setLocation(40, 40);
-        addWindowListener(this);
+        return cv;
     }
 
     /**
