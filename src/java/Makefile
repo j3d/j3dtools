@@ -10,6 +10,7 @@ BUILD_ORDER = org.j3d.util \
 	   org.j3d.util.device \
 	   org.j3d.util.interpolator \
 	   org.j3d.device.input \
+	   org.j3d.texture \
        org.j3d.geom \
        org.j3d.geom.terrain \
  	   org.j3d.geom.overlay \
@@ -31,6 +32,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	   org.j3d.util.device \
 	   org.j3d.util.interpolator \
 	   org.j3d.device.input \
+	   org.j3d.texture \
        org.j3d.geom \
        org.j3d.geom.terrain \
  	   org.j3d.geom.overlay \
