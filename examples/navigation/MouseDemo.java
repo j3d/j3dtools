@@ -25,7 +25,7 @@ import org.j3d.ui.navigation.MouseViewHandler;
  * Demonstration of a mouse navigation in a world.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MouseDemo extends DemoFrame
     implements NavigationStateListener
@@ -41,6 +41,9 @@ public class MouseDemo extends DemoFrame
     /** A label telling us what state we are in */
     private Label navTypeLabel;
 
+    /**
+     * Create a basic mouse demo that uses fly, tilt and pan states.
+     */
     public MouseDemo()
     {
         super("MouseDemo test window");
@@ -51,6 +54,10 @@ public class MouseDemo extends DemoFrame
         viewHandler = new MouseViewHandler();
         viewHandler.setCanvas(canvas);
         viewHandler.setNavigationStateListener(this);
+
+        navHandler.setButtonNavigation(MouseEvent.BUTTON1_MASK, FLY_STATE);
+        navHandler.setButtonNavigation(MouseEvent.BUTTON2_MASK, TILT_STATE);
+        navHandler.setButtonNavigation(MouseEvent.BUTTON3_MASK, PAN_STATE);
 
         buildScene();
     }
@@ -87,6 +94,21 @@ public class MouseDemo extends DemoFrame
             case TILT_STATE:
                 label = "Navigation state: Tilt";
                 break;
+
+            case EXAMINE_STATE:
+                label = "Navigation state: Examine";
+                break;
+
+            case FLY_STATE:
+                label = "Navigation state: Fly";
+                break;
+
+            case NO_STATE:
+                label = "Navigation state: None";
+                break;
+
+            default:
+                lable = "Unknown Navigation State";
         }
 
         if(label != null)

@@ -23,7 +23,7 @@ endif
 
 include $(PROJECT_ROOT)/make/Makefile.inc
 
-VERSION=1.1
+VERSION=0.1
 
 all: class jar javadoc
 

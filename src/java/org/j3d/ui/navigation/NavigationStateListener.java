@@ -24,7 +24,7 @@ package org.j3d.ui.navigation;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface NavigationStateListener
 {
@@ -36,6 +36,15 @@ public interface NavigationStateListener
 
     /** The navigation state is Panning */
     public static int PAN_STATE = 3;
+
+    /** The navigation state is Flying */
+    public static int FLY_STATE = 4;
+
+    /** The navigation state is Examine */
+    public static int EXAMINE_STATE = 5;
+
+    /** The navigation state is such that there is no navigation */
+    public static int NO_STATE = 0;
 
     /**
      * Notification that the panning state has changed to the new state.

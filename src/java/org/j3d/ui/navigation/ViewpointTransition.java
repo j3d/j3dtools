@@ -129,7 +129,7 @@ public class ViewpointTransition implements ActionListener
                              int totalTime)
     {
         this.view = view;
-        viewTg = viewTg;
+        this.viewTg = viewTg;
         destinationTx = new Transform3D(endTx);
         totalTimeMS = totalTime;
 

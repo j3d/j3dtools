@@ -21,7 +21,7 @@ import javax.media.j3d.View;
  * move around to it etc etc.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ViewpointData
 {
@@ -36,6 +36,9 @@ public class ViewpointData
 
     /** Flag indicating this is the currently selected viewpoint */
     public boolean selected = false;
+
+    /**  User specific data they can associate with this viewpoint */
+    public Object userData;
 
     /**
      * Create a new data object initialised to the set of values.

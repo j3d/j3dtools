@@ -23,10 +23,11 @@ import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationStateManager;
 
 /**
- * Demonstration of a mouse navigation in a world.
+ * Demonstration of a mouse navigation in a world that presents a GUI
+ * representation.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MouseIconDemo extends DemoFrame
     implements NavigationStateListener
@@ -52,10 +53,14 @@ public class MouseIconDemo extends DemoFrame
         viewHandler = new MouseViewHandler();
         viewHandler.setCanvas(canvas);
 
+        navHandler.setButtonNavigation(MouseEvent.BUTTON1_MASK, FLY_STATE);
+        navHandler.setButtonNavigation(MouseEvent.BUTTON2_MASK, TILT_STATE);
+        navHandler.setButtonNavigation(MouseEvent.BUTTON3_MASK, PAN_STATE);
+
         NavigationStateManager nav_mgr = new NavigationStateManager(canvas);
         nav_mgr.setNavigationStateListener(this);
         nav_mgr.setMouseHandler(viewHandler);
-        nav_mgr.setNavigationState(WALK_STATE);
+        nav_mgr.setNavigationState(FLY_STATE);
 
         buildScene();
     }

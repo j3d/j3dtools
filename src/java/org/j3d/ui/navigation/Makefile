@@ -6,11 +6,15 @@ PACKAGE = org.j3d.ui.navigation
 
 SOURCE = FrameUpdateListener.java \
     NavigationStateListener.java \
+    NavigationUIStateListener.java \
 	ViewpointSelectionListener.java \
+	CollisionListener.java \
 	ViewpointData.java \
     ViewpointTransition.java \
 	NavigationToolbar.java \
+	ViewpointCellRenderer.java \
 	ViewpointToolbar.java \
+	NavigationHandler.java \
 	MouseViewHandler.java \
 	NavigationStateManager.java	\
 	ViewpointManager.java

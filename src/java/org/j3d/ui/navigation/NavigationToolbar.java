@@ -40,7 +40,7 @@ import org.j3d.util.ImageLoader;
  *
  * @author <a href="http://www.geocities.com/seregi/index.html">Laszlo Seregi</a><br>
  *    Updated for j3d.org by Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class NavigationToolbar extends JPanel
     implements ActionListener, NavigationStateListener
@@ -53,13 +53,19 @@ public class NavigationToolbar extends JPanel
     /** The name of the file for the tilt cursor image */
     private static final String TILT_BUTTON = "images/navigation/ButtonTilt.gif";
 
-    /** The name of the file for the walk cursor image */
+    /** The name of the file for the fly cursor image */
+    private static final String FLY_BUTTON = "images/navigation/ButtonFly.gif";
+
+    /** The name of the file for the fly cursor image */
     private static final String WALK_BUTTON = "images/navigation/ButtonWalk.gif";
+
+    /** The name of the file for the fly cursor image */
+    private static final String EXAMINE_BUTTON = "images/navigation/ButtonExamine.gif";
 
     // Local variables
 
     /** The current navigation state either set from us or externally */
-    private int navigationState = WALK_STATE;
+    private int navigationState = FLY_STATE;
 
     /** An observer for navigation state change information */
     private NavigationStateListener navigationListener;
@@ -67,14 +73,23 @@ public class NavigationToolbar extends JPanel
     /** Button group holding the navigation state buttons */
     private ButtonGroup navStateGroup;
 
-    /** Button representing the walk navigation state */
-    private JToggleButton walkButton;
+    /** Button representing the fly navigation state */
+    private JToggleButton flyButton;
 
     /** Button representing the tilt navigation state */
     private JToggleButton tiltButton;
 
     /** Button representing the pan navigation state */
     private JToggleButton panButton;
+
+    /** Button representing the walk navigation state */
+    private JToggleButton walkButton;
+
+    /** Button representing the examine navigation state */
+    private JToggleButton examineButton;
+
+    /** The last selected button */
+    private JToggleButton lastButton;
 
     /**
      * Create a new horizontal navigation toolbar with an empty list of
@@ -100,13 +115,13 @@ public class NavigationToolbar extends JPanel
 
         navStateGroup = new ButtonGroup();
 
-        Icon icon = ImageLoader.loadIcon(WALK_BUTTON);
-        walkButton = new JToggleButton(icon);
-        walkButton.setMargin(new Insets(0,0,0,0));
-        walkButton.setToolTipText("Walk");
-        walkButton.addActionListener(this);
-        navStateGroup.add(walkButton);
-        add(walkButton);
+        Icon icon = ImageLoader.loadIcon(FLY_BUTTON);
+        flyButton = new JToggleButton(icon);
+        flyButton.setMargin(new Insets(0,0,0,0));
+        flyButton.setToolTipText("Fly");
+        flyButton.addActionListener(this);
+        navStateGroup.add(flyButton);
+        add(flyButton);
 
         icon = ImageLoader.loadIcon(TILT_BUTTON);
         tiltButton = new JToggleButton(icon);
@@ -123,6 +138,25 @@ public class NavigationToolbar extends JPanel
         panButton.addActionListener(this);
         navStateGroup.add(panButton);
         add(panButton);
+
+        icon = ImageLoader.loadIcon(WALK_BUTTON);
+        walkButton = new JToggleButton(icon);
+        walkButton.setMargin(new Insets(0,0,0,0));
+        walkButton.setToolTipText("Walk");
+        walkButton.addActionListener(this);
+        navStateGroup.add(walkButton);
+        add(walkButton);
+
+        icon = ImageLoader.loadIcon(EXAMINE_BUTTON);
+        examineButton = new JToggleButton(icon);
+        examineButton.setMargin(new Insets(0,0,0,0));
+        examineButton.setToolTipText("Examine");
+        examineButton.addActionListener(this);
+        navStateGroup.add(examineButton);
+        add(examineButton);
+
+        flyButton.setSelected(true);
+        lastButton = flyButton;
     }
 
     //----------------------------------------------------------
@@ -153,9 +187,9 @@ public class NavigationToolbar extends JPanel
     {
         Object src = evt.getSource();
 
-        if(src == walkButton)
+        if(src == flyButton)
         {
-            navigationState = WALK_STATE;
+            navigationState = FLY_STATE;
             if(navigationListener != null)
                 navigationListener.setNavigationState(navigationState);
         }
@@ -168,6 +202,18 @@ public class NavigationToolbar extends JPanel
         else if(src == panButton)
         {
             navigationState = PAN_STATE;
+            if(navigationListener != null)
+                navigationListener.setNavigationState(navigationState);
+        }
+        else if(src == walkButton)
+        {
+            navigationState = WALK_STATE;
+            if(navigationListener != null)
+                navigationListener.setNavigationState(navigationState);
+        }
+        else if(src == examineButton)
+        {
+            navigationState = EXAMINE_STATE;
             if(navigationListener != null)
                 navigationListener.setNavigationState(navigationState);
         }
@@ -188,16 +234,33 @@ public class NavigationToolbar extends JPanel
 
         switch(navigationState)
         {
-            case NavigationStateListener.WALK_STATE:
-                walkButton.setSelected(true);
+            case NavigationStateListener.FLY_STATE:
+                flyButton.setSelected(true);
+                lastButton = flyButton;
                 break;
 
             case NavigationStateListener.PAN_STATE:
                 panButton.setSelected(true);
+                lastButton = panButton;
                 break;
 
             case NavigationStateListener.TILT_STATE:
                 tiltButton.setSelected(true);
+                lastButton = tiltButton;
+                break;
+
+            case NavigationStateListener.WALK_STATE:
+                walkButton.setSelected(true);
+                lastButton = walkButton;
+                break;
+
+            case NavigationStateListener.EXAMINE_STATE:
+                examineButton.setSelected(true);
+                lastButton = examineButton;
+                break;
+
+            case NavigationStateListener.NO_STATE:
+                lastButton.setSelected(false);
                 break;
         }
     }
@@ -213,4 +276,22 @@ public class NavigationToolbar extends JPanel
         return navigationState;
     }
 
+    //----------------------------------------------------------
+    // Methods Overriding Component
+    //----------------------------------------------------------
+
+    /**
+     * Set the panel enabled or disabled. Overridden to make sure the base
+     * components are properly handled.
+     *
+     * @param enabled true if this component is enabled
+     */
+    public void setEnabled(boolean enabled)
+    {
+        examineButton.setEnabled(enabled);
+        flyButton.setEnabled(enabled);
+        walkButton.setEnabled(enabled);
+        panButton.setEnabled(enabled);
+        tiltButton.setEnabled(enabled);
+    }
 }

@@ -15,7 +15,9 @@ package org.j3d.ui.navigation;
 // Standard imports
 import  javax.swing.*;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,19 +41,19 @@ import org.j3d.util.ImageLoader;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ViewpointToolbar extends JPanel
     implements ActionListener, ItemListener
 {
     /** The name of the file for the pan cursor image */
-    private static final String NEXT_BUTTON = "images/viewpoint/ButtonForward.gif";
+    private static final String NEXT_BUTTON = "images/navigation/ButtonForward.gif";
 
     /** The name of the file for the tilt cursor image */
-    private static final String PREV_BUTTON = "images/viewpoint/ButtonBack.gif";
+    private static final String PREV_BUTTON = "images/navigation/ButtonBack.gif";
 
     /** The name of the file for the walk cursor image */
-    private static final String UP_BUTTON = "images/viewpoint/ButtonHome.gif";
+    private static final String UP_BUTTON = "images/navigation/ButtonHome.gif";
 
 
     /** An observer for viewpoint state change information */
@@ -82,7 +84,6 @@ public class ViewpointToolbar extends JPanel
     }
 
     /**
-    /**
      * Create a new viewpoint toolbar that has the given list of viewpoints
      * to be displayed. List may be null and may be changed at a later date.
      * The buttons will be laid out horizontally
@@ -97,6 +98,7 @@ public class ViewpointToolbar extends JPanel
             viewpointModel = new DefaultComboBoxModel();
 
         viewpoints = new JComboBox(viewpointModel);
+        viewpoints.setRenderer(new ViewpointCellRenderer());
         viewpoints.setEditable(false);
         viewpoints.setMaximumRowCount(10);
         viewpoints.setMinimumSize(new Dimension(60,10)); // yuck!
@@ -120,6 +122,16 @@ public class ViewpointToolbar extends JPanel
         homeViewpoint.setMargin(new Insets(0,0,0,0));
         homeViewpoint.addActionListener(this);
         homeViewpoint.setToolTipText("Return to current Viewpoint");
+
+       JPanel p1 = new JPanel(new GridLayout(1, 2));
+       p1.add(nextViewpoint);
+       p1.add(homeViewpoint);
+
+       setLayout(new BorderLayout());
+
+       add(prevViewpoint, BorderLayout.WEST);
+       add(viewpoints, BorderLayout.CENTER);
+       add(p1, BorderLayout.EAST);
     }
 
     //----------------------------------------------------------
@@ -150,7 +162,7 @@ public class ViewpointToolbar extends JPanel
         if(vp != null)
         {
             for(int i = 0; i < vp.length; i++)
-                viewpointModel.addElement(vp);
+                viewpointModel.addElement(vp[i]);
 
             viewpoints.setSelectedIndex(0);
         }
@@ -256,9 +268,30 @@ public class ViewpointToolbar extends JPanel
      */
     public void itemStateChanged(ItemEvent evt)
     {
+        if(evt.getStateChange() != ItemEvent.SELECTED)
+            return;
+
         ViewpointData data = (ViewpointData)viewpoints.getSelectedItem();
 
         if(viewpointListener != null)
             viewpointListener.viewpointSelected(data);
+    }
+
+    //----------------------------------------------------------
+    // Methods Overriding Component
+    //----------------------------------------------------------
+
+    /**
+     * Set the panel enabled or disabled. Overridden to make sure the base
+     * components are properly handled.
+     *
+     * @param enabled true if this component is enabled
+     */
+    public void setEnabled(boolean enabled)
+    {
+        viewpoints.setEnabled(enabled);
+        nextViewpoint.setEnabled(enabled);
+        prevViewpoint.setEnabled(enabled);
+        homeViewpoint.setEnabled(enabled);
     }
 }

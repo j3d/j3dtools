@@ -10,8 +10,8 @@ PACKAGES = org.j3d.util \
 	   org.j3d.device.input \
 	   org.j3d.ui \
 	   org.j3d.ui.image \
+       org.j3d.geom \
 	   org.j3d.ui.navigation \
-       org.j3d.geom
 
 NODOC_PACKAGES = \
 
@@ -29,6 +29,7 @@ MAIN_JAR       = j3d-org.jar
 #
 #*********************************************************************
 
+OVERVIEW    = overview.html
 WINDOWTITLE = 'j3d.org Code Library'
 DOCTITLE    = 'j3d.org Code Repository API'
 HEADER      = 'j3d.org Code Repository API'
