@@ -22,7 +22,7 @@ import java.util.Random;
  * particles are generated.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ExplosionPointEmitter implements ParticleInitializer
 {
@@ -150,11 +150,13 @@ public class ExplosionPointEmitter implements ParticleInitializer
         float y_sign = randomiser.nextBoolean() ? 1 : -1;
         float z_sign = randomiser.nextBoolean() ? 1 : -1;
 
-        float v_x = rnd * velocity * randomiser.nextFloat() * x_sign;
-        float v_y = rnd * velocity * randomiser.nextFloat() * y_sign;
-        float v_z = rnd * velocity * randomiser.nextFloat() * z_sign;
+        float v_x = rnd * randomiser.nextFloat() * x_sign;
+        float v_y = rnd * randomiser.nextFloat() * y_sign;
+        float v_z = rnd * randomiser.nextFloat() * z_sign;
 
         particle.velocity.set(v_x, v_y, v_z);
+        particle.velocity.normalize();
+        particle.velocity.scale(velocity * rnd);
 
         return true;
     }
