@@ -10,7 +10,7 @@
 package org.j3d.geom.overlay;
 
 // Standard imports
-import java.awt.Rectangle;
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
@@ -36,7 +36,7 @@ import javax.media.j3d.Canvas3D;
  * the image will not change for that particular action.
  *
  * @author Will Holcomb, Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ImageButtonOverlay extends MouseOverlay
 {
@@ -75,14 +75,14 @@ public class ImageButtonOverlay extends MouseOverlay
      * space. Alpha is assumed to be on, but there is no blending.
      *
      * @param canvas The canvas to put the overlay on
-     * @param imageSpace The space on the canvas to place the image
+     * @param size The size of the overlay in pixels
      * @param images The array of images to use (non-null)
      */
     public ImageButtonOverlay(Canvas3D canvas,
-                              Rectangle imageSpace,
+                              Dimension size,
                               BufferedImage[] images)
     {
-        this(canvas, imageSpace, true, false, images);
+        this(canvas, size, true, false, images);
     }
 
     /**
@@ -90,20 +90,20 @@ public class ImageButtonOverlay extends MouseOverlay
      * with the images.
      *
      * @param canvas The canvas to put the overlay on
-     * @param imageSpace The space on the canvas to place the image
+     * @param size The size of the overlay in pixels
      * @param clipAlpha true if the image contains alpha
      * @param blendAlpha true if you want to blend the image with the
      *    background of the overlay (ie let the color show through)
      * @param images The array of images to use (non-null)
      */
     public ImageButtonOverlay(Canvas3D canvas,
-                              Rectangle imageSpace,
+                              Dimension size,
                               boolean clipAlpha,
                               boolean blendAlpha,
                               BufferedImage[] images)
     {
         super(canvas,
-              imageSpace,
+              size,
               clipAlpha,
               blendAlpha,
               null,

@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.overlay directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.6 $
+# Version: $Revision: 1.7 $
 #
 #*********************************************************************
 
@@ -34,14 +34,12 @@ SOURCE = \
   LineData.java \
   LineDetails.java \
   ScribbleOverlay.java \
-  ImageButtonOverlay.java
-
-#  ComponentMouseManager.java \
-
-#  ScrollEvent.java \
-#  ScrollEventListener.java \
-
+  ImageButtonOverlay.java \
+  TextureOverlay.java \
+  ScrollEvent.java \
+  ScrollEventListener.java \
 #  ScrollingOverlay.java \
+
 #  FpsOverlay.java \
 
 # The list of other files we need to copy from this directory to the classes

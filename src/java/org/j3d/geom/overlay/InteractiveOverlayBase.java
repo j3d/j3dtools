@@ -10,7 +10,7 @@
 package org.j3d.geom.overlay;
 
 // Standard imports
-import java.awt.Rectangle;
+import java.awt.Dimension;
 
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -28,7 +28,7 @@ import javax.media.j3d.Canvas3D;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class InteractiveOverlayBase extends OverlayBase
     implements InteractiveOverlay
@@ -44,11 +44,11 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * of the canvas.
      *
      * @param canvas Canvas being drawn onto
-     * @param bounds Bounds on the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      */
-    protected InteractiveOverlayBase(Canvas3D canvas, Rectangle bounds)
+    protected InteractiveOverlayBase(Canvas3D canvas, Dimension size)
     {
-        super(canvas, bounds);
+        super(canvas, size);
     }
 
     /**
@@ -58,15 +58,15 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * overlay to fit the canvas and then track the size of the canvas.
      *
      * @param canvas The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      */
     protected InteractiveOverlayBase(Canvas3D canvas,
-                                     Rectangle bounds,
+                                     Dimension size,
                                      UpdateManager manager)
     {
-        super(canvas, bounds, manager);
+        super(canvas, size, manager);
     }
 
     /**
@@ -76,16 +76,16 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * overlay to fit the canvas and then track the size of the canvas.
      *
      * @param canvas The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      */
     protected InteractiveOverlayBase(Canvas3D canvas,
-                                     Rectangle bounds,
+                                     Dimension size,
                                      boolean clipAlpha,
                                      boolean blendAlpha)
     {
-        super(canvas, bounds, clipAlpha, blendAlpha);
+        super(canvas, size, clipAlpha, blendAlpha);
     }
 
     /**
@@ -95,19 +95,19 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * and then track the size of the canvas.
      *
      * @param canvas The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      */
     protected InteractiveOverlayBase(Canvas3D canvas,
-                       Rectangle bounds,
+                       Dimension size,
                        boolean clipAlpha,
                        boolean blendAlpha,
                        UpdateManager updateManager)
     {
-        super(canvas, bounds, clipAlpha, blendAlpha, updateManager);
+        super(canvas, size, clipAlpha, blendAlpha, updateManager);
     }
 
     /**
@@ -117,7 +117,7 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * and then track the size of the canvas.
      *
      * @param canvas The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      * @param updateManager Responsible for allowing the Overlay to update
@@ -125,14 +125,14 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * @param numBuffers The number of buffers to generate, the default is two
      */
     protected InteractiveOverlayBase(Canvas3D canvas,
-                                     Rectangle bounds,
+                                     Dimension size,
                                      boolean clipAlpha,
                                      boolean blendAlpha,
                                      UpdateManager updateManager,
                                      int numBuffers)
     {
         super(canvas,
-              bounds,
+              size,
               clipAlpha,
               blendAlpha,
               updateManager,

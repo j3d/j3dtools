@@ -74,7 +74,7 @@ import javax.media.j3d.Canvas3D;
  * the alpha channel.
  *
  * @author David Yazel, Will Holcomb
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public interface Overlay extends UpdatableEntity
 {
@@ -83,33 +83,6 @@ public interface Overlay extends UpdatableEntity
 
     /** This mode copies the background image to the canvas before it is drawn */
     public static final int BACKGROUND_COPY = 1;
-
-    /** Places the overlay relative to the right side of the screen. */
-    public final static int PLACE_RIGHT = 0;
-
-    /** Places the overlay relative to the left side of the screen. */
-    public final static int PLACE_LEFT = 1;
-
-    /** Places the overlay relative to the center of the screen. */
-    public final static int PLACE_CENTER = 3;
-
-    /** Places the overlay relative to the top of the screen. */
-    public final static int PLACE_TOP = 0;
-
-    /** Places the overlay relative to the bottom of the screen. */
-    public final static int PLACE_BOTTOM = 1;
-
-    /**
-     * When calling setRelativePosition with an int[2] array, this is the
-     * x component.
-     */
-    public final static int X_PLACEMENT = 0;
-
-    /**
-     * When calling setRelativePosition with an int[2] array, this is the
-     * y component.
-     */
-    public final static int Y_PLACEMENT = 1;
 
     /**
      * Post construction initialisation before turning the overlay live. Should
@@ -160,37 +133,13 @@ public interface Overlay extends UpdatableEntity
     public void setUpdateManager(UpdateManager updateManager);
 
     /**
-     * Sets the relative offset of the overlay. How this translates into
-     * screen coordinates depends on the value of relativePosition().
+     * Sets the location of the top-left corner of the overlay. It will move
+     * the overlay to that position on the next update cycle.
      *
-     * @param offset The location in X,Y of the offset
+     * @param x The x coordinate of the location
+     * @param y The y coordinate of the location
      */
-    public void setOffset(Dimension offset);
-
-    /**
-     * Sets the relative offset of the overlay. How this translates into
-     * screen coordinates depends on the value of relativePosition()
-     *
-     * @param width The width component of the offset
-     * @param height The height component of the offset
-     */
-    public void setOffset(int width, int height);
-
-    /**
-     * Sets the relative position of the overlay on the screen.
-     *
-     * @param xType May be PLACE_LEFT, PLACE_RIGHT, or PLACE_CENTER
-     * @param yType May be PLACE_TOP, PLACE_BOTTOM, or PLACE_CENTER
-     */
-    public void setRelativePosition(int xType, int yType);
-
-    /**
-     * Sets the relative position of the overlay on the screen using a 2 dimensional array.
-     *
-     * @param relativePosition[X_PLACEMENT] May be PLACE_LEFT, PLACE_RIGHT, or PLACE_CENTER
-     * @param relativePosition[Y_PLACEMENT] May be PLACE_TOP, PLACE_BOTTOM, or PLACE_CENTER
-     */
-    public void setRelativePosition(int[] relativePositon);
+    public void setLocation(int x, int y);
 
     /**
      * Sets whether drawing onto this Overlay is anialiased. If called after
@@ -220,15 +169,6 @@ public interface Overlay extends UpdatableEntity
      * @return true if the overlay is currently visible
      */
     public boolean isVisible();
-
-    /**
-     * Sets the background to a solid color. If a background image already exists then
-     * it will be overwritten with this solid color.  It is completely appropriate to
-     * have an alpha component in the color if this is a alpha capable overlay.
-     * In general you should only use background images if this is an overlay that is
-     * called frequently, since you could always paint it inside the paint() method.
-     */
-    public void setBackgroundColor(Color color);
 
     /**
      * Update the canvas component details of size and field of view settings.

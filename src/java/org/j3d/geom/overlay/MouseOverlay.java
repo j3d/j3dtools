@@ -11,7 +11,7 @@ package org.j3d.geom.overlay;
 
 // Standard imports
 import java.awt.Color;
-import java.awt.Rectangle;
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -37,7 +37,7 @@ import javax.media.j3d.Canvas3D;
  * event.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class MouseOverlay extends InteractiveOverlayBase
     implements MouseListener, MouseMotionListener
@@ -48,11 +48,11 @@ public abstract class MouseOverlay extends InteractiveOverlayBase
      * until you attach it to the view platform transform.
      *
      * @param canvas3D Canvas being drawn onto
-     * @param bounds Bounds on the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      */
-    protected MouseOverlay(Canvas3D canvas3D, Rectangle bounds)
+    protected MouseOverlay(Canvas3D canvas3D, Dimension size)
     {
-        super(canvas3D, bounds);
+        super(canvas3D, size);
     }
 
     /**
@@ -61,15 +61,15 @@ public abstract class MouseOverlay extends InteractiveOverlayBase
      * the view platform transform.
      *
      * @param canvas3D The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      */
     protected MouseOverlay(Canvas3D canvas3D,
-                           Rectangle bounds,
+                           Dimension size,
                            UpdateManager updateManager)
     {
-        super(canvas3D, bounds, updateManager);
+        super(canvas3D, size, updateManager);
     }
 
     /**
@@ -78,7 +78,7 @@ public abstract class MouseOverlay extends InteractiveOverlayBase
      * view platform transform.
      *
      * @param canvas3D The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      * @param hasButtonEvents true to recieve mouse button events
@@ -87,11 +87,11 @@ public abstract class MouseOverlay extends InteractiveOverlayBase
      *    false to use just the last one
      */
     protected MouseOverlay(Canvas3D canvas3D,
-                           Rectangle bounds,
+                           Dimension size,
                            boolean clipAlpha,
                            boolean blendAlpha)
     {
-        super(canvas3D, bounds, clipAlpha, blendAlpha);
+        super(canvas3D, size, clipAlpha, blendAlpha);
     }
 
     /**
@@ -99,20 +99,20 @@ public abstract class MouseOverlay extends InteractiveOverlayBase
      * unless it is added to the scene under the view platform transform
      *
      * @param canvas3D The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      */
     protected MouseOverlay(Canvas3D canvas3D,
-                           Rectangle bounds,
+                           Dimension size,
                            boolean clipAlpha,
                            boolean blendAlpha,
                            UpdateManager updateManager,
                            boolean hasButtonEvents)
     {
-        super(canvas3D, bounds, clipAlpha, blendAlpha, updateManager);
+        super(canvas3D, size, clipAlpha, blendAlpha, updateManager);
     }
 
     /**
@@ -120,7 +120,7 @@ public abstract class MouseOverlay extends InteractiveOverlayBase
      * unless it is added to the scene under the view platform transform
      *
      * @param canvas3D The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      * @param updateManager Responsible for allowing the Overlay to update
@@ -128,13 +128,13 @@ public abstract class MouseOverlay extends InteractiveOverlayBase
      * @param numBuffers The number of buffers to generate, the default is two
      */
     protected MouseOverlay(Canvas3D canvas3D,
-                           Rectangle bounds,
+                           Dimension size,
                            boolean clipAlpha,
                            boolean blendAlpha,
                            UpdateManager updateManager,
                            int numBuffers)
     {
-        super(canvas3D, bounds, clipAlpha, blendAlpha, updateManager, numBuffers);
+        super(canvas3D, size, clipAlpha, blendAlpha, updateManager, numBuffers);
     }
 
     //------------------------------------------------------------------------

@@ -11,9 +11,9 @@ package org.j3d.geom.overlay;
 
 // Standard imports
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.font.TextAttribute;
 import java.text.AttributedString;
@@ -31,7 +31,7 @@ import javax.media.j3d.Canvas3D;
  * The text is placed with the baseline at 3/4 of the height of the label.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class LabelOverlay extends OverlayBase
 {
@@ -58,11 +58,11 @@ public class LabelOverlay extends OverlayBase
      * Create a new, simple label overlay that does not contain any text.
      *
      * @param canvas The canvas for this overlay to live on
-     * @param space The area of the canvas (in screen coords) for the label
+     * @param size The size of the overlay in pixels
      */
-    public LabelOverlay(Canvas3D canvas, Rectangle space)
+    public LabelOverlay(Canvas3D canvas, Dimension size)
     {
-        this(canvas, space, "");
+        this(canvas, size, "");
     }
 
     /**
@@ -70,11 +70,11 @@ public class LabelOverlay extends OverlayBase
      * screen space.
      *
      * @param canvas The canvas for this overlay to live on
-     * @param space The area of the canvas (in screen coords) for the label
+     * @param size The size of the overlay in pixels
      */
-    public LabelOverlay(Canvas3D canvas, Rectangle space, String text)
+    public LabelOverlay(Canvas3D canvas, Dimension size, String text)
     {
-        this(canvas, space, text, DEFAULT_FONT, DEFAULT_COLOR, null);
+        this(canvas, size, text, DEFAULT_FONT, DEFAULT_COLOR, null);
     }
 
     /**
@@ -82,14 +82,14 @@ public class LabelOverlay extends OverlayBase
      * font and colour styles.
      *
      * @param canvas The canvas for this overlay to live on
-     * @param space The area of the canvas (in screen coords) for the label
+     * @param size The size of the overlay in pixels
      */
     public LabelOverlay(Canvas3D canvas,
-                        Rectangle space,
+                        Dimension size,
                         String str,
                         Font font,
                         Color color) {
-        this(canvas, space, str, font, color, null);
+        this(canvas, size, str, font, color, null);
     }
 
     /**
@@ -97,16 +97,16 @@ public class LabelOverlay extends OverlayBase
      * manager to control when items are updated.
      *
      * @param canvas The canvas for this overlay to live on
-     * @param space The area of the canvas (in screen coords) for the label
+     * @param size The size of the overlay in pixels
      */
     public LabelOverlay(Canvas3D canvas,
-                        Rectangle space,
+                        Dimension size,
                         String str,
                         Font font,
                         Color color,
                         UpdateManager manager)
     {
-        super(canvas, space, manager);
+        super(canvas, size, manager);
         this.font = font;
         this.color = color;
         setText(str);
@@ -119,31 +119,38 @@ public class LabelOverlay extends OverlayBase
      * for rendering.
      *
      * @param canvas The canvas for this overlay to live on
-     * @param space The area of the canvas (in screen coords) for the label
+     * @param size The size of the overlay in pixels
      */
-    public LabelOverlay(Canvas3D canvas, Rectangle space, AttributedString text)
+    public LabelOverlay(Canvas3D canvas, Dimension size, AttributedString text)
     {
-        this(canvas, space, text, (UpdateManager)null);
+        this(canvas, size, text, (UpdateManager)null);
     }
 
     /**
-     *
+     * Create a new label overlay that uses text with attributes and a custom
+     * update manager.
      *
      * @param canvas The canvas for this overlay to live on
-     * @param space The area of the canvas (in screen coords) for the label
+     * @param size The size of the overlay in pixels
      */
     public LabelOverlay(Canvas3D canvas,
-                        Rectangle space,
+                        Dimension size,
                         AttributedString text,
                         UpdateManager manager)
     {
-        super(canvas, space, manager);
+        super(canvas, size, manager);
         setText(text);
         setBackgroundColor(new Color(0, 0, 0, 0));
 
         visibleLength = text.getIterator().getEndIndex();
     }
 
+    /**
+     * Repaint the overlay now. Overrides the base class to provide text
+     * rendering.
+     *
+     * @param g The graphics context to paint with
+     */
     public void paint(Graphics2D g)
     {
         if(text == null)
@@ -162,6 +169,15 @@ public class LabelOverlay extends OverlayBase
         }
     }
 
+    //------------------------------------------------------------------------
+    // Local utility methods
+    //------------------------------------------------------------------------
+
+    /**
+     * Change the rendering color of the text to be rendered.
+     *
+     * @param c The new colour to use
+     */
     public void setColor(Color c)
     {
         if(!color.equals(c))
@@ -175,6 +191,11 @@ public class LabelOverlay extends OverlayBase
         }
     }
 
+    /**
+     * Change the font used by the text to be rendered.
+     *
+     * @param f The new font to use
+     */
     public void setFont(Font f)
     {
         if(!font.equals(f))
@@ -235,6 +256,16 @@ public class LabelOverlay extends OverlayBase
         visibleLength = (length < 0) ? 0 : length;
     }
 
+
+    /**
+     * Convenience method to create a new attributed string that is used
+     * by the painting.
+     *
+     * @param text The string to use
+     * @param font The font to use
+     * @param color The color to use
+     * @returns A matching attributed string instance for the parameters
+     */
     private AttributedString createAttributedString(String text,
                                                     Font font,
                                                     Color color)

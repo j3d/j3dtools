@@ -36,7 +36,7 @@ import java.util.List;
  * users too.
  *
  * @author David Yazel
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class OverlayUtilities
 {
@@ -88,34 +88,6 @@ public class OverlayUtilities
                                  raster,     // Raster
                                  false,      // Alpha premultiplied
                                  null);      // Hashtable of properties
-    }
-
-    /**
-     * Will update the background color on a set of Overlays and not allow and of
-     * them to update until all have been set. Intended to set the background on
-     * grouping classes like an OverlayScroller.
-     *
-     * @param overlay The list of overlays to update
-     * @param backgroundColor The new color to have for the background
-     */
-    public static void setBackgroundColor(Overlay[] overlay,
-                                          Color backgroundColor)
-    {
-        int i = 0;
-        UpdateManager mgr;
-
-        for (i = overlay.length - 1; i >= 0; i--)
-        {
-            mgr = overlay[i].getUpdateManager();
-            mgr.setUpdating(false);
-            overlay[i].setBackgroundColor(backgroundColor);
-        }
-
-        for (i = overlay.length - 1; i >= 0; i--)
-        {
-            mgr = overlay[i].getUpdateManager();
-            mgr.setUpdating(true);
-        }
     }
 
     /**
@@ -204,49 +176,5 @@ public class OverlayUtilities
             n <<= 1;
 
         return n;
-    }
-
-    /**
-     * Offset the rectangle within the dimension according to the criteria in
-     * the array. The elements in relativePosition are set according to the format
-     * of Overlay#setRelativePosition().
-     *
-     * @param bounds The source rectangle to update
-     * @param relativePosition The set of instructions on how to shift the bounds
-     * @param canvasSize The current size of the canvas
-     * @param offset The offset to be applied to the current position
-     */
-    public static void repositonBounds(Rectangle bounds,
-                                       int[] relativePosition,
-                                       Dimension canvasSize,
-                                       Dimension offset)
-    {
-        switch(relativePosition[Overlay.X_PLACEMENT])
-        {
-            case Overlay.PLACE_RIGHT:
-                bounds.x = canvasSize.width - bounds.width - offset.width;
-                break;
-            case Overlay.PLACE_LEFT:
-                bounds.x = offset.width;
-                break;
-            case Overlay.PLACE_CENTER:
-                bounds.x = (int)(canvasSize.width - bounds.width) / 2 - offset.width;
-                break;
-        }
-
-        // this buffer is upside down relative to the screen. 0, 0 is the lower left
-
-        switch(relativePosition[Overlay.Y_PLACEMENT])
-        {
-            case Overlay.PLACE_TOP:
-                bounds.y = offset.height;
-                break;
-            case Overlay.PLACE_BOTTOM:
-                bounds.y = canvasSize.height - bounds.height - offset.height;
-                break;
-            case Overlay.PLACE_CENTER:
-                bounds.y = (int)(canvasSize.height - bounds.height ) / 2  - offset.height;
-                break;
-        }
     }
 }

@@ -14,7 +14,7 @@ import java.awt.*;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
@@ -31,7 +31,7 @@ import javax.media.j3d.TransformGroup;
  * <P>
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ScribbleOverlay extends MouseOverlay
 {
@@ -61,11 +61,11 @@ public class ScribbleOverlay extends MouseOverlay
      * the overlay works for the entire canvas.
      *
      * @param canvas The canvas that is scribbled on
-     * @param bounds The bounds of the canvas to draw on or null
+     * @param size The size of the overlay in pixels
      */
-    public ScribbleOverlay(Canvas3D canvas, Rectangle bounds)
+    public ScribbleOverlay(Canvas3D canvas, Dimension size)
     {
-        this(canvas, bounds, Color.white);
+        this(canvas, size, Color.white);
     }
 
     /**
@@ -73,14 +73,14 @@ public class ScribbleOverlay extends MouseOverlay
      * are null, the overlay works for the entire canvas.
      *
      * @param canvas The canvas that is scribbled on
-     * @param bounds The bounds of the canvas to draw on or null
+     * @param size The size of the overlay in pixels
      * @param lineColor The colour to start the first line with
      */
     public ScribbleOverlay(Canvas3D canvas,
-                           Rectangle bounds,
+                           Dimension size,
                            Color lineColor)
     {
-        super(canvas, bounds);
+        super(canvas, size);
 
         lineList = new ArrayList();
         worldPoint = new Point();

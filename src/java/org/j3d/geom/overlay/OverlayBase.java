@@ -64,31 +64,56 @@ import javax.vecmath.Vector3d;
  * screen after the resize.
  * <P>
  *
+ * <hr>
+ *
+ * All overlays start at the origin of 0,0 and have some form of width
+ * associated with them. This code does not look after any layout requirements.
+ * It is expected the application will take care of the layout management of
+ * the overlays.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
-public class OverlayBase
-    implements Overlay,
-               ScreenComponent,
-               ComponentListener
+public abstract class OverlayBase
+    implements Overlay, ScreenComponent, ComponentListener
 {
     /** I do not undersand what this is for */
     private final static double CONSOLE_Z = 2.1f;
 
+    // checks for altered elements
+
+    /** Mark the visible flag as dirty */
+    protected final static int DIRTY_VISIBLE = 0;
+
+    /** Mark the position as dirty and needing correction */
+    protected final static int DIRTY_POSITION = 1;
+
+    /** Mark the active buffer as dirty and needing swapping */
+    protected final static int DIRTY_ACTIVE_BUFFER = 2;
+
+    /** Mark the size as dirty and needing correction */
+    protected final static int DIRTY_SIZE = 3;
+
+
     /** The current background mode. Defaults to copy */
     protected int backgroundMode = BACKGROUND_COPY;
 
-    /** Position of the overlay relative to the canvas */
-    protected int[] relativePosition = {PLACE_LEFT, PLACE_TOP};
-
     /** The image that sits in the background of the overlay */
     private BufferedImage backgroundImage;
+
+    /** Flag indicating the image(s) have an alpha component to them */
     private boolean hasAlpha;
+
+    /** Flag holding current visibility state */
     private boolean visible;
+
+    /** Flag to say if the drawing should be anti-aliased */
     private boolean antialiased;
+
+    /** The number of fore/back buffers in use */
     private int numBuffers;
 
+    /** The smallest number of pixels per sub-overlay size */
     private final int minDivSize;
 
     /** Canvas bounds occupied by this overlay. */
@@ -99,9 +124,6 @@ public class OverlayBase
 
     /** The field of view for the canvas */
     protected double fieldOfView;
-
-    /** Offset in screen coordinates */
-    private Dimension offset;
 
     /** The update manager for keeping us in sync */
     private UpdateManager updateManager;
@@ -139,18 +161,10 @@ public class OverlayBase
     protected TransformGroup consoleTG;
 
     // shared resources for the sub-overlays
-
     private RenderingAttributes renderAttributes;
     private PolygonAttributes polygonAttributes;
     private TextureAttributes textureAttributes;
     private TransparencyAttributes transparencyAttributes;
-
-    // checks for altered elements
-
-    public final static int DIRTY_VISIBLE = 0;
-    public final static int DIRTY_POSITION = 1;
-    public final static int DIRTY_ACTIVE_BUFFER = 2;
-    public final static int DIRTY_SIZE = 3;
 
     /** List of the dirty flag settings */
     private boolean[] dirtyCheck = new boolean[DIRTY_SIZE + 1];
@@ -176,12 +190,12 @@ public class OverlayBase
      * of the canvas.
      *
      * @param canvas Canvas being drawn onto
-     * @param bounds Bounds on the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @throws IllegalArgumentException Both the canvas and bounds are null
      */
-    public OverlayBase(Canvas3D canvas, Rectangle bounds)
+    protected OverlayBase(Canvas3D canvas, Dimension size)
     {
-        this(canvas, bounds, true, false, null);
+        this(canvas, size, true, false, null);
     }
 
     /**
@@ -191,14 +205,14 @@ public class OverlayBase
      * overlay to fit the canvas and then track the size of the canvas.
      *
      * @param canvas The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      * @throws IllegalArgumentException Both the canvas and bounds are null
      */
-    public OverlayBase(Canvas3D canvas, Rectangle bounds, UpdateManager manager)
+    protected OverlayBase(Canvas3D canvas, Dimension size, UpdateManager manager)
     {
-        this(canvas, bounds, true, false, manager);
+        this(canvas, size, true, false, manager);
     }
 
     /**
@@ -208,17 +222,17 @@ public class OverlayBase
      * overlay to fit the canvas and then track the size of the canvas.
      *
      * @param canvas The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      * @throws IllegalArgumentException Both the canvas and bounds are null
      */
-    public OverlayBase(Canvas3D canvas,
-                       Rectangle bounds,
-                       boolean clipAlpha,
-                       boolean blendAlpha)
+    protected OverlayBase(Canvas3D canvas,
+                          Dimension size,
+                          boolean clipAlpha,
+                          boolean blendAlpha)
     {
-        this(canvas, bounds, clipAlpha, blendAlpha, null);
+        this(canvas, size, clipAlpha, blendAlpha, null);
     }
 
     /**
@@ -228,20 +242,20 @@ public class OverlayBase
      * and then track the size of the canvas.
      *
      * @param canvas The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      * @throws IllegalArgumentException Both the canvas and bounds are null
      */
-    public OverlayBase(Canvas3D canvas,
-                       Rectangle bounds,
-                       boolean clipAlpha,
-                       boolean blendAlpha,
-                       UpdateManager updateManager)
+    protected OverlayBase(Canvas3D canvas,
+                          Dimension size,
+                          boolean clipAlpha,
+                          boolean blendAlpha,
+                          UpdateManager updateManager)
     {
-        this(canvas, bounds, clipAlpha, blendAlpha, updateManager, 2);
+        this(canvas, size, clipAlpha, blendAlpha, updateManager, 2);
     }
 
     /**
@@ -251,7 +265,7 @@ public class OverlayBase
      * and then track the size of the canvas.
      *
      * @param canvas The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
+     * @param size The size of the overlay in pixels
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      * @param updateManager Responsible for allowing the Overlay to update
@@ -259,22 +273,22 @@ public class OverlayBase
      * @param numBuffers The number of buffers to generate, the default is two
      * @throws IllegalArgumentException Both the canvas and bounds are null
      */
-    public OverlayBase(Canvas3D canvas,
-                       Rectangle bounds,
-                       boolean clipAlpha,
-                       boolean blendAlpha,
-                       UpdateManager updateManager,
-                       int numBuffers)
+    protected OverlayBase(Canvas3D canvas,
+                          Dimension size,
+                          boolean clipAlpha,
+                          boolean blendAlpha,
+                          UpdateManager updateManager,
+                          int numBuffers)
     {
-        if(canvas == null && bounds == null)
-            throw new IllegalArgumentException("Both canvas and bounds null");
+        if(canvas == null && size == null)
+            throw new IllegalArgumentException("Both canvas and size null");
 
         this.numBuffers = numBuffers;
 
         initComplete = false;
         canvas3D = canvas;
 
-        if(bounds == null)
+        if(size == null)
         {
             overlayBounds = canvas.getBounds();
             componentSize = canvas.getSize();
@@ -290,7 +304,7 @@ public class OverlayBase
         }
         else
         {
-            overlayBounds = bounds;
+            overlayBounds = new Rectangle(0, 0, size.width, size.height);
             fixedSize = true;
             minDivSize = 8;
 
@@ -306,7 +320,7 @@ public class OverlayBase
             }
             else
             {
-                componentSize = new Dimension(bounds.width, bounds.height);
+                componentSize = new Dimension(size);
                 fieldOfView = 0.785398;  // PI / 4 == 45 deg
             }
 
@@ -314,14 +328,11 @@ public class OverlayBase
 
         visible = true;
         antialiased = true;
-        offset = new Dimension(overlayBounds.x, overlayBounds.y);
         hasAlpha = clipAlpha || blendAlpha;
 
         if(overlayBounds.width != 0 && overlayBounds.height != 0)
         {
-            this.canvas =
-                OverlayUtilities.createBufferedImage(overlayBounds.getSize(),
-                                                     hasAlpha);
+            this.canvas = OverlayUtilities.createBufferedImage(size, hasAlpha);
         }
 
         if(!fixedSize || (canvas3D != null))
@@ -377,10 +388,7 @@ public class OverlayBase
             textureAttributes.setTextureBlendColor(new Color4f(0, 0, 0, 1));
         }
 
-        List overlays =
-            OverlayUtilities.subdivide(overlayBounds.getSize(),
-                                       minDivSize,
-                                       256);
+        List overlays = OverlayUtilities.subdivide(size, minDivSize, 256);
 
         subOverlay = new SubOverlay[overlays.size()];
         int n = overlays.size();
@@ -438,60 +446,22 @@ public class OverlayBase
     }
 
     /**
-     * Sets the relative offset of the overlay. How this translates into
-     * screen coordinates depends on the value of relativePosition()
-     */
-    public void setOffset(Dimension offset)
-    {
-        setOffset(offset.width, offset.height);
-    }
-
-    /**
-     * Sets the relative offset of the overlay. How this translates into
-     * screen coordinates depends on the value of relativePosition()
+     * Sets the location of the top-left corner of the overlay. It will move
+     * the overlay to that position on the next update cycle.
      *
-     * @param width The width (X axis in 3D space) position
-     * @param height The height (Y axis in 3D space) position
+     * @param x The x coordinate of the location
+     * @param y The y coordinate of the location
      */
-    public void setOffset(int width, int height)
+    public void setLocation(int x, int y)
     {
-        if(offset.width != width || offset.height != height)
+        if(overlayBounds.x != x || overlayBounds.y != y)
         {
-            synchronized(offset)
+            synchronized(overlayBounds)
             {
-                offset.width = width;
-                offset.height = height;
+                overlayBounds.x = x;
+                overlayBounds.y = y;
                 dirty(DIRTY_POSITION);
             }
-        }
-    }
-
-    /**
-     * Sets the relative position of the overlay on the screen using a 2 dimensional array.
-     *
-     * @param relativePosition[X_PLACEMENT] May be PLACE_LEFT, PLACE_RIGHT, or PLACE_CENTER
-     * @param relativePosition[Y_PLACEMENT] May be PLACE_TOP, PLACE_BOTTOM, or PLACE_CENTER
-     */
-    public void setRelativePosition(int[] relativePositon)
-    {
-        setRelativePosition(relativePosition[X_PLACEMENT],
-                            relativePosition[Y_PLACEMENT]);
-    }
-
-    /**
-     * Sets the relative position of the overlay on the screen.
-     *
-     * @param xType May be PLACE_LEFT, PLACE_RIGHT, or PLACE_CENTER
-     * @param yType May be PLACE_TOP, PLACE_BOTTOM, or PLACE_CENTER
-     */
-    public void setRelativePosition(int xType, int yType)
-    {
-        if(relativePosition[X_PLACEMENT] != xType ||
-           relativePosition[Y_PLACEMENT] != yType)
-        {
-            relativePosition[X_PLACEMENT] = xType;
-            relativePosition[Y_PLACEMENT] = yType;
-            dirty(DIRTY_POSITION);
         }
     }
 
@@ -553,26 +523,6 @@ public class OverlayBase
     public boolean isVisible()
     {
         return visible;
-    }
-
-    /**
-     * Sets the background to a solid color. If a background image already exists then
-     * it will be overwritten with this solid color.  It is completely appropriate to
-     * have an alpha component in the color if this is a alpha capable overlay.
-     * In general you should only use background images if this is an overlay that is
-     * called frequently, since you could always paint it inside the paint()method.
-     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
-     *
-     * @param color The new color to use
-     */
-    public void setBackgroundColor(Color color)
-    {
-        backgroundColor = color;
-
-        if(overlayBounds.width == 0 || overlayBounds.height == 0)
-            return;
-
-        updateBackgroundColor();
     }
 
     /**
@@ -723,6 +673,26 @@ public class OverlayBase
     //------------------------------------------------------------------------
     // Local utility methods
     //------------------------------------------------------------------------
+
+    /**
+     * Sets the background to a solid color. If a background image already exists then
+     * it will be overwritten with this solid color.  It is completely appropriate to
+     * have an alpha component in the color if this is a alpha capable overlay.
+     * In general you should only use background images if this is an overlay that is
+     * called frequently, since you could always paint it inside the paint()method.
+     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
+     *
+     * @param color The new color to use
+     */
+    public void setBackgroundColor(Color color)
+    {
+        backgroundColor = color;
+
+        if(overlayBounds.width == 0 || overlayBounds.height == 0)
+            return;
+
+        updateBackgroundColor();
+    }
 
     /**
      * Returns the background for the overlay. Updates to this image will not
@@ -931,11 +901,6 @@ public class OverlayBase
 
             if(backgroundColor != null)
                 updateBackgroundColor();
-
-            OverlayUtilities.repositonBounds(overlayBounds,
-                                             relativePosition,
-                                             componentSize,
-                                             offset);
 
             // get the field of view and then calculate the width in meters of the
             // screen

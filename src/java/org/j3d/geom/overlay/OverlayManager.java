@@ -34,7 +34,7 @@ import javax.vecmath.Vector3d;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class OverlayManager extends BranchGroup
     implements ComponentListener
@@ -247,7 +247,7 @@ public class OverlayManager extends BranchGroup
      */
     public void setPosition(Overlay overlay, int x, int y)
     {
-        overlay.setOffset(x, y);
+        overlay.setLocation(x, y);
     }
 
     /**
@@ -311,6 +311,30 @@ public class OverlayManager extends BranchGroup
                 awtBehavior.setEnable(false);
         }
 
+    }
+
+    /**
+     * Clear all the current overlays. This is either to reset or to close
+     * down the application.
+     */
+    public void clearOverlays() {
+        int num_overlays = overlays.size();
+
+        for(int i = 0; i < num_overlays; i++)
+        {
+            Overlay overlay = (Overlay)overlays.get(i);
+
+            if(overlay instanceof InteractiveOverlay)
+                ((InteractiveOverlay)overlay).setInputRequester(null);
+
+            BranchGroup bg = overlay.getRoot();
+            bg.detach();
+
+            if(overlays.size() == 0)
+                awtBehavior.setEnable(false);
+        }
+
+        overlays.clear();
     }
 
     /**

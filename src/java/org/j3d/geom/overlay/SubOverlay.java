@@ -27,7 +27,7 @@ import java.awt.image.BufferedImage;
  * directly.
  *
  * @author David Yazel
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 class SubOverlay
 {
@@ -284,7 +284,8 @@ class SubOverlay
         int format = QuadArray.COORDINATES | QuadArray.TEXTURE_COORDINATE_2;
         QuadArray geom = new QuadArray(4, format);
 
-        float[] vertices = {
+        float[] vertices =
+        {
             space.x + space.width, space.y,                 0,
             space.x + space.width, space.y + space.height,  0,
             space.x,               space.y + space.height,  0,
@@ -296,7 +297,8 @@ class SubOverlay
         float w_ratio = space.width / texture.getWidth();
         float h_ratio = space.height / texture.getHeight();
 
-        float[] textureCoordinates = {
+        float[] textureCoordinates =
+        {
             w_ratio, 0,
             w_ratio, h_ratio,
             0,       h_ratio,
