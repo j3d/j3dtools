@@ -34,81 +34,80 @@ import javax.media.j3d.WakeupOnElapsedTime;
  * An overlay that renders a text label.
  * <P>
  *
+ * The text is placed with the baseline at 3/4 of the height of the label.
+ *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class LabelOverlay extends OverlayBase
 {
+    /** If the user doesn't supply a font, use this one */
     private static final Font DEFAULT_FONT =
-        new Font("Helvetica", Font.BOLD, 14);
+        new Font("Helvetica", Font.PLAIN, 14);
+
+    /** If the user does not supply a colour, use this one */
     private static final Color DEFAULT_COLOR = Color.red;
 
+    /** The string we are using to draw the text with */
     private AttributedString text;
 
-    private int visibleLength = 0;
-    private int textLength = 0;
-    private int typingDelta = 0;
+    /** The number of characters the user wants to be painted */
+    private int visibleLength;
 
+    /** The font to render the text in */
     private Font font;
+
+    /** The colour to use to render the font with */
     private Color color;
-    private TypingBehavior typer;
-    private boolean typing = false;
 
-    private class TypingBehavior extends Behavior
-    {
-        int START_TYPING = 1;
-        WakeupOnBehaviorPost postWakeup = new WakeupOnBehaviorPost(this, START_TYPING);
-        WakeupOnElapsedTime timeWakeup = new WakeupOnElapsedTime(100);
-
-        public void initialize()
-        {
-            wakeupOn(new WakeupOnActivation());
-        }
-
-        public void type()
-        {
-            postId(START_TYPING);
-            typing = true;
-        }
-
-        public void processStimulus(Enumeration criteria)
-        {
-            updateTyping();
-            if (typing)
-            {
-                wakeupOn(timeWakeup);
-            }
-            else
-            {
-                wakeupOn(postWakeup);
-            }
-        }
-
-        public void setTypingSpeed(long speed)
-        {
-            timeWakeup = new WakeupOnElapsedTime(speed);
-        }
-    }
-
-    // Start of the real class
-
+    /**
+     * Create a new, simple label overlay that does not contain any text.
+     *
+     * @param canvas The canvas for this overlay to live on
+     * @param space The area of the canvas (in screen coords) for the label
+     */
     public LabelOverlay(Canvas3D canvas, Rectangle space)
     {
         this(canvas, space, "");
     }
 
+    /**
+     * Create a label overlay that displays the given text on the given
+     * screen space.
+     *
+     * @param canvas The canvas for this overlay to live on
+     * @param space The area of the canvas (in screen coords) for the label
+     */
     public LabelOverlay(Canvas3D canvas, Rectangle space, String text)
     {
         this(canvas, space, text, DEFAULT_FONT, DEFAULT_COLOR, null);
     }
 
-    public LabelOverlay( Canvas3D canvas, Rectangle space, String text, Font font, Color color ) {
-        this(canvas, space, text, font, color, null);
-    }
-
+    /**
+     * Create a customised label overlay that uses the given attributes of
+     * font and colour styles.
+     *
+     * @param canvas The canvas for this overlay to live on
+     * @param space The area of the canvas (in screen coords) for the label
+     */
     public LabelOverlay(Canvas3D canvas,
                         Rectangle space,
-                        String text,
+                        String str,
+                        Font font,
+                        Color color) {
+        this(canvas, space, str, font, color, null);
+    }
+
+    /**
+     * Create a customised label overlay that includes a specialised update
+     * manager to control when items are updated.
+     *
+     * @param canvas The canvas for this overlay to live on
+     * @param space The area of the canvas (in screen coords) for the label
+     */
+    public LabelOverlay(Canvas3D canvas,
+                        Rectangle space,
+                        String str,
                         Font font,
                         Color color,
                         UpdateManager manager)
@@ -116,14 +115,29 @@ public class LabelOverlay extends OverlayBase
         super(canvas, space, manager);
         this.font = font;
         this.color = color;
-        setText(text);
+        setText(str);
+
+        visibleLength = str.length();
     }
 
+    /**
+     * Create a new label overlay that uses the given text with attributes
+     * for rendering.
+     *
+     * @param canvas The canvas for this overlay to live on
+     * @param space The area of the canvas (in screen coords) for the label
+     */
     public LabelOverlay(Canvas3D canvas, Rectangle space, AttributedString text)
     {
         this(canvas, space, text, (UpdateManager)null);
     }
 
+    /**
+     *
+     *
+     * @param canvas The canvas for this overlay to live on
+     * @param space The area of the canvas (in screen coords) for the label
+     */
     public LabelOverlay(Canvas3D canvas,
                         Rectangle space,
                         AttributedString text,
@@ -131,14 +145,9 @@ public class LabelOverlay extends OverlayBase
     {
         super(canvas, space, manager);
         setText(text);
-    }
-
-    protected void initialize()
-    {
-        typer = new TypingBehavior();
-        typer.setSchedulingBounds(new BoundingSphere());
-        getRoot().addChild(typer);
         setBackgroundColor(new Color(0, 0, 0, 0));
+
+        visibleLength = text.getIterator().getEndIndex();
     }
 
     public void paint(Graphics2D g)
@@ -148,20 +157,22 @@ public class LabelOverlay extends OverlayBase
 
         synchronized(text)
         {
-            AttributedCharacterIterator characterIterator = text.getIterator(null, 0, visibleLength);
-            if(characterIterator.getEndIndex() > 0)
+            AttributedCharacterIterator char_itr =
+                text.getIterator(null, 0, visibleLength);
+
+            if(char_itr.getEndIndex() > 0)
             {
-                TextLayout textLayout = new TextLayout(characterIterator, g.getFontRenderContext());
-                textLayout.draw(g, 0, 3 * getBounds().height / 4);
+                g.setColor(color);
+                g.drawString(char_itr, 0, (overlayBounds.height * 3) / 4);
             }
         }
     }
 
-    public void setColor(Color color)
+    public void setColor(Color c)
     {
-        if(!this.color.equals(color))
+        if(!color.equals(c))
         {
-            this.color = color;
+            color = c;
             if(text != null)
             {
                 text.addAttribute(TextAttribute.FOREGROUND, color);
@@ -170,11 +181,11 @@ public class LabelOverlay extends OverlayBase
         }
     }
 
-    public void setFont(Font font)
+    public void setFont(Font f)
     {
-        if(!this.font.equals(font))
+        if(!font.equals(f))
         {
-            this.font = font;
+            font = f;
             if(text != null)
             {
                 text.addAttribute(TextAttribute.FONT, font);
@@ -183,87 +194,51 @@ public class LabelOverlay extends OverlayBase
         }
     }
 
-    public void setText(String text)
+    /**
+     * Set the text to the new string. The visible length does not change so if
+     * you want to change the length, you should reset the visible length too
+     *
+     * @param str The new string to use
+     */
+    public void setText(String str)
     {
-        setText(text, text.length());
+        if(str != null)
+            setText(createAttributedString(str, font, color));
     }
 
-    public void setText(String text, int typingDelta)
-    {
-        setText(createAttributedString(text, font, color), typingDelta);
-    }
-
+    /**
+     * Set the text to the new string. The visible length does not change so if
+     * you want to change the length, you should reset the visible length too.
+     * If the param reference is null, the request is ignored. To remove a string
+     * from being rendered, set the visible length to zero.
+     *
+     * @param text The new string to use
+     */
     public void setText(AttributedString text)
     {
         if(text != null)
-        {
-            setText(text, text.getIterator().getEndIndex() + 1);
-        }
-    }
-
-    public void setText(AttributedString text, int typingDelta)
-    {
-        if(this.text != text)
-        {
             this.text = text;
-            textLength = text.getIterator().getEndIndex();
-            visibleLength = 0;
-            this.typingDelta = typingDelta;
-            typer.type();
-        }
     }
 
-    public void backspace(int numCharacters)
-    {
-        visibleLength = Math.max(0, visibleLength - numCharacters);
-    }
-
-    private Object typingBlock = new Object();
-
-    protected void updateTyping()
-    {
-        visibleLength = Math.min(textLength, visibleLength + typingDelta);
-        repaint();
-        typing = visibleLength < textLength;
-        if(!typing)
-        {
-            synchronized(typingBlock)
-            {
-                typingBlock.notifyAll();
-            }
-        }
-    }
-
-    public void waitForTyping()
-    {
-        while (typing)
-        {
-            synchronized(typingBlock)
-            {
-                try
-                {
-                    typingBlock.wait();
-                }
-                catch(InterruptedException e)
-                {
-                }
-            }
-        }
-    }
-
-    public void setTypingSpeed(long delayInMilliseconds)
-    {
-        typer.setTypingSpeed(delayInMilliseconds);
-    }
-
+    /**
+     * Get the number of characters that are rendered from the given string.
+     *
+     * @return The current number of visble characters
+     */
     public int getVisibleLength()
     {
         return visibleLength;
     }
 
-    public boolean isTyping()
+    /**
+     * Set the number of visible characters to the given size. A size of zero
+     * effectively stops the string being rendered.
+     *
+     * @param length The number of characters to be shown
+     */
+    public void setVisibleLength(int length)
     {
-        return typing;
+        visibleLength = (length < 0) ? 0 : length;
     }
 
     private AttributedString createAttributedString(String text,

@@ -73,7 +73,7 @@ import javax.media.j3d.Canvas3D;
  * the alpha channel.
  *
  * @author David Yazel, Will Holcomb
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface Overlay extends UpdatableEntity {
 
@@ -168,7 +168,8 @@ public interface Overlay extends UpdatableEntity {
 
     /**
      * Return the root of the Overlay so it can be added to
-     * the scene graph.
+     * the scene graph. This should be added to the view transform
+     * group of the parent application.
      *
      * A branch group representing the overlay
      */

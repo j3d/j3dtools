@@ -30,7 +30,7 @@ import javax.media.j3d.TransformGroup;
  * <P>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ScribbleOverlay extends MouseOverlay
 {
@@ -73,7 +73,7 @@ public class ScribbleOverlay extends MouseOverlay
                            Rectangle bounds,
                            Color color)
     {
-        super(canvas, bounds, true, true, true, true, true);
+        super(canvas, bounds, false, false, true, true, true);
 
         lineList = new ArrayList();
         worldPoint = new Point();
@@ -99,12 +99,15 @@ public class ScribbleOverlay extends MouseOverlay
         int color_total = lineList.size();
         int lines_total;
 
+System.out.println("total colours " + color_total);
+
         for(i = 0; i < color_total; i++)
         {
             LineDetails details = (LineDetails)lineList.get(i);
             lines_total = details.lines.size();
 
             g.setColor(details.color);
+System.out.println("total lines " + lines_total + " " + details.color);
             for(j = 0; j < lines_total; j++)
             {
                 LineData data = (LineData)details.lines.get(j);

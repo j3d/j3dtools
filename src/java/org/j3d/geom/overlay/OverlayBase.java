@@ -38,24 +38,30 @@ import javax.vecmath.Vector3d;
  * screen after the resize.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
+public class OverlayBase
+    implements Overlay,
+               ScreenComponent,
+               ComponentListener
 {
-    // I do not undersand what this is for
+    /** I do not undersand what this is for */
     private final static double CONSOLE_Z = 2.1f;
 
     /** The current background mode. Defaults to copy */
     protected int backgroundMode = BACKGROUND_COPY;
+
+    /** Position of the overlay relative to the canvas */
     protected int[] relativePosition = {PLACE_LEFT, PLACE_TOP};
 
     private BufferedImage backgroundImage;
     private boolean hasAlpha;
     private boolean visible;
     private boolean antialiased;
+    private int numBuffers;
 
     /** Canvas bounds occupied by this overlay. */
-    private Rectangle bounds;
+    protected Rectangle overlayBounds;
     private Dimension offset;
     private UpdateManager updateManager;
 
@@ -65,16 +71,31 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
     /** Drawing area that we scribble our stuff on */
     protected BufferedImage canvas;
 
+    /** Background colour of the image */
+    protected Color backgroundColor;
+
     /**
      * The list of sub-overlay areas. Starts pre-created with a zero length
      * array. Blocking is performed using this so it can't be null.
      */
-    protected SubOverlay[] subOverlay;         // list of SubOverlay nodes
+    protected SubOverlay[] subOverlay;
 
+    /** The currently active buffer index */
     protected int activeBuffer = SubOverlay.NEXT_BUFFER;
 
-    protected BranchGroup consoleBranchGroup;        // branch group for overlay
-    protected TransformGroup consoleTransformGroup;  // transform group -> screen coords
+    /** Root branchgroup for the entire overlay system */
+    protected BranchGroup consoleBG;
+
+    /**
+     * Contains the texture objects from the suboverlays. Each time the window
+     * size changes, this instance is thrown away and replaced with a new one.
+     * Ensures that we can change over the raster objects. Always set as child
+     * 0 of the consoleBG.
+     */
+    protected BranchGroup overlayTexGrp;
+
+    /** Transformation to make the raster become screen coords as well */
+    protected TransformGroup consoleTG;
 
     // shared resources for the sub-overlays
 
@@ -85,10 +106,19 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
 
     // checks for altered elements
 
-    public final static int VISIBLE = 0;
-    public final static int POSITION = 1;
-    public final static int ACTIVE_BUFFER = 2;
-    private boolean[] dirtyCheck = new boolean[3];
+    public final static int DIRTY_VISIBLE = 0;
+    public final static int DIRTY_POSITION = 1;
+    public final static int DIRTY_ACTIVE_BUFFER = 2;
+    public final static int DIRTY_SIZE = 3;
+
+    private boolean[] dirtyCheck = new boolean[DIRTY_SIZE + 1];
+
+    /**
+     * Flag indicating whether this is a fixed size or resizable overlay. Fixed
+     * size is when the user gives us bounds. Resizable when they don't and we
+     * track the canvas.
+     */
+    private boolean fixedSize;
 
     /** Fires appropriate mouse events */
     private ComponentMouseManager mouseManager;
@@ -99,74 +129,82 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
     /**
      * Creates a new overlay covering the given canvas bounds. It has two
      * buffers. Updates are managed automatically. This Overlay is not usable
-     * until you attach it to the view platform transform.
+     * until you attach it to the view platform transform. If the bounds are
+     * null, then resize the overlay to fit the canvas and then track the size
+     * of the canvas.
      *
-     * @param canvas3D Canvas being drawn onto
+     * @param canvas Canvas being drawn onto
      * @param bounds Bounds on the canvas covered by the overlay
      */
-    public OverlayBase(Canvas3D canvas3D, Rectangle bounds)
+    public OverlayBase(Canvas3D canvas, Rectangle bounds)
     {
-        this(canvas3D, bounds, true, false, null);
+        this(canvas, bounds, true, false, null);
     }
 
     /**
      * Constructs an overlay window with an update manager. It has two buffers.
      * This window will not be visible unless it is added to the scene under
-     * the view platform transform.
+     * the view platform transform. If the bounds are null, then resize the
+     * overlay to fit the canvas and then track the size of the canvas.
      *
-     * @param canvas3D The canvas the overlay is drawn on
+     * @param canvas The canvas the overlay is drawn on
      * @param bounds The part of the canvas covered by the overlay
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      */
-    public OverlayBase(Canvas3D canvas3D, Rectangle bounds, UpdateManager manager)
+    public OverlayBase(Canvas3D canvas, Rectangle bounds, UpdateManager manager)
     {
-        this(canvas3D, bounds, true, false, manager);
+        this(canvas, bounds, true, false, manager);
     }
 
     /**
      * Constructs an overlay window that can have alpha capabilities. This
      * window will not be visible unless it is added to the scene under the
-     * view platform transform.
+     * view platform transform. If the bounds are null, then resize the
+     * overlay to fit the canvas and then track the size of the canvas.
      *
-     * @param canvas3D The canvas the overlay is drawn on
+     * @param canvas The canvas the overlay is drawn on
      * @param bounds The part of the canvas covered by the overlay
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      */
-    public OverlayBase(Canvas3D canvas3D,
+    public OverlayBase(Canvas3D canvas,
                        Rectangle bounds,
                        boolean clipAlpha,
                        boolean blendAlpha)
     {
-        this(canvas3D, bounds, clipAlpha, blendAlpha, null);
+        this(canvas, bounds, clipAlpha, blendAlpha, null);
     }
 
     /**
      * Constructs an overlay window. This window will not be visible
      * unless it is added to the scene under the view platform transform
+     * If the bounds are null, then resize the overlay to fit the canvas
+     * and then track the size of the canvas.
      *
-     * @param canvas3D The canvas the overlay is drawn on
+     * @param canvas The canvas the overlay is drawn on
      * @param bounds The part of the canvas covered by the overlay
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      */
-    public OverlayBase(Canvas3D canvas3D,
+    public OverlayBase(Canvas3D canvas,
                        Rectangle bounds,
                        boolean clipAlpha,
                        boolean blendAlpha,
                        UpdateManager updateManager)
     {
-        this(canvas3D, bounds, clipAlpha, blendAlpha, updateManager, 2);
+        this(canvas, bounds, clipAlpha, blendAlpha, updateManager, 2);
     }
 
     /**
      * Constructs an overlay window. This window will not be visible
      * unless it is added to the scene under the view platform transform
+     * If the bounds are null, then resize the overlay to fit the canvas
+     * and then track the size of the canvas.
      *
-     * @param canvas3D The canvas the overlay is drawn on
+     * @param canvas The canvas the overlay is drawn on
      * @param bounds The part of the canvas covered by the overlay
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
@@ -174,44 +212,69 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
      *   between renders. If this is null a default manager is created
      * @param numBuffers The number of buffers to generate, the default is two
      */
-    public OverlayBase(Canvas3D canvas3D,
+    public OverlayBase(Canvas3D canvas,
                        Rectangle bounds,
                        boolean clipAlpha,
                        boolean blendAlpha,
                        UpdateManager updateManager,
                        int numBuffers)
     {
-        this.canvas3D = canvas3D;
-        this.bounds = bounds;
+        this.numBuffers = numBuffers;
+
+        canvas3D = canvas;
+
+        if(bounds == null)
+        {
+            overlayBounds = canvas.getBounds();
+            fixedSize = false;
+        }
+        else
+        {
+            overlayBounds = bounds;
+            fixedSize = true;
+        }
 
         visible = true;
         antialiased = true;
-        offset = new Dimension(bounds.x, bounds.y);
+        offset = new Dimension(overlayBounds.x, overlayBounds.y);
         hasAlpha = clipAlpha || blendAlpha;
-        canvas = OverlayUtilities.createBufferedImage(bounds.getSize(), hasAlpha);
+
+        if(overlayBounds.width != 0 && overlayBounds.height != 0)
+        {
+            this.canvas =
+                OverlayUtilities.createBufferedImage(overlayBounds.getSize(),
+                                                     hasAlpha);
+        }
+
         mouseManager = new ComponentMouseManager(canvas3D, this);
 
         canvas3D.addComponentListener(this);
 
         // define the branch group where we are putting all the sub-overlays
 
-        consoleBranchGroup = new BranchGroup();
-        consoleTransformGroup = new TransformGroup();
-        consoleTransformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        consoleBranchGroup.addChild(consoleTransformGroup);
+        consoleBG = new BranchGroup();
+        consoleBG.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
+
+        overlayTexGrp = new BranchGroup();
+        overlayTexGrp.setCapability(BranchGroup.ALLOW_DETACH);
+
+        consoleTG = new TransformGroup();
+        consoleTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+
+        overlayTexGrp.addChild(consoleTG);
+        consoleBG.addChild(overlayTexGrp);
 
         if(updateManager == null)
         {
             UpdateControlBehavior updateBehavior = new UpdateControlBehavior(this);
             updateBehavior.setSchedulingBounds(new BoundingSphere());
-            consoleBranchGroup.addChild(updateBehavior);
-            updateManager = updateBehavior ;
+            consoleBG.addChild(updateBehavior);
+            this.updateManager = updateBehavior ;
         }
-
-        this.updateManager = updateManager;
+        else
+            this.updateManager = updateManager;
 
         // define the rendering attributes used by all sub-overlays
-
         renderAttributes = new RenderingAttributes();
         if(clipAlpha)
         {
@@ -226,20 +289,17 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
         renderAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);
 
         // define the polygon attributes for all the sub-overlays
-
         polygonAttributes = new PolygonAttributes();
         polygonAttributes.setBackFaceNormalFlip(false);
         polygonAttributes.setCullFace(PolygonAttributes.CULL_NONE);
         polygonAttributes.setPolygonMode(PolygonAttributes.POLYGON_FILL);
 
         // define the texture attributes for all the sub-overlays
-
         textureAttributes = new TextureAttributes();
         textureAttributes.setTextureMode(TextureAttributes.REPLACE);
         textureAttributes.setPerspectiveCorrectionMode(TextureAttributes.FASTEST);
 
         // if this needs to support transparancy set up the blend
-
         if(hasAlpha)
         {
             transparencyAttributes =
@@ -248,45 +308,49 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
             textureAttributes.setTextureBlendColor(new Color4f(0, 0, 0, 1));
         }
 
-        List overlays = OverlayUtilities.subdivide(bounds.getSize(), 16, 256);
+        List overlays =
+            OverlayUtilities.subdivide(overlayBounds.getSize(), 16, 256);
 
-        synchronized(subOverlay)
+        subOverlay = new SubOverlay[overlays.size()];
+        int n = overlays.size();
+
+        for(int i = 0; i < n; i++)
         {
-            subOverlay = new SubOverlay[overlays.size()];
-            int n = overlays.size();
+            Rectangle current_space = (Rectangle)overlays.get(i);
+            subOverlay[i] = new SubOverlay(current_space,
+                                           numBuffers,
+                                           hasAlpha,
+                                           polygonAttributes,
+                                           renderAttributes,
+                                           textureAttributes,
+                                           transparencyAttributes);
 
-            for(int i = 0; i < n; i++)
-            {
-                Rectangle current_space = (Rectangle)overlays.get(i);
-                subOverlay[i] = new SubOverlay(current_space,
-                                               numBuffers,
-                                               hasAlpha,
-                                               polygonAttributes,
-                                               renderAttributes,
-                                               textureAttributes,
-                                               transparencyAttributes);
-                consoleTransformGroup.addChild(subOverlay[i].getShape());
-            }
+            consoleTG.addChild(subOverlay[i].getShape());
         }
 
         // Dirty everything and an initial WakeupOnActivation will sync everything
-
-        for(int i = dirtyCheck.length - 1; i >= 0; i--)
-        {
-            dirtyCheck[i] = true;
-        }
+        dirtyCheck[DIRTY_VISIBLE] = true;
+        dirtyCheck[DIRTY_POSITION] = true;
+        dirtyCheck[DIRTY_ACTIVE_BUFFER] = true;
     }
 
-    public Rectangle getBounds()
-    {
-        return bounds;
-    }
-
+    /**
+     * Returns the UpdateManager responsible for seeing that updates to the
+     * Overlay only take place between frames.
+     *
+     * @param The update manage instance for this overlay
+     */
     public UpdateManager getUpdateManager()
     {
         return updateManager;
     }
 
+    /**
+     * Set the UpdateManager to the new value. If the reference is null, it
+     * will clear the current manager.
+     *
+     * @param updateManager A reference to the new manage instance to use
+     */
     public void setUpdateManager(UpdateManager updateManager)
     {
         this.updateManager = updateManager;
@@ -314,7 +378,7 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
             {
                 offset.width = width;
                 offset.height = height;
-                dirty(POSITION);
+                dirty(DIRTY_POSITION);
             }
         }
     }
@@ -344,17 +408,18 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
         {
             relativePosition[X_PLACEMENT] = xType;
             relativePosition[Y_PLACEMENT] = yType;
-            dirty(POSITION);
+            dirty(DIRTY_POSITION);
         }
     }
 
     /**
      * Return the root of the overlay and its sub-overlays so it can be
-     * added to the scene graph
+     * added to the scene graph. This should be added to the view transform
+     * group of the parent application.
      */
     public BranchGroup getRoot()
     {
-        return consoleBranchGroup;
+        return consoleBG;
     }
 
     /**
@@ -390,6 +455,346 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
     }
 
     /**
+     * Changes the visibility of the overlay.
+     */
+    public void setVisible(boolean visible)
+    {
+        if(this.visible != visible)
+        {
+            this.visible = visible;
+            dirty(DIRTY_VISIBLE);
+        }
+    }
+
+    /**
+     * Returns the visiblity of the Overlay.
+     *
+     * @returns true if the overlay is currently visible
+     */
+    public boolean isVisible()
+    {
+        return visible;
+    }
+
+    /**
+     * Sets the background to a solid color. If a background image already exists then
+     * it will be overwritten with this solid color.  It is completely appropriate to
+     * have an alpha component in the color if this is a alpha capable overlay.
+     * In general you should only use background images if this is an overlay that is
+     * called frequently, since you could always paint it inside the paint()method.
+     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
+     */
+    public void setBackgroundColor(Color color)
+    {
+        backgroundColor = color;
+
+        if(overlayBounds.width == 0 || overlayBounds.height == 0)
+            return;
+
+        updateBackgroundColor();
+    }
+
+    /**
+     * Returns the background for the overlay. Updates to this image will not
+     * be shown in the overlay until repaint()is called.
+     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
+     *
+     * @return The image used as the background
+     */
+    public BufferedImage getBackgroundImage()
+    {
+        if(backgroundImage == null)
+        {
+            backgroundImage =
+                OverlayUtilities.createBufferedImage(overlayBounds.getSize(),
+                                                     hasAlpha);
+        }
+        return backgroundImage;
+    }
+
+    /**
+     * Sets the background image to the one specified.  It does not have to be
+     * the same size as the overlay but the it should be at least as big.
+     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
+     */
+    public void setBackgroundImage(BufferedImage img)
+    {
+        if(backgroundImage != img)
+        {
+            backgroundImage = img;
+            repaint();
+        }
+    }
+
+    /**
+     * Sets the background mode.  BACKGROUND_COPY will copy the raster data from the
+     * background into the canvas before paint()is called. BACKGROUND_NONE will cause
+     * the background to be disabled and not used.
+     */
+    public void setBackgroundMode(int mode)
+    {
+        if(backgroundMode != mode)
+        {
+            backgroundMode = mode;
+            repaint();
+        }
+    }
+
+    /**
+     * Mark a specific property as being dirty and needing to be rechecked.
+     */
+    public void dirty(int property)
+    {
+        dirtyCheck[property] = true;
+        if(updateManager != null)
+            updateManager.updateRequested();
+        else
+            System.err.println("Null update manager in: " + this);
+    }
+
+    //------------------------------------------------------------------------
+    // Methods from the UpdatableEntity interface
+    //------------------------------------------------------------------------
+
+    public void update()
+    {
+        // Always size first as that may reset the position and we don't need
+        // to calculate the position twice.
+        if(dirtyCheck[DIRTY_SIZE])
+            syncSize();
+
+        if(dirtyCheck[DIRTY_POSITION])
+            syncPosition();
+
+        if(dirtyCheck[DIRTY_VISIBLE])
+            syncVisible();
+
+        if(dirtyCheck[DIRTY_ACTIVE_BUFFER])
+            syncActiveBuffer();
+    }
+
+    //------------------------------------------------------------------------
+    // Methods from the ScreenComponent interface
+    //------------------------------------------------------------------------
+
+    /**
+     * Get the bounds of the visible object in screen space coordinates.
+     *
+     * @return A rectangle representing the bounds in screen coordinates
+     */
+    public Rectangle getBounds()
+    {
+        return overlayBounds;
+    }
+
+    //------------------------------------------------------------------------
+    // Methods from the ComponentListener interface
+    //------------------------------------------------------------------------
+
+    /**
+     *
+     */
+    public void componentResized(ComponentEvent e)
+    {
+        if(fixedSize)
+            dirty(DIRTY_POSITION);
+        else
+            dirty(DIRTY_SIZE);
+    }
+
+    public void componentShown(ComponentEvent e)
+    {
+        repaint();
+    }
+
+    public void componentMoved(ComponentEvent e)
+    {
+        dirty(DIRTY_POSITION);
+    }
+
+    public void componentHidden(ComponentEvent e)
+    {
+    }
+
+    //------------------------------------------------------------------------
+    // Local convenience methods
+    //------------------------------------------------------------------------
+
+    public void initialize() {
+    }
+
+    public void addMouseListener(MouseListener listener)
+    {
+        mouseManager.addMouseListener(listener);
+    }
+
+    public void removeMouseListener(MouseListener listener)
+    {
+        mouseManager.removeMouseListener(listener);
+    }
+
+    protected void setActiveBuffer(int activeBuffer)
+    {
+        this.activeBuffer = activeBuffer;
+        dirty(DIRTY_ACTIVE_BUFFER);
+    }
+
+    /**
+     * Update the background colour on the drawn image now.
+     */
+    private void updateBackgroundColor()
+    {
+        int pixels[] = new int[overlayBounds.width * overlayBounds.height];
+        int rgb = backgroundColor.getRGB();
+        for(int i = pixels.length - 1; i >= 0; i--)
+        {
+            pixels[i] = rgb;
+        }
+
+        getBackgroundImage().setRGB(0,
+                                    0,
+                                    overlayBounds.width,
+                                    overlayBounds.height,
+                                    pixels,
+                                    0,
+                                    overlayBounds.width);
+        repaint();
+    }
+
+    private void syncVisible()
+    {
+        renderAttributes.setVisible(visible);
+        dirtyCheck[DIRTY_VISIBLE] = false;
+    }
+
+    private void syncActiveBuffer()
+    {
+        synchronized(subOverlay)
+        {
+            for(int i = subOverlay.length - 1; i >= 0; i--)
+                subOverlay[i].setActiveBufferIndex(activeBuffer);
+
+            dirtyCheck[DIRTY_ACTIVE_BUFFER] = false;
+        }
+    }
+
+    private void syncPosition()
+    {
+        synchronized(overlayBounds)
+        {
+            Dimension canvas_size = canvas3D.getSize();
+
+            if(canvas_size.width == 0 || canvas_size.height == 0)
+                return;
+
+            if(canvas == null)
+                canvas = OverlayUtilities.createBufferedImage(overlayBounds.getSize(),
+                                                              hasAlpha);
+
+            if(backgroundColor != null)
+                updateBackgroundColor();
+
+            OverlayUtilities.repositonBounds(overlayBounds,
+                                             relativePosition,
+                                             canvas_size,
+                                             offset);
+
+            // get the field of view and then calculate the width in meters of the
+            // screen
+
+            double fov = canvas3D.getView().getFieldOfView();
+            double c_width = 2 * CONSOLE_Z * Math.tan(fov / 2.0);
+
+            // calculate the ratio between the canvas in pixels and the screen in
+            // meters and use that to find the height of the screen in meters
+
+            double scale = c_width / canvas_size.getWidth();
+            double c_height = canvas_size.getHeight()* scale;
+
+            // The texture is upside down relative to the canvas so this has to
+            // be flipped to be in the right place. bounds needs to have the correct
+            // value to be used in Overlays that relay on it to know their position
+            // like mouseovers
+
+            Point flipped_pt=
+                new Point(overlayBounds.x,
+                          canvas_size.height - overlayBounds.height - overlayBounds.y);
+
+            // build the plane offset
+
+            Transform3D plane_offset = new Transform3D();
+            Vector3d loc =
+                new Vector3d(-c_width / 2 + flipped_pt.getX()* scale,
+                             -c_height / 2 + flipped_pt.getY()* scale,
+                             -CONSOLE_Z);
+
+            plane_offset.setTranslation(loc);
+            plane_offset.setScale(scale);
+            consoleTG.setTransform(plane_offset);
+
+            dirtyCheck[DIRTY_POSITION] = false;
+        }
+    }
+
+    /**
+     * Fixup the size of the overlay textures. Resizes and clears the texture
+     * to fit the new size. Current implementation is really dumb - just tosses
+     * everything and starts again. A more intelligent one would only replace
+     * the border parts.
+     */
+    private void syncSize()
+    {
+        if(!fixedSize)
+            overlayBounds = canvas3D.getBounds();
+
+        if((overlayBounds.width != 0) && (overlayBounds.height != 0))
+        {
+            overlayTexGrp = new BranchGroup();
+            overlayTexGrp.setCapability(BranchGroup.ALLOW_DETACH);
+
+            consoleTG = new TransformGroup();
+            consoleTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+
+            overlayTexGrp.addChild(consoleTG);
+
+            List overlays =
+                OverlayUtilities.subdivide(overlayBounds.getSize(), 16, 256);
+
+            subOverlay = new SubOverlay[overlays.size()];
+            int n = overlays.size();
+
+            for(int i = 0; i < n; i++)
+            {
+                Rectangle current_space = (Rectangle)overlays.get(i);
+                subOverlay[i] = new SubOverlay(current_space,
+                                               numBuffers,
+                                               hasAlpha,
+                                               polygonAttributes,
+                                               renderAttributes,
+                                               textureAttributes,
+                                               transparencyAttributes);
+                consoleTG.addChild(subOverlay[i].getShape());
+            }
+
+            consoleBG.setChild(overlayTexGrp, 0);
+        }
+        else
+        {
+            overlayTexGrp = null;
+            consoleTG = null;
+            subOverlay = new SubOverlay[0];
+
+            consoleBG.setChild(null, 0);
+        }
+
+
+        dirtyCheck[DIRTY_SIZE] = false;
+
+        // now sync the position again as we've replaced the transform
+        syncPosition();
+    }
+
+    /**
      * Prepares the canvas to be painted.  This should only be called internally
      * or from an owner like the ScrollingOverlay class. paint(Graphics2D g)
      * should be used to paint the OverlayBase.
@@ -410,6 +815,14 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
         }
 
         return g;
+    }
+
+    /**
+     * This is where the actualy drawing of the window takes place.  Override
+     * this to alter the contents of what is shown in the window.
+     */
+    public void paint(Graphics2D g)
+    {
     }
 
     /**
@@ -446,214 +859,5 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
                 subOverlay[i].updateBuffer(image, bufferIndex);
             }
         }
-    }
-
-    /**
-     * Changes the visibility of the overlay.
-     */
-    public void setVisible(boolean visible)
-    {
-        if(this.visible != visible)
-        {
-            this.visible = visible;
-            dirty(VISIBLE);
-        }
-    }
-
-    public boolean isVisible()
-    {
-        return visible;
-    }
-
-    /**
-     * This is where the actualy drawing of the window takes place.  Override
-     * this to alter the contents of what is shown in the window.
-     */
-    public void paint(Graphics2D g)
-    {
-    }
-
-    protected void setActiveBuffer(int activeBuffer)
-    {
-        this.activeBuffer = activeBuffer;
-        dirty(ACTIVE_BUFFER);
-    }
-
-    /**
-     * Sets the background to a solid color. If a background image already exists then
-     * it will be overwritten with this solid color.  It is completely appropriate to
-     * have an alpha component in the color if this is a alpha capable overlay.
-     * In general you should only use background images if this is an overlay that is
-     * called frequently, since you could always paint it inside the paint()method.
-     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
-     */
-    public void setBackgroundColor(Color color)
-    {
-        int pixels[] = new int[bounds.width * bounds.height];
-        int rgb = color.getRGB();
-        for(int i = pixels.length - 1; i >= 0; i--)
-        {
-            pixels[i] = rgb;
-        }
-        getBackgroundImage().setRGB(0, 0, bounds.width, bounds.height, pixels, 0, bounds.width);
-        repaint();
-    }
-
-    /**
-     * Returns the background for the overlay. Updates to this image will not be shown in
-     * the overlay until repaint()is called.
-     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
-     */
-    public BufferedImage getBackgroundImage()
-    {
-        if(backgroundImage == null)
-        {
-            backgroundImage = OverlayUtilities.createBufferedImage(bounds.getSize(), hasAlpha);
-        }
-        return backgroundImage;
-    }
-
-    /**
-     * Sets the background image to the one specified.  It does not have to be the same
-     * size as the overlay but the it should be at least as big.
-     * BackgroundMode must be in BACKGROUND_COPY for the background to be shown.
-     */
-    public void setBackgroundImage(BufferedImage backgroundImage)
-    {
-        if(this.backgroundImage != backgroundImage)
-        {
-            this.backgroundImage = backgroundImage;
-            repaint();
-        }
-    }
-
-    /**
-     * Sets the background mode.  BACKGROUND_COPY will copy the raster data from the
-     * background into the canvas before paint()is called. BACKGROUND_NONE will cause
-     * the background to be disabled and not used.
-     */
-    public void setBackgroundMode(int mode)
-    {
-        if(backgroundMode != mode)
-        {
-            backgroundMode = mode;
-            repaint();
-        }
-    }
-
-    public void addMouseListener(MouseListener listener)
-    {
-        mouseManager.addMouseListener(listener);
-    }
-
-    public void removeMouseListener(MouseListener listener)
-    {
-        mouseManager.removeMouseListener(listener);
-    }
-
-    private void syncPosition()
-    {
-        synchronized(bounds)
-        {
-            Dimension canvas3DSize = canvas3D.getSize();
-
-            OverlayUtilities.repositonBounds(bounds, relativePosition,
-                            canvas3DSize, offset);
-
-            // get the field of view and then calculate the width in meters of the
-            // screen
-
-            double fov = canvas3D.getView().getFieldOfView();
-            double consoleWidth = 2 * Math.tan(fov / 2.0)* CONSOLE_Z;
-
-            // calculate the ratio between the canvas in pixels and the screen in
-            // meters and use that to find the height of the screen in meters
-
-            double scale = consoleWidth / canvas3DSize.getWidth();
-            double consoleHeight = canvas3DSize.getHeight()* scale;
-
-            // The texture is upside down relative to the canvas so this has to
-            // be flipped to be in the right place. bounds needs to have the correct
-            // value to be used in Overlays that relay on it to know their position
-            // like mouseovers
-
-            Point flippedPoint = new Point(bounds.x,
-                           canvas3DSize.height - bounds.height - bounds.y);
-
-            // build the plane offset
-
-            Transform3D planeOffset = new Transform3D();
-            planeOffset.setTranslation(new Vector3d(-consoleWidth / 2 + flippedPoint.getX()* scale,
-                                -consoleHeight / 2 + flippedPoint.getY()* scale,
-                                -CONSOLE_Z));
-            planeOffset.setScale(scale);
-            consoleTransformGroup.setTransform(planeOffset);
-
-            dirtyCheck[POSITION] = false;
-        }
-    }
-
-    private void syncVisible()
-    {
-        renderAttributes.setVisible(visible);
-        dirtyCheck[VISIBLE] = false;
-    }
-
-    private void syncActiveBuffer()
-    {
-        synchronized(subOverlay)
-        {
-            for(int i = subOverlay.length - 1; i >= 0; i--)
-            {
-                subOverlay[i].setActiveBufferIndex(activeBuffer);
-            }
-            dirtyCheck[ACTIVE_BUFFER] = false;
-        }
-    }
-
-    public void dirty(int property)
-    {
-        dirtyCheck[property] = true;
-        if(updateManager != null)
-            updateManager.updateRequested();
-        else
-            System.err.println("Null update manager in: " + this);
-    }
-
-    public void update()
-    {
-        if(dirtyCheck[POSITION])
-            syncPosition();
-
-        if(dirtyCheck[VISIBLE])
-            syncVisible();
-
-        if(dirtyCheck[ACTIVE_BUFFER])
-            syncActiveBuffer();
-    }
-
-    //------------------------------------------------------------------------
-    // Methods from the ComponentListener interface
-    //------------------------------------------------------------------------
-
-    /**
-     *
-     */
-    public void componentResized(ComponentEvent e)
-    {
-        dirty(POSITION);
-    }
-
-    public void componentShown(ComponentEvent e)
-    {
-    }
-
-    public void componentMoved(ComponentEvent e)
-    {
-        dirty(POSITION);
-    }
-
-    public void componentHidden(ComponentEvent e)
-    {
     }
 }

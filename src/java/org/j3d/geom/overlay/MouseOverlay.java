@@ -55,7 +55,7 @@ import javax.vecmath.Point3d;
  * event.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MouseOverlay extends OverlayBase
 {
@@ -332,7 +332,7 @@ public class MouseOverlay extends OverlayBase
 
         BranchGroup bg = new BranchGroup();
         bg.addChild(new EventBehavior());
-        consoleBranchGroup.addChild(bg);
+        consoleBG.addChild(bg);
     }
 
     /**
