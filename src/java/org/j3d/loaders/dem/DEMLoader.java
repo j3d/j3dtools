@@ -15,15 +15,21 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
+import java.util.Collections;
+import java.util.Map;
+
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Shape3D;
+import javax.media.j3d.SceneGraphObject;
 import javax.media.j3d.TriangleStripArray;
 
 import javax.vecmath.Point2d;
 
-import com.sun.j3d.loaders.LoaderBase;
 import com.sun.j3d.loaders.Scene;
 import com.sun.j3d.loaders.SceneBase;
 import com.sun.j3d.loaders.IncorrectFormatException;
@@ -32,10 +38,12 @@ import com.sun.j3d.loaders.ParsingErrorException;
 // Application specific imports
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.terrain.ElevationGridGenerator;
+import org.j3d.loaders.BinaryLoader;
 import org.j3d.loaders.HeightMapLoader;
+import org.j3d.loaders.ManagedLoader;
 
 /**
- * Loader for the VTerrain Project's BT file format.
+ * Loader for the USGS DEM file format.
  * <p>
  *
  * The mesh produced is, by default, triangle strip arrays. The X axis
@@ -49,27 +57,45 @@ import org.j3d.loaders.HeightMapLoader;
  * points into smaller tiles or use multi-resolution terrain structures.
  * <p>
  *
- * The definition of the file format can be found at:
- * <a href="http://www.vterrain.org/Implementation/BT.html">
- *  http://www.vterrain.org/Implementation/BT.html
- * </a>
- *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class DEMLoader extends HeightMapLoader
+    implements BinaryLoader, ManagedLoader
 {
+    //
+    // Impl note. Because this loader just builds static arrays of data for
+    // rendering, it never sets its own capability bits. Therefore, required
+    // and override bits are treated identically.
+    //
+
     /** Current parser */
     private DEMParser parser;
 
     /** Generator of the grid structure for the geometry */
     private ElevationGridGenerator generator;
 
+    /** The map of the override capability bit settings */
+    private Map overrideCapBitsMap;
+
+    /** The map of the required capability bit settings */
+    private Map requiredCapBitsMap;
+
+    /** The map of the override capability bit settings */
+    private Map overrideFreqBitsMap;
+
+    /** The map of the required capability bit settings */
+    private Map requiredFreqBitsMap;
+
+    /** Flag for the API being new enough to have frquency bit setting */
+    private final boolean haveFreqBitsAPI;
+
     /**
      * Construct a new default loader with no flags set
      */
     public DEMLoader()
     {
+        this(0);
     }
 
     /**
@@ -80,7 +106,98 @@ public class DEMLoader extends HeightMapLoader
     public DEMLoader(int flags)
     {
         super(flags);
+
+        Boolean bool = (Boolean)AccessController.doPrivileged
+        (
+            new PrivilegedAction()
+            {
+                public Object run()
+                {
+                    try
+                    {
+                        Class cls =
+                            Class.forName("javax.media.j3d.SceneGraphObject");
+                        Package pkg = cls.getPackage();
+
+                        return new Boolean(pkg.isCompatibleWith("1.3"));
+                    }
+                    catch(ClassNotFoundException cnfe)
+                    {
+                        return Boolean.FALSE;
+                    }
+                }
+            }
+        );
+
+        haveFreqBitsAPI = bool.booleanValue();
     }
+
+    //----------------------------------------------------------
+    // Methods defined in ManagedLoader
+    //----------------------------------------------------------
+
+    /**
+     * Provide the set of mappings that override anything that the loader
+     * might set.
+     * <p>
+     *
+     * If the key is set, but the value is null or zero length, then all
+     * capabilities on that node will be disabled. If the key is set the
+     * values override all settings that the loader may wish to normally
+     * make. This can be very dangerous if the loader is used for a file
+     * format that includes its own internal animation engine, so be very
+     * careful with this request.
+     *
+     * @param capBits The capability bits to be set
+     * @param freqBits The frequency bits to be set
+     */
+    public void setCapabilityOverrideMap(Map capBits, Map freqBits)
+    {
+        overrideCapBitsMap = capBits;
+        overrideFreqBitsMap = freqBits;
+    }
+
+
+    /**
+     * Set the mapping of capability bits that the user would like to
+     * make sure is set. The end output is that the capabilities are the union
+     * of what the loader wants and what the user wants.
+     * <p>
+     * If the map contains a key, but the value is  null or zero length, the
+     * request is ignored.
+     *
+     * @param capBits The capability bits to be set
+     * @param freqBits The frequency bits to be set
+     */
+    public void setCapabilityRequiredMap(Map capBits, Map freqBits)
+    {
+        requiredCapBitsMap = capBits;
+        requiredFreqBitsMap = freqBits;
+    }
+
+
+    //----------------------------------------------------------
+    // Methods defined in BinaryLoader
+    //----------------------------------------------------------
+
+    /**
+     * Load the scene from the given reader. Always throws an exception as the
+     * file format is binary only and readers don't handle this.
+     *
+     * @param is The source of input characters
+     * @return A description of the scene
+     * @throws IncorrectFormatException The file is binary
+     */
+    public Scene load(InputStream is)
+        throws IncorrectFormatException,
+               ParsingErrorException
+    {
+        return loadInternal(is);
+    }
+
+    //----------------------------------------------------------
+    // Methods defined in Loader
+    //----------------------------------------------------------
 
     /**
      * Load the scene from the given reader. Always throws an exception as the
@@ -91,10 +208,12 @@ public class DEMLoader extends HeightMapLoader
      * @throws IncorrectFormatException The file is binary
      */
     public Scene load(java.io.Reader reader)
-        throws IncorrectFormatException
+        throws IncorrectFormatException,
+               ParsingErrorException
     {
         return loadInternal(reader);
     }
+
 
     /**
      * Load a scene from the given filename. The scene instance returned by
@@ -163,6 +282,74 @@ public class DEMLoader extends HeightMapLoader
 
         return loadInternal(input);
     }
+
+    //----------------------------------------------------------
+    // Methods defined in HeightMapLoader
+    //----------------------------------------------------------
+
+    /**
+     * Return the height map created for the last stream parsed. If no stream
+     * has been parsed yet, this will return null.
+     *
+     * @return The array of heights in [row][column] order or null
+     */
+    public float[][] getHeights()
+    {
+        return parser.getHeights();
+    }
+
+    /**
+     * Fetch information about the real-world stepping sizes that this
+     * grid uses.
+     *
+     * @return The stepping information for width and depth
+     */
+    public Point2d getGridStep()
+    {
+        return parser.getGridStep();
+    }
+
+    //----------------------------------------------------------
+    // Local methods
+    //----------------------------------------------------------
+
+    /**
+     * Get the header used to describe the last stream parsed. If no stream
+     * has been parsed yet, this will return null.
+     *
+     * @return The header for the last read stream or null
+     */
+    public DEMTypeARecord getTypeARecord()
+    {
+        return parser.getTypeARecord();
+    }
+
+    /**
+     * Fetch all of the type B records that were registered in this file.
+     * Will probably contain more than one record and is always non-null.
+     * The records will be in the order they were read from the file.
+     *
+     * @return The list of all the Type B records parsed
+     */
+    public DEMTypeBRecord[] getTypeBRecords()
+    {
+        return parser.getTypeBRecords();
+    }
+
+    /**
+     * Get the type C record from the file. If none was provided, then this
+     * will return null.
+     *
+     * @return The type C record info or null
+     */
+    public DEMTypeCRecord getTypeCRecord()
+    {
+        return parser.getTypeCRecord();
+    }
+
+    //----------------------------------------------------------
+    // Internal convenience methods
+    //----------------------------------------------------------
 
     /**
      * Do all the parsing work for an inputstream. Convenience method
@@ -276,6 +463,8 @@ public class DEMLoader extends HeightMapLoader
         SceneBase scene = new SceneBase();
         BranchGroup root_group = new BranchGroup();
 
+        setCapBits(root_group);
+        setFreqBits(root_group);
 
         int format = GeometryArray.COORDINATES |
                      GeometryArray.NORMALS |
@@ -288,11 +477,17 @@ public class DEMLoader extends HeightMapLoader
 
         geom.setCoordinates(0, data.coordinates);
         geom.setNormals(0, data.normals);
-        geom.setTextureCoordinates(0, data.textureCoordinates);
+        geom.setTextureCoordinates(0, 0, data.textureCoordinates);
 
         Appearance app = new Appearance();
 
+        setCapBits(app);
+        setFreqBits(app);
+
         Shape3D shape = new Shape3D(geom, app);
+
+        setCapBits(shape);
+        setFreqBits(shape);
 
         root_group.addChild(shape);
         scene.setSceneGroup(root_group);
@@ -301,58 +496,54 @@ public class DEMLoader extends HeightMapLoader
     }
 
     /**
-     * Get the header used to describe the last stream parsed. If no stream
-     * has been parsed yet, this will return null.
+     * Set the frequency bits on this scene graph object according to the
+     * pre-set settings.
      *
-     * @return The header for the last read stream or null
+     * @param sgo The j3d node to set the capabilities on
      */
-    public DEMTypeARecord getTypeARecord()
+    private void setCapBits(SceneGraphObject sgo)
     {
-        return parser.getTypeARecord();
+        Class cls = sgo.getClass();
+        Map bits_map = Collections.EMPTY_MAP;
+
+        if(overrideCapBitsMap != null)
+            bits_map = overrideCapBitsMap;
+        else if(requiredCapBitsMap != null)
+            bits_map = requiredCapBitsMap;
+
+        int[] bits = (int[])bits_map.get(cls);
+
+        int size = (bits == null) ? 0 : bits.length;
+
+        for(int i = 0; i < size; i++)
+            sgo.setCapability(bits[i]);
     }
 
     /**
-     * Fetch all of the type B records that were registered in this file.
-     * Will probably contain more than one record and is always non-null.
-     * The records will be in the order they were read from the file.
+     * Set the frequency bits on this scene graph object according to the
+     * pre-set settings. If the API version is < 1.3 then this method returns
+     * immediately.
      *
-     * @return The list of all the Type B records parsed
+     * @param sgo The j3d node to set the capabilities on
      */
-    public DEMTypeBRecord[] getTypeBRecords()
+    private void setFreqBits(SceneGraphObject sgo)
     {
-        return parser.getTypeBRecords();
-    }
+        if(!haveFreqBitsAPI)
+            return;
 
-    /**
-     * Get the type C record from the file. If none was provided, then this
-     * will return null.
-     *
-     * @return The type C record info or null
-     */
-    public DEMTypeCRecord getTypeCRecord()
-    {
-        return parser.getTypeCRecord();
-    }
+        Class cls = sgo.getClass();
+        Map bits_map = Collections.EMPTY_MAP;
 
-    /**
-     * Return the height map created for the last stream parsed. If no stream
-     * has been parsed yet, this will return null.
-     *
-     * @return The array of heights in [row][column] order or null
-     */
-    public float[][] getHeights()
-    {
-        return parser.getHeights();
-    }
+        if(overrideFreqBitsMap != null)
+            bits_map = overrideFreqBitsMap;
+        else if(requiredFreqBitsMap != null)
+            bits_map = requiredFreqBitsMap;
 
-    /**
-     * Fetch information about the real-world stepping sizes that this
-     * grid uses.
-     *
-     * @return The stepping information for width and depth
-     */
-    public Point2d getGridStep()
-    {
-        return parser.getGridStep();
+        int[] bits = (int[])bits_map.get(cls);
+
+        int size = (bits == null) ? 0 : bits.length;
+
+        for(int i = 0; i < size; i++)
+            sgo.setCapabilityIsFrequent(bits[i]);
     }
 }

@@ -15,15 +15,21 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
+import java.util.Collections;
+import java.util.Map;
+
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Shape3D;
+import javax.media.j3d.SceneGraphObject;
 import javax.media.j3d.TriangleStripArray;
 
 import javax.vecmath.Point2d;
 
-import com.sun.j3d.loaders.LoaderBase;
 import com.sun.j3d.loaders.Scene;
 import com.sun.j3d.loaders.SceneBase;
 import com.sun.j3d.loaders.IncorrectFormatException;
@@ -32,7 +38,9 @@ import com.sun.j3d.loaders.ParsingErrorException;
 // Application specific imports
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.terrain.ElevationGridGenerator;
+import org.j3d.loaders.BinaryLoader;
 import org.j3d.loaders.HeightMapLoader;
+import org.j3d.loaders.ManagedLoader;
 
 /**
  * Loader for the VTerrain Project's BT file format.
@@ -55,10 +63,17 @@ import org.j3d.loaders.HeightMapLoader;
  * </a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BTLoader extends HeightMapLoader
+    implements BinaryLoader, ManagedLoader
 {
+    //
+    // Impl note. Because this loader just builds static arrays of data for
+    // rendering, it never sets its own capability bits. Therefore, required
+    // and override bits are treated identically.
+    //
+
     /** Input stream used to read values from */
     private BufferedInputStream input;
 
@@ -71,11 +86,27 @@ public class BTLoader extends HeightMapLoader
     /** Step information because it is not held anywhere else */
     private Point2d gridStepData;
 
+    /** The map of the override capability bit settings */
+    private Map overrideCapBitsMap;
+
+    /** The map of the required capability bit settings */
+    private Map requiredCapBitsMap;
+
+    /** The map of the override capability bit settings */
+    private Map overrideFreqBitsMap;
+
+    /** The map of the required capability bit settings */
+    private Map requiredFreqBitsMap;
+
+    /** Flag for the API being new enough to have frquency bit setting */
+    private final boolean haveFreqBitsAPI;
+
     /**
      * Construct a new default loader with no flags set
      */
     public BTLoader()
     {
+        this(0);
     }
 
     /**
@@ -86,7 +117,103 @@ public class BTLoader extends HeightMapLoader
     public BTLoader(int flags)
     {
         super(flags);
+
+        Boolean bool = (Boolean)AccessController.doPrivileged
+        (
+            new PrivilegedAction()
+            {
+                public Object run()
+                {
+                    try
+                    {
+                        Class cls =
+                            Class.forName("javax.media.j3d.SceneGraphObject");
+                        Package pkg = cls.getPackage();
+
+                        return new Boolean(pkg.isCompatibleWith("1.3"));
+                    }
+                    catch(ClassNotFoundException cnfe)
+                    {
+                        return Boolean.FALSE;
+                    }
+                }
+            }
+        );
+
+        haveFreqBitsAPI = bool.booleanValue();
     }
+
+    //----------------------------------------------------------
+    // Methods defined in ManagedLoader
+    //----------------------------------------------------------
+
+    /**
+     * Provide the set of mappings that override anything that the loader
+     * might set.
+     * <p>
+     *
+     * If the key is set, but the value is null or zero length, then all
+     * capabilities on that node will be disabled. If the key is set the
+     * values override all settings that the loader may wish to normally
+     * make. This can be very dangerous if the loader is used for a file
+     * format that includes its own internal animation engine, so be very
+     * careful with this request.
+     *
+     * @param capBits The capability bits to be set
+     * @param freqBits The frequency bits to be set
+     */
+    public void setCapabilityOverrideMap(Map capBits, Map freqBits)
+    {
+        overrideCapBitsMap = capBits;
+        overrideFreqBitsMap = freqBits;
+    }
+
+
+    /**
+     * Set the mapping of capability bits that the user would like to
+     * make sure is set. The end output is that the capabilities are the union
+     * of what the loader wants and what the user wants.
+     * <p>
+     * If the map contains a key, but the value is  null or zero length, the
+     * request is ignored.
+     *
+     * @param capBits The capability bits to be set
+     * @param freqBits The frequency bits to be set
+     */
+    public void setCapabilityRequiredMap(Map capBits, Map freqBits)
+    {
+        requiredCapBitsMap = capBits;
+        requiredFreqBitsMap = freqBits;
+    }
+
+
+    //----------------------------------------------------------
+    // Methods defined in BinaryLoader
+    //----------------------------------------------------------
+
+    /**
+     * Load the scene from the given reader. Always throws an exception as the
+     * file format is binary only and readers don't handle this.
+     *
+     * @param is The source of input characters
+     * @return A description of the scene
+     * @throws IncorrectFormatException The file is binary
+     */
+    public Scene load(InputStream is)
+        throws IncorrectFormatException,
+               ParsingErrorException
+    {
+        if(is instanceof BufferedInputStream)
+            input = (BufferedInputStream)is;
+        else
+            input = new BufferedInputStream(is);
+
+        return load();
+    }
+
+    //----------------------------------------------------------
+    // Methods defined in Loader
+    //----------------------------------------------------------
 
     /**
      * Load the scene from the given reader. Always throws an exception as the
@@ -167,6 +294,51 @@ public class BTLoader extends HeightMapLoader
         return load();
     }
 
+    //----------------------------------------------------------
+    // Methods defined in HeightMapLoader
+    //----------------------------------------------------------
+
+    /**
+     * Return the height map created for the last stream parsed. If no stream
+     * has been parsed yet, this will return null.
+     *
+     * @return The array of heights in [row][column] order or null
+     */
+    public float[][] getHeights()
+    {
+        return parser.getHeights();
+    }
+
+    /**
+     * Fetch information about the real-world stepping sizes that this
+     * grid uses.
+     *
+     * @return The stepping information for width and depth
+     */
+    public Point2d getGridStep()
+    {
+        return gridStepData;
+    }
+
+    //----------------------------------------------------------
+    // Local methods
+    //----------------------------------------------------------
+
+    /**
+     * Get the header used to describe the last stream parsed. If no stream
+     * has been parsed yet, this will return null.
+     *
+     * @return The header for the last read stream or null
+     */
+    public BTHeader getHeader()
+    {
+        return parser.getHeader();
+    }
+
+    //----------------------------------------------------------
+    // Internal convenience methods
+    //----------------------------------------------------------
+
     /**
      * Do all the parsing work. Convenience method for all to call internally
      *
@@ -242,6 +414,9 @@ public class BTLoader extends HeightMapLoader
         SceneBase scene = new SceneBase();
         BranchGroup root_group = new BranchGroup();
 
+        setCapBits(root_group);
+        setFreqBits(root_group);
+
 
         int format = GeometryArray.COORDINATES |
                      GeometryArray.NORMALS |
@@ -254,17 +429,18 @@ public class BTLoader extends HeightMapLoader
 
         geom.setCoordinates(0, data.coordinates);
         geom.setNormals(0, data.normals);
-        geom.setTextureCoordinates(0, data.textureCoordinates);
+        geom.setTextureCoordinates(0, 0, data.textureCoordinates);
 
         Appearance app = new Appearance();
 
-/* This was in paul's original code. Do we really need this?
-        PolygonAttributes poly = new PolygonAttributes();
-        poly.setPolygonMode( PolygonAttributes.POLYGON_LINE );
-        poly.setCullFace( PolygonAttributes.CULL_NONE );
-        app.setPolygonAttributes( poly );
-*/
+        setCapBits(app);
+        setFreqBits(app);
+
         Shape3D shape = new Shape3D(geom, app);
+
+        setCapBits(shape);
+        setFreqBits(shape);
+
 
         root_group.addChild(shape);
         scene.setSceneGroup(root_group);
@@ -273,36 +449,54 @@ public class BTLoader extends HeightMapLoader
     }
 
     /**
-     * Get the header used to describe the last stream parsed. If no stream
-     * has been parsed yet, this will return null.
+     * Set the frequency bits on this scene graph object according to the
+     * pre-set settings.
      *
-     * @return The header for the last read stream or null
+     * @param sgo The j3d node to set the capabilities on
      */
-    public BTHeader getHeader()
+    private void setCapBits(SceneGraphObject sgo)
     {
-        return parser.getHeader();
+        Class cls = sgo.getClass();
+        Map bits_map = Collections.EMPTY_MAP;
+
+        if(overrideCapBitsMap != null)
+            bits_map = overrideCapBitsMap;
+        else if(requiredCapBitsMap != null)
+            bits_map = requiredCapBitsMap;
+
+        int[] bits = (int[])bits_map.get(cls);
+
+        int size = (bits == null) ? 0 : bits.length;
+
+        for(int i = 0; i < size; i++)
+            sgo.setCapability(bits[i]);
     }
 
     /**
-     * Return the height map created for the last stream parsed. If no stream
-     * has been parsed yet, this will return null.
+     * Set the frequency bits on this scene graph object according to the
+     * pre-set settings. If the API version is < 1.3 then this method returns
+     * immediately.
      *
-     * @return The array of heights in [row][column] order or null
+     * @param sgo The j3d node to set the capabilities on
      */
-    public float[][] getHeights()
+    private void setFreqBits(SceneGraphObject sgo)
     {
-        return parser.getHeights();
-    }
+        if(!haveFreqBitsAPI)
+            return;
 
-    /**
-     * Fetch information about the real-world stepping sizes that this
-     * grid uses.
-     *
-     * @return The stepping information for width and depth
-     */
-    public Point2d getGridStep()
-    {
-        return gridStepData;
-    }
+        Class cls = sgo.getClass();
+        Map bits_map = Collections.EMPTY_MAP;
 
+        if(overrideFreqBitsMap != null)
+            bits_map = overrideFreqBitsMap;
+        else if(requiredFreqBitsMap != null)
+            bits_map = requiredFreqBitsMap;
+
+        int[] bits = (int[])bits_map.get(cls);
+
+        int size = (bits == null) ? 0 : bits.length;
+
+        for(int i = 0; i < size; i++)
+            sgo.setCapabilityIsFrequent(bits[i]);
+    }
 }
