@@ -32,7 +32,7 @@ import org.j3d.util.ImageUtils;
  * <p>
  *
  * @author Justin Couch, Alan Hudson
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class WeakRefTextureCache extends AbstractTextureCache
 {
@@ -246,10 +246,20 @@ class WeakRefTextureCache extends AbstractTextureCache
      */
     public boolean checkTexture(String filename)
     {
-        if (textureMap.containsKey(filename))
-            return true;
-        else
-            return false;
+        boolean ret_val = false;
+
+        if(textureMap.containsKey(filename))
+        {
+            // Check that the reference is still valid. It may have been
+            // GC'd.
+            WeakReference wr = (WeakReference)textureMap.get(filename);
+            if(wr.get() != null)
+                ret_val = true;
+            else
+                textureMap.remove(filename);
+        }
+
+        return ret_val;
     }
 
     /**
@@ -258,11 +268,22 @@ class WeakRefTextureCache extends AbstractTextureCache
      * @param filename The filename loaded
      * @return Whether the filename is cached as an ImageComponent
      */
-    public boolean checkImageComponent(String filename) {
-        if (componentMap.containsKey(filename))
-            return true;
-        else
-            return false;
+    public boolean checkImageComponent(String filename)
+    {
+        boolean ret_val = false;
+
+        if(componentMap.containsKey(filename))
+        {
+            // Check that the reference is still valid. It may have been
+            // GC'd.
+            WeakReference wr = (WeakReference)componentMap.get(filename);
+            if(wr.get() != null)
+                ret_val = true;
+            else
+                componentMap.remove(filename);
+        }
+
+        return ret_val;
     }
 
     /**
