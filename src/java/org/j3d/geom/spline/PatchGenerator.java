@@ -19,23 +19,37 @@ import org.j3d.geom.InvalidArraySizeException;
 import org.j3d.geom.UnsupportedTypeException;
 
 /**
- * Geometry generator for generating rectangular Bezier patches.
+ * Base geometry generator defintion for all forms of spline-based patches.
  * <P>
  *
- * Bezier patches of all orders are permitted. Order information is derived
+ * Patches of all orders are permitted. Order information is derived
  * from the provided controlPoint coordinates. When generating a patch, the values
  * for the coordinates are nominally provided in the X and Z plane although no
  * explicit checking is performed to ensure that controlPoint coordinates do not
  * self-intersect or do anything nasty. Normals are always generated as the
- * average between the adjacent edges.
+ * average between the adjacent faces.
+ * <p>
+ *
+ * A user may optionally provide a weighting for each control point to make for
+ * rational patches. By default, all control points start with a weight of
+ * one. The implementation automatically resets the weights back to one each
+ * time the control points are changed, unless otherwise specified. If the patch
+ * coordinate size changes, then the weights will always be reset, otherwise if
+ * the size is the same as previously set, then the weights are left alone.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class PatchGenerator extends GeometryGenerator
 {
     /** ControlPoint values used to generate patches */
     protected float[][] controlPointCoordinates;
+
+    /**
+     * The control point weightings on the patch. This will be the same
+     * size as controlPointCoordinates.
+     */
+    protected float[][] controlPointWeights;
 
     /** The number of control points in the width */
     protected int numWidthControlPoints;
@@ -76,6 +90,9 @@ public abstract class PatchGenerator extends GeometryGenerator
      */
     protected int facetCount;
 
+    /** Should we use control point weights. Defaults to false. */
+    protected boolean useControlPointWeights;
+
     /**
      * Construct a new generator with no control points set.
      */
@@ -86,6 +103,7 @@ public abstract class PatchGenerator extends GeometryGenerator
         patchChanged = true;
         normalsChanged = true;
         texCoordsChanged = true;
+        useControlPointWeights = false;
     }
 
     /**
@@ -118,7 +136,30 @@ public abstract class PatchGenerator extends GeometryGenerator
     }
 
     /**
-     * Set the bezier patch control points. The array is presented as
+     * Set the flag to say that calculations should be using the control
+     * point weights. Initially this starts as false, so if the user wants
+     * to create a rational surface then they should call this method with a
+     * value of true.
+     *
+     * @param state true if the weights should be used
+     */
+    public void enableControlPointWeights(boolean state)
+    {
+        useControlPointWeights = state;
+    }
+
+    /**
+     * Get the current setting of the control point weight usage flag.
+     *
+     * @return true if the control point weights are in use
+     */
+    public boolean hasControlPointWeights()
+    {
+        return useControlPointWeights;
+    }
+
+    /**
+     * Set the patch control points. The array is presented as
      * [width][depth] with the coordinates flattened as [Xn, Yn, Zn] in the
      * depth array. The order of the patch is determined by the passed array.
      * If the arrays are not of minimum length 3 and equal length an exception
@@ -130,10 +171,10 @@ public abstract class PatchGenerator extends GeometryGenerator
     {
         int min_length = controlPoints[0].length;
 
-        if((controlPoints.length < 3) || (controlPoints[0].length < 3))
-            throw new IllegalArgumentException("Depth patch size < 3");
+        if((controlPoints.length < 3) || (min_length < 3))
+            throw new IllegalArgumentException("Control point size < 3");
 
-        // second check for consistent lengths of the width patches
+        // second check for consistent lengths of the individual points
         int i;
 
         for(i = 1; i < controlPoints.length; i++)
@@ -142,6 +183,13 @@ public abstract class PatchGenerator extends GeometryGenerator
                 throw new IllegalArgumentException("Non-equal array lengths");
         }
 
+        int num_depth_weights = controlPoints[0].length / 3;
+        boolean reset_weights =
+            (controlPointCoordinates == null) ||
+            (controlPoints.length != numWidthControlPoints) ||
+            (controlPoints[0].length != numDepthControlPoints);
+
+        // Adjust the control point array size if needed.
         if((controlPointCoordinates == null) ||
            ((controlPoints.length != controlPointCoordinates.length) &&
             (min_length != controlPointCoordinates[0].length)))
@@ -158,6 +206,25 @@ public abstract class PatchGenerator extends GeometryGenerator
             }
         }
 
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           ((controlPoints.length != controlPointWeights.length) &&
+            (num_depth_weights != controlPointWeights[0].length)))
+        {
+            if((controlPointWeights == null) ||
+               (controlPoints.length != controlPointWeights.length))
+            {
+                controlPointWeights =
+                    new float[controlPoints.length][num_depth_weights];
+            }
+            else
+            {
+                for(i = 0; i < controlPointWeights.length; i++)
+                    controlPointWeights[i] = new float[num_depth_weights];
+            }
+        }
+
+        // Copy the values of the new array into the internal structures
         for(i = 0; i < controlPoints.length; i++)
         {
             System.arraycopy(controlPoints[i],
@@ -165,6 +232,14 @@ public abstract class PatchGenerator extends GeometryGenerator
                              controlPointCoordinates[i],
                              0,
                              min_length);
+        }
+
+        // Reset all the weights to one if required.
+        if(reset_weights)
+        {
+            for(i = controlPointWeights.length; --i >= 0; )
+                for(int j = controlPointWeights[0].length; --j >= 0; )
+                    controlPointWeights[i][j] = 1;
         }
 
         numWidthControlPoints = controlPoints.length;
@@ -176,7 +251,7 @@ public abstract class PatchGenerator extends GeometryGenerator
     }
 
     /**
-     * Set the bezier patch controlPoints. The array is presented as a flat
+     * Set the patch controlPoints. The array is presented as a flat
      * array where coordinates are [depth * width Xn, Yn, Zn] in the array.
      * The
      * order of the patch is determined by the passed array. If the arrays are
@@ -197,7 +272,12 @@ public abstract class PatchGenerator extends GeometryGenerator
             throw new IllegalArgumentException("Array not big enough ");
 
         int i;
+        boolean reset_weights =
+            (controlPointCoordinates == null) ||
+            (numWidth != numWidthControlPoints) ||
+            (numDepth != numDepthControlPoints);
 
+        // Adjust the control point array size if needed.
         if((controlPointCoordinates == null) ||
            (controlPointCoordinates.length < numWidth) ||
            (controlPointCoordinates[0].length < numDepth * 3))
@@ -214,6 +294,26 @@ public abstract class PatchGenerator extends GeometryGenerator
             }
         }
 
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           ((controlPoints.length != controlPointWeights.length) &&
+            (numDepth != controlPointWeights[0].length)))
+        {
+            if((controlPointWeights == null) ||
+               (controlPoints.length != controlPointWeights.length))
+            {
+                controlPointWeights =
+                    new float[controlPoints.length][numDepth];
+            }
+            else
+            {
+                for(i = 0; i < controlPointWeights.length; i++)
+                    controlPointWeights[i] = new float[numDepth];
+            }
+        }
+
+
+        // Copy the values of the new array into the internal structures
         int offset = 0;
 
         for(i = 0; i < numWidth; i++)
@@ -224,6 +324,14 @@ public abstract class PatchGenerator extends GeometryGenerator
                              0,
                              numDepth * 3);
             offset += numDepth * 3;
+        }
+
+        // Reset all the weights to one if required.
+        if(reset_weights)
+        {
+            for(i = controlPointWeights.length; --i >= 0; )
+                for(int j = controlPointWeights[0].length; --j >= 0; )
+                    controlPointWeights[i][j] = 1;
         }
 
         numWidthControlPoints = numWidth;

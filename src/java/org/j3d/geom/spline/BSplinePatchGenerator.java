@@ -31,7 +31,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BSplinePatchGenerator extends PatchGenerator
 {
@@ -292,6 +292,17 @@ public class BSplinePatchGenerator extends PatchGenerator
         }
 
 
+        if(useControlPointWeights)
+            regenerateWeightedPatch();
+        else
+            regenerateStandardPatch();
+    }
+
+    /**
+     * Regenerate the patch ignoring control point weights.
+     */
+    private void regenerateStandardPatch()
+    {
         int i, j, ki, kj;
         double i_inter, i_inc;
         double j_inter, j_inc;
@@ -402,6 +413,120 @@ public class BSplinePatchGenerator extends PatchGenerator
         patchCoordinates[facetCount][last + 2] =
             controlPointCoordinates[last_width][last_depth + 2];
     }
+
+    /**
+     * Regenerate the patch using control point weights.
+     */
+    private void regenerateWeightedPatch()
+    {
+        int i, j, ki, kj;
+        double i_inter, i_inc;
+        double j_inter, j_inc;
+        double bi,bj;
+        double x, y, z;
+        float w;
+        int cnt, p_cnt;
+        int last = facetCount * 3;
+        int last_depth = (numDepthControlPoints - 1) * 3;
+        int last_width = numWidthControlPoints - 1;
+
+       // Step size along the curve
+       i_inc = (numWidthControlPoints - widthDegree + 1) / (double)facetCount;
+       j_inc = (numDepthControlPoints - depthDegree + 1) / (double)facetCount;
+
+        i_inter = 0;
+        for(i = 0; i < facetCount; i++)
+        {
+            j_inter = 0;
+            p_cnt = 0;
+            for(j = 0; j < facetCount; j++)
+            {
+                x = 0;
+                y = 0;
+                z = 0;
+                cnt = 0;
+                kj = 0;
+
+                for(ki = 0; ki < numWidthControlPoints; ki++)
+                {
+                    cnt = 0;
+                    for(kj = 0; kj < numDepthControlPoints; kj++)
+                    {
+                        bi = splineBlend(ki, widthDegree, false, i_inter);
+                        bj = splineBlend(kj, depthDegree, true, j_inter);
+                        w = controlPointWeights[ki][kj];
+                        x += controlPointCoordinates[ki][cnt++] * bi * bj * w;
+                        y += controlPointCoordinates[ki][cnt++] * bi * bj * w;
+                        z += controlPointCoordinates[ki][cnt++] * bi * bj * w;
+                    }
+                }
+
+                patchCoordinates[i][p_cnt++] = (float)x;
+                patchCoordinates[i][p_cnt++] = (float)y;
+                patchCoordinates[i][p_cnt++] = (float)z;
+
+                j_inter += j_inc;
+            }
+
+            i_inter += i_inc;
+        }
+
+
+        // Process the last row along the depth.
+        i_inter = 0;
+
+        for(i = 0; i < facetCount; i++)
+        {
+            x = 0;
+            y = 0;
+            z = 0;
+
+            for(ki = 0; ki < numWidthControlPoints; ki++)
+            {
+                bi = splineBlend(ki, widthDegree, false, i_inter);
+                w = controlPointWeights[ki][numDepthControlPoints];
+                x += controlPointCoordinates[ki][last_depth] * bi * w;
+                y += controlPointCoordinates[ki][last_depth + 1] * bi * w;
+                z += controlPointCoordinates[ki][last_depth + 2] * bi * w;
+            }
+
+            patchCoordinates[i][last] = (float)x;
+            patchCoordinates[i][last + 1] = (float)y;
+            patchCoordinates[i][last + 2] = (float)z;
+            i_inter += i_inc;
+        }
+
+        // Process the last row along the width.
+        j_inter = 0;
+        for(j = 0; j < facetCount; j++)
+        {
+            x = 0;
+            y = 0;
+            z = 0;
+            cnt = 0;
+            for(kj = 0; kj < numDepthControlPoints; kj++)
+            {
+                bj = splineBlend(kj, depthDegree, true, j_inter);
+                w = controlPointWeights[last_width][kj];
+                x += controlPointCoordinates[last_width][cnt++] * bj * w;
+                y += controlPointCoordinates[last_width][cnt++] * bj * w;
+                z += controlPointCoordinates[last_width][cnt++] * bj * w;
+            }
+
+            patchCoordinates[facetCount][j * 3] = (float)x;
+            patchCoordinates[facetCount][j * 3 + 1] = (float)y;
+            patchCoordinates[facetCount][j * 3 + 2] = (float)z;
+            j_inter += j_inc;
+        }
+
+        patchCoordinates[facetCount][last] =
+            controlPointCoordinates[last_width][last_depth];
+        patchCoordinates[facetCount][last + 1] =
+            controlPointCoordinates[last_width][last_depth + 1];
+        patchCoordinates[facetCount][last + 2] =
+            controlPointCoordinates[last_width][last_depth + 2];
+    }
+
 
     /**
      * Calculate the blending value for the spline recursively.
