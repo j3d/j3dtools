@@ -28,9 +28,18 @@ import org.j3d.util.ImageLoader;
 /**
  * A toolbar for all view manipulation commands that offers
  * convenient and common code.
+ * <p>
+ *
+ * This toolbar uses images for the button icons rather than text. These are
+ * the images used. The path is found relative to the classpath.
+ * <ul>
+ * <li>Pan:  images/navigation/ButtonForward.gif</li>
+ * <li>Tilt: images/navigation/ButtonBack.gif</li>
+ * <li>Walk: images/navigation/ButtonHome.gif</li>
+ * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ViewpointToolbar extends JPanel
     implements ActionListener, ItemListener
