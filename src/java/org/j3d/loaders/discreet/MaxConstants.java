@@ -25,7 +25,7 @@ package org.j3d.loaders.discreet;
  * http://www.the-labs.com/Blender/3DS-details.html</a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface MaxConstants
 {
@@ -72,14 +72,17 @@ public interface MaxConstants
     public static final int BITMAP = 0x1100;
     public static final int USE_BITMAP = 0x1101;
 
-    /** The ID is for a solid colour background */
-    public static final int SOLBG = 0x1200;
+    /** The ID is for a solid colour background (0x1200) */
+    public static final int SOLID_BG = 0x1200;
 
-    /** The ID is for a solid colour background */
-    public static final int USE_SOLBG = 0x1200;
+    /** The ID is for using a solid colour background (0x1201)*/
+    public static final int USE_SOLID_BG = 0x1201;
 
-    /** The ID is for a vertical gradient */
+    /** The ID is for a vertical gradient (0x1300) */
     public static final int V_GRADIENT = 0x1300;
+
+    /** The ID is for using a vertical gradient (0x1301) */
+    public static final int USE_V_GRADIENT = 0x1301;
 
     /** The ID is for a lo res shadow bias (0x1410) */
     public static final int LOW_SHADOW_BIAS = 0x1400;
