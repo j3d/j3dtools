@@ -10,7 +10,7 @@
 package org.j3d.geom;
 
 // Standard imports
-// none
+import java.text.NumberFormat;
 
 // Application specific imports
 // none
@@ -30,7 +30,7 @@ package org.j3d.geom;
  * generate 2D values if asked.
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class GeometryData implements Cloneable
 {
@@ -163,6 +163,10 @@ public class GeometryData implements Cloneable
      */
     public void prettyPrint()
     {
+        NumberFormat format = NumberFormat.getInstance();
+        format.setMaximumFractionDigits(3);
+        format.setMinimumFractionDigits(3);
+
         boolean has_3d_texture =
             (geometryComponents & GeometryData.TEXTURE_2D_DATA) == 0;
 
@@ -171,20 +175,20 @@ public class GeometryData implements Cloneable
         {
             System.out.print(i);
             System.out.print("v: ");
-            System.out.print(coordinates[i * 3]);
+            System.out.print(format.format(coordinates[i * 3]));
             System.out.print(' ');
-            System.out.print(coordinates[i * 3 + 1]);
+            System.out.print(format.format(coordinates[i * 3 + 1]));
             System.out.print(' ');
-            System.out.print(coordinates[i * 3 + 2]);
+            System.out.print(format.format(coordinates[i * 3 + 2]));
 
             if(normals != null)
             {
                 System.out.print(", n: ");
-                System.out.print(normals[i * 3]);
+                System.out.print(format.format(normals[i * 3]));
                 System.out.print(' ');
-                System.out.print(normals[i * 3 + 1]);
+                System.out.print(format.format(normals[i * 3 + 1]));
                 System.out.print(' ');
-                System.out.print(normals[i * 3 + 2]);
+                System.out.print(format.format(normals[i * 3 + 2]));
             }
 
             if(textureCoordinates != null)
@@ -192,18 +196,18 @@ public class GeometryData implements Cloneable
                 if(has_3d_texture)
                 {
                     System.out.print(", t: ");
-                    System.out.print(textureCoordinates[i * 3]);
+                    System.out.print(format.format(textureCoordinates[i * 3]));
                     System.out.print(' ');
-                    System.out.print(textureCoordinates[i * 3 + 1]);
+                    System.out.print(format.format(textureCoordinates[i * 3 + 1]));
                     System.out.print(' ');
-                    System.out.print(textureCoordinates[i * 3 + 2]);
+                    System.out.print(format.format(textureCoordinates[i * 3 + 2]));
                 }
                 else
                 {
                     System.out.print(", t: ");
-                    System.out.print(textureCoordinates[i * 2]);
+                    System.out.print(format.format(textureCoordinates[i * 2]));
                     System.out.print(' ');
-                    System.out.print(textureCoordinates[i * 2 + 1]);
+                    System.out.print(format.format(textureCoordinates[i * 2 + 1]));
                 }
 
             }
