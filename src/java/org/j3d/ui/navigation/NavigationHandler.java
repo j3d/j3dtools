@@ -144,7 +144,7 @@ import org.j3d.util.UserSupplementData;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class NavigationHandler
 {
@@ -1391,8 +1391,9 @@ public class NavigationHandler
 
         if(collision)
         {
+System.out.println("J3DNavHandler: Need to notify of collision geometry");
             if(collisionListener != null)
-                collisionListener.avatarCollision();
+                collisionListener.avatarCollision(null);
 
             oneFrameTranslation.z = 0;
         }

@@ -13,7 +13,7 @@
 package org.j3d.ui.navigation;
 
 // Standard imports
-import  javax.media.j3d.Transform3D;
+import javax.media.j3d.SceneGraphObject;
 
 // Application specific imports
 // none
@@ -24,12 +24,15 @@ import  javax.media.j3d.Transform3D;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface CollisionListener
 {
     /**
-     * Notification that a collision has taken place.
+     * Notification that a collision has taken place with the given Java3D
+     * scene object.
+     *
+     * @param node The node that was collided with
      */
-    public void avatarCollision();
+    public void avatarCollision(SceneGraphObject node);
 }
