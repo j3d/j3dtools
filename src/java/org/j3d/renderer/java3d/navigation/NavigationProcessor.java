@@ -184,7 +184,7 @@ import org.j3d.util.MatrixUtils;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NavigationProcessor
 {
@@ -632,7 +632,6 @@ public class NavigationProcessor
 
 
         viewTg.getTransform(viewTx);
-System.out.println("setViewInfo LM: \n" + viewTx);
 
         if(tg.isLive())
         {
