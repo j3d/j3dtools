@@ -51,15 +51,28 @@ import org.j3d.util.UserSupplementData;
  * check for the segment intersection if requested. Then, for an infinite ray
  * or an intersecting segment, we use the algorithm defined from the Siggraph
  * paper in their education course:
- * <a href="http://www.education.siggraph.org/materials/HyperGraph/raytrace/raypolygon_intersection.htm">
- * http://www.education.siggraph.org/materials/HyperGraph/raytrace/raypolygon_intersection.htm
- * </a>
+ * <ul>
+ * <li><a href="http://www.education.siggraph.org/materials/HyperGraph/raytrace/raypolygon_intersection.htm">
+ * Ray-Polygon</a></li>
+ * <li><a href="http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter1.htm">Ray-Sphere</a></li>
+ * <li><a href="http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm">Ray-Plane</a></li>
+ * <li><a href="http://www.2tothex.com/raytracing/primitives.html">Ray-Cylinder</a></li>
+ * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class IntersectionUtils
 {
+    /** Cylinder intersection axis X */
+    public static final int X_AXIS = 1;
+
+    /** Cylinder intersection axis Y */
+    public static final int Y_AXIS = 2;
+
+    /** Cylinder intersection axis Z */
+    public static final int Z_AXIS = 3;
+
     /** A point that we use for working calculations (coord transforms) */
     private Point3d wkPoint;
     private Vector3d wkVec;
@@ -1270,6 +1283,413 @@ public class IntersectionUtils
     //----------------------------------------------------------
     // Lower level methods for individual polygons
     //----------------------------------------------------------
+
+    /**
+     * Compute the intersection point of the ray and an infinite cylinder.
+     * This is limited to an intersection along one of the axes.
+     * <p>
+     * The cylAxis value refers to the coefficients for the axis of the
+     * cylinder that does not pass through the origin. If we assume the
+     * general equation for a cylinder that lies along the X axis is
+     * <code>(y - b)^2 + (z - c)^2 = r^2</code> then the values of this
+     * parameter represent the coefficients (a, b, c). For the given axis,
+     * only the two coefficients for the other axes are used.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param axis Identifier of which axis this is aligned to
+     * @param cylAxis The vector coefficients describing the axis of the cylinder
+     * @param cylRadius The raduis of the cylinder
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     * @throws IllegalArgumentException The axis ID given is not valid
+     */
+    public boolean rayCylinder(float[] origin,
+                               float[] direction,
+                               int axis,
+                               float[] cylAxis,
+                               float cylRadius,
+                               float[] point)
+        throws IllegalArgumentException
+    {
+        return rayCylinder(origin[0], origin[1], origin[2],
+                           direction[0], direction[1], direction[2],
+                           axis,
+                           cylAxis,
+                           cylRadius,
+                           point);
+    }
+
+    /**
+     * Compute the intersection point of the ray and an infinite cylinder.
+     * This is limited to an intersection along one of the axes.
+     * <p>
+     * The cylAxis value refers to the coefficients for the axis of the
+     * cylinder that does not pass through the origin. If we assume the
+     * general equation for a cylinder that lies along the X axis is
+     * <code>(y - b)^2 + (z - c)^2 = r^2</code> then the values of this
+     * parameter represent the coefficients (a, b, c). For the given axis,
+     * only the two coefficients for the other axes are used.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param axis Identifier of which axis this is aligned to
+     * @param cylAxis The vector coefficients describing the axis of the cylinder
+     * @param cylRadius The raduis of the cylinder
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     * @throws IllegalArgumentException The axis ID given is not valid
+     */
+    public boolean rayCylinder(Point3d origin,
+                               Vector3d direction,
+                               int axis,
+                               float[] cylAxis,
+                               float cylRadius,
+                               Point3d point)
+        throws IllegalArgumentException
+    {
+        boolean ret_val = rayCylinder(origin.x, origin.y, origin.z,
+                                      direction.x, direction.y, direction.z,
+                                      axis,
+                                      cylAxis,
+                                      cylRadius,
+                                      wkPolygon);
+
+        point.x = wkPolygon[0];
+        point.y = wkPolygon[1];
+        point.z = wkPolygon[2];
+
+        return ret_val;
+    }
+
+    /**
+     * Internal computation of the intersection point of the ray and a cylinder.
+     * Uses raw data types.
+     *
+     * @param Xo The X coordinate of the origin of the ray
+     * @param Yo The Y coordinate of the origin of the ray
+     * @param Zo The Z coordinate of the origin of the ray
+     * @param Xd The X coordinate of the direction of the ray
+     * @param Yd The Y coordinate of the direction of the ray
+     * @param Zd The Z coordinate of the direction of the ray
+     * @param axis Identifier of which axis this is aligned to
+     * @param cylAxis The vector coefficients describing the axis of the cylinder
+     * @param cylRadius The radius of the cylinder
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     * @throws IllegalArgumentException The axis ID given is not valid
+     */
+    private boolean rayCylinder(double Xo, double Yo, double Zo,
+                                double Xd, double Yd, double Zd,
+                                int axis,
+                                float[] cylAxis,
+                                float cylRadius,
+                                float[] point)
+        throws IllegalArgumentException
+    {
+        // Sanity check for parallel axis / pick vector stuff first
+        switch(axis)
+        {
+            case X_AXIS:
+                if(Xd == 1 && Yd == 0 && Zd == 0)
+                    return false;
+                break;
+
+            case Y_AXIS:
+                if(Xd == 0 && Yd == 1 && Zd == 0)
+                    return false;
+                break;
+
+            case Z_AXIS:
+                if(Xd == 0 && Yd == 0 && Zd == 1)
+                    return false;
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid Axis ID " + axis);
+        }
+
+        // Create a whole heap of local variables to save all the lookups. Makes
+        // generating the output easier and less use of switch statements later
+        // on. D == direction, O == origin, C == axis of cylinder coefficients
+        double D1 = 0;
+        double D2 = 0;
+        double O1 = 0;
+        double O2 = 0;
+        double C1 = 0;
+        double C2 = 0;
+
+        switch(axis)
+        {
+            case X_AXIS:
+                D1 = Yd;
+                D2 = Zd;
+                O1 = Yo;
+                O2 = Zo;
+                C1 = cylAxis[1];
+                C2 = cylAxis[2];
+                break;
+
+            case Y_AXIS:
+                D1 = Xd;
+                D2 = Zd;
+                O1 = Xo;
+                O2 = Zo;
+                C1 = cylAxis[0];
+                C2 = cylAxis[2];
+                break;
+
+            case Z_AXIS:
+                D1 = Xd;
+                D2 = Yd;
+                O1 = Xo;
+                O2 = Yo;
+                C1 = cylAxis[0];
+                C2 = cylAxis[1];
+        }
+
+        // compute A, B, C
+        double a = D1 * D1 + D2 * D2;
+        double b = 2 * (D1 * (O1 - C1) + D2 * (O2 - C2));
+        double c = (O1 - C1) * (O1 - C1) + (O2 - C2) * (O2 - C2)
+                   - cylRadius * cylRadius;
+
+        // compute discriminant
+        double disc = b * b - 4 * a * c;
+
+        if(disc < 0)
+            return false;
+        if(disc == 0)
+        {
+            // tangent Intersection point is u = -b/2a
+            double u = -b / a * 0.5;
+            point[0] = (float)(Xo + u * Xd);
+            point[1] = (float)(Yo + u * Yd);
+            point[2] = (float)(Zo + u * Zd);
+        }
+        else
+        {
+            // Closest interection point with. If the t0 (subtraction)
+            // is greater than zero then that's the intersection point,
+            // if not then compute t1 which is the addition.
+            double u = (-b - Math.sqrt(disc)) / (a * 2);
+
+            if(u < 0)
+                u = (-b + Math.sqrt(disc)) / (a * 2);
+
+            point[0] = (float)(Xo + u * Xd);
+            point[1] = (float)(Yo + u * Yd);
+            point[2] = (float)(Zo + u * Zd);
+        }
+
+        return true;
+    }
+
+    /**
+     * Compute the intersection point of the ray and a sphere.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param sphereCenter The coordinates of the center of the sphere
+     * @param sphereRadius The raduis of the sphere
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    public boolean raySphere(float[] origin,
+                             float[] direction,
+                             float[] sphereCenter,
+                             float sphereRadius,
+                             float[] point)
+    {
+        return raySphere(origin[0], origin[1], origin[2],
+                         direction[0], direction[1], direction[2],
+                         sphereCenter,
+                         sphereRadius,
+                         point);
+    }
+
+    /**
+     * Compute the intersection point of the ray and a sphere.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param sphereCenter The coordinates of the center of the sphere
+     * @param sphereRadius The raduis of the sphere
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    public boolean raySphere(Point3d origin,
+                             Vector3d direction,
+                             float[] sphereCenter,
+                             float sphereRadius,
+                             Point3d point)
+    {
+        boolean ret_val = raySphere(origin.x, origin.y, origin.z,
+                                    direction.x, direction.y, direction.z,
+                                    sphereCenter,
+                                    sphereRadius,
+                                    wkPolygon);
+
+        point.x = wkPolygon[0];
+        point.y = wkPolygon[1];
+        point.z = wkPolygon[2];
+
+        return ret_val;
+    }
+
+    /**
+     * Internal computation of the intersection point of the ray and a sphere.
+     * Uses raw data types.
+     *
+     * @param Xo The X coordinate of the origin of the ray
+     * @param Yo The Y coordinate of the origin of the ray
+     * @param Zo The Z coordinate of the origin of the ray
+     * @param Xd The X coordinate of the direction of the ray
+     * @param Yd The Y coordinate of the direction of the ray
+     * @param Zd The Z coordinate of the direction of the ray
+     * @param sphereCenter The coordinates of the center of the sphere
+     * @param sphereRadius The raduis of the sphere
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    private boolean raySphere(double Xo, double Yo, double Zo,
+                              double Xd, double Yd, double Zd,
+                              float[] sphereCenter,
+                              float sphereRadius,
+                              float[] point)
+   {
+        double Xc = sphereCenter[0];
+        double Yc = sphereCenter[1];
+        double Zc = sphereCenter[2];
+
+        // compute A, B, C
+        //C =
+        double a = Xd * Xd + Yd * Yd + Zd * Zd;
+        double b = 2 * (Xd * (Xo - Xc) + Yd * (Yo - Yc) + Zd * (Zo - Zc));
+        double c = (Xo - Xc) * (Xo - Xc) + (Yo - Yc) * (Yo - Yc) +
+                   (Zo - Zc) * (Zo - Zc) - sphereRadius * sphereRadius;
+
+        // compute discriminant
+        double disc = b * b - 4 * a * c;
+
+        if(disc < 0)
+            return false;
+        if(disc == 0)
+        {
+            // tangent Intersection point is u = -b/2a
+            double u = -b / a * 0.5;
+            point[0] = (float)(Xo + u * Xd);
+            point[1] = (float)(Yo + u * Yd);
+            point[2] = (float)(Zo + u * Zd);
+        }
+        else
+        {
+            // Closest interection point with. If the t0 (subtraction)
+            // is greater than zero then that's the intersection point,
+            // if not then compute t1 which is the addition.
+            double u = (-b - Math.sqrt(disc)) / (a * 2);
+
+            if(u < 0)
+                u = (-b + Math.sqrt(disc)) / (a * 2);
+
+            point[0] = (float)(Xo + u * Xd);
+            point[1] = (float)(Yo + u * Yd);
+            point[2] = (float)(Zo + u * Zd);
+        }
+
+        return true;
+    }
+
+    /**
+     * Compute the intersection point of the ray and a plane. Assumes that the
+     * plane equation defines a unit normal in the coefficients a,b,c. If not,
+     * weird things happen.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param plane The coefficients for the plane equation (ax + by + cz + d = 0)
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    public boolean rayPlane(float[] origin,
+                             float[] direction,
+                             float[] plane,
+                             float[] point)
+    {
+        return rayPlane(origin[0], origin[1], origin[2],
+                        direction[0], direction[1], direction[2],
+                        plane,
+                        point);
+    }
+
+    /**
+     * Compute the intersection point of the ray and a plane. Assumes that the
+     * plane equation defines a unit normal in the coefficients a,b,c. If not,
+     * weird things happen.
+     *
+     * @param origin The origin of the ray
+     * @param direction The direction of the ray
+     * @param plane The coefficients for the plane equation (ax + by + cz + d = 0)
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    public boolean rayPlane(Point3d origin,
+                            Vector3d direction,
+                            float[] plane,
+                            Point3d point)
+    {
+        boolean ret_val = rayPlane(origin.x, origin.y, origin.z,
+                                   direction.x, direction.y, direction.z,
+                                   plane,
+                                   wkPolygon);
+
+        point.x = wkPolygon[0];
+        point.y = wkPolygon[1];
+        point.z = wkPolygon[2];
+
+        return ret_val;
+    }
+
+
+    /**
+     * Internal computation of the intersection point of the ray and a plane.
+     * Uses raw data types.
+     *
+     * @param Xo The X coordinate of the origin of the ray
+     * @param Yo The Y coordinate of the origin of the ray
+     * @param Zo The Z coordinate of the origin of the ray
+     * @param Xd The X coordinate of the direction of the ray
+     * @param Yd The Y coordinate of the direction of the ray
+     * @param Zd The Z coordinate of the direction of the ray
+     * @param plane The coefficients for the plane equation (ax + by + cz + d = 0)
+     * @param point The intersection point for returning
+     * @return true if there was an intersection, false if not
+     */
+    private boolean rayPlane(double Xo, double Yo, double Zo,
+                             double Xd, double Yd, double Zd,
+                             float[] plane,
+                             float[] point)
+   {
+        // Dot product between the ray and the normal to the plane
+        double angle = Xd * plane[0] + Yd * plane[1] + Zd * plane[2];
+
+        if(angle == 0)
+            return false;
+
+        // t = (Pn . Origin + D) / (Pn . Direction)
+        // The divisor is the angle calc already calculated
+        double Vo = -((plane[0] * Xo + plane[1] * Yo + plane[2] * Zo) + plane[2]);
+        double t = Vo / angle;
+
+        if(t < 0)
+            return false;
+
+        point[0] = (float)(Xo + Xd * t);
+        point[1] = (float)(Yo + Yd * t);
+        point[2] = (float)(Zo + Zd * t);
+
+        return true;
+    }
 
     /**
      * Test to see if the polygon intersects with the given ray. The
