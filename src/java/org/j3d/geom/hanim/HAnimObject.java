@@ -15,7 +15,8 @@ import javax.vecmath.Vector3f;
 import javax.vecmath.Matrix4f;
 
 // Local imports
-// None
+import org.j3d.util.DefaultErrorReporter;
+import org.j3d.util.ErrorReporter;
 
 /**
  * Common object functionality for all objects that implement the H-Anim spec.
@@ -23,7 +24,7 @@ import javax.vecmath.Matrix4f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class HAnimObject
 {
@@ -32,6 +33,9 @@ public abstract class HAnimObject
 
     /** The name of the object */
     protected String name;
+
+    /** Local reporter to put errors in */
+    protected ErrorReporter errorReporter;
 
     // Classes for doing the matrix multiplication
 
@@ -49,6 +53,30 @@ public abstract class HAnimObject
         tempMtx1 = new Matrix4f();
         tempMtx2 = new Matrix4f();
         tempMtx3 = new Matrix4f();
+    }
+
+    /**
+     * Initialize a new instance of the HAnimObject.
+     */
+    protected HAnimObject()
+    {
+        errorReporter = DefaultErrorReporter.getDefaultReporter();
+    }
+
+    /**
+     * Register an error reporter with the object so that any errors generated
+     * by the object can be reported in a nice, pretty fashion.
+     * Setting a value of null will clear the currently set reporter. If one
+     * is already set, the new value replaces the old.
+     *
+     * @param reporter The instance to use or null
+     */
+    public void setErrorReporter(ErrorReporter reporter)
+    {
+        errorReporter = reporter;
+
+        if(reporter == null)
+            errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 
     /**
