@@ -30,7 +30,7 @@ package org.j3d.geom;
  * generate 2D values if asked.
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class GeometryData implements Cloneable
 {
@@ -156,102 +156,155 @@ public class GeometryData implements Cloneable
      */
     public int[] colorIndexes;
 
-    public void prettyPrint() {
-        if (coordinates != null) {
-            System.out.print(" Coords: " );
-            for(int i=0; i < coordinates.length; i++) {
-                System.out.print(coordinates[i] + " ");
-                if ((i+1) % 3 == 0)
-                   System.out.print(", ");
-            }
-            System.out.println();
-        }
+    /**
+     * Convenience method to print out all the data associated with
+     * this geometry array. Prints one vertex per line. Ignores
+     * index information.
+     */
+    public void prettyPrint()
+    {
+        boolean has_3d_texture =
+            (geometryComponents & GeometryData.TEXTURE_2D_DATA) == 0;
 
-        if (textureCoordinates != null) {
-            System.out.print("TCoords: " );
-            for(int i=0; i < textureCoordinates.length; i++) {
-                System.out.print(textureCoordinates[i] + " ");
-                if ((i+1) % 2 == 0)
-                   System.out.print(", ");
+        System.out.println();
+        for(int i = 0; i < vertexCount; i++)
+        {
+            System.out.print(i);
+            System.out.print("v: ");
+            System.out.print(coordinates[i * 3]);
+            System.out.print(' ');
+            System.out.print(coordinates[i * 3 + 1]);
+            System.out.print(' ');
+            System.out.print(coordinates[i * 3 + 2]);
+
+            if(normals != null)
+            {
+                System.out.print(", n: ");
+                System.out.print(normals[i * 3]);
+                System.out.print(' ');
+                System.out.print(normals[i * 3 + 1]);
+                System.out.print(' ');
+                System.out.print(normals[i * 3 + 2]);
+            }
+
+            if(textureCoordinates != null)
+            {
+                if(has_3d_texture)
+                {
+                    System.out.print(", t: ");
+                    System.out.print(textureCoordinates[i * 3]);
+                    System.out.print(' ');
+                    System.out.print(textureCoordinates[i * 3 + 1]);
+                    System.out.print(' ');
+                    System.out.print(textureCoordinates[i * 3 + 2]);
+                }
+                else
+                {
+                    System.out.print(", t: ");
+                    System.out.print(textureCoordinates[i * 2]);
+                    System.out.print(' ');
+                    System.out.print(textureCoordinates[i * 2 + 1]);
+                }
 
             }
-            System.out.println();
-        }
 
-        if (normals != null) {
-            System.out.print("NCoords: " );
-            for(int i=0; i < normals.length; i++) {
-                System.out.print(normals[i] + " ");
-                if ((i+1) % 3 == 0)
-                   System.out.print(", ");
-            }
-            System.out.println();
-        }
-
-        if (colors != null) {
-            System.out.print("Ccoords: " );
-            for(int i=0; i < colors.length; i++) {
-                System.out.print(colors[i] + " ");
-                if ((i+1) % 3 == 0)
-                   System.out.print(", ");
-            }
             System.out.println();
         }
     }
 
-    public Object clone() {
+    /**
+     * Make a copy of this object with identical data. Does a
+     * deep copy of all data associated.
+     *
+     * @return The copy of the data
+     */
+    public Object clone()
+    {
         GeometryData gd = new GeometryData();
         gd.geometryType = geometryType;
         gd.geometrySubType = geometrySubType;
         gd.geometryComponents = geometryComponents;
         gd.vertexCount = vertexCount;
-        if (coordinates != null) {
+        if(coordinates != null)
+        {
             gd.coordinates = new float[coordinates.length];
-            System.arraycopy(coordinates, 0, gd.coordinates, 0, coordinates.length);
+            System.arraycopy(coordinates,
+                             0,
+                             gd.coordinates,
+                             0,
+                             coordinates.length);
         }
 
-        if (normals != null) {
+        if(normals != null)
+        {
             gd.normals = new float[normals.length];
             System.arraycopy(normals, 0, gd.normals, 0, normals.length);
         }
 
         gd.indexesCount = indexesCount;
 
-        if (indexes != null) {
+        if(indexes != null)
+        {
             gd.indexes = new int[indexes.length];
             System.arraycopy(indexes, 0, gd.indexes, 0, indexes.length);
         }
 
         gd.numStrips = numStrips;
 
-        if (stripCounts != null) {
+        if(stripCounts != null)
+        {
             gd.stripCounts = new int[stripCounts.length];
-            System.arraycopy(stripCounts, 0, gd.stripCounts, 0, stripCounts.length);
+            System.arraycopy(stripCounts,
+                             0,
+                             gd.stripCounts,
+                             0,
+                             stripCounts.length);
         }
 
-        if (textureCoordinates != null) {
+        if(textureCoordinates != null)
+        {
             gd.textureCoordinates = new float[textureCoordinates.length];
-            System.arraycopy(textureCoordinates, 0, gd.textureCoordinates, 0, textureCoordinates.length);
+            System.arraycopy(textureCoordinates,
+                             0,
+                             gd.textureCoordinates,
+                             0,
+                             textureCoordinates.length);
         }
 
-        if (colors != null) {
+        if(colors != null)
+        {
             gd.colors = new float[colors.length];
             System.arraycopy(colors, 0, gd.colors, 0, colors.length);
         }
 
-        if (normalIndexes != null) {
+        if(normalIndexes != null)
+        {
             gd.normalIndexes = new int[normalIndexes.length];
-            System.arraycopy(normalIndexes, 0, gd.normalIndexes, 0, normalIndexes.length);
+            System.arraycopy(normalIndexes,
+                             0,
+                             gd.normalIndexes,
+                             0,
+                             normalIndexes.length);
         }
 
-        if (texCoordIndexes != null) {
+        if(texCoordIndexes != null)
+        {
             gd.texCoordIndexes = new int[texCoordIndexes.length];
-            System.arraycopy(texCoordIndexes, 0, gd.texCoordIndexes, 0, texCoordIndexes.length);
+            System.arraycopy(texCoordIndexes,
+                             0,
+                             gd.texCoordIndexes,
+                             0,
+                             texCoordIndexes.length);
         }
 
-        if (colorIndexes != null) {
+        if(colorIndexes != null)
+        {
             gd.colorIndexes = new int[colorIndexes.length];
-            System.arraycopy(colorIndexes, 0, gd.colorIndexes, 0, colorIndexes.length);
+            System.arraycopy(colorIndexes,
+                             0,
+                             gd.colorIndexes,
+                             0,
+                             colorIndexes.length);
         }
 
         return gd;
