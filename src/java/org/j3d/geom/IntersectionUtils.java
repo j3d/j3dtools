@@ -16,7 +16,7 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
 // Application specific imports
-//import org.j3d.util.IntHashMap;
+import org.j3d.util.UserSupplementData;
 
 /**
  * A collection of utility methods to do geometry intersection tests.
@@ -56,7 +56,7 @@ import javax.vecmath.Vector3d;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class IntersectionUtils
 {
