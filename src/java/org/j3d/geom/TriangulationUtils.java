@@ -28,7 +28,7 @@ import org.j3d.util.ObjectArray;
  * <a href="http://www.mema.ucl.ac.be/~wu/FSA2716-2002/project.html">here</a>.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TriangulationUtils
 {
@@ -94,24 +94,101 @@ public class TriangulationUtils
      * @param coords The coordinates of the face
      * @param startIndex The index of the first coordinate in the face
      * @param numVertex  The number of vertices to read from the list
-     * @param output The array to copy the index values to to describe
+     * @param coordOutput The array to copy the coord index values to
      * @param normal The normal to this face these vertices are a part of
      * @return The number of triangles in the output array
      */
     public int triangulateConcavePolygon(float[] coords,
                                          int startIndex,
                                          int numVertex,
-                                         int[] indexArray,
-                                         int[] output,
+                                         int[] coordIndex,
+                                         int[] coordOutput,
+                                         float[] normal)
+    {
+        return triangulateConcavePolygon(coords,
+                                         startIndex,
+                                         numVertex,
+                                         coordIndex,
+                                         0,
+                                         null,
+                                         0,
+                                         null,
+                                         0,
+                                         null,
+                                         coordOutput,
+                                         null,
+                                         null,
+                                         null,
+                                         normal);
+    }
+
+    /**
+     * Triangulate a concave polygon using an indexed coordinates array. The
+     * start index is the index into the indexArray for the first vertex of the
+     * polygon. The coordinates are not required to be a closed polygon as the
+     * algorithm will automatically close it. The output array is the new indexes
+     * to use
+     *
+     * @param coords The coordinates of the face
+     * @param startIndex The index of the first coordinate in the face
+     * @param numVertex  The number of vertices to read from the list
+     * @param firstNormalIndex The first position of the normalIndex array
+     * @param normalIndex The index of normals for each coordinate
+     * @param firstColorIndex The first position of the colorIndex array
+     * @param colorIndex The index of color for each coordinate
+     * @param firstTexCoordIndex The first position of the texCoordIndex array
+     * @param texCoordIndex The index of textureCoordinates for each coordinate
+     * @param coordOutput The array to copy the coord index values to
+     * @param normalOutput The array to copy the normal index values to
+     * @param colorOutput The array to copy the color index values to
+     * @param texCoordOutput The array to copy the texCoord index values to
+     * @param normal The normal to this face these vertices are a part of
+     * @return The number of triangles in the output array
+     */
+    public int triangulateConcavePolygon(float[] coords,
+                                         int startIndex,
+                                         int numVertex,
+                                         int[] coordIndex,
+                                         int firstNormalIndex,
+                                         int[] normalIndex,
+                                         int firstColorIndex,
+                                         int[] colorIndex,
+                                         int firstTexCoordIndex,
+                                         int[] texCoordIndex,
+                                         int[] coordOutput,
+                                         int[] normalOutput,
+                                         int[] colorOutput,
+                                         int[] texCoordOutput,
                                          float[] normal)
     {
         if(numVertex < 3)
             return 0;
         else if(numVertex == 3)
         {
-            output[0] = startIndex;
-            output[1] = startIndex + 3;
-            output[2] = startIndex + 6;
+            coordOutput[0] = coordIndex[startIndex];
+            coordOutput[1] = coordIndex[startIndex + 1];
+            coordOutput[2] = coordIndex[startIndex + 2];
+
+            if(normalOutput != null)
+            {
+                normalOutput[0] = normalIndex[firstNormalIndex];
+                normalOutput[1] = normalIndex[firstNormalIndex + 1];
+                normalOutput[2] = normalIndex[firstNormalIndex + 2];
+            }
+
+            if(colorOutput != null)
+            {
+                colorOutput[0] = colorIndex[firstColorIndex];
+                colorOutput[1] = colorIndex[firstColorIndex + 1];
+                colorOutput[2] = colorIndex[firstColorIndex + 2];
+            }
+
+            if(texCoordOutput != null)
+            {
+                texCoordOutput[0] = texCoordIndex[firstTexCoordIndex];
+                texCoordOutput[1] = texCoordIndex[firstTexCoordIndex + 1];
+                texCoordOutput[2] = texCoordIndex[firstTexCoordIndex + 2];
+            }
 
             return 1;
         }
@@ -126,57 +203,87 @@ public class TriangulationUtils
         // More than 3, so work on the ear-splitting algorithm.
         // Build a list of the vertices in a circular list.
         // First vertex, then interior vertices, then last vertex
-        int index = indexArray[startIndex];
+        int index = coordIndex[startIndex];
         PolyVertex first = newVertex();
         first.x = coords[index * 3];
         first.y = coords[index * 3 + 1];
         first.z = coords[index * 3 + 2];
         first.vertexIndex = index;
 
+        if(colorIndex != null)
+            first.colorIndex = colorIndex[firstColorIndex];
+
+        if(normalIndex != null)
+            first.normalIndex = normalIndex[firstNormalIndex];
+
+        if(texCoordIndex != null)
+            first.texCoordIndex = texCoordIndex[firstTexCoordIndex];
+
         if(!isConvexVertex(coords,
-                           indexArray[startIndex + numVertex - 1] * 3,
-                           indexArray[startIndex] * 3,
-                           indexArray[startIndex + 1] * 3,
+                           coordIndex[startIndex + numVertex - 1] * 3,
+                           coordIndex[startIndex] * 3,
+                           coordIndex[startIndex + 1] * 3,
                            faceNormal))
            concaveVertices.add(first);
+
 
         // Interior vertices
         PolyVertex current = first;
         PolyVertex prev = first;
+        int inc = 1;
 
-        for(int i = 1; i < numVertex - 1; i++)
+        for(int i = startIndex + 1 ; i < startIndex + numVertex - 1; i++)
         {
-            index = indexArray[i];
+            index = coordIndex[i];
             current = newVertex();
             current.x = coords[index * 3];
             current.y = coords[index * 3 + 1];
             current.z = coords[index * 3 + 2];
             current.vertexIndex = index;
+            if(colorIndex != null)
+                current.colorIndex = colorIndex[firstColorIndex + inc];
+
+            if(normalIndex != null)
+                current.normalIndex = normalIndex[firstNormalIndex + inc];
+
+            if(texCoordIndex != null)
+                current.texCoordIndex = texCoordIndex[firstTexCoordIndex + inc];
 
             if(!isConvexVertex(coords,
-                               indexArray[index - 1] * 3,
-                               indexArray[index] * 3,
-                               indexArray[index + 1] * 3,
+                               coordIndex[i - 1] * 3,
+                               coordIndex[i] * 3,
+                               coordIndex[i + 1] * 3,
                                faceNormal))
                 concaveVertices.add(current);
 
             current.prev = prev;
             prev.next = current;
             prev = current;
+
+            inc++;
         }
 
         // Last vertex
-        index = indexArray[startIndex + numVertex - 1];
+        index = coordIndex[startIndex + numVertex - 1];
         PolyVertex last = newVertex();
         last.x = coords[index * 3];
         last.y = coords[index * 3 + 1];
         last.z = coords[index * 3 + 2];
         last.vertexIndex = index;
 
+        if(colorIndex != null)
+            last.colorIndex = colorIndex[firstColorIndex + numVertex - 1];
+
+        if(normalIndex != null)
+            last.normalIndex = normalIndex[firstNormalIndex + numVertex - 1];
+
+        if(texCoordIndex != null);
+            last.texCoordIndex = texCoordIndex[firstTexCoordIndex + numVertex - 1];
+
         if(!isConvexVertex(coords,
-                           indexArray[startIndex + numVertex - 2] * 3,
-                           indexArray[startIndex + numVertex - 1] * 3,
-                           indexArray[startIndex] * 3,
+                           coordIndex[startIndex + numVertex - 2] * 3,
+                           coordIndex[startIndex + numVertex - 1] * 3,
+                           coordIndex[startIndex] * 3,
                            faceNormal))
             concaveVertices.add(last);
 
@@ -185,7 +292,11 @@ public class TriangulationUtils
         last.prev = current;
         current.next = last;
 
-        return triangulate(first, output);
+        return triangulate(first,
+                           coordOutput,
+                           normalOutput,
+                           colorOutput,
+                           texCoordOutput);
     }
 
     /**
@@ -201,23 +312,94 @@ public class TriangulationUtils
      * @param coords The coordinates of the face
      * @param startIndex The index of the first coordinate in the face
      * @param numVertex  The number of vertices to read from the list
-     * @param output The array to copy the index values to to describe
+     * @param coordOutput The array to copy the coord index values to
      * @param normal The normal to this face these vertices are a part of
      * @return The number of triangles in the output array
      */
     public int triangulateConcavePolygon(float[] coords,
                                          int startIndex,
                                          int numVertex,
-                                         int[] output,
+                                         int[] coordOutput,
+                                         float[] normal)
+    {
+        return triangulateConcavePolygon(coords,
+                                         startIndex,
+                                         numVertex,
+                                         0,
+                                         0,
+                                         0,
+                                         coordOutput,
+                                         null,
+                                         null,
+                                         null,
+                                         normal);
+    }
+
+    /**
+     * Triangulate a concave polygon in the given array. The array is a flat
+     * array of coordinates of [...Xn, Yn, Zn....] values. The start index is
+     * the index into the array of the X component of the first item, while the
+     * endIndex is the index into the array of the X component of the last item.
+     * The coordinates are not required to be a closed polygon as the algorithm
+     * will automatically close it. The output array is indexes into the
+     * original array (including compensating for the 3 index values per
+     * coordinate)
+     *
+     * @param coords The coordinates of the face
+     * @param startIndex The index of the first coordinate in the face
+     * @param numVertex  The number of vertices to read from the list
+     * @param firstNormalIndex The first position of the normalIndex array
+     * @param normalIndex The index of normals for each coordinate
+     * @param firstColorIndex The first position of the colorIndex array
+     * @param colorIndex The index of color for each coordinate
+     * @param firstTexCoordIndex The first position of the texCoordIndex array
+     * @param coordOutput The array to copy the coord index values to
+     * @param normalOutput The array to copy the normal index values to
+     * @param colorOutput The array to copy the color index values to
+     * @param texCoordOutput The array to copy the texCoord index values to
+     * @param normal The normal to this face these vertices are a part of
+     * @return The number of triangles in the output array
+     */
+    public int triangulateConcavePolygon(float[] coords,
+                                         int startIndex,
+                                         int numVertex,
+                                         int firstNormalIndex,
+                                         int firstColorIndex,
+                                         int firstTexCoordIndex,
+                                         int[] coordOutput,
+                                         int[] normalOutput,
+                                         int[] colorOutput,
+                                         int[] texCoordOutput,
                                          float[] normal)
     {
         if(numVertex < 3)
             return 0;
         else if(numVertex == 3)
         {
-            output[0] = startIndex;
-            output[1] = startIndex + 3;
-            output[2] = startIndex + 6;
+            coordOutput[0] = startIndex;
+            coordOutput[1] = startIndex + 3;
+            coordOutput[2] = startIndex + 6;
+
+            if(normalOutput != null)
+            {
+                normalOutput[0] = firstNormalIndex;
+                normalOutput[1] = firstNormalIndex + 3;
+                normalOutput[2] = firstNormalIndex + 6;
+            }
+
+            if(colorOutput != null)
+            {
+                colorOutput[0] = firstColorIndex;
+                colorOutput[1] = firstColorIndex + 3;
+                colorOutput[2] = firstColorIndex + 6;
+            }
+
+            if(texCoordOutput != null)
+            {
+                texCoordOutput[0] = firstTexCoordIndex;
+                texCoordOutput[1] = firstTexCoordIndex + 3;
+                texCoordOutput[2] = firstTexCoordIndex + 6;
+            }
 
             return 1;
         }
@@ -237,6 +419,9 @@ public class TriangulationUtils
         first.y = coords[startIndex + 1];
         first.z = coords[startIndex + 2];
         first.vertexIndex = startIndex;
+        first.colorIndex = firstColorIndex;
+        first.normalIndex = firstNormalIndex;
+        first.texCoordIndex = firstTexCoordIndex;
 
         if(!isConvexVertex(coords,
                            startIndex + (numVertex - 1) * 3,
@@ -245,10 +430,12 @@ public class TriangulationUtils
                            faceNormal))
            concaveVertices.add(first);
 
+
         // Interior vertices
         PolyVertex current = first;
         PolyVertex prev = first;
         int vtx = startIndex + 3;
+        int inc = 3;
 
         for(int i = 1; i < numVertex - 1; i++)
         {
@@ -257,6 +444,9 @@ public class TriangulationUtils
             current.y = coords[vtx + 1];
             current.z = coords[vtx + 2];
             current.vertexIndex = vtx;
+            current.colorIndex = firstColorIndex + inc;
+            current.normalIndex = firstNormalIndex + inc;
+            current.texCoordIndex = firstTexCoordIndex + inc;
 
             if(!isConvexVertex(coords, vtx - 3, vtx, vtx + 3, faceNormal))
                 concaveVertices.add(current);
@@ -266,6 +456,7 @@ public class TriangulationUtils
             prev = current;
 
             vtx += 3;
+            inc += 3;
         }
 
         // Last vertex
@@ -274,6 +465,9 @@ public class TriangulationUtils
         last.y = coords[vtx + 1];
         last.z = coords[vtx + 2];
         last.vertexIndex = vtx;
+        last.colorIndex = firstColorIndex + inc;
+        last.normalIndex = firstNormalIndex + inc;
+        last.texCoordIndex = firstTexCoordIndex + inc;
 
         if(!isConvexVertex(coords,
                            vtx - 3,
@@ -287,7 +481,11 @@ public class TriangulationUtils
         last.prev = current;
         current.next = last;
 
-        return triangulate(first, output);
+        return triangulate(first,
+                           coordOutput,
+                           normalOutput,
+                           colorOutput,
+                           texCoordOutput);
     }
 
     /**
@@ -338,7 +536,7 @@ public class TriangulationUtils
                     cross_y * normal[1] +
                     cross_z * normal[2];
 
-        return dot <= 0;
+        return dot >= 0;
     }
 
     //----------------------------------------------------------
@@ -352,7 +550,11 @@ public class TriangulationUtils
      * @param output The array to copy the index values to to describe
      * @return The number of triangles in the output array
      */
-    private int triangulate(PolyVertex first, int[] output)
+    private int triangulate(PolyVertex first,
+                            int[] coordOutput,
+                            int[] normalOutput,
+                            int[] colorOutput,
+                            int[] texCoordOutput)
     {
         // Now do the real triangulation algorithm.
         int output_index = 0;
@@ -365,9 +567,32 @@ public class TriangulationUtils
             if(isEar(prev_vtx) && !isTriangle(current))
             {
                 // Add the triangle to the output
-                output[output_index++] = current.vertexIndex;
-                output[output_index++] = current.prev.vertexIndex;
-                output[output_index++] = current.prev.prev.vertexIndex;
+                coordOutput[output_index] = current.prev.prev.vertexIndex;
+                coordOutput[output_index + 1] = current.prev.vertexIndex;
+                coordOutput[output_index + 2] = current.vertexIndex;
+
+                if(normalOutput != null)
+                {
+                    normalOutput[output_index] = current.prev.prev.normalIndex;
+                    normalOutput[output_index] = current.prev.normalIndex;
+                    normalOutput[output_index] = current.normalIndex;
+                }
+
+                if(colorOutput != null)
+                {
+                    colorOutput[output_index] = current.prev.prev.colorIndex;
+                    colorOutput[output_index] = current.prev.colorIndex;
+                    colorOutput[output_index] = current.colorIndex;
+                }
+
+                if(texCoordOutput != null)
+                {
+                    texCoordOutput[output_index] = current.prev.prev.texCoordIndex;
+                    texCoordOutput[output_index] = current.prev.texCoordIndex;
+                    texCoordOutput[output_index] = current.texCoordIndex;
+                }
+
+                output_index += 3;
 
                 // Cut the ear from the polygon by removing the previous vertex
                 // Leave prev_vtx connected to the two endpoints for the moment
@@ -380,7 +605,6 @@ public class TriangulationUtils
                 if(concaveVertices.contains(current) &&
                    isConvexVertex(current.prev, current, current.next))
                     concaveVertices.remove(current);
-
 
                 if(concaveVertices.contains(prev_vtx) &&
                    isConvexVertex(prev_vtx.prev, prev_vtx, prev_vtx.next))
@@ -396,7 +620,28 @@ public class TriangulationUtils
                 freeVertex(prev_vtx);
             }
             else if(isTriangle(current))
+            {
+                // Clean up the last of the vertex structures
+                PolyVertex p = current.next;
+                if(p.next != current)
+                {
+                    PolyVertex p1 = p.next;
+                    p1.next = null;
+                    p1.prev = null;
+                    freeVertex(p1);
+                }
+
+                p.next = null;
+                p.prev = null;
+                freeVertex(p);
+
+                current.next = null;
+                current.prev = null;
+                freeVertex(current);
+                current = null;
+
                 break;
+            }
             else
                 current = current.next;
         }
@@ -467,7 +712,7 @@ public class TriangulationUtils
                                    PolyVertex p1)
     {
         // If is concave in a right-handed system when the cross product is
-        // positive. Negative means it is concave
+        // negative. Positive means it is convex.
         float x1 =  p.x -  p0.x;
         float y1 =  p.y -  p0.y;
         float z1 =  p.z -  p0.z;
@@ -485,7 +730,7 @@ public class TriangulationUtils
                     cross_y * faceNormal[1] +
                     cross_z * faceNormal[2];
 
-        return dot <= 0;
+        return dot >= 0;
     }
 
     /**
