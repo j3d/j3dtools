@@ -31,7 +31,7 @@ import javax.vecmath.Vector3f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class SpringGenerator extends GeometryGenerator
 {
@@ -42,10 +42,10 @@ public class SpringGenerator extends GeometryGenerator
     private static final float DEFAULT_OUTER_RADIUS = 1.0f;
 
     /** Default number of faces around the inner radius */
-    private static final int DEFAULT_INNER_FACETS = 16;
+    private static final int DEFAULT_INNER_FACETS = 4;
 
     /** Default number of faces around the outer radius of one loop */
-    private static final int DEFAULT_OUTER_FACETS = 16;
+    private static final int DEFAULT_OUTER_FACETS = 4;
 
     /** Default number of loops to generate */
     private static final int DEFAULT_LOOP_COUNT = 2;
@@ -337,11 +337,13 @@ public class SpringGenerator extends GeometryGenerator
             // These all have the same vertex count
             case GeometryData.TRIANGLE_STRIPS:
 //            case GeometryData.TRIANGLE_FANS:
+                ret_val = innerFacetCount * (outerFacetCount + 1) * 2;
+                break;
             case GeometryData.INDEXED_TRIANGLES:
             case GeometryData.INDEXED_QUADS:
             case GeometryData.INDEXED_TRIANGLE_STRIPS:
 //            case GeometryData.INDEXED_TRIANGLE_FANS:
-                ret_val = innerFacetCount * (outerFacetCount + 1) * 2;
+                ret_val = innerFacetCount * (outerFacetCount + 1);
                 break;
 
             default:
@@ -486,18 +488,31 @@ public class SpringGenerator extends GeometryGenerator
         int k_facet;
 
         // Do the first loop
-        for(k = 0; k <= innerFacetCount; k++)
+        for(k = 0; k < innerFacetCount - 1; k++)
         {
-            k_facet = k * innerFacetCount;
+            k_facet = k * (outerFacetCount + 1);
 
             for(i = 0; i < outerFacetCount; i++)
             {
                 pos = i + k_facet;
+
                 indexes[count++] = pos + outerFacetCount + 1;
                 indexes[count++] = pos;
                 indexes[count++] = pos + 1;
                 indexes[count++] = pos + outerFacetCount + 2;
             }
+        }
+
+        k_facet = (innerFacetCount - 1) * (outerFacetCount + 1);
+
+        for(i = 0; i < outerFacetCount; i++)
+        {
+            pos = i + k_facet;
+
+            indexes[count++] = i;
+            indexes[count++] = pos;
+            indexes[count++] = pos + 1;
+            indexes[count++] = i + 1;
         }
 
         for(i = 1; i < loopCount; i++)
@@ -506,11 +521,13 @@ public class SpringGenerator extends GeometryGenerator
         }
 
         // Now increment all the index values by the loop count
+        int index_count = indexes[count - 2] + 1;
         int index_in_loop = count;
+
         for(k = 1; k < loopCount; k++)
         {
-            for(i = 0; i < index_in_loop; i++)
-                indexes[count++] += index_in_loop * k;
+            for(i = index_in_loop; --i >= 0; )
+                indexes[count++] += index_count * k;
         }
     }
 
@@ -548,73 +565,61 @@ public class SpringGenerator extends GeometryGenerator
         data.indexesCount = index_size;
         int count = 0;
 
-        int half = innerFacetCount / 2;
-        int i, k;
-        int last_facet = outerFacetCount - 1; // always stop one short of the end
+        int i, j, k;
         int pos;
         int k_facet;
 
-        // Wind the top half separately from the bottom
-        for(k = 0; k < half; k++)
+        // Do the first loop
+        for(k = 0; k < innerFacetCount - 1; k++)
         {
-            k_facet = k * innerFacetCount;
+            k_facet = k * (outerFacetCount + 1);
 
-            for(i = 0; i < last_facet; i++)
+            for(i = 0; i < outerFacetCount; i++)
             {
                 pos = i + k_facet;
 
                 // first triangle
-                indexes[count++] = pos + outerFacetCount;
+                indexes[count++] = pos + outerFacetCount + 1;
                 indexes[count++] = pos;
                 indexes[count++] = pos + 1;
 
                 // second triangle
                 indexes[count++] = pos + 1;
+                indexes[count++] = pos + outerFacetCount + 2;
                 indexes[count++] = pos + outerFacetCount + 1;
-                indexes[count++] = pos + outerFacetCount;
             }
-
-            // now the last remaing quad that uses coords 0 & 1
-            pos = i + k_facet;
-
-            indexes[count++] = pos + outerFacetCount;
-            indexes[count++] = pos;
-            indexes[count++] = k_facet;
-
-
-            indexes[count++] = k_facet;
-            indexes[count++] = k_facet + outerFacetCount;
-            indexes[count++] = pos + outerFacetCount;
         }
 
-        // Bottom half is wound in the opposite order.
-        for(k = half + 1; k <= half * 2; k++)
+        k_facet = (innerFacetCount - 1) * (outerFacetCount + 1);
+
+        for(i = 0; i < outerFacetCount; i++)
         {
-            k_facet = k * innerFacetCount;
-
-            for(i = 0; i < last_facet; i++)
-            {
-                pos = i + k_facet;
-
-                indexes[count++] = pos;
-                indexes[count++] = pos + outerFacetCount;
-                indexes[count++] = pos + outerFacetCount + 1;
-
-                indexes[count++] = pos + outerFacetCount + 1;
-                indexes[count++] = pos + 1;
-                indexes[count++] = pos;
-            }
-
-            // now the last remaing quad that uses coords 0 & 1
             pos = i + k_facet;
 
+            // first triangle
+            indexes[count++] = i;
             indexes[count++] = pos;
-            indexes[count++] = pos + outerFacetCount;
-            indexes[count++] = k_facet + outerFacetCount;
+            indexes[count++] = pos + 1;
 
-            indexes[count++] = k_facet + outerFacetCount;
-            indexes[count++] = k_facet;
-            indexes[count++] = pos;
+            // second triangle
+            indexes[count++] = pos + 1;
+            indexes[count++] = i + 1;
+            indexes[count++] = i;
+        }
+
+        for(i = 1; i < loopCount; i++)
+        {
+            System.arraycopy(indexes, 0, indexes, i * count, count);
+        }
+
+        // Now increment all the index values by the loop count
+        int index_count = indexes[count - 3] + 1;
+        int index_in_loop = count;
+
+        for(k = 1; k < loopCount; k++)
+        {
+            for(i = index_in_loop; --i >= 0; )
+                indexes[count++] += index_count * k;
         }
     }
 
@@ -639,7 +644,7 @@ public class SpringGenerator extends GeometryGenerator
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
 
-        int num_strips = innerFacetCount;
+        int num_strips = innerFacetCount * loopCount;
 
         if(data.stripCounts == null)
             data.stripCounts = new int[num_strips];
@@ -692,8 +697,8 @@ public class SpringGenerator extends GeometryGenerator
             generateTriTexture3D(data);
 
         // now let's do the index list
-        int index_size = innerFacetCount * (outerFacetCount + 1) * 2;
-        int num_strips = innerFacetCount;
+        int index_size = innerFacetCount * (outerFacetCount + 1) * 2 * loopCount;
+        int num_strips = innerFacetCount * loopCount;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -714,50 +719,54 @@ public class SpringGenerator extends GeometryGenerator
         data.indexesCount = index_size;
         data.numStrips = num_strips;
 
+        int strip_length = (outerFacetCount + 1) << 1;
         int count = 0;
-        int half = innerFacetCount / 2;
         int i, k;
         int pos;
         int k_facet;
 
-        // Wind the top half separately from the bottom
-        for(k = 0; k < half; k++)
-        {
-            k_facet = k * innerFacetCount;
-            stripCounts[k] = (outerFacetCount + 1) << 1;
+        for(i = num_strips; --i >= 0; )
+            stripCounts[i] = strip_length;
 
-            for(i = 0; i < outerFacetCount; i++)
+        // Wind the top half separately from the bottom
+        for(k = 0; k < innerFacetCount - 1; k++)
+        {
+            k_facet = k * (outerFacetCount + 1);
+
+            for(i = 0; i <= outerFacetCount; i++)
             {
                 pos = i + k_facet;
 
                 // first triangle
-                indexes[count++] = pos + outerFacetCount;
+                indexes[count++] = pos + outerFacetCount + 1;
                 indexes[count++] = pos;
             }
-
-            // now the last remaing quad that uses coords 0 & 1 again
-            indexes[count++] = k_facet + outerFacetCount;
-            indexes[count++] = k_facet;
         }
 
-        // Bottom half is wound in the opposite order.
-        for(k = half; k < half * 2; k++)
+        // The last strip contains the first row index values
+        k_facet = (innerFacetCount - 1) * (outerFacetCount + 1);
+
+        for(i = 0; i <= outerFacetCount; i++)
         {
-            k_facet = (k + 1) * innerFacetCount;
-            stripCounts[k] = (outerFacetCount + 1) << 1;
+            pos = i + k_facet;
 
-            for(i = 0; i < outerFacetCount; i++)
-            {
-                pos = i + k_facet;
+            // first triangle
+            indexes[count++] = i;
+            indexes[count++] = pos;
+        }
 
-                // first triangle
-                indexes[count++] = pos;
-                indexes[count++] = pos + outerFacetCount;
-            }
 
-            // now the last remaing quad that uses coords 0 & 1 again
-            indexes[count++] = k_facet;
-            indexes[count++] = k_facet + outerFacetCount;
+        for(i = 1; i < loopCount; i++)
+            System.arraycopy(indexes, 0, indexes, i * count, count);
+
+        // Now increment all the index values by the loop count
+        int index_count = indexes[count - 1] + 1;
+        int index_in_loop = count;
+
+        for(k = 1; k < loopCount; k++)
+        {
+            for(i = index_in_loop; --i >= 0; )
+                indexes[count++] += index_count * k;
         }
     }
 
@@ -982,7 +991,7 @@ public class SpringGenerator extends GeometryGenerator
     private void generateUnindexedTriStripCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = innerFacetCount * (outerFacetCount + 1) * 2;
+        int vtx_cnt = getVertexCount(data);
 
         if(data.coordinates == null)
             data.coordinates = new float[vtx_cnt * 3];
@@ -998,51 +1007,67 @@ public class SpringGenerator extends GeometryGenerator
 
         // quad torus generates coordinates at facetCount * 3 indexes apart.
         // Go around and build coordinate arrays from this.
-        int half = innerFacetCount / 2;
         int i, k;
         int facet_inc = (outerFacetCount + 1) * 3;
         int k_facet;
         int pos;
         int count = 0;
+        float y_offset = loopSpacing * (loopCount / 2);
 
-        for(k = 0; k < half; k++)
+        for(k = 0; k < innerFacetCount - 1; k++)
         {
             k_facet = k * facet_inc;
 
-            for(i = 0; i < outerFacetCount; i++)
+            for(i = 0; i <= outerFacetCount; i++)
             {
                 pos = i * 3 + k_facet;
 
                 coords[count++] = shapeCoordinates[pos + facet_inc];
-                coords[count++] = shapeCoordinates[pos + facet_inc + 1];
+                coords[count++] = shapeCoordinates[pos + facet_inc + 1] + y_offset;
                 coords[count++] = shapeCoordinates[pos + facet_inc + 2];
 
                 coords[count++] = shapeCoordinates[pos];
-                coords[count++] = shapeCoordinates[pos + 1];
+                coords[count++] = shapeCoordinates[pos + 1] + y_offset;
                 coords[count++] = shapeCoordinates[pos + 2];
             }
-
-            // now the last remaing shape that uses coords 0 & 1
-            coords[count++] = shapeCoordinates[k_facet + facet_inc];
-            coords[count++] = shapeCoordinates[k_facet + facet_inc + 1];
-            coords[count++] = shapeCoordinates[k_facet + facet_inc + 2];
-
-            coords[count++] = shapeCoordinates[k_facet];
-            coords[count++] = shapeCoordinates[k_facet + 1];
-            coords[count++] = shapeCoordinates[k_facet + 2];
         }
 
-        // bottom half is wound in the opposite direction so swap the
-        // top and bottom coords declarations.
-        int tempVertCount = count;
-        for(k = 0; k < tempVertCount; k += 6)
+        k_facet = k * facet_inc;
+
+        for(i = 0; i <= outerFacetCount; i++)
         {
-            coords[count++] =  coords[k + 3];
-            coords[count++] = -coords[k + 4];
-            coords[count++] =  coords[k + 5];
-            coords[count++] =  coords[k];
-            coords[count++] = -coords[k + 1];
-            coords[count++] =  coords[k + 2];
+            pos = i * 3 + k_facet;
+
+            coords[count++] = shapeCoordinates[i * 3];
+            coords[count++] = shapeCoordinates[i * 3 + 1] + y_offset;
+            coords[count++] = shapeCoordinates[i * 3 + 2];
+
+            coords[count++] = shapeCoordinates[pos];
+            coords[count++] = shapeCoordinates[pos + 1] + y_offset;
+            coords[count++] = shapeCoordinates[pos + 2];
+        }
+
+        // Now that we have one loop, copy the coordinates along the array and
+        // then loop and add the Y increment appropriately.
+        for(i = 1; i < loopCount; i++)
+        {
+            System.arraycopy(coords, 0, coords, i * count, count);
+        }
+
+        // set count to be the y coordinate
+        count++;
+        int vtx_in_loop = count / 3;
+        y_offset = 0;
+
+        for(i = 1; i < loopCount; i++)
+        {
+            y_offset += loopSpacing;
+
+            for(k = 0; k < vtx_in_loop; k++)
+            {
+                coords[count] += y_offset;
+                count += 3;
+            }
         }
     }
 
@@ -1068,7 +1093,7 @@ public class SpringGenerator extends GeometryGenerator
                                                 vtx_cnt * 3);
 
         int i, k;
-        int count = numShapeValues;
+        int count = vtx_cnt * 3 / loopCount;
         float[] coords = data.coordinates;
         data.vertexCount = vtx_cnt;
 
@@ -1082,13 +1107,13 @@ public class SpringGenerator extends GeometryGenerator
 
         // set count to be the y coordinate and now go through and increment
         // the Y offset according to what loop we are in.
+        int vtx_in_loop = count / 3;
+        float y_offset = loopSpacing * (loopCount / 2);
+
         count = 1;
-        int vtx_in_loop = numShapeValues / 3;
-        float y_offset = -loopSpacing * (loopCount / 2);
 
         for(i = loopCount; --i >= 0; )
         {
-System.out.println("Offsetting loop " + i + " " + y_offset);
             for(k = vtx_in_loop; --k >= 0; )
             {
                 coords[count] += y_offset;
@@ -1388,7 +1413,7 @@ System.out.println("Offsetting loop " + i + " " + y_offset);
         int i, k;
 
         // Wonder if we can do any loop unravelling here?
-        for(k = 0; k <= innerFacetCount; k++)
+        for(k = 0; k < innerFacetCount; k++)
         {
             facet_offset = 0;
 
@@ -1414,24 +1439,13 @@ System.out.println("Offsetting loop " + i + " " + y_offset);
 
                 facet_offset += 3;
             }
+        }
 
-            norm = createRadialNormal(data.coordinates,
-                                      count,
-                                      oradiusCoordinates,
-                                      0);
-
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
-
-            norm = createRadialNormal(data.coordinates,
-                                      count,
-                                      oradiusCoordinates,
-                                      0);
-
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+        // Now that we have one loop, copy the normals along the array for
+        // all the other loops as they should all point in the same direction
+        for(i = 1; i < loopCount; i++)
+        {
+            System.arraycopy(normals, 0, normals, i * count, count);
         }
     }
 
@@ -1461,7 +1475,7 @@ System.out.println("Offsetting loop " + i + " " + y_offset);
         int i, k;
 
         // Wonder if we can do any loop unravelling here?
-        for(k = 0; k <= innerFacetCount; k++)
+        for(k = 0; k < innerFacetCount; k++)
         {
             facet_count = 0;
 
@@ -1590,7 +1604,7 @@ System.out.println("Offsetting loop " + i + " " + y_offset);
         float[] sin_theta_table;
 
         float y_space = -loopSpacing / 2;
-        float y_inc = loopSpacing / innerFacetCount;
+        float y_inc = loopSpacing / outerFacetCount;
 
         // Generate the upper half. The loop goes around the outer radius
         // adding a quad at a time. When this is finished it moves up one facet
