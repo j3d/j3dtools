@@ -6,7 +6,7 @@
 # Package makefile producing j3d-org-util.jar
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
 
@@ -20,22 +20,24 @@ JAR_CONTENT = org/j3d/util \
     org/j3d/device/input/spaceball \
     org/j3d/device/input/vfx \
     org/j3d/device/input/polhemus \
-    org/j3d/geom \
-    org/j3d/geom/terrain \
-    org/j3d/geom/particle \
-    org/j3d/geom/spline \
-    org/j3d/geom/spring \
-    org/j3d/geom/hanim \
+    org/j3d/device/output/elumens \
     org/j3d/ui \
     org/j3d/ui/image \
     org/j3d/ui/navigation \
+    org/j3d/loaders \
+    org/j3d/loaders/dem \
+    org/j3d/loaders/stl \
+    org/j3d/loaders/vterrain \
+    org/j3d/geom \
+    org/j3d/geom/hanim \
+    org/j3d/geom/particle \
+    org/j3d/geom/spline \
+    org/j3d/geom/spring \
+    org/j3d/geom/terrain \
     org/j3d/terrain \
     org/j3d/terrain/roam \
     org/j3d/texture \
-    org/j3d/loaders \
-    org/j3d/loaders/stl \
-    org/j3d/loaders/vterrain \
-    org/j3d/loaders/dem \
+    org/j3d/texture/procedural \
     org/j3d/renderer/java3d/util \
     org/j3d/renderer/java3d/ui \
     org/j3d/renderer/java3d/navigation \
