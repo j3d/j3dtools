@@ -34,6 +34,7 @@ import javax.vecmath.*;
  *
  * @author <a href="http://www.geocities.com/seregi/index.html">Laszlo Seregi</a>
  *   Updated for j3d.org by Justin Couch
+ * @version $Revision $
  */
 public class ViewpointTransition implements ActionListener
 {
@@ -41,7 +42,7 @@ public class ViewpointTransition implements ActionListener
     private View view;
 
     /** The transform group above the view that is being moved each frame */
-    private TransformGroup tgTransitioned;
+    private TransformGroup viewTg;
 
     /** A timer that drives our updates to the screen */
     private Timer timer;
@@ -128,7 +129,7 @@ public class ViewpointTransition implements ActionListener
                              int totalTime)
     {
         this.view = view;
-        tgTransitioned = viewTg;
+        viewTg = viewTg;
         destinationTx = new Transform3D(endTx);
         totalTimeMS = totalTime;
 
@@ -137,7 +138,7 @@ public class ViewpointTransition implements ActionListener
 
         // Set up our internal transforms that we will be doing the morphing
         // along.
-        tgTransitioned.getTransform(currentTx);
+        viewTg.getTransform(currentTx);
         currentTx.get(location1);
         eye1.set(location1);
         direction1.set(0,0,-1);
@@ -165,7 +166,7 @@ public class ViewpointTransition implements ActionListener
      */
     public void actionPerformed(ActionEvent evt)
     {
-        tgTransitioned.getTransform(previousFrameTx);
+        viewTg.getTransform(previousFrameTx);
 
         // If not equal, then someone was changing it so there is no point
         // in further transition.
@@ -195,7 +196,7 @@ public class ViewpointTransition implements ActionListener
 
             try
             {
-                tgTransitioned.setTransform(currentTx);
+                viewTg.setTransform(currentTx);
             }
             catch(Exception e)
             {
@@ -203,7 +204,7 @@ public class ViewpointTransition implements ActionListener
                 // final value and terminate the transition.
                 System.out.println("Transition stopping due to invalid value");
                 currentTx.set(destinationTx);
-                tgTransitioned.setTransform(currentTx);
+                viewTg.setTransform(currentTx);
                 alfa=9;
                 //e.printStackTrace();
             }
