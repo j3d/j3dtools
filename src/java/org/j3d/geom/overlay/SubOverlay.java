@@ -27,7 +27,7 @@ import java.awt.image.BufferedImage;
  * directly.
  *
  * @author David Yazel
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class SubOverlay
 {
@@ -170,9 +170,9 @@ class SubOverlay
                                 tex_size.width,
                                 tex_size.height);
 
-        texture.setBoundaryModeS(Texture.CLAMP);
-        texture.setBoundaryModeT(Texture.CLAMP);
-        texture.setMagFilter(Texture.FASTEST);
+        texture.setBoundaryModeS(Texture.WRAP);
+        texture.setBoundaryModeT(Texture.WRAP);
+        texture.setMagFilter(Texture.NICEST);
         texture.setMinFilter(Texture.FASTEST);
         texture.setImage(0, bufferHolder[activeBufferIndex]);
         texture.setCapability(Texture.ALLOW_IMAGE_WRITE);
