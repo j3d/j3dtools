@@ -28,7 +28,7 @@ import org.j3d.io.BlockDataInputStream;
  * http://www.spacesimulator.net/tut4_3dsloader.html
  *
  * @author  Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class MaxParser
 {
@@ -107,11 +107,7 @@ public class MaxParser
     /**
      * Do all the parsing work. Convenience method for all to call internally
      *
-     * @param returnHeights true if this should return the array of height values
-     * @return An array of the heights if requested or null if not
-     * @throws IncorrectFormatException The file is not one our parser
-     *    understands
-     * @throws ParsingErrorException An error parsing the file
+     * @return A completed object mesh representative of the file
      */
     public ObjectMesh parse()
         throws IOException
@@ -121,21 +117,13 @@ public class MaxParser
 
         parseMain();
 
-        // once parsed, generate all the normals etc
-        for(int i = 0; i < decodedMesh.numBlocks; i++)
-        {
-            ObjectBlock block = decodedMesh.blocks[i];
-            for(int j = 0; j < block.numMeshes; j++)
-                calcNormals(block.meshes[j]);
-        }
-
         dataReady = true;
 
         return decodedMesh;
     }
 
     /**
-     * Parse the type A reccord that belongs to this file.
+     * Parse the main chunk of the file now.
      */
     private void parseMain()
         throws IOException
@@ -167,6 +155,7 @@ public class MaxParser
             int type = readUnsignedShort();
             int size = readInt();
 
+//System.out.println("main 0x" + Integer.toHexString(type) + " size " + size);
             switch(type)
             {
                 case MaxConstants.VERSION:
@@ -184,14 +173,15 @@ public class MaxParser
                 default:
                     System.out.println("Unknown top-level block chunk ID 0x" +
                                        Integer.toHexString(type));
-                    inputStream.skip(size - 6);
+                    skipBytes(size - 6);
             }
 
             bytes_read += size;
         }
 
         if(bytes_read != bytesToRead)
-             System.out.println("Not enough bytes in file for main mesh");
+             System.out.println("Incorrect bytes read from file for main mesh. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
     }
 
     /**
@@ -209,6 +199,7 @@ public class MaxParser
             int type = readUnsignedShort();
             int size = readInt();
 
+//System.out.println("reading 0x" + Integer.toHexString(type) + " size " + size);
             switch(type)
             {
                 case MaxConstants.NAMED_OBJECT:
@@ -227,17 +218,37 @@ public class MaxParser
                     data.meshVersion = readInt();
                     break;
 
+                case MaxConstants.AMBIENT_LIGHT:
+                    data.ambientLight = new float[3];
+                    int read = readColor(data.ambientLight);
+                    if(size - read - 6 != 0)
+                        skipBytes(size - read - 6);
+                    break;
+
+                // Deliberately ignored
+                case MaxConstants.LOW_SHADOW_BIAS:
+                case MaxConstants.HI_SHADOW_BIAS:
+                case MaxConstants.SHADOW_MAP_SIZE:
+                case MaxConstants.SHADOW_MAP_SAMPLES:
+                case MaxConstants.SHADOW_MAP_RANGE:
+                case MaxConstants.SHADOW_MAP_FILTER:
+                case MaxConstants.RAY_BIAS:
+                case MaxConstants.O_CONST:
+                    skipBytes(size - 6);
+                    break;
+
                 default:
                     System.out.println("Unknown mesh chunk ID 0x" +
-                                       Integer.toHexString(type));
-                    inputStream.skip(size - 6);
+                                       Integer.toHexString(type) + " size " + size);
+                    skipBytes(size - 6);
             }
 
             bytes_read += size;
         }
 
         if(bytes_read != bytesToRead)
-             System.out.println("Not enough bytes in file for object mesh");
+             System.out.println("Incorrect bytes read from file for mesh chunk. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
     }
 
     /**
@@ -272,31 +283,29 @@ public class MaxParser
             switch(type)
             {
                 case MaxConstants.TRI_MESH:
-//System.out.println("tri mesh");
                     readTriMesh(size - 6, block);
                     break;
 
-                case MaxConstants.DIRECTIONAL_LIGHT:
-//System.out.println("light");
+                case MaxConstants.N_DIRECTIONAL_LIGHT:
                     readLightBlock(size - 6, block);
                     break;
 
                 case MaxConstants.N_CAMERA:
-//System.out.println("camera");
                     readCameraBlock(size - 6, block);
                     break;
 
                 default:
                     System.out.println("Unknown object block chunk ID 0x" +
                                        Integer.toHexString(type));
-                    inputStream.skip(size - 6);
+                    skipBytes(size - 6);
             }
 
             bytes_read += size;
         }
 
         if(bytes_read != bytesToRead)
-             System.out.println("Not enough bytes in file for object block");
+             System.out.println("Incorrect bytes read from file for object block. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
     }
 
     /**
@@ -335,9 +344,8 @@ public class MaxParser
 
                     for(int i = 0; i < mesh.numVertices; i++)
                     {
-                        mesh.vertices[cnt++] = readFloat();
-                        mesh.vertices[cnt++] = readFloat();
-                        mesh.vertices[cnt++] = readFloat();
+                        readPoint(mesh.vertices, cnt);
+                        cnt += 3;
                     }
                     break;
 
@@ -372,17 +380,26 @@ public class MaxParser
                     mesh.boxMapMaterials[5] = readString();
                     break;
 
+                // These are deliberately ignored as they are useless.
+                case MaxConstants.VERTEX_FLAG:
+                case MaxConstants.MESH_COLOR:
+                case MaxConstants.MESH_TEXTURE_INFO:
+                    skipBytes(size - 6);
+                    break;
+
                 default:
                     System.out.println("Unknown trimesh chunk ID 0x" +
                                        Integer.toHexString(type));
-                    inputStream.skip(size - 6);
+
+                    skipBytes(size - 6);
             }
 
             bytes_read += size;
         }
 
         if(bytes_read != bytesToRead)
-             System.out.println("Not enough bytes in file for triangle mesh");
+             System.out.println("Incorrect bytes read from file for triangle mesh. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
     }
 
     /**
@@ -434,14 +451,15 @@ public class MaxParser
                     default:
                         System.out.println("Unknown subface list ID 0x" +
                                            Integer.toHexString(type));
-                        inputStream.skip(size - 6);
+                        skipBytes(size - 6);
                 }
 
                 bytes_read += size;
             }
 
             if(bytes_read != bytesToRead)
-                 System.out.println("Not enough bytes in file for face list");
+             System.out.println("Incorrect bytes read from file for face chunk. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
         }
     }
 
@@ -502,13 +520,13 @@ public class MaxParser
         data.lights[data.numLights] = light;
         data.numLights++;
 
+        readPoint(light.direction, 0);
+
         int bytes_read = readColor(light.color);
-        light.direction[0] = readFloat();
-        light.direction[1] = readFloat();
-        light.direction[2] = readFloat();
 
         bytes_read += 12;
 
+//System.out.println("reading 0x" + Integer.toHexString(type) + " size " + size);
         while(bytes_read < bytesToRead)
         {
             int type = readUnsignedShort();
@@ -558,11 +576,15 @@ public class MaxParser
                 default:
                     System.out.println("Unknown light block ID 0x" +
                                        Integer.toHexString(type));
-                    inputStream.skip(size - 6);
+                    skipBytes(size - 6);
             }
 
             bytes_read += size;
         }
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Incorrect bytes read from file for lights chunk. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
     }
 
     /**
@@ -587,7 +609,14 @@ public class MaxParser
         data.cameras[data.numCameras] = camera;
         data.numCameras++;
 
-        int bytes_read = 0;
+        readPoint(camera.location, 0);
+        readPoint(camera.target, 0);
+
+        camera.bankAngle = readFloat();
+        camera.focus = readFloat();
+
+        int bytes_read = 32;
+
         while(bytes_read < bytesToRead)
         {
             int type = readUnsignedShort();
@@ -595,15 +624,28 @@ public class MaxParser
 
             switch(type)
             {
-//                case VERTEX_LIST:
+                case MaxConstants.CAMERA_SEE_CONE:
+                     camera.seeOutline = true;
+                     break;
+
+                case MaxConstants.CAMERA_RANGE:
+                    camera.ranges = new float[2];
+                    camera.ranges[0] = readFloat();
+                    camera.ranges[1] = readFloat();
+                    break;
+
                 default:
                     System.out.println("Unknown camera block ID 0x" +
                                        Integer.toHexString(type));
-                    inputStream.skip(size - 6);
+                    skipBytes(size - 6);
             }
 
             bytes_read += size;
         }
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Incorrect bytes read from file for camera block. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
     }
 
     // Material block handling
@@ -619,10 +661,10 @@ public class MaxParser
     {
         if((data.materials == null) || (data.materials.length == data.numMaterials))
         {
-            ObjectBlock[] tmp = new ObjectBlock[data.numMaterials + 8];
+            MaterialBlock[] tmp = new MaterialBlock[data.numMaterials + 8];
             if(data.numMaterials != 0)
                 System.arraycopy(data.materials, 0, tmp, 0, data.numMaterials);
-            data.blocks = tmp;
+            data.materials = tmp;
         }
 
         MaterialBlock mat = new MaterialBlock();
@@ -630,6 +672,7 @@ public class MaxParser
         data.numMaterials++;
 
         int bytes_read = 0;
+        int read;
 
         while(bytes_read < bytesToRead)
         {
@@ -644,17 +687,28 @@ public class MaxParser
 
                 case MaxConstants.MAT_AMBIENT:
                     mat.ambientColor = new float[3];
-                    readColor(mat.ambientColor);
+                    read = readColor(mat.ambientColor);
+
+                    // May have a gamma corrected value too. Skip that
+                    if(size - read - 6 != 0)
+                        skipBytes(size - read - 6);
                     break;
 
                 case MaxConstants.MAT_DIFFUSE:
                     mat.diffuseColor = new float[3];
-                    readColor(mat.diffuseColor);
+                    read = readColor(mat.diffuseColor);
+
+                    // May have a gamma corrected value too. Skip that
+                    if(size - read - 6 != 0)
+                        skipBytes(size - read - 6);
                     break;
 
                 case MaxConstants.MAT_SPECULAR:
                     mat.specularColor = new float[3];
-                    readColor(mat.specularColor);
+                    read = readColor(mat.specularColor);
+                    // May have a gamma corrected value too. Skip that
+                    if(size - read - 6 != 0)
+                        skipBytes(size - read - 6);
                     break;
 
                 case MaxConstants.MAT_SHININESS:
@@ -696,20 +750,38 @@ public class MaxParser
                 case MaxConstants.MAT_OPACMAP:
                 case MaxConstants.MAT_REFLMAP:
                 case MaxConstants.MAT_BUMPMAP:
+                case MaxConstants.MAT_TEXMASK:
+                case MaxConstants.MAT_TEX2MASK:
+                case MaxConstants.MAT_SHINMASK:
+                case MaxConstants.MAT_SPECMASK:
+                case MaxConstants.MAT_OPACMASK:
+                case MaxConstants.MAT_REFLMASK:
+                case MaxConstants.MAT_BUMPMASK:
                     readTextureBlock(size - 6, mat, type);
+                    break;
+
+                // These are deliberately ignored
+                case MaxConstants.MAT_XPFALL:
+                case MaxConstants.MAT_SELF_ILPCT:
+                case MaxConstants.MAT_XPFALLIN:
+                case MaxConstants.MAT_PHONGSOFT:
+                case MaxConstants.MAT_REFBLUR:
+                    skipBytes(size - 6);
                     break;
 
                 default:
                     System.out.println("Unknown material block chunk ID 0x" +
                                        Integer.toHexString(type));
-                    inputStream.skip(size - 6);
+                    if(type != 0x0)
+                    skipBytes(size - 6);
             }
 
             bytes_read += size;
         }
 
         if(bytes_read != bytesToRead)
-             System.out.println("Not enough bytes in file for material block");
+             System.out.println("Incorrect bytes read from file for material block. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
     }
 
     /**
@@ -742,7 +814,6 @@ public class MaxParser
 
                 case MaxConstants.MAT_MAPNAME:
                     tex.filename = readString();
-System.out.println("texture name " + tex.filename);
                     break;
 
                 case MaxConstants.MAT_MAP_TILING:
@@ -776,74 +847,79 @@ System.out.println("texture name " + tex.filename);
                 case MaxConstants.MAT_MAP_COL1:
                     tex.blendColor1 = new float[3];
                     int c = inputStream.readUnsignedByte();
-                    tex.blendColor1[0] = c *= 0.0039215f;
+                    tex.blendColor1[0] = c * 0.0039215f;
 
                     c = inputStream.readUnsignedByte();
-                    tex.blendColor1[1] = c *= 0.0039215f;
+                    tex.blendColor1[1] = c * 0.0039215f;
 
                     c = inputStream.readUnsignedByte();
-                    tex.blendColor1[2] = c *= 0.0039215f;
+                    tex.blendColor1[2] = c * 0.0039215f;
                     break;
 
                 case MaxConstants.MAT_MAP_COL2:
                     tex.blendColor2 = new float[3];
                     c = inputStream.readUnsignedByte();
-                    tex.blendColor2[0] = c *= 0.0039215f;
+                    tex.blendColor2[0] = c * 0.0039215f;
 
                     c = inputStream.readUnsignedByte();
-                    tex.blendColor2[1] = c *= 0.0039215f;
+                    tex.blendColor2[1] = c * 0.0039215f;
 
                     c = inputStream.readUnsignedByte();
-                    tex.blendColor2[2] = c *= 0.0039215f;
+                    tex.blendColor2[2] = c * 0.0039215f;
                     break;
 
                 case MaxConstants.MAT_MAP_RCOL:
                     tex.redBlends = new float[3];
                     c = inputStream.readUnsignedByte();
-                    tex.redBlends[0] = c *= 0.0039215f;
+                    tex.redBlends[0] = c * 0.0039215f;
 
                     c = inputStream.readUnsignedByte();
-                    tex.redBlends[1] = c *= 0.0039215f;
+                    tex.redBlends[1] = c * 0.0039215f;
 
                     c = inputStream.readUnsignedByte();
-                    tex.redBlends[2] = c *= 0.0039215f;
+                    tex.redBlends[2] = c * 0.0039215f;
                     break;
 
                 case MaxConstants.MAT_MAP_GCOL:
                     tex.greenBlends = new float[3];
                     c = inputStream.readUnsignedByte();
-                    tex.greenBlends[0] = c *= 0.0039215f;
+                    tex.greenBlends[0] = c * 0.0039215f;
 
                     c = inputStream.readUnsignedByte();
-                    tex.greenBlends[1] = c *= 0.0039215f;
+                    tex.greenBlends[1] = c * 0.0039215f;
 
                     c = inputStream.readUnsignedByte();
-                    tex.greenBlends[2] = c *= 0.0039215f;
+                    tex.greenBlends[2] = c * 0.0039215f;
                     break;
 
                 case MaxConstants.MAT_MAP_BCOL:
                     tex.blueBlends = new float[3];
                     c = inputStream.readUnsignedByte();
-                    tex.blueBlends[0] = c *= 0.0039215f;
+                    tex.blueBlends[0] = c * 0.0039215f;
 
                     c = inputStream.readUnsignedByte();
-                    tex.blueBlends[1] = c *= 0.0039215f;
+                    tex.blueBlends[1] = c * 0.0039215f;
 
                     c = inputStream.readUnsignedByte();
-                    tex.blueBlends[2] = c *= 0.0039215f;
+                    tex.blueBlends[2] = c * 0.0039215f;
+                    break;
+
+                case MaxConstants.MAT_BUMP_PERCENT:
+                    tex.bumpPercentage = readUnsignedShort();
                     break;
 
                 default:
                     System.out.println("Unknown texture block chunk ID 0x" +
                                        Integer.toHexString(type));
-                    inputStream.skip(size - 6);
+                    skipBytes(size - 6);
             }
 
             bytes_read += size;
         }
 
         if(bytes_read != bytesToRead)
-             System.out.println("Not enough bytes in file for material block");
+              System.out.println("Incorrect bytes read from file for texture block. " +
+                                 "Read: " + bytes_read + " required " + bytesToRead);
 
         switch(textureType)
         {
@@ -874,6 +950,35 @@ System.out.println("texture name " + tex.filename);
             case MaxConstants.MAT_BUMPMAP:
                 data.bumpMap = tex;
                 break;
+
+            case MaxConstants.MAT_TEXMASK:
+                data.textureMask1 = tex;
+                break;
+
+            case MaxConstants.MAT_TEX2MASK:
+                data.textureMask2 = tex;
+                break;
+
+            case MaxConstants.MAT_SHINMASK:
+                data.shininessMask = tex;
+                break;
+
+            case MaxConstants.MAT_SPECMASK:
+                data.specularMask = tex;
+                break;
+
+            case MaxConstants.MAT_OPACMASK:
+                data.opacityMask = tex;
+                break;
+
+            case MaxConstants.MAT_REFLMASK:
+                data.reflectionMask = tex;
+                break;
+
+            case MaxConstants.MAT_BUMPMASK:
+                data.bumpMask = tex;
+                break;
+
         }
     }
 
@@ -934,14 +1039,15 @@ System.out.println("texture name " + tex.filename);
                 default:
                     System.out.println("Unknown keyframe chunk ID 0x" +
                                        Integer.toHexString(type));
-                    inputStream.skip(size - 6);
+                    skipBytes(size - 6);
             }
 
             bytes_read += size;
         }
 
         if(bytes_read != bytesToRead)
-             System.out.println("Not enough bytes in file for keyframe chunk");
+             System.out.println("Incorrect bytes read from file for keyframe chunk. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
     }
 
     /**
@@ -1021,22 +1127,21 @@ System.out.println("texture name " + tex.filename);
 
                 case MaxConstants.KEYFRAME_PIVOT:
                     frame.pivotPoint = new float[3];
-                    frame.pivotPoint[0] = readFloat();
-                    frame.pivotPoint[1] = readFloat();
-                    frame.pivotPoint[2] = readFloat();
+                    readPoint(frame.pivotPoint, 0);
                     break;
 
                 default:
                     System.out.println("Unknown keyframe frame ID 0x" +
                                        Integer.toHexString(type));
-                    inputStream.skip(size - 6);
+                    skipBytes(size - 6);
             }
 
             bytes_read += size;
         }
 
         if(bytes_read != bytesToRead)
-             System.out.println("Not enough bytes in file for keyframe frame");
+             System.out.println("Incorrect bytes read from file for keyframe frame. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
     }
 
     /**
@@ -1053,6 +1158,12 @@ System.out.println("texture name " + tex.filename);
         frame.nodeHeader.flags1 = readUnsignedShort();
         frame.nodeHeader.flags2 = readUnsignedShort();
         frame.nodeHeader.heirarchyPosition = readUnsignedShort();
+
+        int bytes_read = frame.nodeHeader.name.length() + 1 + 2 + 2 + 2;
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Incorrect bytes read from file for keyframe header. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
     }
 
     /**
@@ -1091,9 +1202,10 @@ System.out.println("texture name " + tex.filename);
 
             readTrackData(pd);
 
+            // swap coord order
             pd.x = readFloat();
-            pd.y = readFloat();
             pd.z = readFloat();
+            pd.y = readFloat();
         }
     }
 
@@ -1133,10 +1245,11 @@ System.out.println("texture name " + tex.filename);
 
             readTrackData(rd);
 
+            // swap coord order
             rd.rotation = readFloat();
             rd.xAxis = readFloat();
-            rd.yAxis = readFloat();
             rd.zAxis = readFloat();
+            rd.yAxis = readFloat();
         }
     }
 
@@ -1176,9 +1289,10 @@ System.out.println("texture name " + tex.filename);
 
             readTrackData(sd);
 
+            // swap coord order
             sd.xScale = readFloat();
-            sd.yScale = readFloat();
             sd.zScale = readFloat();
+            sd.yScale = readFloat();
         }
     }
 
@@ -1332,6 +1446,8 @@ System.out.println("texture name " + tex.filename);
         morph.numKeys = readInt();
         morph.morphs = new MorphData[morph.numKeys];
 
+        int bytes_read = 2 + 4 + 4 + 4;
+
         for(int i = 0; i < morph.numKeys; i++)
         {
             MorphData md = new MorphData();
@@ -1340,6 +1456,8 @@ System.out.println("texture name " + tex.filename);
             readTrackData(md);
 
             md.objectName = readString();
+
+            bytes_read += md.objectName.length() + 1;
         }
     }
 
@@ -1427,12 +1545,15 @@ System.out.println("texture name " + tex.filename);
      * Convenience method to read the track and key header data.
      *
      * @param data The TrackData instance to read stuff into
+     * @return The number of bytes read
      */
-    private void readTrackData(TrackData data)
+    private int readTrackData(TrackData data)
         throws IOException
     {
         data.frameNumber = readInt();
         data.splineFlags = readUnsignedShort();
+
+        int bytes_read = 6;
 
         if(data.splineFlags != 0)
         {
@@ -1440,300 +1561,44 @@ System.out.println("texture name " + tex.filename);
 
             // Bit 0 set
             if((data.splineFlags & 0x01) != 0)
+            {
+                bytes_read += 4;
                 data.splineData[0] = readFloat();
+            }
 
             // Bit 1 set
             if((data.splineFlags & 0x02) != 0)
+            {
+                bytes_read += 4;
                 data.splineData[1] = readFloat();
+            }
 
             // Bit 2 set
             if((data.splineFlags & 0x04) != 0)
+            {
+                bytes_read += 4;
                 data.splineData[2] = readFloat();
+            }
 
             // Bit 3 set
             if((data.splineFlags & 0x08) != 0)
+            {
+                bytes_read += 4;
                 data.splineData[3] = readFloat();
+            }
 
             // Bit 4 set
             if((data.splineFlags & 0x10) != 0)
+            {
+                bytes_read += 4;
                 data.splineData[4] = readFloat();
+            }
         }
+
+        return bytes_read;
     }
 
     // Generic internal methods.
-
-    private void calcNormals(TriangleMesh mesh)
-    {
-        float[] normal_face = new float[mesh.numFaces * 3];
-        float[] tangent_face = new float[mesh.numFaces * 3];
-        float[] binormal_face = new float[mesh.numFaces * 3];
-
-        int[] face = mesh.faces;
-        int[] vertex_count = new int[mesh.numVertices];
-        int[][] vertex_face = new int[mesh.numVertices][];
-
-        float[] vertex = mesh.vertices;
-        float[] tex_coords = mesh.texCoords;
-        int[] smoothgroup = mesh.smoothgroups;
-
-        mesh.normals = new float[mesh.numFaces * 9];
-        mesh.tangents = new float[mesh.numFaces * 9];
-        mesh.binormals = new float[mesh.numFaces * 9];
-        float[] normal = mesh.normals;
-        float[] tangent = mesh.tangents;
-        float[] binormal = mesh.binormals;
-
-        if(tex_coords == null)
-        {
-            mesh.texCoords = new float[mesh.numVertices * 2];
-            tex_coords = mesh.texCoords;
-        }
-
-        for(int i = 0; i < mesh.numFaces; i++)
-        {
-            int j = i * 3;
-            int v0 = face[j + 0];
-            int v1 = face[j + 1];
-            int v2 = face[j + 2];
-            vertex_count[v0]++;
-            vertex_count[v1]++;
-            vertex_count[v2]++;
-
-            float e0_x = vertex[v1 * 3] - vertex[v0 * 3];
-            float e0_y = vertex[v1 * 3 + 1] - vertex[v0 * 3 + 1];
-            float e0_z = vertex[v1 * 3 + 2] - vertex[v0 * 3 + 2];
-
-            float e1_x = vertex[v2 * 3] - vertex[v0 * 3];
-            float e1_y = vertex[v2 * 3 + 1] - vertex[v0 * 3 + 1];
-            float e1_z = vertex[v2 * 3 + 2] - vertex[v0 * 3 + 2];
-
-            float cp_x = e0_y * e1_z - e0_z * e1_y;
-            float cp_y = e0_z * e1_x - e0_x * e1_z;
-            float cp_z = e0_x * e1_y - e0_y * e1_x;
-
-            float d = cp_x * cp_x + cp_y * cp_y + cp_z * cp_z;
-
-            if(d != 0)
-            {
-                d = 1 / (float)Math.sqrt(d);
-                normal_face[i * 3] = cp_x * d;
-                normal_face[i * 3 + 1] = cp_y * d;
-                normal_face[i * 3 + 2] = cp_z * d;
-            }
-
-            e0_y = tex_coords[v1 * 2] - tex_coords[v0 * 2];
-            e0_z = tex_coords[v1 * 2 + 1] - tex_coords[v0 * 2 + 1];
-
-            e1_y = tex_coords[v2 * 2] - tex_coords[v0 * 2];
-            e1_z = tex_coords[v2 * 2 + 1] - tex_coords[v0 * 2 + 1];
-
-            for(int k = 0; k < 3; k++)
-            {
-                e0_x = vertex[v1 * 3 + k] - vertex[v0 * 3 + k];
-                e1_x = vertex[v2 * 3 + k] - vertex[v0 * 3 + k];
-
-                cp_x = e0_y * e1_z - e0_z * e1_y;
-                cp_y = e0_z * e1_x - e0_x * e1_z;
-                cp_z = e0_x * e1_y - e0_y * e1_x;
-
-                tangent_face[i * 3 + k] = -cp_y / cp_x;
-                binormal_face[i * 3 + k] = -cp_z / cp_x;
-            }
-
-            float x = tangent_face[i * 3];
-            float y = tangent_face[i * 3 + 1];
-            float z = tangent_face[i * 3 + 2];
-            d = x * x + y * y + z * z;
-
-            if(d != 0)
-            {
-                d = 1 / (float)Math.sqrt(d);
-                tangent_face[i * 3] *= d;
-                tangent_face[i * 3 + 1] *= d;
-                tangent_face[i * 3 + 2] *= d;
-            }
-
-            x = binormal_face[i * 3];
-            y = binormal_face[i * 3 + 1];
-            z = binormal_face[i * 3 + 2];
-            d = x * x + y * y + z * z;
-
-            if(d != 0)
-            {
-                d = 1 / (float)Math.sqrt(d);
-                binormal_face[i * 3] *= d;
-                binormal_face[i * 3 + 1] *= d;
-                binormal_face[i * 3 + 2] *= d;
-            }
-
-            float n_x = tangent_face[i * 3 + 1] * binormal_face[i * 3 + 2] -
-                        tangent_face[i * 3 + 2] * binormal_face[i * 3 + 1];
-            float n_y = tangent_face[i * 3 + 2] * binormal_face[i * 3] -
-                        tangent_face[i * 3] * binormal_face[i * 3 + 2];
-            float n_z = tangent_face[i * 3] * binormal_face[i * 3 + 1] -
-                        tangent_face[i * 3 + 1] * binormal_face[i * 3];
-
-            d = n_x * n_x + n_y * n_y + n_z * n_z;
-
-            if(d != 0)
-            {
-                d = 1 / (float)Math.sqrt(d);
-                n_x *= d;
-                n_y *= d;
-                n_z *= d;
-            }
-
-            binormal_face[i * 3] = n_y * tangent_face[i * 3 + 2] -
-                                   n_z * tangent_face[i * 3 + 1];
-
-            binormal_face[i * 3 + 1] = n_z * tangent_face[i * 3] -
-                                       n_x * tangent_face[i * 3 + 2];
-            binormal_face[i * 3 + 2] = n_x * tangent_face[i * 3 + 1] -
-                                       n_y * tangent_face[i * 3];
-        }
-
-        for(int i = 0; i < mesh.numVertices; i++)
-        {
-            vertex_face[i] = new int[vertex_count[i] + 1];
-            vertex_face[i][0] = vertex_count[i];
-        }
-
-        for(int i = 0; i < mesh.numFaces; i++)
-        {
-            int j = i * 3;
-            int v0 = face[j + 0];
-            int v1 = face[j + 1];
-            int v2 = face[j + 2];
-            vertex_face[v0][vertex_count[v0]--] = i;
-            vertex_face[v1][vertex_count[v1]--] = i;
-            vertex_face[v2][vertex_count[v2]--] = i;
-        }
-
-        boolean do_smooth = (smoothgroup != null);
-
-        for(int i = 0; i < mesh.numFaces; i++)
-        {
-            int j = i * 3;
-            int v0 = face[j + 0];
-            int v1 = face[j + 1];
-            int v2 = face[j + 2];
-
-            for(int k = 1; k <= vertex_face[v0][0]; k++)
-            {
-                int l = vertex_face[v0][k];
-                if(l == i || (do_smooth && ((smoothgroup[i] & smoothgroup[l]) != 0)))
-                {
-                    int p1 = j * 3;
-                    int l1 = l * 3;
-
-                    normal[p1] += normal_face[l1];
-                    normal[p1 + 1] += normal_face[l1 + 1];
-                    normal[p1 + 2] += normal_face[l1 + 2];
-
-                    tangent[p1] += tangent_face[l1];
-                    tangent[p1 + 1] += tangent_face[l1 + 1];
-                    tangent[p1 + 2] += tangent_face[l1 + 2];
-
-                    binormal[p1] += binormal_face[l1];
-                    binormal[p1 + 1] += binormal_face[l1 + 1];
-                    binormal[p1 + 2] += binormal_face[l1 + 2];
-                }
-            }
-
-            for(int k = 1; k <= vertex_face[v1][0]; k++)
-            {
-                int l = vertex_face[v1][k];
-                if(l == i || (do_smooth && ((smoothgroup[i] & smoothgroup[l]) != 0)))
-                {
-                    int p1 = (j + 1) * 3;
-                    int l1 = l * 3;
-
-                    normal[p1] += normal_face[l1];
-                    normal[p1 + 1] += normal_face[l1 + 1];
-                    normal[p1 + 2] += normal_face[l1 + 2];
-
-                    tangent[p1] += tangent_face[l1];
-                    tangent[p1 + 1] += tangent_face[l1 + 1];
-                    tangent[p1 + 2] += tangent_face[l1 + 2];
-
-                    binormal[p1] += binormal_face[l1];
-                    binormal[p1 + 1] += binormal_face[l1 + 1];
-                    binormal[p1 + 2] += binormal_face[l1 + 2];
-                }
-            }
-
-            for(int k = 1; k <= vertex_face[v2][0]; k++)
-            {
-                int l = vertex_face[v2][k];
-                if(l == i || (do_smooth && ((smoothgroup[i] & smoothgroup[l]) != 0)))
-                {
-                    int p1 = (j + 2) * 3;
-                    int l1 = l * 3;
-
-                    normal[p1] += normal_face[l1];
-                    normal[p1 + 1] += normal_face[l1 + 1];
-                    normal[p1 + 2] += normal_face[l1 + 2];
-
-                    tangent[p1] += tangent_face[l1];
-                    tangent[p1 + 1] += tangent_face[l1 + 1];
-                    tangent[p1 + 2] += tangent_face[l1 + 2];
-
-                    binormal[p1] += binormal_face[l1];
-                    binormal[p1 + 1] += binormal_face[l1 + 1];
-                    binormal[p1 + 2] += binormal_face[l1 + 2];
-                }
-            }
-        }
-
-        int num_calc = mesh.numFaces * 3;
-        for(int i = 0; i < num_calc; i++)
-        {
-            float x = normal[i * 3];
-            float y = normal[i * 3 + 1];
-            float z = normal[i * 3 + 2];
-            float d = x * x + y * y + z * z;
-
-            if(d != 0)
-            {
-                d = 1 / (float)Math.sqrt(d);
-                normal[i * 3] *= d;
-                normal[i * 3 + 1] *= d;
-                normal[i * 3 + 2] *= d;
-            }
-        }
-
-        for(int i = 0; i < num_calc; i++)
-        {
-            float x = tangent[i * 3];
-            float y = tangent[i * 3 + 1];
-            float z = tangent[i * 3 + 2];
-            float d = x * x + y * y + z * z;
-
-            if(d != 0)
-            {
-                d = 1 / (float)Math.sqrt(d);
-                tangent[i * 3] *= d;
-                tangent[i * 3 + 1] *= d;
-                tangent[i * 3 + 2] *= d;
-            }
-        }
-
-        for(int i = 0; i < num_calc; i++)
-        {
-            float x = binormal[i * 3];
-            float y = binormal[i * 3 + 1];
-            float z = binormal[i * 3 + 2];
-            float d = x * x + y * y + z * z;
-
-            if(d != 0)
-            {
-                d = 1 / (float)Math.sqrt(d);
-                binormal[i * 3] *= d;
-                binormal[i * 3 + 1] *= d;
-                binormal[i * 3 + 2] *= d;
-            }
-        }
-    }
 
     /**
      * Read a percentage chunk from the file and return it as a normalised
@@ -1761,10 +1626,25 @@ System.out.println("texture name " + tex.filename);
             default:
                 System.out.println("Unknown percentage chunk ID 0x" +
                                    Integer.toHexString(type));
-                inputStream.skip(size - 6);
+                skipBytes(size - 6);
         }
 
         return ret_val;
+    }
+
+    /**
+     * Read a position value. Converts from 3DS form with Z up, Y into the
+     * screen to Java3D with Y up.
+     *
+     * @param vec The array to copy the values into
+     * @param offset The offset into the array to start at
+     */
+    private void readPoint(float[] vec, int offset)
+        throws IOException
+    {
+        vec[offset] = readFloat();
+        vec[offset + 2] = readFloat();
+        vec[offset + 1] = readFloat();
     }
 
     /**
@@ -1793,19 +1673,19 @@ System.out.println("texture name " + tex.filename);
             case MaxConstants.LIN_COLOR24:
             case MaxConstants.COLOR24:
                 int val = inputStream.readUnsignedByte();
-                target[0] = val *= 0.0039215f;   // 1/255 for range conv
+                target[0] = val * 0.0039215f;   // 1/255 for range conv
 
                 val = inputStream.readUnsignedByte();
-                target[1] = val *= 0.0039215f;
+                target[1] = val * 0.0039215f;
 
                 val = inputStream.readUnsignedByte();
-                target[2] = val *= 0.0039215f;
+                target[2] = val * 0.0039215f;
                 break;
 
             default:
                 System.out.println("Unknown colour chunk ID 0x" +
                                    Integer.toHexString(type));
-                inputStream.skip(size - 6);
+                skipBytes(size - 6);
         }
 
         return size;
@@ -1890,5 +1770,28 @@ System.out.println("texture name " + tex.filename);
 
         return Float.intBitsToFloat((ch1 << 0) + (ch2 << 8) +
                   (ch3 << 16) + (ch4 << 24));
+    }
+
+    /**
+     * Guarantee to skip the given length of bytes. InputStream.skip() is not
+     * guaranteed to skip all the bytes requested (eg lack of bytes left in the
+     * buffer. This will loop to make sure that all the bytes have been skipped
+     * as requested.
+     *
+     * @param numBytes The number of bytes to skip
+     */
+    private void skipBytes(int numBytes)
+        throws IOException
+    {
+        int skipped = (int)inputStream.skip(numBytes);
+
+        if(skipped != numBytes)
+        {
+            int total = skipped;
+            while(total != numBytes)
+            {
+                total += inputStream.skip(numBytes - total);
+            }
+        }
     }
 }
