@@ -31,7 +31,7 @@ import javax.vecmath.Vector3f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SpringGenerator extends GeometryGenerator
 {
@@ -70,6 +70,25 @@ public class SpringGenerator extends GeometryGenerator
 
     /** The number of sections used around the outer radius */
     private int outerFacetCount;
+
+    /**
+     * The points on the spring defining the basic shape. The coordinates go
+     * in strips around the outer diameter from the centerline to the apex,
+     * and then centreline to the lower apex and cover one turn of the spring.
+     */
+    private float[] shapeCoordinates;
+
+    /** The number of values used in the shape coordinate array */
+    private int numShapeValues;
+
+    /** Flag indicating shape values have changed */
+    private boolean shapeChanged;
+
+    /**
+     * The loop that defines the outer radius center. Used for normal calcs.
+     * The numer of items is the same as outerFacetCount
+     */
+    private float[] oradiusCoordinates;
 
     /**
      * Construct a default spring that has:<br>
@@ -213,15 +232,7 @@ public class SpringGenerator extends GeometryGenerator
         loopCount = lc;
         loopSpacing = spacing;
 
-        coordsDimensionsChanged = true;
-        normalsDimensionsChanged = true;
-        coordsCountChanged = true;
-        normalsCountChanged = true;
-
-        geometryType = QUADS;
-        ccw = true;
-
-        vertexCount = innerFacetCount * outerFacetCount * loopCount * 4;
+        shapeChanged = true;
     }
 
     /**
@@ -250,8 +261,7 @@ public class SpringGenerator extends GeometryGenerator
     {
         if((innerRadius != ir) || (outerRadius != or))
         {
-            coordsDimensionsChanged = true;
-            normalsDimensionsChanged = true;
+            shapeChanged = true;
 
             innerRadius = ir;
             outerRadius = or;
@@ -270,20 +280,10 @@ public class SpringGenerator extends GeometryGenerator
     {
         if((loopSpacing != spacing) || (loopCount != lc))
         {
-            coordsDimensionsChanged = true;
-            normalsDimensionsChanged = true;
+            shapeChanged = true;
 
             loopSpacing = spacing;
-
-            // Adjust the vertex count too if the loop count has changed
-            if(loopCount != lc)
-            {
-                coordsCountChanged = true;
-                normalsCountChanged = true;
-                loopCount = lc;
-
-                vertexCount = innerFacetCount * outerFacetCount * loopCount * 4;
-            }
+            loopCount = lc;
         }
     }
 
@@ -307,36 +307,1273 @@ public class SpringGenerator extends GeometryGenerator
         innerFacetCount = ifc;
         outerFacetCount = ofc;
 
-        coordsCountChanged = true;
-        normalsCountChanged = true;
-
-        vertexCount = innerFacetCount * outerFacetCount * loopCount * 4;
+        shapeChanged = true;
     }
 
+
+    /**
+     * Get the number of vertices that this generator will create for the
+     * shape given in the definition.
+     *
+     * @param data The data to shape the calculations on
+     * @return The vertex count for the object
+     * @throws UnsupportedTypeException The generator cannot handle the type
+     *   of geometry you have requested.
+     */
+    public int getVertexCount(GeometryData data)
+        throws UnsupportedTypeException
+    {
+        int ret_val = 0;
+
+        switch(data.geometryType)
+        {
+            case GeometryData.TRIANGLES:
+                ret_val = innerFacetCount * outerFacetCount * 6;
+                break;
+            case GeometryData.QUADS:
+                ret_val = innerFacetCount * outerFacetCount * 4;
+                break;
+
+            // These all have the same vertex count
+            case GeometryData.TRIANGLE_STRIPS:
+//            case GeometryData.TRIANGLE_FANS:
+            case GeometryData.INDEXED_TRIANGLES:
+            case GeometryData.INDEXED_QUADS:
+            case GeometryData.INDEXED_TRIANGLE_STRIPS:
+//            case GeometryData.INDEXED_TRIANGLE_FANS:
+                ret_val = innerFacetCount * (outerFacetCount + 1) * 2;
+                break;
+
+            default:
+                throw new UnsupportedTypeException("Unknown geometry type: " +
+                                                   data.geometryType);
+        }
+
+        ret_val *= loopCount;
+
+        return ret_val;
+    }
+
+    /**
+     * Generate a new set of geometry items shaped on the passed data. If the
+     * data does not contain the right minimum array lengths an exception will
+     * be generated. If the array reference is null, this will create arrays
+     * of the correct length and assign them to the return value.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     * @throws UnsupportedTypeException The generator cannot handle the type
+     *   of geometry you have requested
+     */
+    public void generate(GeometryData data)
+        throws UnsupportedTypeException, InvalidArraySizeException
+    {
+        switch(data.geometryType)
+        {
+            case GeometryData.TRIANGLES:
+                unindexedTriangles(data);
+                break;
+            case GeometryData.QUADS:
+                unindexedQuads(data);
+                break;
+            case GeometryData.TRIANGLE_STRIPS:
+                triangleStrips(data);
+                break;
+//            case GeometryData.TRIANGLE_FANS:
+//                triangleFans(data);
+//                break;
+            case GeometryData.INDEXED_QUADS:
+                indexedQuads(data);
+                break;
+            case GeometryData.INDEXED_TRIANGLES:
+                indexedTriangles(data);
+                break;
+            case GeometryData.INDEXED_TRIANGLE_STRIPS:
+                indexedTriangleStrips(data);
+                break;
+//            case GeometryData.INDEXED_TRIANGLE_FANS:
+//                indexedTriangleFans(data);
+//                break;
+
+            default:
+                throw new UnsupportedTypeException("Unknown geometry type: " +
+                                                   data.geometryType);
+        }
+    }
+
+
+    /**
+     * Generate a new set of points for an unindexed quad array
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void unindexedTriangles(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        generateUnindexedTriCoordinates(data);
+
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
+            generateUnindexedTriNormals(data);
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+            generateTriTexture2D(data);
+        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+            generateTriTexture3D(data);
+    }
+
+
+    /**
+     * Generate a new set of points for an unindexed quad array
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void unindexedQuads(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        generateUnindexedQuadCoordinates(data);
+
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
+            generateUnindexedQuadNormals(data);
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+            generateTriTexture2D(data);
+        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+            generateTriTexture3D(data);
+    }
+
+    /**
+     * Generate a new set of points for an indexed quad array. Uses the same
+     * points as an indexed triangle, but repeats the top coordinate index.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void indexedQuads(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        generateIndexedCoordinates(data);
+
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
+            generateIndexedNormals(data);
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+            generateTriTexture2D(data);
+        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+            generateTriTexture3D(data);
+
+        // now let's do the index list
+        int index_size = data.vertexCount * 4;
+
+        if(data.indexes == null)
+            data.indexes = new int[index_size];
+        else if(data.indexes.length < index_size)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.indexes.length,
+                                                index_size);
+
+        int[] indexes = data.indexes;
+        data.indexesCount = index_size;
+        int count = 0;
+
+        int i, j, k;
+        int pos;
+        int k_facet;
+
+        // Do the first loop
+        for(k = 0; k <= innerFacetCount; k++)
+        {
+            k_facet = k * innerFacetCount;
+
+            for(i = 0; i < outerFacetCount; i++)
+            {
+                pos = i + k_facet;
+                indexes[count++] = pos + outerFacetCount + 1;
+                indexes[count++] = pos;
+                indexes[count++] = pos + 1;
+                indexes[count++] = pos + outerFacetCount + 2;
+            }
+        }
+
+        for(i = 1; i < loopCount; i++)
+        {
+            System.arraycopy(indexes, 0, indexes, i * count, count);
+        }
+
+        // Now increment all the index values by the loop count
+        int index_in_loop = count;
+        for(k = 1; k < loopCount; k++)
+        {
+            for(i = 0; i < index_in_loop; i++)
+                indexes[count++] += index_in_loop * k;
+        }
+    }
+
+    /**
+     * Generate a new set of points for an indexed triangle array
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void indexedTriangles(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        generateIndexedCoordinates(data);
+
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
+            generateIndexedNormals(data);
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+            generateTriTexture2D(data);
+        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+            generateTriTexture3D(data);
+
+        // now let's do the index list
+        int index_size = data.vertexCount * 6;
+
+        if(data.indexes == null)
+            data.indexes = new int[index_size];
+        else if(data.indexes.length < index_size)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.indexes.length,
+                                                index_size);
+
+        int[] indexes = data.indexes;
+        data.indexesCount = index_size;
+        int count = 0;
+
+        int half = innerFacetCount / 2;
+        int i, k;
+        int last_facet = outerFacetCount - 1; // always stop one short of the end
+        int pos;
+        int k_facet;
+
+        // Wind the top half separately from the bottom
+        for(k = 0; k < half; k++)
+        {
+            k_facet = k * innerFacetCount;
+
+            for(i = 0; i < last_facet; i++)
+            {
+                pos = i + k_facet;
+
+                // first triangle
+                indexes[count++] = pos + outerFacetCount;
+                indexes[count++] = pos;
+                indexes[count++] = pos + 1;
+
+                // second triangle
+                indexes[count++] = pos + 1;
+                indexes[count++] = pos + outerFacetCount + 1;
+                indexes[count++] = pos + outerFacetCount;
+            }
+
+            // now the last remaing quad that uses coords 0 & 1
+            pos = i + k_facet;
+
+            indexes[count++] = pos + outerFacetCount;
+            indexes[count++] = pos;
+            indexes[count++] = k_facet;
+
+
+            indexes[count++] = k_facet;
+            indexes[count++] = k_facet + outerFacetCount;
+            indexes[count++] = pos + outerFacetCount;
+        }
+
+        // Bottom half is wound in the opposite order.
+        for(k = half + 1; k <= half * 2; k++)
+        {
+            k_facet = k * innerFacetCount;
+
+            for(i = 0; i < last_facet; i++)
+            {
+                pos = i + k_facet;
+
+                indexes[count++] = pos;
+                indexes[count++] = pos + outerFacetCount;
+                indexes[count++] = pos + outerFacetCount + 1;
+
+                indexes[count++] = pos + outerFacetCount + 1;
+                indexes[count++] = pos + 1;
+                indexes[count++] = pos;
+            }
+
+            // now the last remaing quad that uses coords 0 & 1
+            pos = i + k_facet;
+
+            indexes[count++] = pos;
+            indexes[count++] = pos + outerFacetCount;
+            indexes[count++] = k_facet + outerFacetCount;
+
+            indexes[count++] = k_facet + outerFacetCount;
+            indexes[count++] = k_facet;
+            indexes[count++] = pos;
+        }
+    }
+
+    /**
+     * Generate a new set of points for a triangle strip array. Each side is a
+     * strip of two faces.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void triangleStrips(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        generateUnindexedTriStripCoordinates(data);
+
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
+            generateUnindexedTriStripNormals(data);
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+            generateTriTexture2D(data);
+        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+            generateTriTexture3D(data);
+
+        int num_strips = innerFacetCount;
+
+        if(data.stripCounts == null)
+            data.stripCounts = new int[num_strips];
+        else if(data.stripCounts.length < num_strips)
+            throw new InvalidArraySizeException("Strip counts",
+                                                data.stripCounts.length,
+                                                num_strips);
+
+        int strip_length = (outerFacetCount + 1) << 1;
+        int[] stripCounts = data.stripCounts;
+
+        for(int i = num_strips; --i >= 0; )
+            stripCounts[i] = strip_length;
+    }
+
+    /**
+     * Generate a new set of points for a triangle fan array. Each facet on the
+     * side of the cone is a single fan, but the shape is one big fan.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void triangleFans(GeometryData data)
+        throws InvalidArraySizeException
+    {
+    }
+
+    /**
+     * Generate a new set of points for an indexed triangle strip array. We
+     * build the strip from the existing points, and there's no need to
+     * re-order the points for the indexes. The strips go around the major
+     * circumference.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void indexedTriangleStrips(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        generateIndexedCoordinates(data);
+
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
+            generateIndexedNormals(data);
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+            generateTriTexture2D(data);
+        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+            generateTriTexture3D(data);
+
+        // now let's do the index list
+        int index_size = innerFacetCount * (outerFacetCount + 1) * 2;
+        int num_strips = innerFacetCount;
+
+        if(data.indexes == null)
+            data.indexes = new int[index_size];
+        else if(data.indexes.length < index_size)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.indexes.length,
+                                                index_size);
+
+        if(data.stripCounts == null)
+            data.stripCounts = new int[num_strips];
+        else if(data.stripCounts.length < num_strips)
+            throw new InvalidArraySizeException("Strip counts",
+                                                data.stripCounts.length,
+                                                num_strips);
+
+        int[] indexes = data.indexes;
+        int[] stripCounts = data.stripCounts;
+        data.indexesCount = index_size;
+        data.numStrips = num_strips;
+
+        int count = 0;
+        int half = innerFacetCount / 2;
+        int i, k;
+        int pos;
+        int k_facet;
+
+        // Wind the top half separately from the bottom
+        for(k = 0; k < half; k++)
+        {
+            k_facet = k * innerFacetCount;
+            stripCounts[k] = (outerFacetCount + 1) << 1;
+
+            for(i = 0; i < outerFacetCount; i++)
+            {
+                pos = i + k_facet;
+
+                // first triangle
+                indexes[count++] = pos + outerFacetCount;
+                indexes[count++] = pos;
+            }
+
+            // now the last remaing quad that uses coords 0 & 1 again
+            indexes[count++] = k_facet + outerFacetCount;
+            indexes[count++] = k_facet;
+        }
+
+        // Bottom half is wound in the opposite order.
+        for(k = half; k < half * 2; k++)
+        {
+            k_facet = (k + 1) * innerFacetCount;
+            stripCounts[k] = (outerFacetCount + 1) << 1;
+
+            for(i = 0; i < outerFacetCount; i++)
+            {
+                pos = i + k_facet;
+
+                // first triangle
+                indexes[count++] = pos;
+                indexes[count++] = pos + outerFacetCount;
+            }
+
+            // now the last remaing quad that uses coords 0 & 1 again
+            indexes[count++] = k_facet;
+            indexes[count++] = k_facet + outerFacetCount;
+        }
+    }
+
+    /**
+     * Generate a new set of points for an indexed triangle fan array. We
+     * build the strip from the existing points, and there's no need to
+     * re-order the points for the indexes this time. As for the simple fan,
+     * we use the first index, the lower-right corner as the apex for the fan.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void indexedTriangleFans(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        generateIndexedCoordinates(data);
+
+        if((data.geometryComponents & GeometryData.NORMAL_DATA) != 0)
+            generateIndexedNormals(data);
+
+        if((data.geometryComponents & GeometryData.TEXTURE_2D_DATA) != 0)
+            generateTriTexture2D(data);
+        else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
+            generateTriTexture3D(data);
+
+        // now let's do the index list
+    }
+
+    //------------------------------------------------------------------------
+    // Coordinate generation routines
+    //------------------------------------------------------------------------
+
+    /**
+     * Generates new set of points suitable for use in an unindexed array. Each
+     * shape coordinate will appear twice in this list. The first half of the
+     * array is the top, the second half, the bottom.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedTriCoordinates(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = innerFacetCount * outerFacetCount * 6 * loopCount;
+
+        if(data.coordinates == null)
+            data.coordinates = new float[vtx_cnt * 3];
+        else if(data.coordinates.length < vtx_cnt * 3)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.coordinates.length,
+                                                vtx_cnt * 3);
+
+        float[] coords = data.coordinates;
+        data.vertexCount = vtx_cnt;
+
+        generateShape();
+
+        // quad torus generates coordinates at facetCount * 3 indexes apart.
+        // Go around and build coordinate arrays from this.
+        int i, k;
+        int facet_inc = (outerFacetCount + 1) * 3;
+        int k_facet;
+        int pos;
+        int count = 0;
+        float y_offset = loopSpacing * (loopCount / 2);
+
+        for(k = 0; k < innerFacetCount; k++)
+        {
+            k_facet = k * facet_inc;
+
+            for(i = 0; i < outerFacetCount; i++)
+            {
+                pos = i * 3 + k_facet;
+
+                // triangle 1
+                coords[count++] = shapeCoordinates[pos + facet_inc];
+                coords[count++] = shapeCoordinates[pos + facet_inc + 1] + y_offset;
+                coords[count++] = shapeCoordinates[pos + facet_inc + 2];
+
+                coords[count++] = shapeCoordinates[pos];
+                coords[count++] = shapeCoordinates[pos + 1] + y_offset;
+                coords[count++] = shapeCoordinates[pos + 2];
+
+                coords[count++] = shapeCoordinates[pos + 3];
+                coords[count++] = shapeCoordinates[pos + 4] + y_offset;
+                coords[count++] = shapeCoordinates[pos + 5];
+
+                // triangle 2
+                coords[count++] = shapeCoordinates[pos + 3];
+                coords[count++] = shapeCoordinates[pos + 4] + y_offset;
+                coords[count++] = shapeCoordinates[pos + 5];
+
+                coords[count++] = shapeCoordinates[pos + facet_inc + 3];
+                coords[count++] = shapeCoordinates[pos + facet_inc + 4] + y_offset;
+                coords[count++] = shapeCoordinates[pos + facet_inc + 5];
+
+                coords[count++] = shapeCoordinates[pos + facet_inc];
+                coords[count++] = shapeCoordinates[pos + facet_inc + 1] + y_offset;
+                coords[count++] = shapeCoordinates[pos + facet_inc + 2];
+            }
+        }
+
+        // Now that we have one loop, copy the coordinates along the array and
+        // then loop and add the Y increment appropriately.
+        for(i = 1; i < loopCount; i++)
+        {
+            System.arraycopy(coords, 0, coords, i * count, count);
+        }
+
+        // set count to be the y coordinate
+        count++;
+        int vtx_in_loop = count / 3;
+        y_offset = 0;
+
+        for(i = 1; i < loopCount; i++)
+        {
+            y_offset += loopSpacing;
+
+            for(k = 0; k < vtx_in_loop; k++)
+            {
+                coords[count] += y_offset;
+                count += 3;
+            }
+        }
+    }
+
+    /**
+     * Generates new set of unindexed points for quads. The array consists
+     * of the side coordinates, followed by the top and bottom.
+     *
+     * @param data The data to base the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedQuadCoordinates(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = innerFacetCount * outerFacetCount * 4 * loopCount;
+
+        if(data.coordinates == null)
+            data.coordinates = new float[vtx_cnt * 3];
+        else if(data.coordinates.length < vtx_cnt * 3)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.coordinates.length,
+                                                vtx_cnt * 3);
+
+        float[] coords = data.coordinates;
+        data.vertexCount = vtx_cnt;
+
+        generateShape();
+
+        // quad torus generates coordinates at facetCount * 3 indexes apart.
+        // Go around and build coordinate arrays from this.
+        int i, k;
+        int facet_inc = (outerFacetCount + 1) * 3;
+        int k_facet;
+        int pos;
+        int count = 0;
+        float y_offset = loopSpacing * (loopCount / 2);
+
+        for(k = 0; k < innerFacetCount; k++)
+        {
+            k_facet = k * facet_inc;
+
+            for(i = 0; i < outerFacetCount; i++)
+            {
+                pos = i * 3 + k_facet;
+
+                coords[count++] = shapeCoordinates[pos + facet_inc];
+                coords[count++] = shapeCoordinates[pos + facet_inc + 1] + y_offset;
+                coords[count++] = shapeCoordinates[pos + facet_inc + 2];
+
+                coords[count++] = shapeCoordinates[pos];
+                coords[count++] = shapeCoordinates[pos + 1] + y_offset;
+                coords[count++] = shapeCoordinates[pos + 2];
+
+                coords[count++] = shapeCoordinates[pos + 3];
+                coords[count++] = shapeCoordinates[pos + 4] + y_offset;
+                coords[count++] = shapeCoordinates[pos + 5];
+
+                coords[count++] = shapeCoordinates[pos + facet_inc + 3];
+                coords[count++] = shapeCoordinates[pos + facet_inc + 4] + y_offset;
+                coords[count++] = shapeCoordinates[pos + facet_inc + 5];
+            }
+        }
+
+        // Now that we have one loop, copy the coordinates along the array and
+        // then loop and add the Y increment appropriately.
+        for(i = 1; i < loopCount; i++)
+        {
+            System.arraycopy(coords, 0, coords, i * count, count);
+        }
+
+        // set count to be the y coordinate
+        count++;
+        int vtx_in_loop = count / 3;
+        y_offset = 0;
+
+        for(i = 1; i < loopCount; i++)
+        {
+            y_offset += loopSpacing;
+
+            for(k = 0; k < vtx_in_loop; k++)
+            {
+                coords[count] += y_offset;
+                count += 3;
+            }
+        }
+    }
+
+    /**
+     * Generates new set of points suitable for use in an triangle strip array.
+     * Each strip goes along the outer radius.
+     * The first half of the array is the top, the second half, the bottom.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedTriStripCoordinates(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = innerFacetCount * (outerFacetCount + 1) * 2;
+
+        if(data.coordinates == null)
+            data.coordinates = new float[vtx_cnt * 3];
+        else if(data.coordinates.length < vtx_cnt * 3)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.coordinates.length,
+                                                vtx_cnt * 3);
+
+        float[] coords = data.coordinates;
+        data.vertexCount = vtx_cnt;
+
+        generateShape();
+
+        // quad torus generates coordinates at facetCount * 3 indexes apart.
+        // Go around and build coordinate arrays from this.
+        int half = innerFacetCount / 2;
+        int i, k;
+        int facet_inc = (outerFacetCount + 1) * 3;
+        int k_facet;
+        int pos;
+        int count = 0;
+
+        for(k = 0; k < half; k++)
+        {
+            k_facet = k * facet_inc;
+
+            for(i = 0; i < outerFacetCount; i++)
+            {
+                pos = i * 3 + k_facet;
+
+                coords[count++] = shapeCoordinates[pos + facet_inc];
+                coords[count++] = shapeCoordinates[pos + facet_inc + 1];
+                coords[count++] = shapeCoordinates[pos + facet_inc + 2];
+
+                coords[count++] = shapeCoordinates[pos];
+                coords[count++] = shapeCoordinates[pos + 1];
+                coords[count++] = shapeCoordinates[pos + 2];
+            }
+
+            // now the last remaing shape that uses coords 0 & 1
+            coords[count++] = shapeCoordinates[k_facet + facet_inc];
+            coords[count++] = shapeCoordinates[k_facet + facet_inc + 1];
+            coords[count++] = shapeCoordinates[k_facet + facet_inc + 2];
+
+            coords[count++] = shapeCoordinates[k_facet];
+            coords[count++] = shapeCoordinates[k_facet + 1];
+            coords[count++] = shapeCoordinates[k_facet + 2];
+        }
+
+        // bottom half is wound in the opposite direction so swap the
+        // top and bottom coords declarations.
+        int tempVertCount = count;
+        for(k = 0; k < tempVertCount; k += 6)
+        {
+            coords[count++] =  coords[k + 3];
+            coords[count++] = -coords[k + 4];
+            coords[count++] =  coords[k + 5];
+            coords[count++] =  coords[k];
+            coords[count++] = -coords[k + 1];
+            coords[count++] =  coords[k + 2];
+        }
+    }
+
+    /**
+     * Generates new set of points suitable for use in an indexed quad array.
+     * This array is your basic shape, but with the bottom part mirrored if
+     * need be.
+     *
+     * @param data The data to base the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateIndexedCoordinates(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = getVertexCount(data);
+
+        if(data.coordinates == null)
+            data.coordinates = new float[vtx_cnt * 3];
+        else if(data.coordinates.length < vtx_cnt * 3)
+            throw new InvalidArraySizeException("Coordinates",
+                                                data.coordinates.length,
+                                                vtx_cnt * 3);
+
+        int i, k;
+        int count = numShapeValues;
+        float[] coords = data.coordinates;
+        data.vertexCount = vtx_cnt;
+
+        generateShape();
+
+        // First copy all the data points for each loop.
+        for(i = 0; i < loopCount; i++)
+        {
+            System.arraycopy(shapeCoordinates, 0, coords, i * count, count);
+        }
+
+        // set count to be the y coordinate and now go through and increment
+        // the Y offset according to what loop we are in.
+        count = 1;
+        int vtx_in_loop = numShapeValues / 3;
+        float y_offset = -loopSpacing * (loopCount / 2);
+
+        for(i = loopCount; --i >= 0; )
+        {
+System.out.println("Offsetting loop " + i + " " + y_offset);
+            for(k = vtx_in_loop; --k >= 0; )
+            {
+                coords[count] += y_offset;
+                count += 3;
+            }
+
+            y_offset += loopSpacing;
+        }
+    }
+
+    //------------------------------------------------------------------------
+    // Normal generation routines
+    //------------------------------------------------------------------------
+
+    /**
+     * Generate the normals for this torus generated from unindexed triangle
+     * coordinates. Assumes that coordinates have been generated first.
+     *
+     * @param data The data to base the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedTriNormals(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        if(data.normals == null)
+            data.normals = new float[data.coordinates.length];
+        else if(data.normals.length < data.coordinates.length)
+            throw new InvalidArraySizeException("Normals",
+                                                data.normals.length,
+                                                data.coordinates.length);
+
+        float[] normals = data.normals;
+        Vector3f norm;
+        int count = 0;
+        float[] origin = new float[3];
+        int facet_offset = 0;
+        int i, k;
+
+        // Wonder if we can do any loop unravelling here?
+        for(k = 0; k < innerFacetCount; k++)
+        {
+            facet_offset = 0;
+
+            for(i = outerFacetCount; --i > 0; )
+            {
+                // triangle 1
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_offset);
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_offset);
+
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_offset + 3);
+
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                // triangle 2
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_offset + 3);
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_offset + 3);
+
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_offset);
+
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                facet_offset += 3;
+            }
+
+            // triangle 1
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      facet_offset);
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      facet_offset);
+
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      0);
+
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+
+            // triangle 2
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      0);
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      0);
+
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      facet_offset);
+
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+        }
+
+        // Now that we have one loop, copy the normals along the array for
+        // all the other loops as they should all point in the same direction
+        for(i = 1; i < loopCount; i++)
+        {
+            System.arraycopy(normals, 0, normals, i * count, count);
+        }
+    }
+
+    /**
+     * Generate the normals for this torus generated from unindexed quad
+     * coordinates. Assumes that coordinates have been generated first.
+     *
+     * @param data The data to base the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedQuadNormals(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        if(data.normals == null)
+            data.normals = new float[data.coordinates.length];
+        else if(data.normals.length < data.coordinates.length)
+            throw new InvalidArraySizeException("Normals",
+                                                data.normals.length,
+                                                data.coordinates.length);
+
+        float[] normals = data.normals;
+        Vector3f norm;
+        int count = 0;
+        float[] origin = new float[3];
+        int facet_offset = 0;
+        int i, k;
+
+        // Wonder if we can do any loop unravelling here?
+        for(k = 0; k < innerFacetCount; k++)
+        {
+            facet_offset = 0;
+
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      facet_offset);
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      facet_offset);
+
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+
+            for(i = outerFacetCount; --i > 0; )
+            {
+                facet_offset += 3;
+
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_offset);
+
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                normals[count + 6] = norm.x;
+                normals[count + 7] = norm.y;
+                normals[count + 8] = norm.z;
+
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_offset);
+
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                count += 3;
+            }
+
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      0);
+
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      0);
+
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+        }
+
+        // Now that we have one loop, copy the normals along the array for
+        // all the other loops as they should all point in the same direction
+        for(i = 1; i < loopCount; i++)
+        {
+            System.arraycopy(normals, 0, normals, i * count, count);
+        }
+    }
+
+    /**
+     * Generate the normals for this torus generated from unindexed triangle
+     * strip coordinates. Assumes that coordinates have been generated first.
+     *
+     * @param data The data to base the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateUnindexedTriStripNormals(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        if(data.normals == null)
+            data.normals = new float[data.coordinates.length];
+        else if(data.normals.length < data.coordinates.length)
+            throw new InvalidArraySizeException("Normals",
+                                                data.normals.length,
+                                                data.coordinates.length);
+
+        float[] normals = data.normals;
+        Vector3f norm;
+        int count = 0;
+        float[] origin = new float[3];
+        int facet_offset = 0;
+        int i, k;
+
+        // Wonder if we can do any loop unravelling here?
+        for(k = 0; k <= innerFacetCount; k++)
+        {
+            facet_offset = 0;
+
+            for(i = outerFacetCount + 1; --i >= 0; )
+            {
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_offset);
+
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_offset);
+
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                facet_offset += 3;
+            }
+
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      0);
+
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+
+            norm = createRadialNormal(data.coordinates,
+                                      count,
+                                      oradiusCoordinates,
+                                      0);
+
+            normals[count++] = norm.x;
+            normals[count++] = norm.y;
+            normals[count++] = norm.z;
+        }
+    }
+
+    /**
+     * Generate the normals for this torus generated from indexed normals
+     * coordinates. Assumes that coordinates have been generated first.
+     *
+     * @param data The data to base the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateIndexedNormals(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        if(data.normals == null)
+            data.normals = new float[data.coordinates.length];
+        else if(data.normals.length < data.coordinates.length)
+            throw new InvalidArraySizeException("Normals",
+                                                data.normals.length,
+                                                data.coordinates.length);
+
+        float[] normals = data.normals;
+        Vector3f norm;
+        int count = 0;
+        float[] origin = new float[3];
+        int facet_count = 0;
+        int i, k;
+
+        // Wonder if we can do any loop unravelling here?
+        for(k = 0; k <= innerFacetCount; k++)
+        {
+            facet_count = 0;
+
+            for(i = outerFacetCount + 1; --i >= 0; )
+            {
+                norm = createRadialNormal(data.coordinates,
+                                          count,
+                                          oradiusCoordinates,
+                                          facet_count);
+
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                facet_count += 3;
+            }
+        }
+
+        // Now that we have one loop, copy the normals along the array for
+        // all the other loops as they should all point in the same direction
+        for(i = 1; i < loopCount; i++)
+        {
+            System.arraycopy(normals, 0, normals, i * count, count);
+        }
+    }
+
+    //------------------------------------------------------------------------
+    // Texture coordinate generation routines
+    //------------------------------------------------------------------------
+
+    /**
+     * Generate a new set of texCoords for a normal set of unindexed points. Each
+     * normal faces directly perpendicular for each point. This makes each face
+     * seem flat.
+     * <p>
+     * This must always be called after the coordinate generation.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateTriTexture2D(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = data.vertexCount * 2;
+
+        if(data.textureCoordinates == null)
+            data.textureCoordinates = new float[vtx_cnt];
+        else if(data.textureCoordinates.length < vtx_cnt)
+            throw new InvalidArraySizeException("2D Texture coordinates",
+                                                data.textureCoordinates.length,
+                                                vtx_cnt);
+
+        float[] texCoords = data.textureCoordinates;
+    }
+
+    /**
+     * Generate a new set of texCoords for a normal set of unindexed points. Each
+     * normal faces directly perpendicular for each point. This makes each face
+     * seem flat.
+     * <p>
+     * This must always be called after the coordinate generation.
+     *
+     * @param data The data to shape the calculations on
+     * @throws InvalidArraySizeException The array is not big enough to contain
+     *   the requested geometry
+     */
+    private void generateTriTexture3D(GeometryData data)
+        throws InvalidArraySizeException
+    {
+        int vtx_cnt = data.vertexCount * 2;
+
+        if(data.textureCoordinates == null)
+            data.textureCoordinates = new float[vtx_cnt];
+        else if(data.textureCoordinates.length < vtx_cnt)
+            throw new InvalidArraySizeException("3D Texture coordinates",
+                                                data.textureCoordinates.length,
+                                                vtx_cnt);
+
+        float[] texCoords = data.textureCoordinates;
+    }
+
+    //------------------------------------------------------------------------
+    // Internal shape generation routines
+    //------------------------------------------------------------------------
 
     /**
      * Generates new set of points. If the dimensions have not changed since
      * the last call, the identical array will be returned. Note that you
      * should make a copy of this if you intend to call this method more than
      * once as it will replace the old values with the new ones and not
-     * reallocate the array.
+     * reallocate the array. The points only deal with one loop.
      *
      * @return An array of points representing the geometry vertices
      */
-    public float[] generateUnindexedCoordinates()
+    private void generateShape()
     {
-        if(!coordsDimensionsChanged && !coordsCountChanged)
-            return coordinates;
-        else
-            coordsDimensionsChanged = false;
+       if(!shapeChanged)
+            return;
 
-        if((coordinates == null) || coordsCountChanged)
+        shapeChanged = false;
+
+        int vtx_total = (innerFacetCount + 1) * (outerFacetCount + 1) * 3;
+
+        if((shapeCoordinates == null) ||
+           (vtx_total > shapeCoordinates.length))
         {
-            coordinates = new float[vertexCount * 3];
-            coordsCountChanged = false;
+            shapeCoordinates = new float[vtx_total];
+            oradiusCoordinates = new float[(outerFacetCount + 1) * 3];
         }
 
-        geometryType = QUADS;
+        numShapeValues = vtx_total;
 
         // Increment angles for the inner and outer radius facets.
         double arc_length = (2 * Math.PI * outerRadius) / outerFacetCount;
@@ -347,103 +1584,76 @@ public class SpringGenerator extends GeometryGenerator
 
         int count = 0;
         int i, k;
-        float rlower;            // radius of first, lower loop
-        float rupper;            // radius of second, upper loop
-        float cos_theta_i;
-        float sin_theta_i;
-        float sin_theta_k;
-        float sin_theta_k1;
-        float x_lower, x_upper;
-        float y_lower, y_upper;
-        float z_lower, z_upper;
-        float y_offset = 0;
+        float r;            // radius of current loop
+        float y;
+        float[] cos_theta_table;
+        float[] sin_theta_table;
 
-        rlower = outerRadius + innerRadius;// radius of first loop
-        rupper = rlower;
-
-        float y_space = -loopSpacing;
+        float y_space = -loopSpacing / 2;
         float y_inc = loopSpacing / innerFacetCount;
+
+        // Generate the upper half. The loop goes around the outer radius
+        // adding a quad at a time. When this is finished it moves up one facet
+        // around the inner radius. It does this until it reaches the opposite
+        // "inner" side of the torus.
+
+        // Now set up the radius coordinate list and first loop as one thing.
+        // this is for efficiency to minimise trig calculations
+        r = outerRadius + innerRadius;
+        cos_theta_table = new float[outerFacetCount];
+        sin_theta_table = new float[outerFacetCount];
+        float y_offset = loopSpacing * (loopCount / 2);
+
+        for(i = 0 ; i < outerFacetCount; i++)
+        {
+            cos_theta_table[i] = (float)Math.cos(outer_theta * i);
+            sin_theta_table[i] = (float)Math.sin(outer_theta * i);
+
+            oradiusCoordinates[count++] = outerRadius * cos_theta_table[i];
+            oradiusCoordinates[count++] = y_space + y_offset;
+            oradiusCoordinates[count++] = -outerRadius * sin_theta_table[i];
+
+            y_space += y_inc;
+        }
+
+        oradiusCoordinates[count++] = oradiusCoordinates[0];
+        oradiusCoordinates[count++] = y_space;
+        oradiusCoordinates[count++] = oradiusCoordinates[2];
 
         // Generate one loop. The loop goes around the outer radius
         // adding a quad at a time. When this is finished it moves up one facet
         // around the inner radius. It does this until it reaches the opposite
         // "inner" side of the torus.
+        count = 0;
         for(k = 0; k < innerFacetCount; k++)
         {
-            y_space = -loopSpacing;
-            rlower = rupper;
-            rupper = outerRadius + (innerRadius * ((float) Math.cos(inner_theta * (k + 1))));
-
-            // Calculate each face in the round. Calculates lower then upper on
-            // one side and then moves to the next spot on the loop to calculate
-            // the upper then lower values.
-            i = 0;
-            cos_theta_i = (float)Math.cos(outer_theta * i);
-            sin_theta_i = (float)Math.sin(outer_theta * i);
-
-            sin_theta_k = (float)Math.sin(inner_theta * k);
-            sin_theta_k1 = (float)Math.sin(inner_theta * (k + 1));
-
-            // Calculate the stuff outside the loop before we start. This saves
-            // one lot of calcs through the loop as after the first iteration
-            // we save the x and z points from the previous calc.
-            x_lower =  rlower * cos_theta_i;
-            z_lower = -rlower * sin_theta_i;
-
-            x_upper =  rupper * cos_theta_i;
-            z_upper = -rupper * sin_theta_i;
+            y_space = -loopSpacing / 2;
+            r = outerRadius + (innerRadius * ((float) Math.cos(inner_theta * k)));
 
             // y values don't get recalculed for each quad on this strip
-            y_lower = innerRadius * sin_theta_k;
-            y_upper = innerRadius * sin_theta_k1;
+            y = innerRadius * (float)Math.sin(inner_theta * k);
 
-            for( ; i < outerFacetCount; )
+            for(i = 0 ; i < outerFacetCount; i++)
             {
-                coordinates[count++] = x_upper;
-                coordinates[count++] = y_upper + y_space;
-                coordinates[count++] = z_upper;
-
-                coordinates[count++] = x_lower;
-                coordinates[count++] = y_lower + y_space;
-                coordinates[count++] = z_lower;
+                shapeCoordinates[count++] = r * cos_theta_table[i];
+                shapeCoordinates[count++] = y + y_space;
+                shapeCoordinates[count++] = -r * sin_theta_table[i];
 
                 // increment for variable to get to the other side of
                 // this quad.
-                i++;
                 y_space += y_inc;
-                cos_theta_i = (float)Math.cos(outer_theta * i);
-                sin_theta_i = (float)Math.sin(outer_theta * i);
-
-                x_lower =  rlower * cos_theta_i;
-                z_lower = -rlower * sin_theta_i;
-
-                x_upper =  rupper * cos_theta_i;
-                z_upper = -rupper * sin_theta_i;
-
-                coordinates[count++] = x_lower;
-                coordinates[count++] = y_lower + y_space;
-                coordinates[count++] = z_lower;
-
-                coordinates[count++] = x_upper;
-                coordinates[count++] = y_upper + y_space;
-                coordinates[count++] = z_upper;
             }
+
+            // The closing piece of the loop
+            shapeCoordinates[count++] = r * cos_theta_table[0];
+            shapeCoordinates[count++] = y + y_space;
+            shapeCoordinates[count++] = -r * sin_theta_table[0];
         }
 
-        // For each loop after the first, just copy the points across
-        // but shifted by the appropriate amount.
-        float tempVertexCount = count;
-        for(i = 1; i < loopCount; i++)
-        {
-            y_offset += loopSpacing;
-            for(k = 0; k < tempVertexCount; )
-            {
-                coordinates[count++] = coordinates[k++];
-                coordinates[count++] = coordinates[k++] + y_offset;
-                coordinates[count++] = coordinates[k++];
-            }
-        }
-
-        return coordinates;
+        System.arraycopy(shapeCoordinates,
+                         0,
+                         shapeCoordinates,
+                         count,
+                         (outerFacetCount + 1) * 3);
     }
 }
