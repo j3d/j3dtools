@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE X3D SYSTEM "http://www.j3d.org/xml/file_input.dtd">
+<input_data>
+  <sensor-info number="1">
+    <sensor buttons="1" index="0" time="10" loops="0">
+      <sensor-data position="0 0 0" time="0"/>
+      <sensor-data position="0 1 0" time="2.5"/>
+      <sensor-data position="1 1 0" time="5"/>
+      <sensor-data position="1 0 0" time="7.5"/>
+      <sensor-data position="0 0 0" time="10"/>
+      <button index="0">
+        <button-data value="0" time="0">
+        <button-data value="1" time="1.5">
+        <button-data value="0" time="1.6">
+      </button>
+    </sensor>
+  </sensor_data>
+</input_data>
