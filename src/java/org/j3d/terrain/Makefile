@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.terrain directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -16,6 +16,7 @@ PACKAGE = org.j3d.terrain
 # compiled in
 SOURCE = Canvas3DFrustum.java \
     ViewFrustum.java \
+	AppearanceGenerator.java \
 	TerrainData.java \
 	Landscape.java 
 

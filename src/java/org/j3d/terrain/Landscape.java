@@ -54,9 +54,14 @@ import org.j3d.ui.navigation.HeightMapGeometry;
  * terrain definition and use it directly to make the code much faster. None
  * of these capabilities are set within this implementation, so it is up to
  * the third-party code to make it so via calls to the appropriate methods.
+ * <p>
+ *
+ * The landscape provides an appearance generator for letting the end user
+ * application control appearance settings. If this is not set then particular
+ * implementation is free to do what it likes.
  *
  * @author Justin Couch, based on original ideas from Paul Byrne
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public abstract class Landscape extends javax.media.j3d.BranchGroup
     implements FrameUpdateListener, HeightMapGeometry
@@ -66,6 +71,9 @@ public abstract class Landscape extends javax.media.j3d.BranchGroup
 
     /** Raw terrain information to be rendered */
     protected TerrainData terrainData;
+
+    /** Generator for appearance information. May be null */
+    protected AppearanceGenerator appearanceGenerator;
 
     /**
      * Temporary variable to hold the position information extracted from
@@ -87,7 +95,7 @@ public abstract class Landscape extends javax.media.j3d.BranchGroup
 
     /**
      * Create a new Landscape with the set view and data. If either are not
-     * provided, an exception is thrown.
+     * provided, an exception is thrown. Uses the default appearance generator.
      *
      * @param view The viewing frustum to see the data with
      * @param data The raw data to view
@@ -107,6 +115,24 @@ public abstract class Landscape extends javax.media.j3d.BranchGroup
         tmpPosition = new Vector3f();
         tmpOrientation = new Vector3f();
         tmpMatrix = new Matrix3f();
+    }
+
+    /**
+     * Provide a landscape with a specific appearance generator set. If the
+     * generator argument is null, then the default is used.
+     *
+     * @param view The viewing frustum to see the data with
+     * @param data The raw data to view
+     * @param gen The generator instance to use
+     * @throws IllegalArgumentException either parameter is null
+     */
+    public Landscape(ViewFrustum view,
+                     TerrainData data,
+                     AppearanceGenerator gen)
+    {
+        this(view, data);
+
+        appearanceGenerator = gen;
     }
 
     //----------------------------------------------------------
@@ -185,5 +211,26 @@ public abstract class Landscape extends javax.media.j3d.BranchGroup
         tmpMatrix.transform(tmpOrientation);
 
         setView(tmpPosition, tmpOrientation);
+    }
+
+    /**
+     * Set the appearance generator to create new appearanace items. If null
+     * is passed, it clears the current appearance settings
+     *
+     * @param gen The new generator instance to use
+     */
+    public void setAppearanceGenerator(AppearanceGenerator gen)
+    {
+        appearanceGenerator = gen;
+    }
+
+    /**
+     * Get the currently set appearance generator. If not set, returns null.
+     *
+     * @return The current generator instance
+     */
+    public AppearanceGenerator getAppearanceGenerator()
+    {
+        return appearanceGenerator;
     }
 }
