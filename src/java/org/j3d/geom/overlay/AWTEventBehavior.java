@@ -15,6 +15,7 @@ import java.awt.event.*;
 import javax.media.j3d.*;
 
 import java.awt.AWTEvent;
+import java.awt.Rectangle;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -30,7 +31,7 @@ import java.util.HashMap;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class AWTEventBehavior extends Behavior
     implements InputRequester
@@ -66,16 +67,23 @@ class AWTEventBehavior extends Behavior
     private WakeupCondition bothConditions;
 
     /** The last found mouse overlay for optimisation purposes */
-    private Overlay lastMouseOverlay;
+    private Overlay currentMouseOverlay;
 
     /** The last found mouse listener for optimisation purposes */
     private MouseListener lastMouse;
 
+    /** Previous mouse overlay for the event before this  */
+    private Overlay lastMouseOverlay;
+
     /** The last found mouse motion overlay for optimisation purposes */
-    private Overlay lastMotionOverlay;
+    private Overlay currentMotionOverlay;
 
     /** The last found mouse motion listener for optimisation purposes */
     private MouseMotionListener lastMotion;
+
+    /** Previous mouse motion listener to their corresponding overlay */
+    private Overlay lastMotionOverlay;
+
 
     /**
      * Flag to say if we are in a drag currently and should be tracking the
@@ -301,7 +309,10 @@ class AWTEventBehavior extends Behavior
                         mouse = getMouseListener(me.getPoint());
 
                         if(mouse != null)
+                        {
+                            adjustMousePosition(me, currentMouseOverlay);
                             mouse.mousePressed(me);
+                        }
                         break;
 
                     case MouseEvent.MOUSE_RELEASED:
@@ -309,7 +320,10 @@ class AWTEventBehavior extends Behavior
                         mouse = getMouseListener(me.getPoint());
 
                         if(mouse != null)
+                        {
+                            adjustMousePosition(me, currentMouseOverlay);
                             mouse.mouseReleased(me);
+                        }
                         break;
 
                     case MouseEvent.MOUSE_CLICKED:
@@ -317,7 +331,10 @@ class AWTEventBehavior extends Behavior
                         mouse = getMouseListener(me.getPoint());
 
                         if(mouse != null)
+                        {
+                            adjustMousePosition(me, currentMouseOverlay);
                             mouse.mouseClicked(me);
+                        }
                         break;
 
                     case MouseEvent.MOUSE_ENTERED:
@@ -328,11 +345,15 @@ class AWTEventBehavior extends Behavior
                         {
                             if(lastMouse != null)
                             {
-                                lastMouse.mouseExited(cloneEvent(me, true));
+                                // Hm.... not right....
+                                MouseEvent old_me = cloneEvent(me, true);
+                                adjustMousePosition(old_me, lastMouseOverlay);
+                                lastMouse.mouseExited(old_me);
                             }
 
                             if(!inDrag)
                             {
+                                adjustMousePosition(me, currentMouseOverlay);
                                 mouse.mouseEntered(me);
 
                                 lastMouse = mouse;
@@ -348,7 +369,10 @@ class AWTEventBehavior extends Behavior
                         if(!inDrag)
                         {
                             if(mouse != null)
+                            {
+                                adjustMousePosition(me, currentMouseOverlay);
                                 mouse.mouseExited(me);
+                            }
 
                             // We've exited completely, so remove everything
                             lastMouse = null;
@@ -363,7 +387,10 @@ class AWTEventBehavior extends Behavior
                         inDrag = true;
 
                         if(lastMotion != null)
+                        {
+                            adjustMousePosition(me, currentMotionOverlay);
                             lastMotion.mouseDragged(me);
+                        }
                         break;
 
                     case MouseEvent.MOUSE_MOVED:
@@ -380,19 +407,28 @@ class AWTEventBehavior extends Behavior
                             {
                                 // We've just entered a new overlay, so let it
                                 // know
-                                mouse.mouseEntered(cloneEvent(me, false));
+                                MouseEvent old_me = cloneEvent(me, false);
+                                adjustMousePosition(old_me, currentMouseOverlay);
+                                mouse.mouseEntered(old_me);
                             }
                             else if(mouse == null)
                             {
                                 // The old overlay was valid and now our new
                                 // one is not, so that means we've left the
                                 // old one.
-                                lastMouse.mouseExited(cloneEvent(me, true));
+                                MouseEvent old_me = cloneEvent(me, true);
+                                adjustMousePosition(old_me, lastMouseOverlay);
+                                lastMouse.mouseExited(old_me);
                             }
                             else
                             {
-                                lastMouse.mouseExited(cloneEvent(me, true));
-                                mouse.mouseEntered(cloneEvent(me, false));
+                                MouseEvent old_me = cloneEvent(me, true);
+                                adjustMousePosition(old_me, lastMotionOverlay);
+                                lastMouse.mouseExited(old_me);
+
+                                old_me = cloneEvent(me, false);
+                                adjustMousePosition(old_me, currentMouseOverlay);
+                                mouse.mouseEntered(old_me);
                             }
 
                             lastMouse = mouse;
@@ -407,7 +443,10 @@ class AWTEventBehavior extends Behavior
                             motion = getMotionListener(me.getPoint());
 
                             if(motion != null)
+                            {
+                                adjustMousePosition(me, currentMotionOverlay);
                                 motion.mouseMoved(me);
+                            }
 
                             lastMotion = motion;
                         }
@@ -473,7 +512,10 @@ class AWTEventBehavior extends Behavior
     private MouseListener getMouseListener(Point p)
     {
         if((lastMouseOverlay != null) && lastMouseOverlay.contains(p))
+        {
+            currentMouseOverlay = lastMouseOverlay;
             return lastMouse;
+        }
 
         int n = mouseOverlays.size();
         Overlay w = null;
@@ -487,10 +529,12 @@ class AWTEventBehavior extends Behavior
             w = null;
         }
 
+        lastMouseOverlay = currentMouseOverlay;
+
         if(w != null)
-            lastMouseOverlay = w;
+            currentMouseOverlay = w;
         else
-            lastMouseOverlay = null;
+            currentMouseOverlay = null;
 
         MouseListener l = (MouseListener)mouseListeners.get(w);
 
@@ -507,7 +551,10 @@ class AWTEventBehavior extends Behavior
     private MouseMotionListener getMotionListener(Point p)
     {
         if((lastMotionOverlay != null) && lastMotionOverlay.contains(p))
+        {
+            currentMotionOverlay = lastMotionOverlay;
             return lastMotion;
+        }
 
         int n = motionOverlays.size();
         Overlay w = null;
@@ -521,10 +568,12 @@ class AWTEventBehavior extends Behavior
             w = null;
         }
 
+        lastMotionOverlay = currentMotionOverlay;
+
         if(w != null)
-            lastMotionOverlay = w;
+            currentMotionOverlay = w;
         else
-            lastMotionOverlay = null;
+            currentMotionOverlay = null;
 
         MouseMotionListener l = (MouseMotionListener)motionListeners.get(w);
 
@@ -551,5 +600,20 @@ class AWTEventBehavior extends Behavior
                               evt.getClickCount(),
                               evt.isPopupTrigger(),
                               evt.getButton());
+    }
+
+    /**
+     * Adjust the event's position to offset it by the location of the
+     * overlay. This is so the mouse's coordinates appear to be in overlay
+     * coordinate system, not the entire window.
+     *
+     * @param evt The event to be translated
+     * @param overlay The targetted overlay to use
+     */
+    private void adjustMousePosition(MouseEvent evt, Overlay overlay)
+    {
+        Rectangle bounds = overlay.getBounds();
+
+        evt.translatePoint(bounds.x, bounds.y);
     }
 }
