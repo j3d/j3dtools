@@ -13,7 +13,7 @@ package org.j3d.util.interpolator;
 import javax.vecmath.Color4f;
 
 // Application specific imports
-// none
+import org.j3d.util.ColorUtils;
 
 /**
  * An interpolator that works with color components.
@@ -33,7 +33,7 @@ import javax.vecmath.Color4f;
  * Wesley, 1990.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ColorInterpolator extends Interpolator
 {
@@ -340,59 +340,7 @@ public class ColorInterpolator extends Interpolator
      */
     private void convertRGBtoHSV(float r, float g, float b)
     {
-        float h = 0;
-        float s = 0;
-        float v = 0;
-
-        float max = (r > g) ? r : g;
-        max = (max > b) ? max : b;
-
-        float min = (r < g) ? r : g;
-        min = (min < b) ? max : b;
-
-        s = max;    // this is the value v
-
-        // Calculate the saturation s
-        if(max != 0)
-            s = (max - min) / max;
-        else
-            s = 0;
-
-        if(s == 0)
-        {
-            h = Float.NaN;  // h => UNDEFINED
-        }
-        else
-        {
-            // Chromatic case: Saturation is not 0, determine hue
-            float delta = max - min;
-
-            if(r == max)
-            {
-                // resulting color is between yellow and magenta
-                h = (g - b) / delta ;
-            }
-            else if(g == max)
-            {
-                // resulting color is between cyan and yellow
-                h = 2 + (b - r) / delta;
-            }
-            else if(b == max)
-            {
-                // resulting color is between magenta and cyan
-                h = 4 + (r - g) / delta;
-            }
-
-            // convert hue to degrees and make sure it is non-negative
-            h = h * 60;
-            if(h < 0)
-                h += 360;
-        }
-
-        // now assign everything....
-        sharedVector[0] = h;
-        sharedVector[1] = s;
-        sharedVector[2] = v;
+        ColorUtils.convertRGBtoHSV(r, g, b, sharedVector);
     }
 
     /**
@@ -406,86 +354,7 @@ public class ColorInterpolator extends Interpolator
      */
     private void convertHSVtoRGB(float h, float s, float v)
     {
-        float r = 0;
-        float g = 0;
-        float b = 0;
-
-        if(s == 0)
-        {
-            // this color in on the black white center line <=> h = UNDEFINED
-            if(h == Float.NaN)
-            {
-                // Achromatic color, there is no hue
-                r = v;
-                g = v;
-                b = v;
-            }
-            else
-            {
-                throw new IllegalArgumentException(INVALID_H_MSG);
-            }
-        }
-        else
-        {
-            if(h == 360)
-            {
-                // 360 is equiv to 0
-                h = 0;
-            }
-
-            // h is now in [0,6)
-            h = h /60;
-
-            int i = (int)Math.floor(h);
-            float f = h - i;             //f is fractional part of h
-            float p = v * (1 - s);
-            float q = v * (1 - (s * f));
-            float t = v * (1 - (s * (1 - f)));
-
-            switch(i)
-            {
-                case 0:
-                   r = v;
-                   g = t;
-                   b = p;
-                   break;
-
-                case 1:
-                   r = q;
-                   g = v;
-                   b = p;
-                   break;
-
-                case 2:
-                   r = p;
-                   g = v;
-                   b = t;
-                   break;
-
-                case 3:
-                   r = p;
-                   g = q;
-                   b = v;
-                   break;
-
-                case 4:
-                   r = t;
-                   g = p;
-                   b = v;
-                   break;
-
-                case 5:
-                   r = v;
-                   g = p;
-                   b = q;
-                   break;
-            }
-        }
-
-        // now assign everything....
-        sharedVector[0] = r;
-        sharedVector[1] = g;
-        sharedVector[2] = b;
+        ColorUtils.convertHSVtoRGB(h, s, v, sharedVector);
     }
 
     /**
