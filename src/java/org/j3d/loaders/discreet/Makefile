@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders.discreet directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
 
@@ -47,7 +47,8 @@ SOURCE = \
   CameraBlock.java \
   ObjectBlock.java \
   ObjectMesh.java \
-//  MaxParser.java \
+  MaxParser.java \
+  MaxUtils.java \
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
