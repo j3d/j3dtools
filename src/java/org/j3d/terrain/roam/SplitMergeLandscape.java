@@ -34,7 +34,7 @@ import org.j3d.terrain.*;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class SplitMergeLandscape extends Landscape
 {
@@ -99,6 +99,9 @@ public class SplitMergeLandscape extends Landscape
      * multiples of them.
      */
     private LinkedList freePatchList;
+
+    /** The grid that holds the current patches for the viewable grid. */
+    private PatchGrid patchGrid;
 
     /**
      * Creates new Landscape based on the view information and the terrain
@@ -255,7 +258,25 @@ public class SplitMergeLandscape extends Landscape
         TreeNode splitCandidate;
         TreeNode mergeCandidate;
         boolean done;
+
+        // Do terrain type spectific processing first
+        switch(terrainDataType)
+        {
+            case TerrainData.TILED_DATA:
+                calculateViewTileBounds();
+                clearOldTiledPatches();
+                loadNewTiles();
+                break;
+
+            case TerrainData.FREEFORM_DATA:
+
+            case TerrainData.STATIC_DATA:
+                // do nothing
+            default:
+        }
+
         int size = patches.size();
+
 
 // Does not handle the various terrain types yet....
 
@@ -405,6 +426,8 @@ public class SplitMergeLandscape extends Landscape
         t_data.setActiveBounds(reqdBounds);
         oldTileBounds.setBounds(reqdBounds);
 
+        patchGrid = new PatchGrid(reqdBounds);
+
         Patch[] westPatchNeighbour = new Patch[reqdBounds.width];
         Patch southPatchNeighbour = null;
         Patch p = null;
@@ -433,9 +456,11 @@ public class SplitMergeLandscape extends Landscape
                               east,
                               north,
                               app,
-                              landscapeView,
-                              westPatchNeighbour[w_pos],
-                              southPatchNeighbour);
+                              landscapeView);
+
+                p.setWestNeighbour(westPatchNeighbour[w_pos]);
+                p.setSouthNeighbour(southPatchNeighbour);
+                p.makeActive();
 
                 patches.add(p);
 
@@ -498,9 +523,10 @@ System.out.println("Free-form terrain not implemented yet");
                               0,
                               north,
                               app,
-                              landscapeView,
-                              null,
-                              southPatchNeighbour);
+                              landscapeView);
+
+                p.setSouthNeighbour(southPatchNeighbour);
+                p.makeActive();
 
                 patches.add(p);
 
@@ -527,9 +553,11 @@ System.out.println("Free-form terrain not implemented yet");
                                   east,
                                   north,
                                   app,
-                                  landscapeView,
-                                  westPatchNeighbour[w_pos],
-                                  southPatchNeighbour);
+                                  landscapeView);
+
+                    p.setWestNeighbour(westPatchNeighbour[w_pos]);
+                    p.setSouthNeighbour(southPatchNeighbour);
+                    p.makeActive();
 
                     patches.add(p);
 
@@ -579,7 +607,10 @@ System.out.println("Free-form terrain not implemented yet");
     }
 
     /**
-     * Calculate the current required bounds for the viewpoint
+     * Calculate the current required bounds for the viewpoint. Uses the
+     * information directly from the view frustum, so no need to pass in the
+     * position and orientation info. Assumes that the update of the view
+     * platform is called before this method, for this frame.
      */
     private void calculateViewTileBounds()
     {
@@ -632,6 +663,73 @@ System.out.println("Free-form terrain not implemented yet");
      */
     private void loadNewTiles()
     {
+        // Since we run axis aligned boundaies, let's just look at the
+        // difference between new and old.
+
+        // Do we need to add stuff to the start in the depth direction?
+        int diff = reqdBounds.x - oldTileBounds.x;
+
+        Appearance app;
+        Patch south_neighbour = null;
+        Patch p = null;
+
+        if(diff < 0)
+        {
+            Patch[] west_neighbour = new Patch[reqdBounds.width];
+
+            AppearanceGenerator app_gen = getAppGenerator();
+            int north, east;
+
+            // For each row difference
+            // add a tile
+            float patch_1 = 1 / (float)patchSize;
+
+            for(east = 0 ; east <= reqdBounds.width; east++)
+            {
+                int e_grid = east * patchSize;
+
+                for(north = reqdBounds.x; north <= oldTileBounds.x; north++)
+                {
+                    int w_pos = (int)(north * patch_1);
+                    int n_grid = north * patchSize;
+
+                    p = (Patch)freePatchList.remove(0);
+
+                    if(p == null)
+                    {
+                        TiledTerrainData td = (TiledTerrainData)terrainData;
+
+                        app = app_gen.createAppearance();
+                        app.setTexture(td.getTexture(east, north));
+
+                        p = new Patch(terrainData,
+                                      patchSize,
+                                      e_grid,
+                                      n_grid,
+                                      app,
+                                      landscapeView);
+
+                        addChild(p.getShape3D());
+                    }
+                    else
+                    {
+                        p.setOrigin(e_grid, n_grid);
+                    }
+
+                    patchGrid.addPatch(p, east, north);
+                    p.makeActive();
+
+                    patches.add(p);
+
+                    triCount += 2;
+
+                    south_neighbour = p;
+                    west_neighbour[w_pos] = p;
+                }
+
+                south_neighbour = null;
+            }
+        }
     }
 
     /**
