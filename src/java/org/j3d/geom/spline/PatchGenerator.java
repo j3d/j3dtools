@@ -30,7 +30,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class PatchGenerator extends GeometryGenerator
 {
@@ -50,7 +50,7 @@ public abstract class PatchGenerator extends GeometryGenerator
     protected float[][] patchNormals;
 
     /** The texture coordinate for each point on the patch. */
-    protected float[] patchTexcoords;
+    protected float[][] patchTexcoords;
 
     /** The number of patch coordinates in depth */
     protected int numPatchValues;
@@ -252,12 +252,15 @@ public abstract class PatchGenerator extends GeometryGenerator
 
             // These all have the same vertex count
             case GeometryData.TRIANGLE_STRIPS:
+                ret_val = (facetCount + 1) * facetCount * 2;
+                break;
+
             case GeometryData.TRIANGLE_FANS:
             case GeometryData.INDEXED_TRIANGLES:
             case GeometryData.INDEXED_QUADS:
             case GeometryData.INDEXED_TRIANGLE_STRIPS:
             case GeometryData.INDEXED_TRIANGLE_FANS:
-                ret_val = facetCount * facetCount;
+                ret_val = (facetCount + 1) * (facetCount + 1);
                 break;
 
             default:
@@ -315,7 +318,7 @@ public abstract class PatchGenerator extends GeometryGenerator
         // Last corner point of the first row
         norm = createFaceNormal(patchCoordinates,
                                 0, count,
-                                0, count,
+                                1, count,
                                 1, count - 3);
 
         patchNormals[0][count++] = norm.x;
@@ -364,7 +367,7 @@ public abstract class PatchGenerator extends GeometryGenerator
         // corner point - normal based on only that face
         count = 0;
         norm = createFaceNormal(patchCoordinates,
-                                facetCount - 1, count,
+                                facetCount, count,
                                 facetCount - 1, count,
                                 facetCount, count + 3);
 
@@ -492,40 +495,59 @@ public abstract class PatchGenerator extends GeometryGenerator
      * Regenerate the texture coordinate points.
      * Assumes regenerateBase has been called before this
      */
-    private final void regenerateTexcoords()
+    protected final void regenerateTexcoords()
     {
         if(!texCoordsChanged)
             return;
 
         texCoordsChanged = false;
 
-        numTexcoordValues = facetCount * facetCount * 2;
+        numTexcoordValues = (facetCount + 1) * 2;
 
         if((patchTexcoords == null) ||
-           (numTexcoordValues > patchTexcoords.length))
+           (patchTexcoords.length <= facetCount) ||
+           (patchTexcoords[0].length < numTexcoordValues))
         {
-            patchTexcoords = new float[numTexcoordValues];
+            patchTexcoords = new float[facetCount + 1][numTexcoordValues];
         }
 
+        int count;
+        float w;
         float d = 0;
-        float w = 0;
-        float width_inc = 1.0f / (facetCount - 1);
-        float depth_inc = 1.0f / (facetCount - 1);
-
-        int count = 0;
+        float width_inc = 1.0f / facetCount;
+        float depth_inc = 1.0f / facetCount;
 
         for(int i = 0; i < facetCount; i++)
         {
+            count = 0;
+            w = 0;
+
             for(int j = 0;  j < facetCount; j++)
             {
-                patchTexcoords[count++] = w;
-                patchTexcoords[count++] = d;
+                patchTexcoords[i][count++] = w;
+                patchTexcoords[i][count++] = d;
 
                 w += width_inc;
             }
 
+            patchTexcoords[i][count++] = 1;
+            patchTexcoords[i][count++] = d;
+
             d += depth_inc;
-            w = 0;
         }
+
+        count = 0;
+        w = 0;
+
+        for(int j = 0;  j < facetCount; j++)
+        {
+            patchTexcoords[facetCount][count++] = w;
+            patchTexcoords[facetCount][count++] = 1;
+
+            w += width_inc;
+        }
+
+        patchTexcoords[facetCount][count++] = 1;
+        patchTexcoords[facetCount][count++] = 1;
     }
 }
