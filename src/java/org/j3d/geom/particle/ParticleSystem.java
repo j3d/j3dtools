@@ -41,7 +41,7 @@ import org.j3d.texture.TextureCacheFactory;
  * the current directory) to initialize their physical attributes and images.
  * <p>
  * @author Daniel Selman
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
@@ -119,14 +119,17 @@ public abstract class ParticleSystem implements ParticleFactory
 
         resources = new Properties();
 
-        try
+        if(is != null)
         {
-            resources.load(is);
-            is.close();
-        }
-        catch(IOException ioe)
-        {
-            System.out.println("Error reading particle.properties");
+            try
+            {
+                resources.load(is);
+                is.close();
+            }
+            catch(IOException ioe)
+            {
+                System.out.println("Error reading particle.properties");
+            }
         }
     }
 
@@ -304,12 +307,13 @@ public abstract class ParticleSystem implements ParticleFactory
         }
         else
         {
+            String name = resources.getProperty( systemName + ".texture" );
 
-            TextureLoader texLoader =
-                new TextureLoader( resources.getProperty( systemName + ".texture" ),
-                                   Texture.RGBA,
-                                   null );
-            tex = texLoader.getTexture();
+            if ( name != null ) {
+                TextureLoader texLoader =
+                    new TextureLoader( name, Texture.RGBA, null );
+                tex = texLoader.getTexture();
+            }
         }
 
         return tex;

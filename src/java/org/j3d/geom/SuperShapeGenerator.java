@@ -38,7 +38,7 @@ package org.j3d.geom;
  *
  * <table>
  * <tr><td colspan="6">m = 0. This results in circles, namely r = 1</td></tr>
- * <tr><td colspan="6"><img src="doc-files/circle.png"></td></tr>
+ * <tr><td colspan="6"><img src="doc-files/0_1_1_1.png"></td></tr>
  * <tr><td colspan="6">n1 = n2 = n3 = 1 Increasing m adds rotational symmetry
  *     to the shape. This is generally the case for other values of the n
  *     parameters. The curves are repeated in sections of the circle of angle
@@ -118,7 +118,7 @@ package org.j3d.geom;
  * http://astronomy.swin.edu.au/~pbourke/curves/supershape/</a>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SuperShapeGenerator extends GeometryGenerator
 {
