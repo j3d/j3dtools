@@ -32,7 +32,7 @@ import javax.vecmath.*;
  * drive the view. To provide the driving factor, a Swing Timer object is used
  * rather than using the Java 3D behaviour system.
  *
- * @author <a href="http://www.ife.org/vr/">Halden VR Centre, Institute for Energy Technology</a><br>
+ * @author <a href="http://www.ife.no/vr/">Halden VR Centre, Institute for Energy Technology</a><br>
  *   Updated for j3d.org by Justin Couch
  * @version $Revision $
  */
