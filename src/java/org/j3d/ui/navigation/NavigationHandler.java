@@ -157,6 +157,9 @@ public class NavigationHandler
     /** The default step height of the avatar to climb */
     private static final float DEFAULT_STEP_HEIGHT = 0.4f;
 
+    /** High-Side epsilon float = 0 */
+    private static final double ZEROEPS = 0.000001;
+
     /** Fixed vector always pointing down -Y */
     private static final Vector3d Y_DOWN = new Vector3d(0, -1, 0);
 
@@ -293,10 +296,10 @@ public class NavigationHandler
     private Transform3D worldEyeTransform;
 
     /** The amount to move the view in mouse coords up/down */
-    private double mouseRotationY;
+    private double inputRotationY;
 
     /** The amount to move the view in mouse coords left/right */
-    private double mouseRotationX;
+    private double inputRotationX;
 
     /** The position where the mouse started it's last press */
     private Point2d startMousePos;
@@ -355,11 +358,11 @@ public class NavigationHandler
             frameDuration = System.currentTimeMillis() - startFrameDurationCalc;
             double motionDelay = 0.000005 * frameDuration;
 
-            oneFrameRotation.rotX(mouseRotationX * motionDelay);
+            oneFrameRotation.rotX(inputRotationX * motionDelay);
             viewTx.mul(oneFrameRotation);
 
             //  RotateY:
-            oneFrameRotation.rotY(mouseRotationY * motionDelay);
+            oneFrameRotation.rotY(inputRotationY * motionDelay);
             viewTx.mul(oneFrameRotation);
 
             //  Translation:
@@ -436,7 +439,6 @@ public class NavigationHandler
         buttonThreeState = NavigationState.NO_STATE;
         movementInProgress = false;
 
-
         terrainIntersect = new IntersectionUtils();
         collideIntersect = new IntersectionUtils();
 
@@ -462,8 +464,8 @@ public class NavigationHandler
         oneFrameTranslation = new Vector3d();
         oneFrameRotation = new Transform3D();
         viewTranslation = new Vector3d();
-        mouseRotationY = 0;
-        mouseRotationX = 0;
+        inputRotationY = 0;
+        inputRotationX = 0;
         startMousePos = new Point2d();
         latestMousePos = new Point2d();
         mouseDifference = new Point2d();
@@ -680,7 +682,7 @@ public class NavigationHandler
                 dragTranslationAmt.set(0,0,-mouseDifference.y * speed);
 
                 //  Rotate around Y:
-                mouseRotationY = mouseDifference.x;
+                inputRotationY = mouseDifference.x;
 
                 allowCollisions = (collidables != null);
                 allowTerrainFollowing = false;
@@ -698,8 +700,8 @@ public class NavigationHandler
 
             case NavigationState.TILT_STATE:
                 //  Rotate arround X,Y:
-                mouseRotationX = mouseDifference.y;
-                mouseRotationY = mouseDifference.x;
+                inputRotationX = mouseDifference.y;
+                inputRotationY = mouseDifference.x;
                 allowCollisions = false;
                 allowTerrainFollowing = false;
                 break;
@@ -709,7 +711,7 @@ public class NavigationHandler
                 dragTranslationAmt.set(0,0,-mouseDifference.y * speed);
 
                 //  Rotate around Y:
-                mouseRotationY = mouseDifference.x;
+                inputRotationY = mouseDifference.x;
 
                 // do nothing
                 allowCollisions = (collidables != null);
@@ -805,8 +807,8 @@ public class NavigationHandler
 
         viewTx.normalize();
 
-        mouseRotationY = 0;
-        mouseRotationX = 0;
+        inputRotationY = 0;
+        inputRotationX = 0;
 
         oneFrameRotation.setIdentity();
         dragTranslationAmt.scale(0);
@@ -844,9 +846,7 @@ public class NavigationHandler
 
         // if there is no ground below us, do nothing.
         if((ground == null) || (ground.length == 0))
-        {
             return ret_val;
-        }
 
         double shortest_length = -1;
 
@@ -1020,16 +1020,17 @@ public class NavigationHandler
 
         // Do we need to adjust the height? If so the check if the height is a
         // step that is too high or not
-        if(height_above_terrain != avatarHeight)
+        if(!floatEq(height_above_terrain - avatarHeight, 0))
         {
-            if(terrain_step == 0)
+            if(floatEq(terrain_step, 0))
             {
                 // Flat surface. Check to see the avatar height is correct
                 oneFrameTranslation.y = avatarHeight - height_above_terrain;
+                ret_val = true;
             }
             else if(terrain_step < avatarStep)
             {
-                oneFrameTranslation.y += terrain_step;
+                oneFrameTranslation.y = terrain_step;
                 ret_val = true;
             }
             else
@@ -1117,6 +1118,9 @@ public class NavigationHandler
 
             Enumeration geom_list = i_shape.getAllGeometries();
 
+            Object user_data = null;
+            GeometryData geom_data = null;
+
             while(geom_list.hasMoreElements() && !real_collision)
             {
                 GeometryArray geom = (GeometryArray)geom_list.nextElement();
@@ -1124,14 +1128,43 @@ public class NavigationHandler
                 if(geom == null)
                     continue;
 
-                real_collision =
-                    collideIntersect.rayUnknownGeometry(locationPoint,
-                                                   collisionVector,
-                                                   length,
-                                                   geom,
-                                                   local_tx,
-                                                   wkPoint,
-                                                   true);
+                user_data = geom.getUserData();
+                geom_data = null;
+
+                if(user_data instanceof UserSupplementData)
+                {
+                    UserSupplementData usd = (UserSupplementData)user_data;
+
+                    if(usd.geometryData instanceof GeometryData)
+                        geom_data = (GeometryData)usd.geometryData;
+                }
+                else if(user_data instanceof GeometryData)
+                    geom_data = (GeometryData)user_data;
+
+                // Ah, finally. This is where we do the intersection
+                // testing against either the raw geometry or the object.
+                if(geom_data != null)
+                {
+                    real_collision =
+                        terrainIntersect.rayUnknownGeometry(locationPoint,
+                                                           collisionVector,
+                                                           length,
+                                                           geom_data,
+                                                           local_tx,
+                                                           wkPoint,
+                                                           true);
+                }
+                else
+                {
+                    real_collision =
+                        terrainIntersect.rayUnknownGeometry(locationPoint,
+                                                           collisionVector,
+                                                           length,
+                                                           geom,
+                                                           local_tx,
+                                                           wkPoint,
+                                                           true);
+                }
             }
 
             ret_val = !real_collision;
@@ -1150,7 +1183,6 @@ public class NavigationHandler
     {
         updateListener = l;
     }
-
 
     /**
      * Check the terrain height at the current position. This is done when
@@ -1183,35 +1215,152 @@ public class NavigationHandler
 
         for(int i = 0; i < ground.length; i++)
         {
+            // Firstly, check the path to see if this is eligible for picking.
+            int num_path_items = ground[i].nodeCount();
+            boolean not_eligible = false;
+
+            for(int j = 0; j < num_path_items && !not_eligible; j++)
+            {
+                Node group = ground[i].getNode(j);
+                Object user_data = group.getUserData();
+
+                if(user_data instanceof UserSupplementData)
+                    not_eligible = ((UserSupplementData)user_data).isTerrain;
+            }
+
+            if(not_eligible)
+                continue;
+
             Transform3D local_tx = ground[i].getTransform();
             local_tx.get(locationVector);
 
             Shape3D i_shape = (Shape3D)ground[i].getObject();
 
-            Enumeration geom_list = i_shape.getAllGeometries();
+            // Get the user data, if the user data contains a height data
+            // source use that to determine the terrain, otherwise pass it
+            // through to the geometry intersection handling. Inside that
+            // Also check to see what geometry is being used
+            Object user_data = i_shape.getUserData();
+            HeightDataSource hds = null;
+            GeometryData geom_data = null;
 
-            while(geom_list.hasMoreElements())
+            if(user_data instanceof UserSupplementData)
             {
-                GeometryArray geom = (GeometryArray)geom_list.nextElement();
+                UserSupplementData usd = (UserSupplementData)user_data;
 
-                if(geom == null)
-                    continue;
+                if(usd.geometryData instanceof HeightDataSource)
+                    hds = (HeightDataSource)usd.geometryData;
+                else if(usd.geometryData instanceof GeometryData)
+                    geom_data = (GeometryData)usd.geometryData;
+            }
+            else if(user_data instanceof HeightDataSource)
+            {
+                hds = (HeightDataSource)user_data;
+            }
+            else if(user_data instanceof GeometryData)
+                geom_data = (GeometryData)user_data;
 
-                if(terrainIntersect.rayUnknownGeometry(locationPoint,
-                                                  downVector,
-                                                  0,
-                                                  geom,
-                                                  local_tx,
-                                                  wkPoint,
-                                                  false))
+            if(hds != null)
+            {
+                intersectionPoint.x = locationVector.x;
+                intersectionPoint.y = locationVector.y;
+                intersectionPoint.z = hds.getHeight((float)locationVector.x,
+                                                    (float)locationVector.y);
+            }
+            else
+            {
+                // Do we have geometry data to play with at the shape level?
+                // If so, use that in preference to going down to the
+                // individual geometry arrays of the shape.
+                if(geom_data != null)
                 {
-                    diffVec.sub(locationPoint, wkPoint);
-
-                    if((shortest_length == -1) ||
-                       (diffVec.length() < shortest_length))
+                    if(terrainIntersect.rayUnknownGeometry(locationPoint,
+                                                           downVector,
+                                                           0,
+                                                           geom_data,
+                                                           local_tx,
+                                                           wkPoint,
+                                                           false))
                     {
-                        shortest_length = diffVec.length();
-                        intersectionPoint.set(wkPoint);
+                        diffVec.sub(locationPoint, wkPoint);
+
+                        if((shortest_length == -1) ||
+                           (diffVec.lengthSquared() < shortest_length))
+                        {
+                            shortest_length = diffVec.lengthSquared();
+                            intersectionPoint.set(wkPoint);
+                        }
+                    }
+                }
+                else
+                {
+                    Enumeration geom_list = i_shape.getAllGeometries();
+
+                    while(geom_list.hasMoreElements())
+                    {
+                        GeometryArray geom = (GeometryArray)geom_list.nextElement();
+
+                        if(geom == null)
+                            continue;
+
+                        user_data = geom.getUserData();
+                        geom_data = null;
+
+                        if(user_data instanceof UserSupplementData)
+                        {
+                            UserSupplementData usd = (UserSupplementData)user_data;
+
+                            if(usd.geometryData instanceof HeightDataSource)
+                                hds = (HeightDataSource)usd.geometryData;
+                            else if(usd.geometryData instanceof GeometryData)
+                                geom_data = (GeometryData)usd.geometryData;
+                        }
+                        else if(user_data instanceof HeightDataSource)
+                        {
+                            hds = (HeightDataSource)user_data;
+                        }
+                        else if(user_data instanceof GeometryData)
+                            geom_data = (GeometryData)user_data;
+
+
+                        boolean intersect = false;
+
+                        // Ah, finally. This is where we do the intersection
+                        // testing against either the raw geometry or the object.
+                        if(geom_data != null)
+                        {
+                            intersect =
+                                terrainIntersect.rayUnknownGeometry(locationPoint,
+                                                                  downVector,
+                                                                  0,
+                                                                  geom_data,
+                                                                  local_tx,
+                                                                  wkPoint,
+                                                                  false);
+                        }
+                        else
+                        {
+                            intersect =
+                                terrainIntersect.rayUnknownGeometry(locationPoint,
+                                                                  downVector,
+                                                                  0,
+                                                                  geom,
+                                                                  local_tx,
+                                                                  wkPoint,
+                                                                  false);
+                        }
+
+                        if(intersect)
+                        {
+                            diffVec.sub(locationPoint, wkPoint);
+
+                            if((shortest_length == -1) ||
+                               (diffVec.lengthSquared() < shortest_length))
+                            {
+                                shortest_length = diffVec.lengthSquared();
+                                intersectionPoint.set(wkPoint);
+                            }
+                        }
                     }
                 }
             }
@@ -1221,5 +1370,26 @@ public class NavigationHandler
         // pretend there was nothing below us
         if(shortest_length != -1)
             lastTerrainHeight = (float)intersectionPoint.y;
+    }
+
+    /**
+     * Compares to floats to determine if they are equal or very close
+     *
+     * @param val1 The first value to compare
+     * @param val2 The second value to compare
+     * @return True if they are equal within the given epsilon
+     */
+    private boolean floatEq(double val1, double val2) {
+        double diff = val1 - val2;
+
+        if (diff < 0) {
+            diff *= -1;
+        }
+
+        if (diff < ZEROEPS) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
