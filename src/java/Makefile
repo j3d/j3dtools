@@ -20,6 +20,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.geom.terrain \
 	org.j3d.geom.overlay \
 	org.j3d.geom.particle \
+	org.j3d.geom.spline \
 	org.j3d.ui \
 	org.j3d.ui.image \
 	org.j3d.ui.navigation \
@@ -51,6 +52,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.geom.terrain \
 	org.j3d.geom.overlay \
 	org.j3d.geom.particle \
+	org.j3d.geom.spline \
 	org.j3d.ui \
 	org.j3d.ui.image \
 	org.j3d.ui.navigation \
@@ -67,6 +69,7 @@ JARS = j3d-org-util.jar \
 	j3d-org-geom-core.jar \
 	j3d-org-geom-overlay.jar \
 	j3d-org-geom-particle.jar \
+	j3d-org-geom-spline.jar \
 	j3d-org-geom-terrain.jar \
 	j3d-org-inputdevice.jar \
 	j3d-org-loader-core.jar \
