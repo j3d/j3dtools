@@ -40,20 +40,15 @@ package org.j3d.geom.particle;
  * f = m * delta v / t<br>
  *
  * @author Daniel Selman, Justin Couch
- * @version $Revision: 2.0 $
+ * @version $Revision: 2.1 $
  */
 public class PhysicsFunction implements ParticleFunction
 {
-    private static final int RECALC_INTERVAL = 50;
-
     /**
      * The assumed initial interval between calls to the PhysicsFunction
      * this delta is recalculated every RECALC_INTERVAL frames
      */
     private float deltaTime;
-
-    /** How many times have we been called? */
-    private long invokeCount;
 
     /** Flag to say whether or not this function is disabled or not */
     private boolean enabled;
@@ -66,7 +61,6 @@ public class PhysicsFunction implements ParticleFunction
         enabled = true;
 
         deltaTime = 1.0f / 40.0f;
-        invokeCount = 0;
     }
 
     //-------------------------------------------------------------
@@ -103,16 +97,7 @@ public class PhysicsFunction implements ParticleFunction
      */
     public boolean newFrame(int deltaT)
     {
-        invokeCount++;
         deltaTime = deltaT * 0.001f;
-
-        if(invokeCount == RECALC_INTERVAL)
-        {
-//            System.out.println("PhysicsFunction FPS: " +  1 / deltaTime);
-
-            // reset counters
-            invokeCount = 0;
-        }
 
         return true;
     }
