@@ -112,7 +112,11 @@ public class NavigationHandler
 
 
     /** Intersection utilities used for terrain following */
-    private IntersectionUtils intersector;
+    private IntersectionUtils terrainIntersect;
+
+    /** Intersection utilities used for terrain following */
+    private IntersectionUtils collideIntersect;
+
 
     /** Timer used to control smooth motion of the mouse */
     private Timer timer;
@@ -286,7 +290,8 @@ public class NavigationHandler
         timer.setLogTimers(false);
         timer.setCoalesce(false);
 
-        intersector = new IntersectionUtils();
+        terrainIntersect = new IntersectionUtils();
+        collideIntersect = new IntersectionUtils();
 
         worldEyeTransform = new Transform3D();
         downVector = new Vector3d();
@@ -699,6 +704,8 @@ public class NavigationHandler
         oneFrameTranslation.set(dragTranslationAmt);
         oneFrameTranslation.scale(motionDelay);
 
+        viewTx.transform(oneFrameTranslation);
+
         boolean collision = false;
 
         // If we allow collisions, adjust it for the collision amount
@@ -718,7 +725,6 @@ public class NavigationHandler
 
         // Now set the translation amounts that have been adjusted by any
         // collisions.
-        viewTx.transform(oneFrameTranslation);
         viewTranslation.add(oneFrameTranslation);
         viewTx.setTranslation(viewTranslation);
 
@@ -786,7 +792,7 @@ public class NavigationHandler
                 if(geom == null)
                     continue;
 
-                if(intersector.rayUnknownGeometry(locationPoint,
+                if(terrainIntersect.rayUnknownGeometry(locationPoint,
                                                   downVector,
                                                   0,
                                                   geom,
@@ -797,9 +803,9 @@ public class NavigationHandler
                     diffVec.sub(locationPoint, wkPoint);
 
                     if((shortest_length == -1) ||
-                       (diffVec.length() < shortest_length))
+                       (diffVec.lengthSquared() < shortest_length))
                     {
-                        shortest_length = diffVec.length();
+                        shortest_length = diffVec.lengthSquared();
                         intersectionPoint.set(wkPoint);
                     }
                 }
@@ -886,6 +892,8 @@ public class NavigationHandler
             return true;
 
         boolean real_collision = false;
+        float length = (float)collisionVector.length();
+
 
         for(int i = 0; (i < closest.length) && !real_collision; i++)
         {
@@ -895,8 +903,6 @@ public class NavigationHandler
             // might actually have just walked through something like an
             // archway.
             Transform3D local_tx = closest[i].getTransform();
-
-            float length = (float)collisionVector.length();
 
             Shape3D i_shape = (Shape3D)closest[i].getObject();
 
@@ -910,7 +916,7 @@ public class NavigationHandler
                     continue;
 
                 real_collision =
-                    intersector.rayUnknownGeometry(locationPoint,
+                    collideIntersect.rayUnknownGeometry(locationPoint,
                                                    collisionVector,
                                                    length,
                                                    geom,
@@ -943,42 +949,46 @@ public class NavigationHandler
         locationPoint.set(locationVector);
         terrainPicker.set(locationPoint, downVector);
 
-        SceneGraphPath ground = terrain.pickClosest(terrainPicker);
+        SceneGraphPath[] ground = terrain.pickAllSorted(terrainPicker);
 
         // if there is no ground below us, do nothing.
         if(ground == null)
             return;
 
-        Transform3D local_tx = ground.getTransform();
-        local_tx.get(locationVector);
-
-        Shape3D i_shape = (Shape3D)ground.getObject();
-
-        Enumeration geom_list = i_shape.getAllGeometries();
         double shortest_length = -1;
 
-        while(geom_list.hasMoreElements())
+        for(int i = 0; i < ground.length; i++)
         {
-            GeometryArray geom = (GeometryArray)geom_list.nextElement();
+            Transform3D local_tx = ground[i].getTransform();
+            local_tx.get(locationVector);
 
-            if(geom == null)
-                continue;
+            Shape3D i_shape = (Shape3D)ground[i].getObject();
 
-            if(intersector.rayUnknownGeometry(locationPoint,
-                                              downVector,
-                                              0,
-                                              geom,
-                                              local_tx,
-                                              wkPoint,
-                                              false))
+            Enumeration geom_list = i_shape.getAllGeometries();
+
+            while(geom_list.hasMoreElements())
             {
-                diffVec.sub(locationPoint, wkPoint);
+                GeometryArray geom = (GeometryArray)geom_list.nextElement();
 
-                if((shortest_length == -1) ||
-                   (diffVec.length() < shortest_length))
+                if(geom == null)
+                    continue;
+
+                if(terrainIntersect.rayUnknownGeometry(locationPoint,
+                                                  downVector,
+                                                  0,
+                                                  geom,
+                                                  local_tx,
+                                                  wkPoint,
+                                                  false))
                 {
-                    shortest_length = diffVec.length();
-                    intersectionPoint.set(wkPoint);
+                    diffVec.sub(locationPoint, wkPoint);
+
+                    if((shortest_length == -1) ||
+                       (diffVec.length() < shortest_length))
+                    {
+                        shortest_length = diffVec.length();
+                        intersectionPoint.set(wkPoint);
+                    }
                 }
             }
         }
