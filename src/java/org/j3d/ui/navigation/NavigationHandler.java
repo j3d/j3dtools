@@ -343,10 +343,9 @@ public class NavigationHandler
         */
         public void initialize()
         {
-            WakeupCriterion crit = new WakeupOnElapsedFrames( 0, false );
-            FPSCriterion = crit;
+            FPSCriterion = new WakeupOnElapsedFrames(0, false);
 
-            wakeupOn( FPSCriterion );
+            wakeupOn(FPSCriterion);
         }
 
         public void processStimulus( Enumeration criteria )
@@ -463,8 +462,11 @@ public class NavigationHandler
         lastTerrainHeight = 0;
         speed = 0;
 
+        BoundingSphere sched = new BoundingSphere();
+        sched.setRadius(Double.POSITIVE_INFINITY);
+
         frameTimer = new FrameTimerBehavior();
-        frameTimer.setSchedulingBounds( new BoundingSphere() );
+        frameTimer.setSchedulingBounds(sched);
         frameTimer.setEnable(false);
     }
 
