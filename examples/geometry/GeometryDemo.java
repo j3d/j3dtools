@@ -33,7 +33,7 @@ import org.j3d.ui.navigation.NavigationState;
  * of the rendering attributes like the face set.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class GeometryDemo extends DemoFrame
     implements ActionListener, ItemListener
@@ -489,10 +489,6 @@ public class GeometryDemo extends DemoFrame
         world_object_group.addChild(axis);
         world_object_group.compile();
 
-        // Add them to the locale
-        locale.addBranchGraph(view_group);
-        locale.addBranchGraph(world_object_group);
-
         PhysicalBody body = new PhysicalBody();
         PhysicalEnvironment env = new PhysicalEnvironment();
 
@@ -505,6 +501,11 @@ public class GeometryDemo extends DemoFrame
 
         viewHandler.setViewInfo(view, view_tg);
         viewHandler.setNavigationSpeed(1.0f);
+        view_group.addChild(viewHandler.getTimerBehavior());
+
+        // Add them to the locale
+        locale.addBranchGraph(view_group);
+        locale.addBranchGraph(world_object_group);
     }
 
     public static void main(String[] argv)
