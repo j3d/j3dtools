@@ -24,7 +24,7 @@ package org.j3d.geom.spline;
  * curve form, otherwise a non-rational calculation will be used.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class BSplineCurveData
 {
@@ -43,7 +43,7 @@ public class BSplineCurveData
     /** The number of valid knot values in the knots array */
     public int numKnots;
 
-    /** The degree of  the curve */
+    /** The degree of the curve */
     public int degree;
 
     /** The weight values for the curve if rational */

@@ -38,7 +38,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * the size is the same as previously set, then the weights are left alone.
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public abstract class PatchGenerator extends GeometryGenerator
 {
@@ -159,6 +159,99 @@ public abstract class PatchGenerator extends GeometryGenerator
     }
 
     /**
+     * Set the patch control point weights. The array is presented as
+     * [width][depth] with the coordinates flattened as [Xn, Yn, Zn] in the
+     * depth array.
+     * <p>
+     * If the arrays are not of minimum length 3 and equal length an exception
+     * is generated.
+     *
+     * @param weights The weight values to use
+     */
+    public void setPatchWeights(float[][] weights)
+    {
+        int min_length = weights[0].length;
+
+        if(min_length < 3)
+            throw new IllegalArgumentException("Weight size < 3");
+
+        // second check for consistent lengths of the individual points
+        int i;
+
+        for(i = 1; i < weights.length; i++)
+        {
+            if(weights[i].length != min_length)
+                throw new IllegalArgumentException("Non-equal array lengths");
+        }
+
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           (controlPointWeights.length < weights.length))
+        {
+            controlPointWeights = new float[weights.length][min_length];
+        }
+
+        // Copy the values of the new array into the internal structures
+        for(i = 0; i < weights.length; i++)
+        {
+            System.arraycopy(weights[i],
+                             0,
+                             controlPointWeights[i],
+                             0,
+                             min_length);
+        }
+
+        patchChanged = true;
+        normalsChanged = true;
+        texCoordsChanged = true;
+    }
+
+    /**
+     * Set the patch controlPoints. The array is presented as a flat
+     * array where coordinates are [depth * width Xn, Yn, Zn] in the array.
+     * The
+     * order of the patch is determined by the passed array. If the arrays are
+     * not of minimum length 3 and equal length an exception is generated.
+     *
+     * @param weights The weight values to use
+     * @param numWidth The number of points in the width
+     * @param numDepth The number of points in the depth
+     */
+    public void setPatchWeights(float[] weights, int numWidth, int numDepth)
+    {
+        if(weights.length < 3)
+            throw new IllegalArgumentException("Depth weight patch size < 3");
+
+        if(weights.length < numWidth * numDepth)
+            throw new IllegalArgumentException("Array not big enough ");
+
+
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           (controlPointWeights.length < numWidth))
+        {
+            controlPointWeights = new float[numWidth][numDepth];
+        }
+
+        int pos = 0;
+
+        // Copy the values of the new array into the internal structures
+        for(int i = 0; i < numWidth; i++)
+        {
+            System.arraycopy(weights,
+                             pos,
+                             controlPointWeights[i],
+                             0,
+                             numDepth);
+            pos += numDepth;
+        }
+
+        patchChanged = true;
+        normalsChanged = true;
+        texCoordsChanged = true;
+    }
+
+    /**
      * Set the patch control points. The array is presented as
      * [width][depth] with the coordinates flattened as [Xn, Yn, Zn] in the
      * depth array. The order of the patch is determined by the passed array.
@@ -251,6 +344,98 @@ public abstract class PatchGenerator extends GeometryGenerator
     }
 
     /**
+     * Set the patch control points and weights at the same time. The array is
+     * presented as [width][depth] with the coordinates flattened as [Xn, Yn, Zn]
+     * in the depth array. The order of the patch is determined by the passed array.
+     * If the arrays are not of minimum length 3 and equal length an exception
+     * is generated.
+     *
+     * @param controlPoints The controlPoint coordinate values
+     * @param weights The weight values to use
+     */
+    public void setPatchControlPoints(float[][] controlPoints,
+                                      float[][] weights)
+    {
+        int min_length = controlPoints[0].length;
+
+        if((controlPoints.length < 3) || (min_length < 3))
+            throw new IllegalArgumentException("Control point size < 3");
+
+        // second check for consistent lengths of the individual points
+        int i;
+
+        for(i = 1; i < controlPoints.length; i++)
+        {
+            if(controlPoints[i].length != min_length)
+                throw new IllegalArgumentException("Non-equal array lengths");
+        }
+
+        int num_depth_weights = controlPoints[0].length / 3;
+
+        // Adjust the control point array size if needed.
+        if((controlPointCoordinates == null) ||
+           ((controlPoints.length != controlPointCoordinates.length) &&
+            (min_length != controlPointCoordinates[0].length)))
+        {
+            if((controlPointCoordinates == null) ||
+               (controlPoints.length != controlPointCoordinates.length))
+            {
+                controlPointCoordinates = new float[controlPoints.length][min_length];
+            }
+            else
+            {
+                for(i = 0; i < controlPointCoordinates.length; i++)
+                    controlPointCoordinates[i] = new float[min_length];
+            }
+        }
+
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           ((controlPoints.length != controlPointWeights.length) &&
+            (num_depth_weights != controlPointWeights[0].length)))
+        {
+            if((controlPointWeights == null) ||
+               (controlPoints.length != controlPointWeights.length))
+            {
+                controlPointWeights =
+                    new float[controlPoints.length][num_depth_weights];
+            }
+            else
+            {
+                for(i = 0; i < controlPointWeights.length; i++)
+                    controlPointWeights[i] = new float[num_depth_weights];
+            }
+        }
+
+        // Copy the values of the new array into the internal structures
+        for(i = 0; i < controlPoints.length; i++)
+        {
+            System.arraycopy(controlPoints[i],
+                             0,
+                             controlPointCoordinates[i],
+                             0,
+                             min_length);
+        }
+
+        // Copy the values of the new array into the internal structures
+        for(i = 0; i < weights.length; i++)
+        {
+            System.arraycopy(weights[i],
+                             0,
+                             controlPointWeights[i],
+                             0,
+                             min_length);
+        }
+
+        numWidthControlPoints = controlPoints.length;
+        numDepthControlPoints = min_length / 3;
+
+        patchChanged = true;
+        normalsChanged = true;
+        texCoordsChanged = true;
+    }
+
+    /**
      * Set the patch controlPoints. The array is presented as a flat
      * array where coordinates are [depth * width Xn, Yn, Zn] in the array.
      * The
@@ -332,6 +517,98 @@ public abstract class PatchGenerator extends GeometryGenerator
             for(i = controlPointWeights.length; --i >= 0; )
                 for(int j = controlPointWeights[0].length; --j >= 0; )
                     controlPointWeights[i][j] = 1;
+        }
+
+        numWidthControlPoints = numWidth;
+        numDepthControlPoints = numDepth;
+
+        patchChanged = true;
+        normalsChanged = true;
+        texCoordsChanged = true;
+    }
+
+    /**
+     * Set the patch controlPoints. The array is presented as a flat
+     * array where coordinates are [depth * width Xn, Yn, Zn] in the array.
+     * The
+     * order of the patch is determined by the passed array. If the arrays are
+     * not of minimum length 3 and equal length an exception is generated.
+     *
+     * @param controlPoints The controlPoint coordinate values
+     * @param numWidth The number of points in the width
+     * @param numDepth The number of points in the depth
+     */
+    public void setPatchControlPoints(float[] controlPoints,
+                                      int numWidth,
+                                      int numDepth,
+                                      float[] weights)
+    {
+        if(controlPoints.length < 3)
+            throw new IllegalArgumentException("Depth patch size < 3");
+
+        if(controlPoints.length < numWidth * numDepth * 3)
+            throw new IllegalArgumentException("Array not big enough ");
+
+        int i;
+
+        // Adjust the control point array size if needed.
+        if((controlPointCoordinates == null) ||
+           (controlPointCoordinates.length < numWidth) ||
+           (controlPointCoordinates[0].length < numDepth * 3))
+        {
+            if((controlPointCoordinates == null) ||
+               (controlPointCoordinates.length < numDepth))
+            {
+                controlPointCoordinates = new float[numWidth][numDepth * 3];
+            }
+            else
+            {
+                for(i = 0; i < controlPointCoordinates.length; i++)
+                    controlPointCoordinates[i] = new float[numDepth * 3];
+            }
+        }
+
+        // Adjust the control point weight size if needed.
+        if((controlPointWeights == null) ||
+           ((controlPoints.length != controlPointWeights.length) &&
+            (numDepth != controlPointWeights[0].length)))
+        {
+            if((controlPointWeights == null) ||
+               (controlPoints.length != controlPointWeights.length))
+            {
+                controlPointWeights =
+                    new float[controlPoints.length][numDepth];
+            }
+            else
+            {
+                for(i = 0; i < controlPointWeights.length; i++)
+                    controlPointWeights[i] = new float[numDepth];
+            }
+        }
+
+
+        // Copy the values of the new array into the internal structures
+        int offset = 0;
+        for(i = 0; i < numWidth; i++)
+        {
+            System.arraycopy(controlPoints,
+                             offset,
+                             controlPointCoordinates[i],
+                             0,
+                             numDepth * 3);
+
+            offset += numDepth * 3;
+        }
+
+        offset = 0;
+        for(i = 0; i < numWidth; i++)
+        {
+            System.arraycopy(weights,
+                             offset,
+                             controlPointWeights[i],
+                             0,
+                             numDepth);
+            offset += numDepth;
         }
 
         numWidthControlPoints = numWidth;

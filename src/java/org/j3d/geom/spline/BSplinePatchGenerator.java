@@ -31,7 +31,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class BSplinePatchGenerator extends PatchGenerator
 {
@@ -42,7 +42,7 @@ public class BSplinePatchGenerator extends PatchGenerator
     private static final int DEFAULT_DEGREE = 3;
 
     /** Knots on the width curve to control weighting. */
-    private int[] widthKnots;
+    private float[] widthKnots;
 
     /** The number of knot coordinates in the width. */
     private int numWidthKnots;
@@ -51,7 +51,7 @@ public class BSplinePatchGenerator extends PatchGenerator
     private int widthDegree;
 
     /** Knots on the width curve to control weighting. */
-    private int[] depthKnots;
+    private float[] depthKnots;
 
     /** The number of knot coordinates in the depth. */
     private int numDepthKnots;
@@ -125,8 +125,8 @@ public class BSplinePatchGenerator extends PatchGenerator
         numWidthKnots = widthDegree;
         numDepthKnots = depthDegree;
 
-        widthKnots = new int[numWidthKnots];
-        depthKnots = new int[numDepthKnots];
+        widthKnots = new float[numWidthKnots];
+        depthKnots = new float[numDepthKnots];
     }
 
     /**
@@ -143,7 +143,7 @@ public class BSplinePatchGenerator extends PatchGenerator
     public void setPatchKnots(int tWidth,
                               float[] wKnots,
                               int tDepth,
-                              int[] dKnots)
+                              float[] dKnots)
     {
         if(tWidth < 2)
             throw new IllegalArgumentException("Width degree is < 2");
@@ -161,10 +161,10 @@ public class BSplinePatchGenerator extends PatchGenerator
         depthDegree = tDepth;
 
         if(wKnots.length > widthKnots.length)
-            widthKnots = new int[wKnots.length];
+            widthKnots = new float[wKnots.length];
 
         if(dKnots.length > depthKnots.length)
-            depthKnots = new int[dKnots.length];
+            depthKnots = new float[dKnots.length];
 
         System.arraycopy(wKnots, 0, widthKnots, 0, wKnots.length);
         System.arraycopy(dKnots, 0, depthKnots, 0, dKnots.length);
@@ -243,7 +243,7 @@ public class BSplinePatchGenerator extends PatchGenerator
         // resize if necessary
         numWidthKnots = numWidthControlPoints + widthDegree;
         if(widthKnots.length < numWidthKnots)
-            widthKnots = new int[numWidthKnots];
+            widthKnots = new float[numWidthKnots];
 
         int j;
 
@@ -259,7 +259,7 @@ public class BSplinePatchGenerator extends PatchGenerator
 
         numDepthKnots = numDepthControlPoints + depthDegree;
         if(depthKnots.length < numDepthKnots)
-            depthKnots = new int[numDepthKnots];
+            depthKnots = new float[numDepthKnots];
 
         for(j = 0; j < numDepthKnots; j++)
         {
@@ -293,7 +293,7 @@ public class BSplinePatchGenerator extends PatchGenerator
 
 
         if(useControlPointWeights)
-            regenerateWeightedPatch();
+            regenerateRationalPatch();
         else
             regenerateStandardPatch();
     }
@@ -418,7 +418,7 @@ public class BSplinePatchGenerator extends PatchGenerator
     /**
      * Regenerate the patch using control point weights.
      */
-    private void regenerateWeightedPatch()
+    private void regenerateRationalPatch()
     {
         int i, j, ki, kj;
         double i_inter, i_inc;
@@ -579,7 +579,7 @@ public class BSplinePatchGenerator extends PatchGenerator
         double ret_val;
 
         // Do this just to make the maths traceable with the std algorithm
-        int[] u = useDepth ? depthKnots : widthKnots;
+        float[] u = useDepth ? depthKnots : widthKnots;
 
         if(t == 1)
         {
