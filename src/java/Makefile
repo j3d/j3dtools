@@ -8,9 +8,9 @@ PACKAGES = org.j3d.util \
 	   org.j3d.util.device \
 	   org.j3d.util.interpolator \
 	   org.j3d.device.input \
+       org.j3d.geom \
 	   org.j3d.ui \
 	   org.j3d.ui.image \
-       org.j3d.geom \
 	   org.j3d.ui.navigation \
 
 NODOC_PACKAGES = \
@@ -46,9 +46,9 @@ BOTTOM      = '<center> \
 # references. If your directory path contains a space in it, you may be in
 # trouble. We haven't tested it with that. Try using double quotes inside
 # the single quotes to get the space treated in the file name
-LINK_URLS   = 'file:///c:/java/jaxp-1.1/docs/api/' \
-              'file:///c:/java/junit3.5/javadoc/' \
-			  'file:///c:/jdk1.3/docs/api/' \
-			  'file:///c:/java/j3d/1.2.1/html/'
+#LINK_URLS   = 'file:///c:/java/jaxp-1.1/docs/api/' \
+#              'file:///c:/java/junit3.5/javadoc/' \
+#			  'file:///c:/java/jdk1.3/docs/api/' \
+#			  'file:///c:/java/j3d/1.2.1/html/'
 
 include $(PROJECT_ROOT)/make/Makefile.jav 
