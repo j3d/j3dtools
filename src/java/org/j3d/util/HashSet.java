@@ -35,7 +35,7 @@ import java.util.Iterator;
  * java.util.HashSet, except we leave out garbage generating methods like iterator().
  *
  * @author Rob Nielsen
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class HashSet
 {
@@ -173,6 +173,63 @@ public class HashSet
                 }
             }
             return false;
+        }
+    }
+
+    /**
+     * Retain everything that is in the given set, in this set. If this
+     * set contains something that the given set does not, then delete it.
+     *
+     * @param set The set to compare against
+     */
+    public void retainAll(HashSet set)
+    {
+        if(set == null)
+            return;
+
+        for(int i = 0; i < table.length; i++)
+        {
+            Entry e = table[i];
+            while (e != null)
+            {
+                Entry next = e.next;
+                if(!set.contains(e.value))
+                    remove(e.value);
+                e = next;
+            }
+        }
+    }
+
+    /**
+     * Retain everything that is in the given set, in this set, and move
+     * anything that is not, into the alternate set.
+     *
+     * @param set The set to compare against
+     * @param diff The set to place the non-equal values into
+     */
+    public void retainAll(HashSet set, HashSet diff)
+    {
+        if(set == null)
+            return;
+
+        if(diff == null)
+            retainAll(set);
+        else
+        {
+            for(int i = 0; i < table.length; i++)
+            {
+                Entry e = table[i];
+                while (e != null)
+                {
+                    Entry next = e.next;
+                    if(!set.contains(e.value))
+                    {
+                        diff.add(e.value);
+                        remove(e.value);
+                    }
+                    e = next;
+                }
+            }
         }
     }
 
