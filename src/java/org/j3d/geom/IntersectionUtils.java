@@ -60,7 +60,7 @@ import org.j3d.util.UserSupplementData;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class IntersectionUtils
 {
@@ -1678,7 +1678,7 @@ public class IntersectionUtils
 
         // t = (Pn . Origin + D) / (Pn . Direction)
         // The divisor is the angle calc already calculated
-        double Vo = -((plane[0] * Xo + plane[1] * Yo + plane[2] * Zo) + plane[2]);
+        double Vo = -((plane[0] * Xo + plane[1] * Yo + plane[2] * Zo) + plane[3]);
         double t = Vo / angle;
 
         if(t < 0)
