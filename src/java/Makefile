@@ -26,7 +26,8 @@ BUILD_ORDER = org.j3d.util \
 	   org.j3d.loaders.ac3d.parser.exceptions \
 	   org.j3d.loaders.ac3d.parser \
 	   org.j3d.loaders.ac3d.parser.handlers \
-	   org.j3d.loaders.ac3d
+	   org.j3d.loaders.ac3d \
+	   org.j3d.loaders.stl
 
 
 
@@ -44,7 +45,8 @@ JAVADOC_PACKAGES = org.j3d.util \
 	   org.j3d.ui \
 	   org.j3d.ui.image \
 	   org.j3d.ui.navigation \
-	   org.j3d.loaders.ac3d
+	   org.j3d.loaders.ac3d \
+	   org.j3d.loaders.stl
 
 # Names of JAR files we want to create
 JARS = j3d-org.jar
