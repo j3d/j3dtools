@@ -31,7 +31,7 @@ import java.util.HashMap;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 class AWTEventBehavior extends Behavior
     implements InputRequester
@@ -617,6 +617,6 @@ class AWTEventBehavior extends Behavior
             return;
 
         Rectangle bounds = overlay.getBounds();
-        evt.translatePoint(bounds.x, bounds.y);
+        evt.translatePoint(-bounds.x, -bounds.y);
     }
 }
