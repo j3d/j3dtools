@@ -19,6 +19,14 @@ The code collection consists of a number of fundamental areas:
 <LI>User Interface components
 </UL>
 
+In general the code tries to have two versions of each piece of functionality.
+A low-level implementation provides the basic abstraction and functionality and
+is not dependent on Java3D to function. A second, higher-level implementation
+then takes the basic code and provides Java3D-specific functionality. By doing
+this, it allows the majority of the codebase to be useful for more than just 
+Java3D work. Standalone users or other rendering technologies can make use of
+most of the fundamental capabilities without needing to be dependent on Java3D. 
+
 <H3>Contributors</H3>
 
 j3d.org would like to thank the following contributors for the code they've
@@ -49,6 +57,10 @@ add to the repository.
 </LI>
 <LI>Daniel Selman of <A HREF="http://www.tornadolabs.com/">Tornado Labs</A>.
     Particle system code.
+</LI>
+<LI>Satoshi Konno's 
+<a href="http://www.cybergarage.org/vr/device/polhemus/java/">Polhemuse For Java</a>
+</LI>
 </UL>
 
 </BODY>
