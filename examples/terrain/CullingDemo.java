@@ -39,12 +39,14 @@ import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationStateManager;
 import org.j3d.ui.navigation.NavigationState;
 
+import org.j3d.util.interpolator.ColorInterpolator;
+
 /**
  * Demonstration of the ROAM code.
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class CullingDemo extends DemoFrame
     implements ItemListener, AppearanceGenerator
@@ -81,6 +83,9 @@ public class CullingDemo extends DemoFrame
 
     /** Mapping of the button to the polygon mode value */
     private HashMap polyModeMap;
+
+    /** The color interpolator for doing height interpolations with */
+    private ColorInterpolator heightRamp;
 
     /**
      * Construct a new demo with no geometry currently showing, but the
@@ -192,6 +197,17 @@ public class CullingDemo extends DemoFrame
 
         polyAttr = new PolygonAttributes();
         polyAttr.setCapability(PolygonAttributes.ALLOW_MODE_WRITE);
+
+        heightRamp = new ColorInterpolator(ColorInterpolator.HSV_SPACE);
+        heightRamp.addRGBKeyFrame(-20,  0,    0,    1,     0);
+        heightRamp.addRGBKeyFrame(0,    0,    0.7f, 0.95f, 0);
+        heightRamp.addRGBKeyFrame(5,    1,    1,    0,     0);
+        heightRamp.addRGBKeyFrame(10,   0,    0.6f, 0,     0);
+        heightRamp.addRGBKeyFrame(100,  0,    1,    0,     0);
+        heightRamp.addRGBKeyFrame(1000, 0.6f, 0.7f, 0,     0);
+        heightRamp.addRGBKeyFrame(1500, 0.5f, 0.5f, 0.3f,  0);
+        heightRamp.addRGBKeyFrame(2500, 1,    1,    1,     0);
+
     }
 
     //----------------------------------------------------------
@@ -396,6 +412,7 @@ public class CullingDemo extends DemoFrame
 
             ldr.load(bt_file.toURL());
             HeightMapTerrainData terrain = new HeightMapTerrainData(ldr);
+            terrain.setColorInterpolator(heightRamp);
 
             System.out.println("Terrain loading complete");
 
