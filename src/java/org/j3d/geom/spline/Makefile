@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.spline directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.4 $
+# Version: $Revision: 1.5 $
 #
 #*********************************************************************
 
@@ -18,8 +18,7 @@ SOURCE = BezierGenerator.java \
 	BSplineGenerator.java \
 	PatchGenerator.java \
 	BezierPatchGenerator.java \
-  BSplinePatchGenerator.java \
-  NurbsPatchGenerator.java
+	BSplinePatchGenerator.java 
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
