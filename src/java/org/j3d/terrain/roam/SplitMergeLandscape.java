@@ -34,7 +34,7 @@ import org.j3d.terrain.*;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class SplitMergeLandscape extends Landscape
 {
@@ -77,6 +77,7 @@ public class SplitMergeLandscape extends Landscape
 
     /** Queue manager for the pathces needing splits or merges each frame */
     private TreeQueueManager queueManager = new TreeQueueManager();
+//    private FastQueueManager queueManager = new FastQueueManager();
 
     /** Number of visible triangles */
     private int triCount = 0;
@@ -105,8 +106,8 @@ public class SplitMergeLandscape extends Landscape
      */
     private LinkedList freePatchList;
 
-    /** Working var for the patches just removed */
-    private ArrayList removedPatches;
+    /** Working var for the patches just removed/or added */
+    private ArrayList tempPatchList;
 
     /** The grid that holds the current patches for the viewable grid. */
     private PatchGrid patchGrid;
@@ -246,7 +247,7 @@ public class SplitMergeLandscape extends Landscape
                 reqdBounds = new Rectangle();
                 oldTileBounds = new Rectangle();
                 freePatchList = new LinkedList();
-                removedPatches = new ArrayList();
+                tempPatchList = new ArrayList();
 
                 createTiledPatches(position, direction);
                 break;
@@ -289,7 +290,7 @@ public class SplitMergeLandscape extends Landscape
 
                     patchGrid.prepareNewBounds(reqdBounds);
                     clearOldTiledPatches();
-                    loadNewTiles();
+                    loadNewTiles(position);
 
                     oldTileBounds.setBounds(reqdBounds);
                 }
@@ -321,7 +322,7 @@ public class SplitMergeLandscape extends Landscape
 
             if(mergeCandidate == null && splitCandidate != null)
             {
-                if (splitCandidate.variance > accuracy)
+                if(splitCandidate.variance > accuracy)
                 {
                     triCount += splitCandidate.split(position, landscapeView, queueManager);
                 }
@@ -615,6 +616,7 @@ System.out.println("Free-form terrain not implemented yet");
      * position and orientation info. Assumes that the update of the view
      * platform is called before this method, for this frame.
      *
+     * @param position The position of the camera
      * @param direction The direction the viewer is looking
      * @return true if these bounds are the same as the old ones
      */
@@ -713,23 +715,25 @@ System.out.println("Free-form terrain not implemented yet");
             {
                 p.clear();
                 freePatchList.add(p);
-                removedPatches.add(p);
+                tempPatchList.add(p);
                 patch_removed = true;
             }
         }
 
         if(patch_removed)
         {
-            patches.removeAll(removedPatches);
-            removedPatches.clear();
+            patches.removeAll(tempPatchList);
+            tempPatchList.clear();
         }
     }
 
     /**
      * Load new tiles into the system for the areas that are not accounted
      * for.
+     *
+     * @param position The position of the camera
      */
-    private void loadNewTiles()
+    private void loadNewTiles(Tuple3f position)
     {
         // Since we run axis aligned boundaies, let's just look at the
         // difference between new and old.
@@ -813,10 +817,11 @@ System.out.println("Free-form terrain not implemented yet");
                         app.setTexture(td.getTexture(east, north));
                     }
 
+                    tempPatchList.add(p);
+
                     p.setOrigin(e_grid, n_grid);
                     patchGrid.addPatch(p, east, north);
                     p.makeActive();
-
                     p.reset();
 
                     patches.add(p);
@@ -871,9 +876,11 @@ System.out.println("Free-form terrain not implemented yet");
                         app.setTexture(td.getTexture(east, north));
                     }
 
+                    tempPatchList.add(p);
                     p.setOrigin(e_grid, n_grid);
                     patchGrid.addPatch(p, east, north);
                     p.makeActive();
+                    p.reset();
 
                     patches.add(p);
 
@@ -882,6 +889,16 @@ System.out.println("Free-form terrain not implemented yet");
                 }
             }
         }
+
+        int size = tempPatchList.size();
+
+        for(i = 0; i < size; i++)
+        {
+            p = (Patch)tempPatchList.get(i);
+            p.updateEdges(position, queueManager);
+        }
+
+        tempPatchList.clear();
     }
 
     /**
