@@ -35,7 +35,7 @@ import javax.vecmath.Point3f;
  * The current implementation does not allow updating the text or colors
  *
  * @author Justin Couch, based on work from Corysia Taware
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class RasterTextLabel extends Shape3D
 {
@@ -115,6 +115,7 @@ public class RasterTextLabel extends Shape3D
 
         Appearance app = new Appearance();
         RenderingAttributes ra = new RenderingAttributes();
+        ra.setAlphaTestFunction(RenderingAttributes.GREATER);
         ra.setDepthBufferEnable(false);
         ra.setDepthBufferWriteEnable(false);
         app.setRenderingAttributes(ra);
