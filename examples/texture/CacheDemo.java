@@ -22,14 +22,15 @@ import java.util.HashMap;
 
 // Application Specific imports
 import org.j3d.texture.TextureCache;
-import org.j3d.texture.TextureCacheFactory;
+import org.j3d.renderer.java3d.texture.J3DTextureCache;
+import org.j3d.renderer.java3d.texture.J3DTextureCacheFactory;
 
 /**
  * Demonstration of the scribble overlay. Presents a box on screen and allows
  * the user to draw over it with a mouse.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CacheDemo extends DemoFrame
     implements ItemListener
@@ -40,7 +41,7 @@ public class CacheDemo extends DemoFrame
     private HashMap nameMap;
 
     /** Cache used to store and fetch images from */
-    private TextureCache cache;
+    private J3DTextureCache cache;
 
     /** The appearance we used to change the texture with */
     private Appearance appearance;
@@ -54,7 +55,7 @@ public class CacheDemo extends DemoFrame
         super("Cache test window");
 
         nameMap = new HashMap();
-        cache = TextureCacheFactory.getCache();
+        cache = J3DTextureCacheFactory.getCache();
 
         add(canvas, BorderLayout.CENTER);
 

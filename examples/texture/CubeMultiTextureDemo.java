@@ -23,17 +23,18 @@ import java.util.Map;
 // Application Specific imports
 import org.j3d.geom.SphereGenerator;
 import org.j3d.geom.GeometryData;
-import org.j3d.ui.navigation.MouseViewHandler;
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
+import org.j3d.renderer.java3d.navigation.FrameUpdateListener;
 import org.j3d.ui.navigation.NavigationState;
-import org.j3d.ui.navigation.FrameUpdateListener;
 import org.j3d.texture.TextureCache;
-import org.j3d.texture.TextureCacheFactory;
+import org.j3d.renderer.java3d.texture.J3DTextureCache;
+import org.j3d.renderer.java3d.texture.J3DTextureCacheFactory;
 
 /**
  * Demonstration of a cubic environment map combined with multitexturing.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CubeMultiTextureDemo extends DemoFrame
     implements FrameUpdateListener
@@ -171,7 +172,7 @@ public class CubeMultiTextureDemo extends DemoFrame
      */
     private JPanel buildTexturePanel(int imgWidth)
     {
-        TextureCache tex_ldr = TextureCacheFactory.getCache();
+        J3DTextureCache tex_ldr = J3DTextureCacheFactory.getCache();
 
         ImageComponent bump_comp = null;
         ImageComponent stencil_comp = null;
@@ -317,7 +318,7 @@ public class CubeMultiTextureDemo extends DemoFrame
      */
     private int loadTextures()
     {
-        TextureCache tex_ldr = TextureCacheFactory.getCache();
+        J3DTextureCache tex_ldr = J3DTextureCacheFactory.getCache();
 
         try
         {

@@ -15,20 +15,21 @@ import java.awt.*;
 import java.awt.event.*;
 
 import javax.media.j3d.GraphicsConfigTemplate3D;
+import javax.media.j3d.Canvas3D;
 
 // Application Specific imports
-import org.j3d.ui.ImageCaptureCanvas3D;
+// None
 
 /**
  * Demonstration of a mouse navigation in a world.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class DemoFrame extends Frame implements WindowListener
 {
     /** The canvas supplied by this frame */
-    protected ImageCaptureCanvas3D canvas;
+    protected Canvas3D canvas;
 
     public DemoFrame(String title)
     {
@@ -40,13 +41,13 @@ public class DemoFrame extends Frame implements WindowListener
             GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice dev = env.getDefaultScreenDevice();
 
-        canvas = new ImageCaptureCanvas3D(dev.getBestConfiguration(template));
+        canvas = new Canvas3D(dev.getBestConfiguration(template));
         canvas.setStereoEnable(false);
         canvas.setDoubleBufferEnable(true);
 
         add(canvas, BorderLayout.CENTER);
 
-        setSize(400, 400);
+        setSize(800, 600);
         setLocation(40, 40);
         addWindowListener(this);
 

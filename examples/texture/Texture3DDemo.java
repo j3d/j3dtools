@@ -25,9 +25,9 @@ import java.util.Map;
 // Application Specific imports
 import org.j3d.geom.*;
 
-import org.j3d.ui.navigation.MouseViewHandler;
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
+import org.j3d.renderer.java3d.navigation.FrameUpdateListener;
 import org.j3d.ui.navigation.NavigationState;
-import org.j3d.texture.procedural.PerlinNoiseGenerator;
 import org.j3d.util.ImageUtils;
 
 /**
@@ -39,7 +39,7 @@ import org.j3d.util.ImageUtils;
  * of the rendering attributes like the face set.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Texture3DDemo extends DemoFrame
     implements ItemListener
@@ -571,16 +571,16 @@ public class Texture3DDemo extends DemoFrame
 
 
         ImageComponent3D comp =
-            new ImageComponent3D(ImageComponent.FORMAT_RGB, img_width, img_height, 4);
+            new ImageComponent3D(ImageComponent.FORMAT_RGB, img_width, img_height, 2);
         comp.set(0, buf_img[0]);
-        comp.set(2, buf_img[1]);
+        comp.set(1, buf_img[1]);
 
         // Setup the texture. Cheat - depth is always 2.
         Texture3D ret_val = new Texture3D(Texture.BASE_LEVEL,
                                           Texture.RGB,
                                           img_width,
                                           img_height,
-                                          4);
+                                          2);
         ret_val.setImage(0, comp);
         ret_val.setBoundaryModeT(Texture.CLAMP);
         ret_val.setBoundaryModeS(Texture.CLAMP);

@@ -29,7 +29,7 @@ import com.sun.j3d.utils.image.TextureLoader;
  * the user to draw over it with a mouse.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MultitextureDemo extends DemoFrame
 {
@@ -122,7 +122,7 @@ public class MultitextureDemo extends DemoFrame
         bump_attr.setCombineRgbMode(TextureAttributes.COMBINE_DOT3);
         bump_attr.setCombineAlphaMode(TextureAttributes.COMBINE_REPLACE);
         bump_attr.setCombineRgbSource(0, TextureAttributes.COMBINE_TEXTURE_COLOR);
-        bump_attr.setCombineAlphaSource(0, TextureAttributes.COMBINE_OBJECT_COLOR);
+        bump_attr.setCombineAlphaSource(0, TextureAttributes.COMBINE_CONSTANT_COLOR);
 
         bump_attr.setTextureBlendColor(0.5f, 0, 0, 0);
         bump_attr.setCapability(TextureAttributes.ALLOW_BLEND_COLOR_WRITE);

@@ -25,14 +25,14 @@ import com.sun.j3d.utils.image.TextureLoader;
 // Application Specific imports
 import org.j3d.geom.SphereGenerator;
 import org.j3d.geom.GeometryData;
-import org.j3d.ui.navigation.MouseViewHandler;
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationState;
 
 /**
  * Demonstration of a cubic environment map.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SphereMapDemo extends DemoFrame
 {

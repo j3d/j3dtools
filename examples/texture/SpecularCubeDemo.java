@@ -23,18 +23,19 @@ import java.util.Map;
 // Application Specific imports
 import org.j3d.geom.SphereGenerator;
 import org.j3d.geom.GeometryData;
-import org.j3d.ui.navigation.MouseViewHandler;
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
+import org.j3d.renderer.java3d.navigation.FrameUpdateListener;
 import org.j3d.ui.navigation.NavigationState;
-import org.j3d.ui.navigation.FrameUpdateListener;
 import org.j3d.texture.TextureCache;
-import org.j3d.texture.TextureCacheFactory;
+import org.j3d.renderer.java3d.texture.J3DTextureCache;
+import org.j3d.renderer.java3d.texture.J3DTextureCacheFactory;
 
 /**
  * Demonstration of a cubic environment map combined with multitexturing to
  * produce specular highlights.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SpecularCubeDemo extends DemoFrame
     implements FrameUpdateListener
@@ -148,7 +149,7 @@ public class SpecularCubeDemo extends DemoFrame
      */
     private void buildTexturePanel(int imgWidth)
     {
-        TextureCache tex_ldr = TextureCacheFactory.getCache();
+        J3DTextureCache tex_ldr = J3DTextureCacheFactory.getCache();
 
         ImageComponent bump_comp = null;
         ImageComponent color_comp = null;
@@ -265,7 +266,7 @@ public class SpecularCubeDemo extends DemoFrame
      */
     private int loadTextures()
     {
-        TextureCache tex_ldr = TextureCacheFactory.getCache();
+        J3DTextureCache tex_ldr = J3DTextureCacheFactory.getCache();
 
         try
         {
