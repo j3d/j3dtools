@@ -401,6 +401,20 @@ public class NavigationHandler
             }
 
             startFrameDurationCalc = System.currentTimeMillis();
+
+            if(updateListener != null)
+            {
+                try
+                {
+                    updateListener.viewerPositionUpdated(viewTx);
+                }
+                catch(Exception e)
+                {
+                    System.out.println("Error sending frame update message");
+                    e.printStackTrace();
+                }
+            }
+
             wakeupOn( FPSCriterion );
         }
     }
@@ -755,7 +769,8 @@ public class NavigationHandler
         //enable the behavior that controls navigation
         frameTimer.setEnable(true);
 
-        if(navigationState == NavigationState.WALK_STATE)
+        if((navigationState == NavigationState.WALK_STATE) &&
+           allowTerrainFollowing)
             setInitialTerrainHeight();
     }
 
