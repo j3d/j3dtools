@@ -41,7 +41,7 @@ import org.j3d.texture.TextureCacheFactory;
  * the current directory) to initialize their physical attributes and images.
  * <p>
  * @author Daniel Selman
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
@@ -197,8 +197,8 @@ public abstract class ParticleSystem implements ParticleFactory
         if ( particleInitializer.isAlive( particle ) != false )
         {
             ParticleFunction function = null;
-
-            for ( int n = particleFunctions.size() - 1; n >= 0; n-- )
+            int size = particleFunctions.size();
+            for(int n = 0; n < size; n++)
             {
                 function = ( ParticleFunction ) particleFunctions.get( n );
                 running |= function.apply( particle );
