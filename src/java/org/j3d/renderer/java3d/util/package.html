@@ -1,0 +1,37 @@
+<html>
+<body>
+Generalised utility classes for all representing view frustum information
+<P>
+
+The aim of this package is to provide an abstract representation of a view
+frustum for many different styles of application and algorithms.
+<p>
+
+The view frustum code uses features that are specific to Java3D 1.3 to access
+view projection matrix information.
+<p>
+
+<h3>Limitations</h3>
+
+The way the view frustum is implemented means that you will have a one frame
+delay between where your user code is at and where the view frustum is
+pointing. This is because it queries the Canvas3D and that query returns the
+projection matrix information for the last frame rendered, not the current
+settings. If you are doing jump cuts between locations, that can result in
+wildly inaccurate values.
+<p>
+
+To try to cope with some of these problems, a utility method is available to
+manually re-orientate the view frustum. The idea is that user code will move
+the viewpoint transformations, request the VWorld transformation matrix back
+and then apply that to the view frustum to give you a better idea of where the
+user is now going to be pointing in this frame. That should give more accurate
+results in the visual output over time.
+
+<h3>Acknowledgements</h3>
+
+The code in this package is based on the original work by Paul Byrne of
+Sun Microsystems.
+
+</body>
+</html>

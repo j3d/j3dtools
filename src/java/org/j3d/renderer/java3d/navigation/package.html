@@ -1,0 +1,44 @@
+<HTML>
+<BODY>
+User interface components and capabilities for implementing simple navigation
+on any Java3D Canvas3D based on the core {@link org.j3d.ui.navigation} package.
+<P>
+
+The classes here are designed to work with any {@link javax.media.j3d.Canvas3D}
+to provide fast navigation. These classes do not use the standard behaviour
+mechanism, instead opting to get the updates directly from the Java AWT system
+instead.
+<P>
+
+Apart from the basic navigation code, a set of convenience toolbars are
+provided that interact with the normal world. These use images from the
+config area in the <CODE>navigation</CODE> sub-directory. Once this code is
+working nicely, some examples and nice looking pictures will be added here.
+<P>
+
+<H3>Implementation Details</H3>
+
+There are a collection of different implementation items within this package.
+Mostly this is just general run of the mill listener handling and event
+propogation. There are two major algorithms to be interested in - the terrain
+following/collision detection code and the mouse movement methods.
+<P>
+
+A complete tutorial and write up of the terrain following code can be found on
+the <A HREF="http://www.j3d.org/tutorials/collision/">j3d.org Collision
+Detection Tutorial</A> and further information in the
+<A HREF="http://code.j3d.org/impl/navigation.html">j3d.org Code Repository
+Navigation Implementation</A> document.
+
+
+<H3>Acknowledgements</H3>
+
+This code is based on the work of the
+<a href="http://www.ife.no/vr/">Halden VR Centre, Institute for Energy Technology</a>.
+The code provided from them has been cleaned up dramatically and made more
+suitable to use as a general library. Regardless, many thanks go to Laszlo
+Seregi and the team there for providing this codebase!
+<P>
+
+</BODY>
+</HTML>
