@@ -31,7 +31,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class BSplinePatchGenerator extends PatchGenerator
 {
@@ -306,16 +306,16 @@ public class BSplinePatchGenerator extends PatchGenerator
         int i, j, ki, kj;
         double i_inter, i_inc;
         double j_inter, j_inc;
-        double bi,bj;
+        double bi, bj;
         double x, y, z;
         int cnt, p_cnt;
         int last = facetCount * 3;
         int last_depth = (numDepthControlPoints - 1) * 3;
         int last_width = numWidthControlPoints - 1;
 
-       // Step size along the curve
-       i_inc = (numWidthControlPoints - widthDegree + 1) / (double)facetCount;
-       j_inc = (numDepthControlPoints - depthDegree + 1) / (double)facetCount;
+        // Step size along the curve
+        i_inc = (numWidthControlPoints - widthDegree + 1) / (double)facetCount;
+        j_inc = (numDepthControlPoints - depthDegree + 1) / (double)facetCount;
 
         i_inter = 0;
         for(i = 0; i < facetCount; i++)
@@ -337,6 +337,7 @@ public class BSplinePatchGenerator extends PatchGenerator
                     {
                         bi = splineBlend(ki, widthDegree, false, i_inter);
                         bj = splineBlend(kj, depthDegree, true, j_inter);
+
                         x += controlPointCoordinates[ki][cnt++] * bi * bj;
                         y += controlPointCoordinates[ki][cnt++] * bi * bj;
                         z += controlPointCoordinates[ki][cnt++] * bi * bj;
@@ -423,16 +424,16 @@ public class BSplinePatchGenerator extends PatchGenerator
         double i_inter, i_inc;
         double j_inter, j_inc;
         double bi,bj;
-        double x, y, z;
+        double x, y, z, denom;
         float w;
         int cnt, p_cnt;
         int last = facetCount * 3;
         int last_depth = (numDepthControlPoints - 1) * 3;
         int last_width = numWidthControlPoints - 1;
 
-       // Step size along the curve
-       i_inc = (numWidthControlPoints - widthDegree + 1) / (double)facetCount;
-       j_inc = (numDepthControlPoints - depthDegree + 1) / (double)facetCount;
+        // Step size along the curve
+        i_inc = (numWidthControlPoints - widthDegree + 1) / (double)facetCount;
+        j_inc = (numDepthControlPoints - depthDegree + 1) / (double)facetCount;
 
         i_inter = 0;
         for(i = 0; i < facetCount; i++)
@@ -444,6 +445,7 @@ public class BSplinePatchGenerator extends PatchGenerator
                 x = 0;
                 y = 0;
                 z = 0;
+                denom = 0;
                 cnt = 0;
                 kj = 0;
 
@@ -455,15 +457,27 @@ public class BSplinePatchGenerator extends PatchGenerator
                         bi = splineBlend(ki, widthDegree, false, i_inter);
                         bj = splineBlend(kj, depthDegree, true, j_inter);
                         w = controlPointWeights[ki][kj];
+
                         x += controlPointCoordinates[ki][cnt++] * bi * bj * w;
                         y += controlPointCoordinates[ki][cnt++] * bi * bj * w;
                         z += controlPointCoordinates[ki][cnt++] * bi * bj * w;
+
+                        denom += bi * bj * w;
                     }
                 }
 
-                patchCoordinates[i][p_cnt++] = (float)x;
-                patchCoordinates[i][p_cnt++] = (float)y;
-                patchCoordinates[i][p_cnt++] = (float)z;
+                if(denom != 0)
+                {
+                    patchCoordinates[i][p_cnt++] = (float)(x / denom);
+                    patchCoordinates[i][p_cnt++] = (float)(y / denom);
+                    patchCoordinates[i][p_cnt++] = (float)(z / denom);
+                }
+                else
+                {
+                    patchCoordinates[i][p_cnt++] = (float)x;
+                    patchCoordinates[i][p_cnt++] = (float)y;
+                    patchCoordinates[i][p_cnt++] = (float)z;
+                }
 
                 j_inter += j_inc;
             }
@@ -480,19 +494,33 @@ public class BSplinePatchGenerator extends PatchGenerator
             x = 0;
             y = 0;
             z = 0;
+            denom = 0;
 
             for(ki = 0; ki < numWidthControlPoints; ki++)
             {
                 bi = splineBlend(ki, widthDegree, false, i_inter);
                 w = controlPointWeights[ki][numDepthControlPoints];
+
                 x += controlPointCoordinates[ki][last_depth] * bi * w;
                 y += controlPointCoordinates[ki][last_depth + 1] * bi * w;
                 z += controlPointCoordinates[ki][last_depth + 2] * bi * w;
+
+                denom += bi * w;
             }
 
-            patchCoordinates[i][last] = (float)x;
-            patchCoordinates[i][last + 1] = (float)y;
-            patchCoordinates[i][last + 2] = (float)z;
+            if(denom != 0)
+            {
+                patchCoordinates[i][last] = (float)(x / denom);
+                patchCoordinates[i][last + 1] = (float)(y / denom);
+                patchCoordinates[i][last + 2] = (float)(z / denom);
+            }
+            else
+            {
+                patchCoordinates[i][last] = (float)x;
+                patchCoordinates[i][last + 1] = (float)y;
+                patchCoordinates[i][last + 2] = (float)z;
+            }
+
             i_inter += i_inc;
         }
 
@@ -504,6 +532,8 @@ public class BSplinePatchGenerator extends PatchGenerator
             y = 0;
             z = 0;
             cnt = 0;
+            denom = 0;
+
             for(kj = 0; kj < numDepthControlPoints; kj++)
             {
                 bj = splineBlend(kj, depthDegree, true, j_inter);
@@ -511,11 +541,23 @@ public class BSplinePatchGenerator extends PatchGenerator
                 x += controlPointCoordinates[last_width][cnt++] * bj * w;
                 y += controlPointCoordinates[last_width][cnt++] * bj * w;
                 z += controlPointCoordinates[last_width][cnt++] * bj * w;
+
+                denom += bj * w;
             }
 
-            patchCoordinates[facetCount][j * 3] = (float)x;
-            patchCoordinates[facetCount][j * 3 + 1] = (float)y;
-            patchCoordinates[facetCount][j * 3 + 2] = (float)z;
+            if(denom != 0)
+            {
+                patchCoordinates[facetCount][j * 3] = (float)(x / denom);
+                patchCoordinates[facetCount][j * 3 + 1] = (float)(y / denom);
+                patchCoordinates[facetCount][j * 3 + 2] = (float)(z / denom);
+            }
+            else
+            {
+                patchCoordinates[facetCount][j * 3] = (float)x;
+                patchCoordinates[facetCount][j * 3 + 1] = (float)y;
+                patchCoordinates[facetCount][j * 3 + 2] = (float)z;
+            }
+
             j_inter += j_inc;
         }
 

@@ -30,7 +30,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * average between the adjacent edges.
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class BezierPatchGenerator extends PatchGenerator
 {
@@ -182,9 +182,9 @@ public class BezierPatchGenerator extends PatchGenerator
         patchCoordinates[facetCount][cnt++] =
             controlPointCoordinates[numWidthControlPoints - 1][ncp - 3];
         patchCoordinates[facetCount][cnt++] =
-            controlPointCoordinates[numWidthControlPoints - 1][ncp - 2];;
+            controlPointCoordinates[numWidthControlPoints - 1][ncp - 2];
         patchCoordinates[facetCount][cnt++] =
-            controlPointCoordinates[numWidthControlPoints - 1][ncp - 1];;
+            controlPointCoordinates[numWidthControlPoints - 1][ncp - 1];
     }
 
     /**
@@ -195,7 +195,7 @@ public class BezierPatchGenerator extends PatchGenerator
         double mui,muj,bi,bj;
         int cnt;
         float x, y, z;
-        float w;
+        float w, denom;
         int pos;
 
         for(int i = 0; i < facetCount; i++)
@@ -208,6 +208,7 @@ public class BezierPatchGenerator extends PatchGenerator
                 x = 0;
                 y = 0;
                 z = 0;
+                denom = 0;
 
                 for(int ki = 0; ki < numWidthControlPoints ; ki++)
                 {
@@ -222,18 +223,30 @@ public class BezierPatchGenerator extends PatchGenerator
                         x += (controlPointCoordinates[ki][pos] * bi * bj * w);
                         y += (controlPointCoordinates[ki][pos + 1] * bi * bj * w);
                         z += (controlPointCoordinates[ki][pos + 2] * bi * bj * w);
+
+                        denom += bi * bj * w;
                     }
                 }
 
-                patchCoordinates[i][cnt++] = x;
-                patchCoordinates[i][cnt++] = y;
-                patchCoordinates[i][cnt++] = z;
+                if(denom != 0)
+                {
+                    patchCoordinates[i][cnt++] = x / denom;
+                    patchCoordinates[i][cnt++] = y / denom;
+                    patchCoordinates[i][cnt++] = z / denom;
+                }
+                else
+                {
+                    patchCoordinates[i][cnt++] = x;
+                    patchCoordinates[i][cnt++] = y;
+                    patchCoordinates[i][cnt++] = z;
+                }
             }
 
             int ncp = numDepthControlPoints * 3;
             x = 0;
             y = 0;
             z = 0;
+            denom = 0;
 
             for(int ki = 0; ki < numWidthControlPoints ; ki++)
             {
@@ -245,15 +258,26 @@ public class BezierPatchGenerator extends PatchGenerator
                     bj = bezierBlend(kj, 1, numDepthControlPoints - 1);
                     w = controlPointWeights[ki][kj];
 
-                    x += (controlPointCoordinates[ki][pos] * bi * bj);
-                    y += (controlPointCoordinates[ki][pos + 1] * bi * bj);
-                    z += (controlPointCoordinates[ki][pos + 2] * bi * bj);
+                    x += (controlPointCoordinates[ki][pos] * bi * bj * w);
+                    y += (controlPointCoordinates[ki][pos + 1] * bi * bj * w);
+                    z += (controlPointCoordinates[ki][pos + 2] * bi * bj * w);
+
+                    denom += bi * bj * w;
                 }
             }
 
-            patchCoordinates[i][cnt++] = x;
-            patchCoordinates[i][cnt++] = y;
-            patchCoordinates[i][cnt++] = z;
+            if(denom != 0)
+            {
+                patchCoordinates[i][cnt++] = x / denom;
+                patchCoordinates[i][cnt++] = y / denom;
+                patchCoordinates[i][cnt++] = z / denom;
+            }
+            else
+            {
+                patchCoordinates[i][cnt++] = x;
+                patchCoordinates[i][cnt++] = y;
+                patchCoordinates[i][cnt++] = z;
+            }
         }
 
         // Calculate the last set of coordinates just based on the width values
@@ -265,6 +289,7 @@ public class BezierPatchGenerator extends PatchGenerator
             x = 0;
             y = 0;
             z = 0;
+            denom = 0;
 
             for(int ki = 0; ki < numWidthControlPoints ; ki++)
             {
@@ -276,24 +301,35 @@ public class BezierPatchGenerator extends PatchGenerator
                     bj = bezierBlend(kj, muj, numDepthControlPoints - 1);
                     w = controlPointWeights[ki][kj];
 
-                    x += (controlPointCoordinates[ki][pos] * bi * bj);
-                    y += (controlPointCoordinates[ki][pos + 1] * bi * bj);
-                    z += (controlPointCoordinates[ki][pos + 2] * bi * bj);
+                    x += (controlPointCoordinates[ki][pos] * bi * bj * w);
+                    y += (controlPointCoordinates[ki][pos + 1] * bi * bj * w);
+                    z += (controlPointCoordinates[ki][pos + 2] * bi * bj * w);
+
+                    denom += bi * bj * w;
                 }
             }
 
-            patchCoordinates[facetCount][cnt++] = x;
-            patchCoordinates[facetCount][cnt++] = y;
-            patchCoordinates[facetCount][cnt++] = z;
+            if(denom != 0)
+            {
+                patchCoordinates[facetCount][cnt++] = x / denom;
+                patchCoordinates[facetCount][cnt++] = y / denom;
+                patchCoordinates[facetCount][cnt++] = z / denom;
+            }
+            else
+            {
+                patchCoordinates[facetCount][cnt++] = x;
+                patchCoordinates[facetCount][cnt++] = y;
+                patchCoordinates[facetCount][cnt++] = z;
+            }
         }
 
         int ncp = numDepthControlPoints * 3;
         patchCoordinates[facetCount][cnt++] =
             controlPointCoordinates[numWidthControlPoints - 1][ncp - 3];
         patchCoordinates[facetCount][cnt++] =
-            controlPointCoordinates[numWidthControlPoints - 1][ncp - 2];;
+            controlPointCoordinates[numWidthControlPoints - 1][ncp - 2];
         patchCoordinates[facetCount][cnt++] =
-            controlPointCoordinates[numWidthControlPoints - 1][ncp - 1];;
+            controlPointCoordinates[numWidthControlPoints - 1][ncp - 1];
     }
 
     /**
