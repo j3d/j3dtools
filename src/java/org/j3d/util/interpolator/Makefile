@@ -7,6 +7,8 @@ PACKAGE = org.j3d.util.interpolator
 SOURCE = Interpolator.java \
          ScalarInterpolator.java \
          PositionInterpolator.java \
+         RotationInterpolator.java \
+         ColorInterpolator.java \
 		 TestScalarInterpolator.java \
 		 TestPositionInterpolator.java
 
