@@ -34,7 +34,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {
@@ -1437,14 +1437,6 @@ public class CylinderGenerator extends GeometryGenerator
                 coords[count++] = baseCoordinates[base_count++];
             }
 
-            coords[count++] = baseCoordinates[0];
-            coords[count++] = half_height;
-            coords[count++] = baseCoordinates[0];
-
-            coords[count++] = 0;
-            coords[count++] = -half_height;
-            coords[count++] = 0;
-
             base_count = 0;
 
             coords[count++] = 0;
@@ -1457,11 +1449,6 @@ public class CylinderGenerator extends GeometryGenerator
                 coords[count++] = -half_height;
                 coords[count++] = baseCoordinates[base_count++];
             }
-
-            coords[count++] = baseCoordinates[0];
-            coords[count++] = -half_height;
-            coords[count++] = baseCoordinates[0];
-
         }
     }
 
