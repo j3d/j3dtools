@@ -41,7 +41,7 @@ import org.j3d.texture.TextureCacheFactory;
  * the current directory) to initialize their physical attributes and images.
  * <p>
  * @author Daniel Selman
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
@@ -329,12 +329,13 @@ public abstract class ParticleSystem implements ParticleFactory
     {
         Appearance app = new Appearance();
 
+/*
         app.setPolygonAttributes(
                 new PolygonAttributes(
                         PolygonAttributes.POLYGON_FILL,
                         PolygonAttributes.CULL_NONE,
                         0 ) );
-
+*/
         app.setTransparencyAttributes(
                 new TransparencyAttributes( TransparencyAttributes.FASTEST, 0.0f ) );
 
