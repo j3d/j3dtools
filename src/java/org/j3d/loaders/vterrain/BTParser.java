@@ -14,6 +14,11 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 
+import javax.vecmath.Point2d;
+
+// Application specific parser
+import org.j3d.loaders.HeightMapParser;
+
 /**
  * A low-level parser for the VTerrain's Project  BT file format.
  * <p>
@@ -27,9 +32,9 @@ import java.io.IOException;
  * </a>
  *
  * @author  Paul Byrne, Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-public class BTParser
+public class BTParser implements HeightMapParser
 {
     /** Buffer while reading bytes from the stream */
     private byte[] buffer;
@@ -45,6 +50,9 @@ public class BTParser
 
     /** The height array in [row][column] */
     private float[][] heights;
+
+    /** Grid information about the file. */
+    private Point2d gridStepData;
 
     /** Flag to say we've already read the stream */
     private boolean dataReady;
@@ -111,6 +119,17 @@ public class BTParser
     public float[][] getHeights()
     {
         return heights;
+    }
+
+    /**
+     * Fetch information about the real-world stepping sizes that this
+     * grid uses.
+     *
+     * @return The stepping information for width and depth
+     */
+    public Point2d getGridStep()
+    {
+        return gridStepData;
     }
 
     /**
@@ -210,6 +229,14 @@ public class BTParser
                     heights[r][c] = readInt();
             }
         }
+
+        float width = (float)(header.rightExtent - header.leftExtent);
+        float depth = (float)(header.topExtent - header.bottomExtent);
+
+        gridStepData = new Point2d(width / header.rows,
+                                   depth / header.columns);
+
+        dataReady = true;
 
         return heights;
     }
