@@ -44,9 +44,9 @@
 package org.j3d.terrain;
 
 // Standard imports
-import javax.media.j3d.Texture;
+import java.awt.Rectangle;
 
-import javax.vecmath.Point3f;
+import javax.media.j3d.Texture;
 
 // Application specific imports
 // none
@@ -55,29 +55,37 @@ import javax.vecmath.Point3f;
  * This class provides a generic interface to the terrain dataset.
  * <p>
  *
- * The dataset is represented as a regular grid of heights
+ * The dataset is represented as a regular grid of heights which use the
+ * carto-based notion of the ground being the X-Y plane, rather than the
+ * 3D graphics convention of X-Z.
  *
  * @author  Paul Byrne, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface TerrainData
 {
     /**
      * Get the coordinate of the point in the grid.
      *
-     * @param coord must be an array of float[3]
+     * @param coord the x, y, and z coordinates will be placed in the
+     *    first three elements of the array.
+     * @param gridX The X coordinate of the position in the grid
+     * @param gridY The Y coordinate of the position in the grid
      */
     public abstract void getCoordinateFromGrid(float[] coord,
                                                int gridX,
                                                int gridY);
 
     /**
-     * Get the coordinate of the point in the grid
+     * Get the coordinate of the point and correspond texture coordinate in
+     * the grid. Assumes that the grid covers a single large texture rather
+     * than multiple smaller textures.
      *
-     * @param coord must be an array of float[3], the x, y, and z coordinates
-     * will be placed in the first three elements of the array.
-     *
-     * @param textureCoord must be an array of float[2]
+     * @param coord he x, y, and z coordinates will be placed in the first
+     *   three elements of the array.
+     * @param textureCoord 2D coordinates are placed in the first two elements
+     * @param gridX The X coordinate of the position in the grid
+     * @param gridY The Y coordinate of the position in the grid
      */
     public abstract void getCoordinateFromGrid(float[] coord,
                                                float[] textureCoord,
@@ -85,35 +93,77 @@ public interface TerrainData
                                                int gridY );
 
     /**
+     * Notify the terrain data handler that when generating texture coordinates
+     * that we are using tiled textures and that the coordinates generated
+     * should be based on the tiled versions of the images rather than a single
+     * large texture.
+     *
+     * @param enabled True to set the mode to tiled, false for single
+     * @see #getCoordinateFromGrid(float[], float[], int, int)
+     */
+    public void setTiledTextures(boolean enabled);
+
+    /**
+     * Check to see if the texture coordinates are being tiled.
+     *
+     * @return true if texture coordinates are currently being tiled
+     */
+    public boolean isTiledTextures();
+
+    /**
      * Fetch the Texture that is used to cover the entire terrain. If no
-     * texture is used, then return null.
+     * texture is used, then return null. Assumes a single large texture for
+     * the entire terrain.
      *
      * @return The texture instance to use or null
      */
     public abstract Texture getTexture();
 
     /**
-     * Get the height at the specified grid position
+     * Fetch the texture or part of a texture that can be applied to the
+     * sub-region of the overall object. This is to allow for texture tiling
+     * of very large texture images or terrain items. If there is no texture
+     * or no texture for that region, then this should return null.
+     *
+     * @param bounds The bounds of the region based on the grid positions
+     * @return The texture object suitable for that bounds or null
+     */
+    public abstract Texture getTexture(Rectangle bounds);
+
+    /**
+     * Get the height at the specified grid position.
+     *
+     * @param gridX The X coordinate of the position in the grid
+     * @param gridY The Y coordinate of the position in the grid
+     * @return The height at the given grid position
      */
     public abstract float getHeightFromGrid(int gridX, int gridY);
 
     /**
-     * Get the width of the grid.
+     * Get the width (number of points on the Y axis) of the grid.
+     *
+     * @return The number of points in the width if the grid
      */
     public abstract int getGridWidth();
 
     /**
-     * Get the height of the grid.
+     * Get the depth (number of points on the X axis) of the grid.
+     *
+     * @return The number of points in the depth of the grid
      */
-    public abstract int getGridHeight();
+    public abstract int getGridDepth();
 
     /**
      * Get the real world distance between consecutive X values in the grid.
+     *
+     * @return The distance between each step of the grid
      */
     public abstract double getGridXStep();
 
     /**
      * Get the real world distance between consecutive Y values in the grid.
+     *
+     * @return The distance between each step of the grid
      */
     public abstract double getGridYStep();
 }
