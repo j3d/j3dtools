@@ -32,10 +32,13 @@ MAIN_JAR       = j3d-org.jar
 OVERVIEW    = overview.html
 WINDOWTITLE = 'j3d.org Code Library'
 DOCTITLE    = 'j3d.org Code Repository API'
-HEADER      = 'j3d.org Code Repository API'
-BOTTOM      = '<font size=2>Copyright &copy; 2001 - \
-		       <a href=\"http://www.j3d.org\">j3d.org</a> \
-               </font>'
+HEADER      = 'j3d.org Code'
+BOTTOM      = '<center> \
+               Latest Info from <a href="http://code.j3d.org"> \
+               http://code.j3d.org/</a><br> \
+			   <font size=2>Copyright &copy; 2001 - \
+			   <a href="http://www.j3d.org">j3d.org</a></font> \
+               </center>'
 
 # A list of the local directories that contain other Javadoc that we want
 # to link to. For example we link to the JDK, JAXP, SAI and JUnit Javadocs
