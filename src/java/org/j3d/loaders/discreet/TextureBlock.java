@@ -30,7 +30,7 @@ package org.j3d.loaders.discreet;
  * </pre>
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TextureBlock
 {
@@ -60,6 +60,12 @@ public class TextureBlock
     // EH? WTF does that translate to?
     /** The amount of blurring of the texture */
     public float blurring;
+
+    /**
+     * Bump map percentage filter to apply. Not quite sure exacly what this
+     * does, but probably a scaling factor, like Strength.
+     */
+    public float bumpPercentage;
 
     /** The scale in the U direction */
     public float uScale;
