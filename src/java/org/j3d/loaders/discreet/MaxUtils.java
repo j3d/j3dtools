@@ -28,7 +28,7 @@ import org.j3d.io.BlockDataInputStream;
  * normals, bi normals and tangent space information.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class MaxUtils
 {
@@ -304,17 +304,10 @@ public class MaxUtils
         int[][] vertex_face = new int[mesh.numVertices][];
 
         float[] vertex = mesh.vertices;
-        float[] tex_coords = mesh.texCoords;
         int[] smoothgroup = mesh.smoothgroups;
 
         mesh.normals = new float[mesh.numFaces * 9];
         float[] normal = mesh.normals;
-
-        if(tex_coords == null)
-        {
-            mesh.texCoords = new float[mesh.numVertices * 2];
-            tex_coords = mesh.texCoords;
-        }
 
         for(int i = 0; i < mesh.numFaces; i++)
         {
