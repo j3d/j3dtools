@@ -38,7 +38,7 @@ import javax.vecmath.Vector3d;
  * screen after the resize.
  *
  * @author David Yazel, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
 {
@@ -97,23 +97,43 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
     private boolean painting = false;
 
     /**
-     * Creates a new overlay covering the given canvas bounds. Updates are managed
-     * automatically. This Overlay must still be attached to the view platform
-     * transform.
+     * Creates a new overlay covering the given canvas bounds. It has two
+     * buffers. Updates are managed automatically. This Overlay is not usable
+     * until you attach it to the view platform transform.
      *
      * @param canvas3D Canvas being drawn onto
-     * @param bounds    Bounds on the canvas covered by the overlay
+     * @param bounds Bounds on the canvas covered by the overlay
      */
     public OverlayBase(Canvas3D canvas3D, Rectangle bounds)
     {
         this(canvas3D, bounds, true, false, null);
     }
 
+    /**
+     * Constructs an overlay window with an update manager. It has two buffers.
+     * This window will not be visible unless it is added to the scene under
+     * the view platform transform.
+     *
+     * @param canvas3D The canvas the overlay is drawn on
+     * @param bounds The part of the canvas covered by the overlay
+     * @param updateManager Responsible for allowing the Overlay to update
+     *   between renders. If this is null a default manager is created
+     */
     public OverlayBase(Canvas3D canvas3D, Rectangle bounds, UpdateManager manager)
     {
         this(canvas3D, bounds, true, false, manager);
     }
 
+    /**
+     * Constructs an overlay window that can have alpha capabilities. This
+     * window will not be visible unless it is added to the scene under the
+     * view platform transform.
+     *
+     * @param canvas3D The canvas the overlay is drawn on
+     * @param bounds The part of the canvas covered by the overlay
+     * @param clipAlpha Should the polygon clip where alpha is zero
+     * @param blendAlpha Should we blend to background where alpha is < 1
+     */
     public OverlayBase(Canvas3D canvas3D,
                        Rectangle bounds,
                        boolean clipAlpha,
@@ -122,9 +142,22 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
         this(canvas3D, bounds, clipAlpha, blendAlpha, null);
     }
 
-    public OverlayBase(Canvas3D canvas3D, Rectangle bounds,
-            boolean clipAlpha, boolean blendAlpha,
-            UpdateManager updateManager)
+    /**
+     * Constructs an overlay window. This window will not be visible
+     * unless it is added to the scene under the view platform transform
+     *
+     * @param canvas3D The canvas the overlay is drawn on
+     * @param bounds The part of the canvas covered by the overlay
+     * @param clipAlpha Should the polygon clip where alpha is zero
+     * @param blendAlpha Should we blend to background where alpha is < 1
+     * @param updateManager Responsible for allowing the Overlay to update
+     *   between renders. If this is null a default manager is created
+     */
+    public OverlayBase(Canvas3D canvas3D,
+                       Rectangle bounds,
+                       boolean clipAlpha,
+                       boolean blendAlpha,
+                       UpdateManager updateManager)
     {
         this(canvas3D, bounds, clipAlpha, blendAlpha, updateManager, 2);
     }
@@ -133,15 +166,13 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
      * Constructs an overlay window. This window will not be visible
      * unless it is added to the scene under the view platform transform
      *
-     * @param canvas3D      The canvas the overlay is drawn on
-     * @param bounds         The part of the canvas covered by the overlay
-     * @param clipAlpha     Should the polygon clip where alpha is zero
-     * @param blendAlpha    Should we blend to background where alpha is < 1
+     * @param canvas3D The canvas the overlay is drawn on
+     * @param bounds The part of the canvas covered by the overlay
+     * @param clipAlpha Should the polygon clip where alpha is zero
+     * @param blendAlpha Should we blend to background where alpha is < 1
      * @param updateManager Responsible for allowing the Overlay to update
-     *                       between renders. If this is null a default
-     *                       manager is created.
-     * @param numBuffers    The number of buffers to generate, the default
-     *                       is two.
+     *   between renders. If this is null a default manager is created
+     * @param numBuffers The number of buffers to generate, the default is two
      */
     public OverlayBase(Canvas3D canvas3D,
                        Rectangle bounds,
@@ -151,13 +182,14 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
                        int numBuffers)
     {
         this.canvas3D = canvas3D;
-        this.visible = true;
-        this.antialiased = true;
         this.bounds = bounds;
-        this.offset = new Dimension(bounds.x, bounds.y);
-        this.hasAlpha = clipAlpha || blendAlpha;
-        this.canvas = OverlayUtilities.createBufferedImage(bounds.getSize(), hasAlpha);
-        this.mouseManager = new ComponentMouseManager(canvas3D, this);
+
+        visible = true;
+        antialiased = true;
+        offset = new Dimension(bounds.x, bounds.y);
+        hasAlpha = clipAlpha || blendAlpha;
+        canvas = OverlayUtilities.createBufferedImage(bounds.getSize(), hasAlpha);
+        mouseManager = new ComponentMouseManager(canvas3D, this);
 
         canvas3D.addComponentListener(this);
 
@@ -210,7 +242,9 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
 
         if(hasAlpha)
         {
-            transparencyAttributes = new TransparencyAttributes(TransparencyAttributes.BLENDED, 1.0f);
+            transparencyAttributes =
+                new TransparencyAttributes(TransparencyAttributes.BLENDED,
+                                           1.0f);
             textureAttributes.setTextureBlendColor(new Color4f(0, 0, 0, 1));
         }
 
@@ -224,12 +258,16 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
             for(int i = 0; i < n; i++)
             {
                 Rectangle current_space = (Rectangle)overlays.get(i);
-                subOverlay[i] = new SubOverlay(current_space, numBuffers);
+                subOverlay[i] = new SubOverlay(current_space,
+                                               numBuffers,
+                                               hasAlpha,
+                                               polygonAttributes,
+                                               renderAttributes,
+                                               textureAttributes,
+                                               transparencyAttributes);
                 consoleTransformGroup.addChild(subOverlay[i].getShape());
             }
         }
-
-        initialize();
 
         // Dirty everything and an initial WakeupOnActivation will sync everything
 
@@ -237,12 +275,6 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
         {
             dirtyCheck[i] = true;
         }
-
-        repaint();
-    }
-
-    protected void initialize()
-    {
     }
 
     public Rectangle getBounds()
@@ -295,7 +327,8 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
      */
     public void setRelativePosition(int[] relativePositon)
     {
-        setRelativePosition(relativePosition[X_PLACEMENT], relativePosition[Y_PLACEMENT]);
+        setRelativePosition(relativePosition[X_PLACEMENT],
+                            relativePosition[Y_PLACEMENT]);
     }
 
     /**
@@ -336,6 +369,11 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
         }
     }
 
+    /**
+     * Check to see whether this overlay is currently antialiased.
+     *
+     * @return true if this overlay is antialiased
+     */
     public boolean isAntialiased()
     {
         return antialiased;
@@ -343,6 +381,8 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
 
     /**
      * Returns the canvas being drawn on.
+     *
+     * @return The current canvas instance
      */
     public Canvas3D getCanvas()
     {
@@ -359,7 +399,8 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
         if(backgroundMode == BACKGROUND_COPY && backgroundImage != null)
             canvas.setData(backgroundImage.getRaster());
 
-        Graphics2D g =(Graphics2D)canvas.getGraphics();
+        Graphics2D g = (Graphics2D)canvas.getGraphics();
+
         if(antialiased)
         {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -367,6 +408,7 @@ public class OverlayBase implements Overlay, ScreenComponent, ComponentListener
             g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
+
         return g;
     }
 
