@@ -33,7 +33,7 @@ import org.j3d.util.ColorUtils;
  * Wesley, 1990.
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ColorInterpolator extends Interpolator
 {
@@ -375,8 +375,8 @@ public class ColorInterpolator extends Interpolator
         // adjust loc up to the first key greater than the new key.
         if(loc < 0)
             loc = 0;
-        while (loc<currentSize && keys[loc]<=key) 
-            loc++; 
+        while (loc<currentSize && keys[loc]<=key)
+            loc++;
 
         realloc();
 
@@ -443,10 +443,23 @@ public class ColorInterpolator extends Interpolator
                     float[] p1 = keyValues[loc + 1];
                     float[] p0 = keyValues[loc];
 
-                    // In HSV space, [0] may be NaN. That could end up with
-                    // some weird problems. For the moment, let's just leave
-                    // it and see if we ever get any bug reports about it.
-                    float x_dist = p1[0] - p0[0];
+                    float x0 = p0[0];
+                    float x1 = p1[0];
+
+                    if(colorSpace == HSV_SPACE)
+                    {
+                        // if both are NaN do nothing
+                        if(Float.isNaN(x0) && !Float.isNaN(x1))
+                        {
+                            x0 = x1;
+                        }
+                        else if(!Float.isNaN(x0) && Float.isNaN(x1))
+                        {
+                            x1 = x0;
+                        }
+                    }
+
+                    float x_dist = x1 - x0;
                     float y_dist = p1[1] - p0[1];
                     float z_dist = p1[2] - p0[2];
                     float w_dist = p1[3] - p0[3];
@@ -465,12 +478,12 @@ System.out.println("Prev key " + prev_key);
 System.out.println("Next key " + found_key);
 System.out.println("Reqd key " + key);
 System.out.println("Fraction is " + fraction);
-System.out.println("r " + p0[0] + " x_dist " + x_dist);
+System.out.println("r " + x0 + " x_dist " + x_dist);
 System.out.println("g " + p0[1] + " y_dist " + y_dist);
 System.out.println("b " + p0[2] + " z_dist " + z_dist);
-System.out.println("a " + p0[2] + " w_dist " + w_dist);
+System.out.println("a " + p0[3] + " w_dist " + w_dist);
 */
-                    sharedVector[0] = p0[0] + fraction * x_dist;
+                    sharedVector[0] = x0 + fraction * x_dist;
                     sharedVector[1] = p0[1] + fraction * y_dist;
                     sharedVector[2] = p0[2] + fraction * z_dist;
                     sharedVector[3] = p0[3] + fraction * w_dist;
