@@ -17,6 +17,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
 import javax.vecmath.Color4f;
+
 import javax.vecmath.Vector3d;
 
 // Application specific imports
@@ -42,7 +43,7 @@ import javax.vecmath.Vector3d;
  * </pre>
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class TextureOverlay implements Overlay, ComponentListener
 {
@@ -207,6 +208,7 @@ public class TextureOverlay implements Overlay, ComponentListener
         else
         {
             overlayBounds = new Rectangle(0, 0, size.width, size.height);
+
             fixedSize = true;
 
             if(canvas3D != null)
@@ -250,8 +252,10 @@ public class TextureOverlay implements Overlay, ComponentListener
 
         // define the rendering attributes used by all sub-overlays
         renderAttributes = new RenderingAttributes();
-        renderAttributes.setDepthBufferEnable(false);
-        renderAttributes.setDepthBufferWriteEnable(false);
+
+        // Disabled because orderedGroup interaction not working.  Using PolygonOffset for now.
+        //renderAttributes.setDepthBufferEnable(false);
+        //renderAttributes.setDepthBufferWriteEnable(false);
         renderAttributes.setIgnoreVertexColors(true);
         renderAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_READ);
         renderAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);
@@ -259,12 +263,15 @@ public class TextureOverlay implements Overlay, ComponentListener
         // define the polygon attributes for all the sub-overlays
         pa = new PolygonAttributes();
         pa.setBackFaceNormalFlip(false);
+        // This value is not always correct, need to base on front/back clipping
+        pa.setPolygonOffset(-9000000);
         pa.setCullFace(PolygonAttributes.CULL_NONE);
         pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
 
         // define the texture attributes for all the sub-overlays
         ta = new TextureAttributes();
         ta.setTextureMode(TextureAttributes.REPLACE);
+
         ta.setPerspectiveCorrectionMode(TextureAttributes.FASTEST);
         ta.setTextureBlendColor(new Color4f(0, 0, 0, 1));
 
@@ -318,7 +325,6 @@ public class TextureOverlay implements Overlay, ComponentListener
         Shape3D shape = new Shape3D();
         shape.setAppearance(appearance);
         shape.setGeometry(geometry);
-
         consoleTG.addChild(shape);
 
         dirtyCheck[DIRTY_VISIBLE] = true;
@@ -391,8 +397,6 @@ public class TextureOverlay implements Overlay, ComponentListener
         updateManager = mgr;
     }
 
-    /**
-     * Sets the relative offset of the overlay. How this translates into
     /**
      * Sets the location of the top-left corner of the overlay. It will move
      * the overlay to that position on the next update cycle.
@@ -632,8 +636,11 @@ public class TextureOverlay implements Overlay, ComponentListener
     {
         synchronized(overlayBounds)
         {
-            if(componentSize.width == 0 || componentSize.height == 0)
+            if(componentSize.width == 0 || componentSize.height == 0 ||
+                overlayBounds.height == 0 || overlayBounds.width == 0)
+            {
                 return;
+            }
 
             // get the field of view and then calculate the width in meters of the
             // screen
@@ -657,6 +664,7 @@ public class TextureOverlay implements Overlay, ComponentListener
             Vector3d loc = new Vector3d(-c_width / 2 + flipped_x * scale,
                                         -c_height / 2 + flipped_y * scale,
                                         -CONSOLE_Z);
+
 
             plane_offset.setTranslation(loc);
             plane_offset.setScale(scale);
