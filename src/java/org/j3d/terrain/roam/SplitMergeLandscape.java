@@ -34,7 +34,7 @@ import org.j3d.terrain.*;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class SplitMergeLandscape extends Landscape
 {
@@ -55,7 +55,7 @@ public class SplitMergeLandscape extends Landscape
         "The grid depth is not (n * patchSize + 1) in size: ";
 
     /** Patch size in grid points if the user doesn't supply one */
-    private static final int DEFAULT_PATCH_SIZE = 64;
+    private static final int DEFAULT_PATCH_SIZE = 65;
 
     /** The number of tiles to use on an axis */
     private static final int AXIS_TILE_COUNT = 8;
@@ -154,7 +154,7 @@ public class SplitMergeLandscape extends Landscape
         if(patchSize <= 0)
             throw new IllegalArgumentException(NEG_PATCH_SIZE_MSG);
 
-        if(!power2Check(patchSize))
+        if(!power2Check(patchSize - 1))
             throw new IllegalArgumentException(NOT_POW2_MSG);
 
         terrainDataType = data.getSourceDataType();
@@ -210,7 +210,7 @@ public class SplitMergeLandscape extends Landscape
         if(patchSize <= 0)
             throw new IllegalArgumentException(NEG_PATCH_SIZE_MSG);
 
-        if(!power2Check(patchSize))
+        if(!power2Check(patchSize - 1))
             throw new IllegalArgumentException(NOT_POW2_MSG);
 
         terrainDataType = data.getSourceDataType();
@@ -320,36 +320,42 @@ public class SplitMergeLandscape extends Landscape
             splitCandidate = queueManager.getSplitCandidate();
             mergeCandidate = queueManager.getMergeCandidate();
 
+            // Order of priority is to split highest priority first and then
+            // merge as needed.
             if(mergeCandidate == null && splitCandidate != null)
             {
                 if(splitCandidate.variance > accuracy)
                 {
-                    triCount += splitCandidate.split(position, landscapeView, queueManager);
+                    splitCandidate.forceSplit(position,
+                                              landscapeView,
+                                              queueManager);
                 }
                 else
                     done = true;
             }
             else if(mergeCandidate != null && splitCandidate == null)
             {
-                if(mergeCandidate.diamondVariance < accuracy)
+                if(mergeCandidate.variance < accuracy)
                 {
-                    triCount -= mergeCandidate.merge(queueManager);
-                    //System.out.println("No split merge "+mergeCandidate+"  "+mergeCandidate.diamondVariance);
+                    mergeCandidate.merge(queueManager);
                 }
                 else
                     done = true;
             }
             else if(mergeCandidate != null && splitCandidate != null &&
                     (splitCandidate.variance > accuracy ||
-                     splitCandidate.variance > mergeCandidate.diamondVariance))
+                     splitCandidate.variance > mergeCandidate.variance))
             {
-                if (splitCandidate.variance > accuracy)
+                // Need to both split and merge candidates.
+                if(splitCandidate.variance > accuracy)
                 {
-                    triCount += splitCandidate.split(position, landscapeView, queueManager);
+                    splitCandidate.forceSplit(position,
+                                              landscapeView,
+                                              queueManager);
                 }
-                else if (mergeCandidate.diamondVariance < accuracy)
+                else if(mergeCandidate.variance < accuracy)
                 {
-                    triCount -= mergeCandidate.merge(queueManager);
+                    mergeCandidate.merge(queueManager);
                 }
             }
             else
