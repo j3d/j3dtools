@@ -36,9 +36,9 @@ import javax.swing.border.EmptyBorder;
  * string from the ViewpointData and renders that.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-class ViewpointCellRenderer extends JLabel implements ListCellRenderer
+public class ViewpointCellRenderer extends JLabel implements ListCellRenderer
 {
 
     /** The selected border when the cell has focus */
