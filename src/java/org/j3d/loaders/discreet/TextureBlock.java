@@ -30,7 +30,7 @@ package org.j3d.loaders.discreet;
  * </pre>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TextureBlock
 {
@@ -40,7 +40,21 @@ public class TextureBlock
      */
     public String filename;
 
-    /** The map tiling (repeat, clamp etc) */
+    /** A strength (percentage - [0,1]) for the texture map */
+    public float strength;
+
+    /**
+     * The map tiling type (Not for repeat, clamp etc). Control bit flags,
+     * where bit 0 (0x1) activates decaling, bit 1 (0x2) activates mirroring,
+     * bit 3 (0x8) activates negation, bit 4 (0x10) deactivates tiling,
+     * bit 5 (0x20) activates summed area sampling, bit 6 (0x40) activates
+     * alpha sourcing, bit 7 (0x80) activates tinting, bit 8 (0x100) ignores
+     * alpha, and bit 9 (0x200) activates RGB tinting. Bits 7, 8, and 9 are
+     * only used with MAT_TEXMAP, MAT_TEX2MAP, and MAT_SPECMAP chunks. Bit 6,
+     * when used with a MAT_TEXMAP, MAT_TEX2MAP, or MAT_SPECMAP chunk must be
+     * accompanied with a tinting bit, either 7 or 9. Remaining bits are for
+     * internal use only.
+     */
     public int tiling;
 
     // EH? WTF does that translate to?
@@ -61,4 +75,19 @@ public class TextureBlock
 
     /** The amount of rotation of the map (degrees or radians?) */
     public float angle;
+
+    /** blend colour 1. Null if not set. */
+    public float[] blendColor1;
+
+    /** blend colour 2. Null if not set */
+    public float[] blendColor2;
+
+    /** Individual red component blend colour value */
+    public float[] redBlends;
+
+    /** Individual green component blend colour value */
+    public float[] greenBlends;
+
+    /** Individual blue component blend colour value */
+    public float[] blueBlends;
 }
