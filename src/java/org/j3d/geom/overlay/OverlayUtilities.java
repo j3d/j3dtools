@@ -36,7 +36,7 @@ import java.util.List;
  * users too.
  *
  * @author David Yazel
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class OverlayUtilities
 {
@@ -52,37 +52,26 @@ public class OverlayUtilities
     public static BufferedImage createBufferedImage(Dimension size,
                                                     boolean hasAlpha)
     {
-        int numBytes = (hasAlpha ? 4 : 3);
-        int[] numBit = new int[numBytes];
-        int[] bandOffset = new int[numBytes];
-
-        for(int i = 0; i < numBytes; i++)
-        {
-            numBit[i] = 8;
-            bandOffset[i] = i;
-        }
+        int transparency = hasAlpha ?
+                           Transparency.TRANSLUCENT :
+                           Transparency.OPAQUE;
 
         ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-        int transparencyType = (hasAlpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE);
+
         ColorModel colorModel =
             new ComponentColorModel(colorSpace,            // Color space
-                        numBit,                // Bits per color
-                        hasAlpha,              // Has alpha
-                        false,                 // Alpha premultiplied
-                        transparencyType,      // Transparency type
-                        DataBuffer.TYPE_BYTE); // Type of transfer buffer
+                                    hasAlpha,              // Has alpha
+                                    false,                 // Alpha premultiplied
+                                    transparency,          // Transparency type
+                                    DataBuffer.TYPE_BYTE); // Type of transfer buffer
+
         WritableRaster raster =
-            Raster.createInterleavedRaster(DataBuffer.TYPE_BYTE,    // Type of raster
-                           size.width, size.height, // Size
-                           size.width * numBytes,   // Scanline stride
-                           numBytes,                // Pixel stride
-                           bandOffset,              // Band offsets
-                           null);                   // Location (null = 0,0)
+            colorModel.createCompatibleWritableRaster(size.width, size.height);
 
         return new BufferedImage(colorModel, // Color model
-                     raster,     // Raster
-                     false,      // Alpha premultiplied
-                     null);      // Hashtable of properties
+                                 raster,     // Raster
+                                 false,      // Alpha premultiplied
+                                 null);      // Hashtable of properties
     }
 
     /**
