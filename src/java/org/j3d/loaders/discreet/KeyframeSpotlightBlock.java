@@ -30,36 +30,21 @@ package org.j3d.loaders.discreet;
  *     COLOR TRACK TAG 0xB025
  * </pre>
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class KeyframeSpotlightBlock
+public class KeyframeSpotlightBlock extends KeyframeTag
 {
-    /** The spotlight ID this block belongs to. */
-    public int nodeId;
-
-    /** The name of the object this references */
-    public String name;
-
-    /** The position in the heirarchy */
-    public int heirarchyPosition;
-
     /** The track position info */
     public KeyframePositionBlock positions;
 
-    /** The track rotation info */
-    public KeyframeRotationBlock rotations;
-
-    /** The track scale info */
-    public KeyframeScaleBlock scales;
-
     /** Spotlight hotspot track info */
-    public KeyframeHotspotBlock spotHotspots;
+    public KeyframeHotspotBlock hotspots;
 
     /** Spotlight falloff track info */
-    public KeyframeFalloffBlock spotFalloffs;
+    public KeyframeFalloffBlock falloffs;
 
-    /** Camera roll track info */
-    public KeyframeRollBlock cameraRolls;
+    /** Spotlight cone roll track info */
+    public KeyframeRollBlock rolloffs;
 
     /** Colour track info */
     public KeyframeColorBlock colors;

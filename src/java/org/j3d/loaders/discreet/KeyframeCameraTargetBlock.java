@@ -16,24 +16,22 @@ package org.j3d.loaders.discreet;
 // None
 
 /**
- * Representation of a keyframe general lighting handling.
+ * Representation of a collection of a single camera block in a keyframe.
  * <p>
  *
- * A keyframe consists of
+ * A keyframe camera block consists of
  * <pre>
- * LIGHT INFORMATION BLOCK 0xB005
- *     NODE_HDR 0xB010
- *     POS TRACK TAG 0xB020
- *     COLOR TRACK TAG 0xB025
+ * TARGET NODE TAG 0xB004
+ *     NODE ID 0xB030
+ *     NODE HEADER 0xB010
+ *     POSITION TRACK 0xB020
  * </pre>
+ *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.1 $
  */
-public class KeyframeLightBlock extends KeyframeTag
+public class KeyframeCameraTargetBlock extends KeyframeTag
 {
     /** The track position info */
     public KeyframePositionBlock positions;
-
-    /** Track colour info */
-    public KeyframeColorBlock colors;
 }

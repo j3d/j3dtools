@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders.discreet directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.3 $
+# Version: $Revision: 1.4 $
 #
 #*********************************************************************
 
@@ -23,10 +23,12 @@ SOURCE = \
   FieldOfViewData.java \
   RollData.java \
   ColorData.java \
+  MaterialData.java \
   MorphData.java \
   HotspotData.java \
   FalloffData.java \
   NodeHeaderData.java \
+  KeyframeTag.java \
   KeyframePositionBlock.java \
   KeyframeRotationBlock.java \
   KeyframeScaleBlock.java \
@@ -37,8 +39,12 @@ SOURCE = \
   KeyframeHotspotBlock.java \
   KeyframeFalloffBlock.java \
   KeyframeFrameBlock.java \
+  KeyframeLightBlock.java \
   KeyframeSpotlightBlock.java \
-  KeyframeMeshBlock.java \
+  KeyframeCameraBlock.java \
+  KeyframeCameraTargetBlock.java \
+  KeyframeSpotlightTargetBlock.java \
+  KeyframeAmbientBlock.java \
   KeyframeBlock.java \
   TextureBlock.java \
   MaterialBlock.java \

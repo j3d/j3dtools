@@ -28,7 +28,7 @@ import org.j3d.io.BlockDataInputStream;
  * http://www.spacesimulator.net/tut4_3dsloader.html
  *
  * @author  Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class MaxParser
 {
@@ -314,11 +314,9 @@ public class MaxParser
                     // have the fog background flag?
                     if(size - read - 16 - 6 != 0)
                     {
-                        if(readUnsignedShort() == MaxConstants.FOG_BACKGROUND)
-                        {
-                            readInt();
-                            data.fogBackground = true;
-                        }
+                        readUnsignedShort();
+                        readInt();
+                        data.fogBackground = true;
                     }
                     break;
 
@@ -344,11 +342,9 @@ public class MaxParser
 
                     if(size - 16 - 6 != 0)
                     {
-                        if(readUnsignedShort() == MaxConstants.DCUE_BACKGROUND)
-                        {
-                            readInt();
-                            data.fogBackground = true;
-                        }
+                        readUnsignedShort();
+                        readInt();
+                        data.fogBackground = true;
                     }
                     break;
 
@@ -365,7 +361,7 @@ public class MaxParser
                     break;
 
                 case MaxConstants.DEFAULT_VIEW:
-                    System.out.println("default views not handled yet");
+                    // Ignore it. Only used for commandline rendering.
                     skipBytes(size - 6);
                     break;
 
@@ -967,9 +963,11 @@ public class MaxParser
                 // These are deliberately ignored
                 case MaxConstants.MAT_XPFALL:
                 case MaxConstants.MAT_SELF_ILPCT:
+                case MaxConstants.MAT_SELF_ILLUM:
                 case MaxConstants.MAT_XPFALLIN:
                 case MaxConstants.MAT_PHONGSOFT:
                 case MaxConstants.MAT_REFBLUR:
+                case MaxConstants.MAT_USE_REFBLUR:
                 case MaxConstants.MAT_SXP_TEXT_DATA:
                 case MaxConstants.MAT_SXP_TEXT2_DATA:
                 case MaxConstants.MAT_SXP_OPAC_DATA:
@@ -1234,6 +1232,7 @@ public class MaxParser
             int type = readUnsignedShort();
             int size = readInt();
 
+//System.out.println("keyframe 0x" + Integer.toHexString(type) + " size " + size);
             switch(type)
             {
                 case MaxConstants.KEYFRAME_HEADER:
@@ -1252,7 +1251,36 @@ public class MaxParser
                     break;
 
                 case MaxConstants.OBJECT_NODE_TAG:
-                    readNodeTag(size - 6, keyframe);
+                    readObjectNodeTag(size - 6, keyframe);
+                    break;
+
+                case MaxConstants.CAMERA_NODE_TAG:
+                    readCameraNodeTag(size - 6, keyframe);
+                    break;
+
+                case MaxConstants.TARGET_NODE_TAG:
+                    readCameraTargetNodeTag(size - 6, keyframe);
+                    break;
+
+                case MaxConstants.LIGHT_NODE_TAG:
+                    readLightNodeTag(size - 6, keyframe);
+                    break;
+
+                case MaxConstants.SPOTLIGHT_NODE_TAG:
+                    readSpotlightNodeTag(size - 6, keyframe);
+                    break;
+
+                case MaxConstants.LIGHT_TARGET_NODE_TAG:
+                    readSpotlightTargetNodeTag(size - 6, keyframe);
+                    break;
+
+                case MaxConstants.AMBIENT_NODE_TAG:
+                    readAmbientNodeTag(size - 6, keyframe);
+                    break;
+
+                case MaxConstants.VIEWPORT_LAYOUT:
+                    // ignored.
+                    skipBytes(size - 6);
                     break;
 
                 default:
@@ -1270,12 +1298,12 @@ public class MaxParser
     }
 
     /**
-     * Read the a node tag for the given keyframe.
+     * Read the a node tag for the given keyframe object node tag.
      *
      * @param bytesToRead number of bytes requiring processing
-     * @param data The object block to put everything into
+     * @param data The keyframe block to put everything into
      */
-    private void readNodeTag(int bytesToRead, KeyframeBlock data)
+    private void readObjectNodeTag(int bytesToRead, KeyframeBlock data)
         throws IOException
     {
         if((data.frames == null) ||
@@ -1309,46 +1337,43 @@ public class MaxParser
                     break;
 
                 case MaxConstants.KEYFRAME_POSITION_TRACK_TAG:
-                    readPositionTag(size - 6, frame);
+                    frame.positions = new KeyframePositionBlock();
+                    readPositionTag(size - 6, frame.positions);
                     break;
 
                 case MaxConstants.KEYFRAME_ROTATION_TRACK_TAG:
-                    readRotationTag(size - 6, frame);
+                    frame.rotations = new KeyframeRotationBlock();
+                    readRotationTag(size - 6, frame.rotations);
                     break;
 
                 case MaxConstants.KEYFRAME_SCALE_TRACK_TAG:
-                    readScaleTag(size - 6, frame);
-                    break;
-
-                case MaxConstants.KEYFRAME_FOV_TRACK_TAG:
-                    readFieldOfViewTag(size - 6, frame);
-                    break;
-
-                case MaxConstants.KEYFRAME_ROLL_TRACK_TAG:
-                    readRolloffTag(size - 6, frame);
-                    break;
-
-                case MaxConstants.KEYFRAME_COLOR_TRACK_TAG:
-                    readColorTag(size - 6, frame);
+                    frame.scales = new KeyframeScaleBlock();
+                    readScaleTag(size - 6, frame.scales);
                     break;
 
                 case MaxConstants.KEYFRAME_MORPH_TRACK_TAG:
-                    readMorphTag(size - 6, frame);
+                    frame.morphs = new KeyframeMorphBlock();
+                    readMorphTag(size - 6, frame.morphs);
                     break;
 
-                case MaxConstants.KEYFRAME_HOTSPOT_TRACK_TAG:
-                    readHotspotTag(size - 6, frame);
+                case MaxConstants.KEYFRAME_INSTANCE_NAME:
+                    frame.instanceName = readString();
                     break;
 
-                case MaxConstants.KEYFRAME_FALLOFF_TRACK_TAG:
-                    readFalloffTag(size - 6, frame);
+                case MaxConstants.KEYFRAME_BOUNDS:
+                    readPoint(frame.minBounds, 0);
+                    readPoint(frame.maxBounds, 0);
                     break;
 
                 case MaxConstants.KEYFRAME_PIVOT:
-                    frame.pivotPoint = new float[3];
                     readPoint(frame.pivotPoint, 0);
                     break;
 
+                case MaxConstants.KEYFRAME_SMOOTH_MORPH:
+                    frame.morphSmoothingAngle = readFloat();
+                    break;
+
+                // hide track not handed yet
                 default:
                     System.out.println("Unknown keyframe frame ID 0x" +
                                        Integer.toHexString(type));
@@ -1364,12 +1389,398 @@ public class MaxParser
     }
 
     /**
+     * Read the a node tag for the given keyframe camera node tag.
+     *
+     * @param bytesToRead number of bytes requiring processing
+     * @param data The keyframe block to put everything into
+     */
+    private void readCameraNodeTag(int bytesToRead, KeyframeBlock data)
+        throws IOException
+    {
+        if((data.cameraInfo == null) ||
+            data.cameraInfo.length == data.numCameras)
+        {
+            KeyframeCameraBlock[] tmp = new KeyframeCameraBlock[data.numCameras + 8];
+
+            if(data.numCameras != 0)
+                System.arraycopy(data.cameraInfo, 0, tmp, 0, data.numCameras);
+            data.cameraInfo = tmp;
+        }
+
+        KeyframeCameraBlock camera = new KeyframeCameraBlock();
+        data.cameraInfo[data.numCameras] = camera;
+        data.numCameras++;
+
+        int bytes_read = 0;
+        while(bytes_read < bytesToRead)
+        {
+            int type = readUnsignedShort();
+            int size = readInt();
+
+            switch(type)
+            {
+                case MaxConstants.KEYFRAME_NODE_ID:
+                    camera.nodeId = readUnsignedShort();
+                    break;
+
+                case MaxConstants.KEYFRAME_NODE_HEADER:
+                    readNodeHeader(size - 6, camera);
+                    break;
+
+                case MaxConstants.KEYFRAME_POSITION_TRACK_TAG:
+                    camera.positions = new KeyframePositionBlock();
+                    readPositionTag(size - 6, camera.positions);
+                    break;
+
+                case MaxConstants.KEYFRAME_FOV_TRACK_TAG:
+                    camera.fovs = new KeyframeFOVBlock();
+                    readFieldOfViewTag(size - 6, camera.fovs);
+                    break;
+
+                case MaxConstants.KEYFRAME_ROLL_TRACK_TAG:
+                    camera.rolls = new KeyframeRollBlock();
+                    readRolloffTag(size - 6, camera.rolls);
+                    break;
+
+                default:
+                    System.out.println("Unknown keyframe camera ID 0x" +
+                                       Integer.toHexString(type));
+                    skipBytes(size - 6);
+            }
+
+            bytes_read += size;
+        }
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Incorrect bytes read from file for keyframe camera. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
+    }
+
+    /**
+     * Read the a node tag for the given keyframe camera node tag.
+     *
+     * @param bytesToRead number of bytes requiring processing
+     * @param data The keyframe block to put everything into
+     */
+    private void readCameraTargetNodeTag(int bytesToRead, KeyframeBlock data)
+        throws IOException
+    {
+        if((data.cameraTargetInfo == null) ||
+            data.cameraTargetInfo.length == data.numCameraTargets)
+        {
+            KeyframeCameraTargetBlock[] tmp =
+                new KeyframeCameraTargetBlock[data.numCameraTargets + 8];
+
+            if(data.numCameraTargets != 0)
+                System.arraycopy(data.cameraTargetInfo, 0, tmp, 0, data.numCameraTargets);
+            data.cameraTargetInfo = tmp;
+        }
+
+        KeyframeCameraTargetBlock target = new KeyframeCameraTargetBlock();
+        data.cameraTargetInfo[data.numCameraTargets] = target;
+        data.numCameraTargets++;
+
+        int bytes_read = 0;
+        while(bytes_read < bytesToRead)
+        {
+            int type = readUnsignedShort();
+            int size = readInt();
+
+            switch(type)
+            {
+                case MaxConstants.KEYFRAME_NODE_ID:
+                    target.nodeId = readUnsignedShort();
+                    break;
+
+                case MaxConstants.KEYFRAME_NODE_HEADER:
+                    readNodeHeader(size - 6, target);
+                    break;
+
+                case MaxConstants.KEYFRAME_POSITION_TRACK_TAG:
+                    target.positions = new KeyframePositionBlock();
+                    readPositionTag(size - 6, target.positions);
+                    break;
+
+                default:
+                    System.out.println("Unknown keyframe camera target ID 0x" +
+                                       Integer.toHexString(type));
+                    skipBytes(size - 6);
+            }
+
+            bytes_read += size;
+        }
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Incorrect bytes read from file for keyframe camera target. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
+    }
+
+    /**
+     * Read the a node tag for the given keyframe camera node tag.
+     *
+     * @param bytesToRead number of bytes requiring processing
+     * @param data The keyframe block to put everything into
+     */
+    private void readAmbientNodeTag(int bytesToRead, KeyframeBlock data)
+        throws IOException
+    {
+        if((data.ambientInfo == null) ||
+            data.ambientInfo.length == data.numAmbients)
+        {
+            KeyframeAmbientBlock[] tmp = new KeyframeAmbientBlock[data.numAmbients + 8];
+
+            if(data.numAmbients != 0)
+                System.arraycopy(data.ambientInfo, 0, tmp, 0, data.numAmbients);
+            data.ambientInfo = tmp;
+        }
+
+        KeyframeAmbientBlock light = new KeyframeAmbientBlock();
+        data.ambientInfo[data.numAmbients] = light;
+        data.numAmbients++;
+
+        int bytes_read = 0;
+        while(bytes_read < bytesToRead)
+        {
+            int type = readUnsignedShort();
+            int size = readInt();
+
+            switch(type)
+            {
+                case MaxConstants.KEYFRAME_NODE_ID:
+                    light.nodeId = readUnsignedShort();
+                    break;
+
+                case MaxConstants.KEYFRAME_NODE_HEADER:
+                    readNodeHeader(size - 6, light);
+                    break;
+
+                case MaxConstants.KEYFRAME_COLOR_TRACK_TAG:
+                    light.colors = new KeyframeColorBlock();
+                    readColorTag(size - 6, light.colors);
+                    break;
+
+                default:
+                    System.out.println("Unknown keyframe ambient ID 0x" +
+                                       Integer.toHexString(type));
+                    skipBytes(size - 6);
+            }
+
+            bytes_read += size;
+        }
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Incorrect bytes read from file for keyframe ambient. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
+    }
+
+    /**
+     * Read the a node tag for the given keyframe camera node tag.
+     *
+     * @param bytesToRead number of bytes requiring processing
+     * @param data The keyframe block to put everything into
+     */
+    private void readLightNodeTag(int bytesToRead, KeyframeBlock data)
+        throws IOException
+    {
+        if((data.lightInfo == null) ||
+            data.lightInfo.length == data.numLights)
+        {
+            KeyframeLightBlock[] tmp = new KeyframeLightBlock[data.numLights + 8];
+
+            if(data.numLights != 0)
+                System.arraycopy(data.lightInfo, 0, tmp, 0, data.numLights);
+            data.lightInfo = tmp;
+        }
+
+        KeyframeLightBlock light = new KeyframeLightBlock();
+        data.lightInfo[data.numLights] = light;
+        data.numLights++;
+
+        int bytes_read = 0;
+        while(bytes_read < bytesToRead)
+        {
+            int type = readUnsignedShort();
+            int size = readInt();
+
+            switch(type)
+            {
+                case MaxConstants.KEYFRAME_NODE_ID:
+                    light.nodeId = readUnsignedShort();
+                    break;
+
+                case MaxConstants.KEYFRAME_NODE_HEADER:
+                    readNodeHeader(size - 6, light);
+                    break;
+
+                case MaxConstants.KEYFRAME_POSITION_TRACK_TAG:
+                    light.positions = new KeyframePositionBlock();
+                    readPositionTag(size - 6, light.positions);
+                    break;
+
+                case MaxConstants.KEYFRAME_COLOR_TRACK_TAG:
+                    light.colors = new KeyframeColorBlock();
+                    readColorTag(size - 6, light.colors);
+                    break;
+
+                default:
+                    System.out.println("Unknown keyframe light ID 0x" +
+                                       Integer.toHexString(type));
+                    skipBytes(size - 6);
+            }
+
+            bytes_read += size;
+        }
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Incorrect bytes read from file for keyframe light. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
+    }
+
+    /**
+     * Read the a node tag for the given keyframe camera node tag.
+     *
+     * @param bytesToRead number of bytes requiring processing
+     * @param data The keyframe block to put everything into
+     */
+    private void readSpotlightNodeTag(int bytesToRead, KeyframeBlock data)
+        throws IOException
+    {
+        if((data.spotlightInfo == null) ||
+            data.spotlightInfo.length == data.numSpotlights)
+        {
+            KeyframeSpotlightBlock[] tmp =
+                new KeyframeSpotlightBlock[data.numSpotlights + 8];
+
+            if(data.numSpotlights != 0)
+                System.arraycopy(data.spotlightInfo, 0, tmp, 0, data.numSpotlights);
+            data.spotlightInfo = tmp;
+        }
+
+        KeyframeSpotlightBlock light = new KeyframeSpotlightBlock();
+        data.spotlightInfo[data.numSpotlights] = light;
+        data.numSpotlights++;
+
+        int bytes_read = 0;
+        while(bytes_read < bytesToRead)
+        {
+            int type = readUnsignedShort();
+            int size = readInt();
+
+            switch(type)
+            {
+                case MaxConstants.KEYFRAME_NODE_ID:
+                    light.nodeId = readUnsignedShort();
+                    break;
+
+                case MaxConstants.KEYFRAME_NODE_HEADER:
+                    readNodeHeader(size - 6, light);
+                    break;
+
+                case MaxConstants.KEYFRAME_POSITION_TRACK_TAG:
+                    light.positions = new KeyframePositionBlock();
+                    readPositionTag(size - 6, light.positions);
+                    break;
+
+                case MaxConstants.KEYFRAME_COLOR_TRACK_TAG:
+                    light.colors = new KeyframeColorBlock();
+                    readColorTag(size - 6, light.colors);
+                    break;
+
+                case MaxConstants.KEYFRAME_HOTSPOT_TRACK_TAG:
+                    light.hotspots = new KeyframeHotspotBlock();
+                    readHotspotTag(size - 6, light.hotspots);
+                    break;
+
+                case MaxConstants.KEYFRAME_FALLOFF_TRACK_TAG:
+                    light.falloffs = new KeyframeFalloffBlock();
+                    readFalloffTag(size - 6, light.falloffs);
+                    break;
+
+                case MaxConstants.KEYFRAME_ROLL_TRACK_TAG:
+                    light.rolloffs = new KeyframeRollBlock();
+                    readRolloffTag(size - 6, light.rolloffs);
+                    break;
+
+                default:
+                    System.out.println("Unknown keyframe spotlight ID 0x" +
+                                       Integer.toHexString(type));
+                    skipBytes(size - 6);
+            }
+
+            bytes_read += size;
+        }
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Incorrect bytes read from file for keyframe spotlight. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
+    }
+
+    /**
+     * Read the a node tag for the given keyframe camera node tag.
+     *
+     * @param bytesToRead number of bytes requiring processing
+     * @param data The keyframe block to put everything into
+     */
+    private void readSpotlightTargetNodeTag(int bytesToRead, KeyframeBlock data)
+        throws IOException
+    {
+        if((data.spotlightTargetInfo == null) ||
+            data.spotlightTargetInfo.length == data.numSpotlightTargets)
+        {
+            KeyframeSpotlightTargetBlock[] tmp =
+                new KeyframeSpotlightTargetBlock[data.numSpotlightTargets + 8];
+
+            if(data.numSpotlightTargets != 0)
+                System.arraycopy(data.spotlightTargetInfo, 0, tmp, 0, data.numSpotlightTargets);
+            data.spotlightTargetInfo = tmp;
+        }
+
+        KeyframeSpotlightTargetBlock target = new KeyframeSpotlightTargetBlock();
+        data.spotlightTargetInfo[data.numSpotlightTargets] = target;
+        data.numSpotlightTargets++;
+
+        int bytes_read = 0;
+        while(bytes_read < bytesToRead)
+        {
+            int type = readUnsignedShort();
+            int size = readInt();
+
+            switch(type)
+            {
+                case MaxConstants.KEYFRAME_NODE_ID:
+                    target.nodeId = readUnsignedShort();
+                    break;
+
+                case MaxConstants.KEYFRAME_NODE_HEADER:
+                    readNodeHeader(size - 6, target);
+                    break;
+
+                case MaxConstants.KEYFRAME_POSITION_TRACK_TAG:
+                    target.positions = new KeyframePositionBlock();
+                    readPositionTag(size - 6, target.positions);
+                    break;
+
+                default:
+                    System.out.println("Unknown keyframe spotlight target ID 0x" +
+                                       Integer.toHexString(type));
+                    skipBytes(size - 6);
+            }
+
+            bytes_read += size;
+        }
+
+        if(bytes_read != bytesToRead)
+             System.out.println("Incorrect bytes read from file for keyframe spotlight target. " +
+                                "Read: " + bytes_read + " required " + bytesToRead);
+    }
+
+    /**
      * Read the a node header for the given keyframe.
      *
      * @param bytesToRead number of bytes requiring processing
      * @param frame The frame to put everything into
      */
-    private void readNodeHeader(int bytesToRead, KeyframeFrameBlock frame)
+    private void readNodeHeader(int bytesToRead, KeyframeTag frame)
         throws IOException
     {
         frame.nodeHeader = new NodeHeaderData();
@@ -1381,7 +1792,7 @@ public class MaxParser
         int bytes_read = frame.nodeHeader.name.length() + 1 + 2 + 2 + 2;
 
         if(bytes_read != bytesToRead)
-             System.out.println("Incorrect bytes read from file for keyframe header. " +
+             System.out.println("Incorrect bytes read from file for keyframe node header. " +
                                 "Read: " + bytes_read + " required " + bytesToRead);
     }
 
@@ -1391,23 +1802,9 @@ public class MaxParser
      * @param bytesToRead number of bytes requiring processing
      * @param frame The frame to put everything into
      */
-    private void readPositionTag(int bytesToRead, KeyframeFrameBlock frame)
+    private void readPositionTag(int bytesToRead, KeyframePositionBlock pos)
         throws IOException
     {
-        if((frame.positions == null) ||
-            frame.positions.length == frame.numPositions)
-        {
-            KeyframePositionBlock[] tmp = new KeyframePositionBlock[frame.numPositions + 8];
-
-            if(frame.numPositions != 0)
-                System.arraycopy(frame.positions, 0, tmp, 0, frame.numPositions);
-            frame.positions = tmp;
-        }
-
-        KeyframePositionBlock pos = new KeyframePositionBlock();
-        frame.positions[frame.numPositions] = pos;
-        frame.numPositions++;
-
         pos.flags = readUnsignedShort();
         readInt();
         readInt();
@@ -1434,23 +1831,9 @@ public class MaxParser
      * @param bytesToRead number of bytes requiring processing
      * @param frame The frame to put everything into
      */
-    private void readRotationTag(int bytesToRead, KeyframeFrameBlock frame)
+    private void readRotationTag(int bytesToRead, KeyframeRotationBlock rot)
         throws IOException
     {
-        if((frame.rotations == null) ||
-            frame.rotations.length == frame.numRotations)
-        {
-            KeyframeRotationBlock[] tmp = new KeyframeRotationBlock[frame.numRotations + 8];
-
-            if(frame.numRotations != 0)
-                System.arraycopy(frame.rotations, 0, tmp, 0, frame.numRotations);
-            frame.rotations = tmp;
-        }
-
-        KeyframeRotationBlock rot = new KeyframeRotationBlock();
-        frame.rotations[frame.numRotations] = rot;
-        frame.numRotations++;
-
         rot.flags = readUnsignedShort();
         readInt();
         readInt();
@@ -1478,23 +1861,9 @@ public class MaxParser
      * @param bytesToRead number of bytes requiring processing
      * @param frame The frame to put everything into
      */
-    private void readScaleTag(int bytesToRead, KeyframeFrameBlock frame)
+    private void readScaleTag(int bytesToRead, KeyframeScaleBlock scale)
         throws IOException
     {
-        if((frame.scales == null) ||
-            frame.scales.length == frame.numScales)
-        {
-            KeyframeScaleBlock[] tmp = new KeyframeScaleBlock[frame.numScales + 8];
-
-            if(frame.numScales != 0)
-                System.arraycopy(frame.scales, 0, tmp, 0, frame.numScales);
-            frame.scales = tmp;
-        }
-
-        KeyframeScaleBlock scale = new KeyframeScaleBlock();
-        frame.scales[frame.numScales] = scale;
-        frame.numScales++;
-
         scale.flags = readUnsignedShort();
         readInt();
         readInt();
@@ -1521,23 +1890,9 @@ public class MaxParser
      * @param bytesToRead number of bytes requiring processing
      * @param frame The frame to put everything into
      */
-    private void readFieldOfViewTag(int bytesToRead, KeyframeFrameBlock frame)
+    private void readFieldOfViewTag(int bytesToRead, KeyframeFOVBlock fov)
         throws IOException
     {
-        if((frame.fovs == null) ||
-            frame.fovs.length == frame.numFOVs)
-        {
-            KeyframeFOVBlock[] tmp = new KeyframeFOVBlock[frame.numFOVs + 8];
-
-            if(frame.numFOVs != 0)
-                System.arraycopy(frame.fovs, 0, tmp, 0, frame.numFOVs);
-            frame.fovs = tmp;
-        }
-
-        KeyframeFOVBlock fov = new KeyframeFOVBlock();
-        frame.fovs[frame.numFOVs] = fov;
-        frame.numFOVs++;
-
         fov.flags = readUnsignedShort();
         readInt();
         readInt();
@@ -1561,22 +1916,9 @@ public class MaxParser
      * @param bytesToRead number of bytes requiring processing
      * @param frame The frame to put everything into
      */
-    private void readRolloffTag(int bytesToRead, KeyframeFrameBlock frame)
+    private void readRolloffTag(int bytesToRead, KeyframeRollBlock rolloff)
         throws IOException
     {
-        if((frame.rolls == null) || frame.rolls.length == frame.numRolls)
-        {
-            KeyframeRollBlock[] tmp = new KeyframeRollBlock[frame.numRolls + 8];
-
-            if(frame.numRolls != 0)
-                System.arraycopy(frame.rolls, 0, tmp, 0, frame.numRolls);
-            frame.rolls = tmp;
-        }
-
-        KeyframeRollBlock rolloff = new KeyframeRollBlock();
-        frame.rolls[frame.numRolls] = rolloff;
-        frame.numRolls++;
-
         rolloff.flags = readUnsignedShort();
         readInt();
         readInt();
@@ -1600,23 +1942,9 @@ public class MaxParser
      * @param bytesToRead number of bytes requiring processing
      * @param frame The frame to put everything into
      */
-    private void readColorTag(int bytesToRead, KeyframeFrameBlock frame)
+    private void readColorTag(int bytesToRead, KeyframeColorBlock color)
         throws IOException
     {
-        if((frame.colors == null) ||
-            frame.colors.length == frame.numColors)
-        {
-            KeyframeColorBlock[] tmp = new KeyframeColorBlock[frame.numColors + 8];
-
-            if(frame.numColors != 0)
-                System.arraycopy(frame.colors, 0, tmp, 0, frame.numColors);
-            frame.colors = tmp;
-        }
-
-        KeyframeColorBlock color = new KeyframeColorBlock();
-        frame.colors[frame.numColors] = color;
-        frame.numColors++;
-
         color.flags = readUnsignedShort();
         readInt();
         readInt();
@@ -1642,23 +1970,9 @@ public class MaxParser
      * @param bytesToRead number of bytes requiring processing
      * @param frame The frame to put everything into
      */
-    private void readMorphTag(int bytesToRead, KeyframeFrameBlock frame)
+    private void readMorphTag(int bytesToRead, KeyframeMorphBlock morph)
         throws IOException
     {
-        if((frame.morphs == null) ||
-            frame.morphs.length == frame.numMorphs)
-        {
-            KeyframeMorphBlock[] tmp = new KeyframeMorphBlock[frame.numMorphs + 8];
-
-            if(frame.numMorphs != 0)
-                System.arraycopy(frame.morphs, 0, tmp, 0, frame.numMorphs);
-            frame.morphs = tmp;
-        }
-
-        KeyframeMorphBlock morph = new KeyframeMorphBlock();
-        frame.morphs[frame.numMorphs] = morph;
-        frame.numMorphs++;
-
         morph.flags = readUnsignedShort();
         readInt();
         readInt();
@@ -1686,23 +2000,9 @@ public class MaxParser
      * @param bytesToRead number of bytes requiring processing
      * @param frame The frame to put everything into
      */
-    private void readHotspotTag(int bytesToRead, KeyframeFrameBlock frame)
+    private void readHotspotTag(int bytesToRead, KeyframeHotspotBlock hotspot)
         throws IOException
     {
-        if((frame.hotspots == null) ||
-            frame.hotspots.length == frame.numHotspots)
-        {
-            KeyframeHotspotBlock[] tmp = new KeyframeHotspotBlock[frame.numHotspots + 8];
-
-            if(frame.numHotspots != 0)
-                System.arraycopy(frame.hotspots, 0, tmp, 0, frame.numHotspots);
-            frame.hotspots = tmp;
-        }
-
-        KeyframeHotspotBlock hotspot = new KeyframeHotspotBlock();
-        frame.hotspots[frame.numHotspots] = hotspot;
-        frame.numHotspots++;
-
         hotspot.flags = readUnsignedShort();
         readInt();
         readInt();
@@ -1726,23 +2026,9 @@ public class MaxParser
      * @param bytesToRead number of bytes requiring processing
      * @param frame The frame to put everything into
      */
-    private void readFalloffTag(int bytesToRead, KeyframeFrameBlock frame)
+    private void readFalloffTag(int bytesToRead, KeyframeFalloffBlock falloff)
         throws IOException
     {
-        if((frame.falloffs == null) ||
-            frame.falloffs.length == frame.numFalloffs)
-        {
-            KeyframeFalloffBlock[] tmp = new KeyframeFalloffBlock[frame.numFalloffs + 8];
-
-            if(frame.numFalloffs != 0)
-                System.arraycopy(frame.falloffs, 0, tmp, 0, frame.numFalloffs);
-            frame.falloffs = tmp;
-        }
-
-        KeyframeFalloffBlock falloff = new KeyframeFalloffBlock();
-        frame.falloffs[frame.numFalloffs] = falloff;
-        frame.numFalloffs++;
-
         falloff.flags = readUnsignedShort();
         readInt();
         readInt();

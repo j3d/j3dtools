@@ -24,6 +24,8 @@ package org.j3d.loaders.discreet;
  * FRAMES (START AND END) 0xB008
  *     OBJECT NAME 0xB010
  *     OBJECT PIVOT POINT 0xB013
+ *     INSTANCE NAME
+ *     BOUNDBOX  0xB014
  *     POSITION TRACK 0xB020
  *     ROTATION TRACK 0xB021
  *     SCALE TRACK 0xB022
@@ -31,70 +33,44 @@ package org.j3d.loaders.discreet;
  * </pre>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class KeyframeFrameBlock
+public class KeyframeFrameBlock extends KeyframeTag
 {
-    /** An identifier for the node */
-    public int nodeId;
-
-    /** Node header data, if specified */
-    public NodeHeaderData nodeHeader;
-
     /** The pivot point coordinate for this block */
     public float[] pivotPoint;
 
-    /** The track position info */
-    public KeyframePositionBlock[] positions;
+    /** The name of the object instance */
+    public String instanceName;
 
-    /** Number of valid positions to use */
-    public int numPositions;
+    /** Bounding box minimum positions of the mesh */
+    public float[] minBounds;
+
+    /** Bounding box maximum positions of the mesh */
+    public float[] maxBounds;
+
+    /** The track position info */
+    public KeyframePositionBlock positions;
 
     /** The track rotation info */
-    public KeyframeRotationBlock[] rotations;
-
-    /** Number of valid rotations to use */
-    public int numRotations;
+    public KeyframeRotationBlock rotations;
 
     /** The track scale info */
-    public KeyframeScaleBlock[] scales;
-
-    /** Number of valid scales to use */
-    public int numScales;
-
-    /** The track field of view info */
-    public KeyframeFOVBlock[] fovs;
-
-    /** Number of valid field of views to use */
-    public int numFOVs;
-
-    /** The track camera roll info */
-    public KeyframeRollBlock[] rolls;
-
-    /** Number of valid rolls to use */
-    public int numRolls;
-
-    /** The track color info */
-    public KeyframeColorBlock[] colors;
-
-    /** Number of valid colors to use */
-    public int numColors;
+    public KeyframeScaleBlock scales;
 
     /** The track morph info */
-    public KeyframeMorphBlock[] morphs;
+    public KeyframeMorphBlock morphs;
 
-    /** Number of valid morphs to use */
-    public int numMorphs;
+    /** Smoothing factor in radians when morphing. In degrees [0 - 180]. */
+    public float morphSmoothingAngle;
 
-    /** The track spotlight hotspot info */
-    public KeyframeHotspotBlock[] hotspots;
-
-    /** Number of valid hotspots to use */
-    public int numHotspots;
-
-    /** The track rolloff info */
-    public KeyframeFalloffBlock[] falloffs;
-
-    /** Number of valid falloffs to use */
-    public int numFalloffs;
+    /**
+     * Construct a new instance of this frame.
+     */
+    public KeyframeFrameBlock()
+    {
+        minBounds = new float[3];
+        maxBounds = new float[3];
+        pivotPoint = new float[3];
+    }
 }
