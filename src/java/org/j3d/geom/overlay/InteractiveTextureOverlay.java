@@ -34,7 +34,7 @@ import javax.media.j3d.Texture2D;
  * the mouse feedback to put the user in that position.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class InteractiveTextureOverlay extends TextureOverlay
     implements InteractiveOverlay
@@ -126,6 +126,7 @@ public class InteractiveTextureOverlay extends TextureOverlay
         requester = req;
 
         Object listener;
+
         for(int i=0; i < buffMouseList.size();i++)
         {
            listener = buffMouseList.get(i);
@@ -145,9 +146,9 @@ public class InteractiveTextureOverlay extends TextureOverlay
         }
 
 
-        buffMouseList = null;
-        buffMotionList = null;
-        buffKeyList = null;
+        buffMouseList.clear();
+        buffMotionList.clear();
+        buffKeyList.clear();
     }
 
     //------------------------------------------------------------------------
