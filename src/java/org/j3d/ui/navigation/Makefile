@@ -4,7 +4,8 @@
 
 PACKAGE = org.j3d.ui.navigation
 
-SOURCE = FrameUpdateListener.java \
+SOURCE = NavigationState.java \
+    FrameUpdateListener.java \
     NavigationStateListener.java \
     NavigationUIStateListener.java \
 	ViewpointSelectionListener.java \
