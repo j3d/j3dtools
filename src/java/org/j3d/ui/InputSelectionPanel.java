@@ -16,7 +16,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
-import javax.swing.border.
+// import javax.swing.border.
 
 // Application specific imports
 import org.j3d.util.device.InputDeviceDescriptor;
@@ -35,7 +35,7 @@ import org.j3d.util.device.InputDeviceDescriptor;
  * select only allows one input device to be selected at a time. Multiple
  * select allows the user to choose as many as they want.
  *
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.2 $
  */
 public class InputSelectionPanel extends JPanel
 {
@@ -86,8 +86,9 @@ public class InputSelectionPanel extends JPanel
    *
    * @return A list of the selected devices.
    */
-  public void List getSelectedItems()
+  public List getSelectedItems()
   {
+	  return null;
   }
 
   /**
@@ -98,7 +99,7 @@ public class InputSelectionPanel extends JPanel
    */
   public InputDeviceDescriptor getSelectedItem()
   {
-
+	return null;
   }
 
   /**
