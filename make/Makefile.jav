@@ -34,9 +34,9 @@ EMPTY         =
 SPACE         = $(EMPTY) $(EMPTY)
 
 ifeq ("cygwin", "$(strip $(OSTYPE))")
-  PATH_SEP=';'
+  PATH_SEP=";"
 else
-  PATH_SEP=':'
+  PATH_SEP=":"
 endif
 
 ifdef JARS
@@ -51,28 +51,35 @@ endif
 
 SOURCEPATH = $(JAVA_SRC_DIR)
 
-CP = $(CLASS_DIR)
-
 ifdef LOCAL_JARLIST
   ifdef CP
-    CP+=$(PATH_SEP)$(LOCAL_JARLIST)
+    CP :="$(CP)$(PATH_SEP)$(LOCAL_JARLIST)"
   else
-    CP=$(LOCAL_JARLIST)
+    CP :="$(LOCAL_JARLIST)"
   endif
 endif
 
 ifdef OTHER_JARLIST
   ifdef CLASSPATH
-    CP1=$(CP)$(PATH_SEP)$(OTHER_JARLIST)
+    CP1:="$(CP)$(PATH_SEP)$(OTHER_JARLIST)"
   else
-    CP1=$(OTHER_JARLIST)
+    CP1 := "$(OTHER_JARLIST)"
   endif
 endif
 
 ifdef CP1
-  CLASSPATH=$(CP1)
+  CLASSPATH="$(CP1)"
 else
-  CLASSPATH=$(CP)
+  CLASSPATH="$(CP)"
+endif
+
+JAVADOC_CLASSPATH=$(CLASS_DIR)$(PATH_SEP)$(OTHER_JARLIST)
+
+# has the user defined an external classpath to use here? If so, append
+# it to the ordinary classpath.
+ifdef PROJECT_CLASSPATH
+    CLASSPATH := $(CLASSPATH)$(PATH_SEP)"$(PROJECT_CLASSPATH)"
+    JAVADOC_CLASSPATH := $(JAVADOC_CLASSPATH)$(PATH_SEP)"$(PROJECT_CLASSPATH)"
 endif
 
 
@@ -117,7 +124,7 @@ endif
 JAVADOC_OPTIONS  = \
      -d $(JAVADOC_DIR) \
      -sourcepath $(JAVA_SRC_DIR) \
-     -classpath $(CLASS_DIR) \
+     -classpath $(JAVADOC_CLASSPATH) \
      -author \
      -use \
      -version \
