@@ -44,7 +44,7 @@ package org.j3d.geom;
  * corner of the front face, while 1, 1, 1 is at the top right, rear corner.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class BoxGenerator extends GeometryGenerator
 {
@@ -1250,13 +1250,13 @@ public class BoxGenerator extends GeometryGenerator
         texCoords[69] = 1; texCoords[70] = 0; texCoords[71] = 1;
 
         // top face
-        texCoords[72] = 1; texCoords[72] = 1; texCoords[74] = 0;
-        texCoords[75] = 1; texCoords[75] = 1; texCoords[77] = 1;
-        texCoords[78] = 0; texCoords[78] = 1; texCoords[80] = 1;
+        texCoords[72] = 1; texCoords[73] = 1; texCoords[74] = 0;
+        texCoords[75] = 1; texCoords[76] = 1; texCoords[77] = 1;
+        texCoords[78] = 0; texCoords[79] = 1; texCoords[80] = 1;
 
-        texCoords[81] = 0; texCoords[81] = 1; texCoords[83] = 1;
-        texCoords[84] = 0; texCoords[84] = 1; texCoords[86] = 0;
-        texCoords[87] = 1; texCoords[87] = 1; texCoords[89] = 0;
+        texCoords[81] = 0; texCoords[82] = 1; texCoords[83] = 1;
+        texCoords[84] = 0; texCoords[85] = 1; texCoords[86] = 0;
+        texCoords[87] = 1; texCoords[88] = 1; texCoords[89] = 0;
 
         // bottom face
         texCoords[90] = 0; texCoords[91] = 0; texCoords[92] = 1;
