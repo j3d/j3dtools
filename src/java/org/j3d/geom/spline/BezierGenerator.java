@@ -27,7 +27,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * from the provided controlPoint coordinates.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class BezierGenerator extends GeometryGenerator
 {
@@ -106,31 +106,42 @@ public class BezierGenerator extends GeometryGenerator
     }
 
     /**
-     * Set the bezier curve controlPoints. The array is presented with the coordinates
+     * Set the curve controlPoints. The array is presented with the coordinates
      * flattened as [Xn, Yn, Zn] in the width array. The order of the patch is
      * determined by the passed array. If the arrays are not of minimum length
-     * 3 and equal length an exception is generated.
+     * 3 an exception is generated.
      *
      * @param controlPoints The controlPoint coordinate values
      */
     public void setControlPoints(float[] controlPoints)
     {
-        if(controlPoints.length < 3)
-            throw new IllegalArgumentException("Depth patch size < 3");
+        setControlPoints(controlPoints, controlPoints.length / 3);
+    }
 
-        // second check for consistent lengths of the width patches
-        int i;
+    /**
+     * Set the curve controlPoints from a subset of the given array. The array
+     * is presented with the coordinates flattened as [Xn, Yn, Zn] in the width
+     * array. The order of the patch is determined by the and number of points.
+     * If the arrays are not of minimum length 3 an exception is generated.
+     *
+     * @param controlPoints The controlPoint coordinate values
+     * @param numValid The number of valid points in the array
+     */
+    public void setControlPoints(float[] controlPoints, int numValid)
+    {
+        if(numValid < 1)
+            throw new IllegalArgumentException("Number of valid points < 1");
 
-        if(controlPoints.length > controlPointCoordinates.length)
-            controlPointCoordinates = new float[controlPoints.length];
+        if(numValid * 3 > controlPointCoordinates.length)
+            controlPointCoordinates = new float[numValid * 3];
 
         System.arraycopy(controlPoints,
                          0,
                          controlPointCoordinates,
                          0,
-                         controlPoints.length);
+                         numValid * 3);
 
-        numControlPoints = controlPoints.length / 3;
+        numControlPoints = numValid;
 
         curveChanged = true;
     }
