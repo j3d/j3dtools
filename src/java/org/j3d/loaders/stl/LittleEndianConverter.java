@@ -25,8 +25,7 @@ import java.io.*;
   * <code>OutputStream</code>
   * @author  Dipl. Ing. Paul Szawlowski -
   *          University of Vienna, Dept. of Medical Computer Sciences
-  * @version 4. Jan. 2002
-  * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
+  * @version $Revision: 1.2 $
   */
 public class LittleEndianConverter
 {

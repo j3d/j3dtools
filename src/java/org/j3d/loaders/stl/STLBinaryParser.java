@@ -23,10 +23,9 @@ import javax.swing.ProgressMonitorInputStream;
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version 12. Jan. 2002
- * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
+ * @version $Revision: 1.2 $
  */
-public class STLBinaryParser extends STLParser
+class STLBinaryParser extends STLParser
 {
     /**
      * size of binary header
@@ -166,23 +165,18 @@ public class STLBinaryParser extends STLParser
     public boolean getNextFacet( final double[ ] normal, double[ ][ ] vertices )
     throws InterruptedIOException, IOException
     {
-        LittleEndianConverter.
-            read( itsReadBuffer, itsDataBuffer, 0, 12, itsStream );
+        LittleEndianConverter.read( itsReadBuffer, itsDataBuffer, 0, 12, itsStream );
         for( int i = 0; i < 3; i ++ )
         {
-            final Float value =
-                new Float( Float.intBitsToFloat( itsDataBuffer[ i ] ) );
-            normal[ i ] = value.doubleValue( );
+            normal[ i ] = Float.intBitsToFloat( itsDataBuffer[ i ] );
         }
         for( int i = 0; i < 3; i ++ )
         {
             for( int j = 0; j < 3; j ++ )
             {
-                final Float value = new Float
-                (
-                    Float.intBitsToFloat( itsDataBuffer[ i * 3 + j + 3] )
-                );
-                vertices[ i ][ j ] = value.doubleValue( );
+
+                vertices[ i ][ j ] =
+                    Float.intBitsToFloat( itsDataBuffer[ i * 3 + j + 3] );
             }
         }
         // skip last 2 padding bytes

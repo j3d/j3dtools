@@ -22,10 +22,10 @@ import java.io.InterruptedIOException;
  * ASCII.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version 12. Jan. 2002
+ * @version $Revision: 1.2 $
  * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
  */
-public abstract class STLParser
+abstract class STLParser
 {
     protected int       itsNumOfObjects = 0;
     protected int[ ]    itsNumOfFacets = null;

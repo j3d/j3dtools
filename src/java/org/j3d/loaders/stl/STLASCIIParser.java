@@ -24,10 +24,9 @@ import javax.swing.ProgressMonitorInputStream;
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version 12. Jan. 2002
- * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
+ * @version $Revision: 1.2 $
  */
-public class STLASCIIParser extends STLParser
+class STLASCIIParser extends STLParser
 {
     private BufferedReader  itsReader;
     private StreamTokenizer itsTokenizer;

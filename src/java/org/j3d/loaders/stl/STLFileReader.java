@@ -28,8 +28,7 @@ import java.awt.Component;
  * recognized if an invalid amount of data is contained in the file.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept. of Medical Computer Sciences
- * @version 12. Jan. 2002
- * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
+ * @version $Revision: 1.2 $
  */
 public class STLFileReader
 {
