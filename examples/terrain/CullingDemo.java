@@ -27,6 +27,7 @@ import org.j3d.geom.Axis;
 import org.j3d.loaders.HeightMapTerrainData;
 import org.j3d.loaders.vterrain.BTLoader;
 
+import org.j3d.terrain.AppearanceGenerator;
 import org.j3d.terrain.Landscape;
 import org.j3d.terrain.ViewFrustum;
 import org.j3d.terrain.roam.SplitMergeLandscape;
@@ -43,10 +44,10 @@ import org.j3d.ui.navigation.NavigationState;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CullingDemo extends DemoFrame
-    implements ItemListener
+    implements ItemListener, AppearanceGenerator
 {
     private static final double BACK_CLIP_DISTANCE = 3000.0;
     private static final double FRONT_CLIP_DISTANCE = 1;
@@ -56,6 +57,12 @@ public class CullingDemo extends DemoFrame
 
     /** The canvas that provides a birds-eye view of the scene */
     private Canvas3D topDownCanvas;
+
+    /** Global material instance to use */
+    private Material material;
+
+    /** Global polygon attributes to use */
+    private PolygonAttributes polyAttr;
 
     private MouseViewHandler groundNav;
     private MouseViewHandler topDownNav;
@@ -71,6 +78,9 @@ public class CullingDemo extends DemoFrame
 
     private HashMap terrainFilesMap;
     private HashMap textureFilesMap;
+
+    /** Mapping of the button to the polygon mode value */
+    private HashMap polyModeMap;
 
     /**
      * Construct a new demo with no geometry currently showing, but the
@@ -116,6 +126,40 @@ public class CullingDemo extends DemoFrame
 
         add(p1, BorderLayout.SOUTH);
 
+        // Panel for the polygon mode style
+        polyModeMap = new HashMap();
+
+        JPanel p2 = new JPanel(new GridLayout(4, 1));
+
+        p2.add(new JLabel("Render As..."));
+
+        grp = new ButtonGroup();
+        button = new JRadioButton("Polygons", true);
+        button.addItemListener(this);
+        grp.add(button);
+        p2.add(button);
+        polyModeMap.put(button, new Integer(PolygonAttributes.POLYGON_FILL));
+
+
+        button = new JRadioButton("Lines");
+        button.addItemListener(this);
+        grp.add(button);
+        p2.add(button);
+        polyModeMap.put(button, new Integer(PolygonAttributes.POLYGON_LINE));
+
+
+        button = new JRadioButton("Points");
+        button.addItemListener(this);
+        grp.add(button);
+        p2.add(button);
+        polyModeMap.put(button, new Integer(PolygonAttributes.POLYGON_POINT));
+
+
+        JPanel p3 = new JPanel(new BorderLayout());
+        p3.add(p2, BorderLayout.NORTH);
+
+        add(p3, BorderLayout.EAST);
+
         groundNav = new MouseViewHandler();
         groundNav.setCanvas(navCanvas);
         groundNav.setButtonNavigation(MouseEvent.BUTTON1_MASK,
@@ -141,6 +185,13 @@ public class CullingDemo extends DemoFrame
         buildScene();
 
         viewFrustum = new ViewFrustum(navCanvas);
+
+        // Now set up the material and appearance handling for the generator
+        material = new Material();
+        material.setLightingEnable(true);
+
+        polyAttr = new PolygonAttributes();
+        polyAttr.setCapability(PolygonAttributes.ALLOW_MODE_WRITE);
     }
 
     //----------------------------------------------------------
@@ -154,15 +205,43 @@ public class CullingDemo extends DemoFrame
      */
     public void itemStateChanged(ItemEvent evt)
     {
-        if(evt.getStateChange() == ItemEvent.SELECTED)
-        {
-            Object src = evt.getSource();
+        if(evt.getStateChange() != ItemEvent.SELECTED)
+            return;
 
+        Object src = evt.getSource();
+
+        if(textureFilesMap.containsKey(src))
+        {
+            // map change request
             String terrain = (String)terrainFilesMap.get(src);
             String texture = (String)textureFilesMap.get(src);
 
             loadTerrain(terrain, texture);
         }
+        else
+        {
+            Integer mode_int = (Integer)polyModeMap.get(src);
+            polyAttr.setPolygonMode(mode_int.intValue());
+        }
+    }
+
+    //----------------------------------------------------------
+    // Methods required by AppearanceGenerator
+    //----------------------------------------------------------
+
+    /**
+     * Create a new appearance instance. We set them all up with different
+     * appearance instances, but share the material information.
+     *
+     * @return The new appearance instance to use
+     */
+    public Appearance createAppearance()
+    {
+        Appearance app = new Appearance();
+        app.setMaterial(material);
+        app.setPolygonAttributes(polyAttr);
+
+        return app;
     }
 
     //----------------------------------------------------------
@@ -306,6 +385,7 @@ public class CullingDemo extends DemoFrame
         {
             if(landscape != null)
             {
+                landscape.setAppearanceGenerator(null);
                 landscape.detach();
                 landscape = null;
             }
@@ -336,7 +416,9 @@ public class CullingDemo extends DemoFrame
 
             landscape = new SplitMergeLandscape(viewFrustum, terrain);
             landscape.setCapability(BranchGroup.ALLOW_DETACH);
-            landscape.setView(new Point3f(0, 0, 10), new Vector3f(0, 0, -1));
+            landscape.setAppearanceGenerator(this);
+
+            landscape.initialize(new Point3f(0, 0, 10), new Vector3f(0, 0, -1));
 
             groundNav.setFrameUpdateListener(landscape);
 
