@@ -26,7 +26,7 @@ import javax.vecmath.Vector3f;
  * class with synchronised methods would be very bad for performance.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NormalUtils
 {
@@ -370,4 +370,10 @@ public class NormalUtils
             normals[offset][2] = 0;
         }
     }
+
+    /**
+     * Given a basic item of geometry generate bi-normals and tangent-space
+     * normals into the given arrays. The arrays must be at least the same
+     * length as the main face normals.
+     */
 }

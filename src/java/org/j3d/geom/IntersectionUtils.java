@@ -59,7 +59,7 @@ import org.j3d.util.UserSupplementData;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class IntersectionUtils
 {
@@ -155,6 +155,8 @@ public class IntersectionUtils
      *   the value is zero, it is ignored
      * @param data The geometry to test against
      * @param point The intersection point for returning
+     * @param vworldTransform Transformation matrix to go from the root of the
+     *    world to this point
      * @param intersectOnly true if we only want to know if we have a
      *    intersection and don't really care which it is
      * @return true if there was an intersection, false if not
