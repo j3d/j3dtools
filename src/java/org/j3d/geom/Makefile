@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.13 $
+# Version: $Revision: 1.14 $
 #
 #*********************************************************************
 
@@ -29,6 +29,7 @@ SOURCE = GeometryData.java \
   SuperShapeGenerator.java \
   PolyVertex.java \
   TriangulationUtils.java \
+  IntersectionUtils.java 
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
