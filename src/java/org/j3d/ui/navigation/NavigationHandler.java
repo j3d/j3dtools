@@ -15,6 +15,7 @@ package org.j3d.ui.navigation;
 // Standard imports
 import javax.media.j3d.*;
 
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -104,12 +105,8 @@ import org.j3d.util.UserSupplementData;
  * keyboard to move the viewpoint.
  * <P>
  *
- * EXAMINE: The viewpoint is moved around the local origin provided by the
- * View transform group. The view will then rotate around that object looking
- * at the origin all the time. Note that if the local transform does not have
- * any transformation information set, this will result in undefined behaviour
- * (probably exceptions internally). There is no collision detection or terrain
- * following in this mode.
+ * EXAMINE: The viewpoint is moved around the center of rotation provided by
+ * the user. There is no collision detection or terrain following in this mode.
  * <P>
  *
  * FLY: The user moves through the scene that moves the eyepoint in forward,
@@ -144,7 +141,7 @@ import org.j3d.util.UserSupplementData;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class NavigationHandler
 {
@@ -157,11 +154,17 @@ public class NavigationHandler
     /** The default step height of the avatar to climb */
     private static final float DEFAULT_STEP_HEIGHT = 0.4f;
 
+    /** Default time to orbit an object in examine mode */
+    private static final float DEFAULT_ORBIT_TIME = 5;
+
     /** High-Side epsilon float = 0 */
     private static final double ZEROEPS = 0.000001;
 
     /** Fixed vector always pointing down -Y */
     private static final Vector3d Y_DOWN = new Vector3d(0, -1, 0);
+
+    /** Fixed vector always pointing Y up for the examine mode */
+    private static final Vector3d Y_UP = new Vector3d(0, 1, 0);
 
     /** Fixed vector always pointing along -Z */
     private static final Vector3d COLLISION_DIRECTION = new Vector3d(0, 0, -1);
@@ -275,6 +278,26 @@ public class NavigationHandler
     /** The intersection point that we really collided with */
     private Point3d intersectionPoint;
 
+    // Vars for doing examine mode
+
+    /** Center of rotation for examine and look at modes */
+    private Point3d centerOfRotation;
+
+    /** Time it takes to do a single orbit around the object */
+    private float orbitTime;
+
+    /** Current angle in the rotation. Always relative to the +X axis. */
+    private double lastAngle;
+
+    /** current radius of the user from the center of rotation */
+    private double rotationRadius;
+
+    /** Width of the screen currently */
+    private int screenWidth;
+
+    /** Width of the screen currently */
+    private int screenHeight;
+
     // The variables from here down are working variables during the drag
     // process. We declare them as class scope so that we don't generate
     // garbage for every mouse movement. The idea is we just re-use these
@@ -376,7 +399,7 @@ public class NavigationHandler
 
             processClockTick();
 
-            wakeupOn( fpsCriterion );
+            wakeupOn(fpsCriterion);
         }
     }
 
@@ -405,6 +428,7 @@ public class NavigationHandler
         downVector = new Vector3d();
         terrainPicker = new PickRay();
 
+        centerOfRotation = new Point3d();
         collisionVector = new Vector3d();
         collisionPicker = new PickSegment();
         intersectionPoint = new Point3d();
@@ -429,12 +453,14 @@ public class NavigationHandler
         allowCollisions = false;
         allowTerrainFollowing = false;
 
-
+        orbitTime = DEFAULT_ORBIT_TIME;
         avatarHeight = DEFAULT_AVATAR_HEIGHT;
         avatarSize = DEFAULT_AVATAR_SIZE;
         avatarStep = DEFAULT_STEP_HEIGHT;
         lastTerrainHeight = 0;
         speed = 0;
+
+        centerOfRotation = new Point3d(0, 0, 0);
     }
 
     /**
@@ -464,6 +490,21 @@ public class NavigationHandler
         }
 
         return frameTimer;
+    }
+
+    /**
+     * Set the center of rotation explicitly to this place. Coordinates must
+     * be in the coordinate space of the current view transform group. The
+     * provided array must be of least length 3. Center of rotation is used
+     * in examine mode.
+     *
+     * @param center The new center to use
+     */
+    public void setCenterOfRotation(float[] center)
+    {
+        centerOfRotation.x = center[0];
+        centerOfRotation.y = center[1];
+        centerOfRotation.z = center[2];
     }
 
     /**
@@ -563,6 +604,22 @@ public class NavigationHandler
     }
 
     /**
+     * Set the time it takes in seconds to make one 360 degree rotation of the
+     * center position when in examine mode. speed to the new value. The time
+     * must be a non-negative number.
+     *
+     * @param time The time value to use
+     * @throws IllegalArgumentException The value was <= 0
+     */
+    public void setOrbitTime(float time) {
+        if(time <= 0)
+            throw new IllegalArgumentException("Orbit time <= 0");
+
+        orbitTime = time;
+    }
+
+
+    /**
      * Set the ability to use a given state within the handler for a
      * specific mouse button (up to 3). This allows the caller to control
      * exactly what states are allowed to be used and with which buttons.
@@ -636,6 +693,8 @@ public class NavigationHandler
     public void processNextFrame()
     {
         frameDuration = System.currentTimeMillis() - startFrameDurationCalc;
+        if(frameDuration == 0)
+            frameDuration = 1;
 
         processClockTick();
     }
@@ -699,10 +758,13 @@ public class NavigationHandler
                 // do nothing
                 allowCollisions = (collidables != null);
                 allowTerrainFollowing = (terrain != null);
-
                 break;
 
             case NavigationState.EXAMINE_STATE:
+                //  Translate on Z only
+                dragTranslationAmt.set(0,0,-mouseDifference.y * speed);
+                inputRotationY = mouseDifference.x;
+
                 // do nothing
                 allowCollisions = false;
                 allowTerrainFollowing = false;
@@ -763,6 +825,32 @@ public class NavigationHandler
         {
             setInitialTerrainHeight();
         }
+
+        if(navigationState == NavigationState.EXAMINE_STATE)
+        {
+            // Update the screen size now. Base only on main canvas for now. This
+            // may cause problems in the future for multi-canvas users. but this
+            // should be sufficient for now.
+            Canvas3D canvas = view.getCanvas3D(0);
+            Dimension d = canvas.getSize();
+            screenWidth = d.width;
+            screenHeight = d.height;
+
+            // If in navigation state, need to determine the original angle of the
+            // user. Always relative to the +X axis.
+            double x = viewTranslation.x - centerOfRotation.x;
+            double z = viewTranslation.z - centerOfRotation.z;
+
+            rotationRadius = Math.sqrt(x * x + z * z);
+            lastAngle = Math.atan2(z, x);
+
+            locationPoint.set(viewTranslation);
+
+            viewTx.lookAt(locationPoint, centerOfRotation, Y_UP);
+            viewTx.invert();
+
+            viewTg.setTransform(viewTx);
+        }
     }
 
     /**
@@ -806,6 +894,189 @@ public class NavigationHandler
 
         if(navigationListener != null)
             navigationListener.setNavigationState(previousState);
+    }
+
+    //----------------------------------------------------------
+    // Internal convenience methods
+    //----------------------------------------------------------
+
+    /**
+     * Set the listener for frame update notifications. By setting a value of
+     * null it will clear the currently set instance
+     *
+     * @param l The listener to use for this transition
+     */
+    public void setFrameUpdateListener(FrameUpdateListener l)
+    {
+        updateListener = l;
+    }
+
+    /**
+     * Internal processing method for the per-frame update behaviour. Assumes
+     * that the frameDuration has been calculated before calling this method.
+     */
+    private void processClockTick()
+    {
+        if(navigationState == NavigationState.EXAMINE_STATE)
+            processExamineMotion();
+        else
+            processDefaultMotion();
+    }
+
+    /**
+     * Motion behaviour processing for the examine mode.
+     */
+    private void processExamineMotion()
+    {
+        boolean matrix_changed = false;
+        double total_theta = lastAngle;
+        double x, y, z;
+
+        // Check to see if the radius is changing at all. If so, recalculate
+        // for this frame
+        viewTg.getTransform(viewTx);
+        viewTx.get(locationVector);
+
+        if(dragTranslationAmt.z != 0)
+        {
+            double motionDelay = 0.000005 * frameDuration;
+
+            x = locationVector.x - centerOfRotation.x;
+            z = locationVector.z - centerOfRotation.z;
+
+            double speed = dragTranslationAmt.z * 2 / screenHeight;
+
+            rotationRadius =
+                Math.sqrt(x * x + z * z) + speed;
+
+            matrix_changed = true;
+        }
+
+        if(inputRotationY != 0)
+        {
+            // how much of a circle did we take this time? Frame duration in
+            // ms but orbit time in seconds. Speed is proportional to the amount of
+            // width draging
+            double speed = inputRotationY * 2 / screenWidth;
+            double theta_inc = speed * Math.PI * 2 * frameDuration / (orbitTime * 1000);
+
+            total_theta += theta_inc;
+
+            if(total_theta > Math.PI * 2)
+                total_theta -= Math.PI * 2;
+
+            lastAngle = total_theta;
+
+            matrix_changed = true;
+        }
+
+        if(matrix_changed)
+        {
+            x = rotationRadius * Math.cos(total_theta);
+            z = rotationRadius * Math.sin(total_theta);
+
+            // just set the x and z position based on the angle. The Y position
+            // remains unchanged. This is so you can elevate and orbit looking down.
+            // Also means we don't have to worry about divide by zero as the user
+            // goes over the poles.
+
+            locationPoint.x = centerOfRotation.x + x;
+            locationPoint.y = locationVector.y;
+            locationPoint.z = centerOfRotation.z + z;
+
+            viewTx.lookAt(locationPoint, centerOfRotation, Y_UP);
+            viewTx.invert();
+
+            viewTg.setTransform(viewTx);
+        }
+
+        startFrameDurationCalc = System.currentTimeMillis();
+
+        if(updateListener != null)
+        {
+            try
+            {
+                updateListener.viewerPositionUpdated(viewTx);
+            }
+            catch(Exception e)
+            {
+                System.out.println("Error sending frame update message");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Normal motion behaviour processing for anything that is not special
+     * cased.
+     */
+    private void processDefaultMotion()
+    {
+        double motionDelay = 0.000005 * frameDuration;
+
+        viewTg.getTransform(viewTx);
+        oneFrameRotation.rotX(inputRotationX * motionDelay);
+        viewTx.mul(oneFrameRotation);
+
+        //  RotateY:
+        oneFrameRotation.rotY(inputRotationY * motionDelay);
+        viewTx.mul(oneFrameRotation);
+
+        //  Translation:
+        oneFrameTranslation.set(dragTranslationAmt);
+        oneFrameTranslation.scale(motionDelay);
+
+        viewTx.transform(oneFrameTranslation);
+
+        boolean collision = false;
+
+        // If we allow collisions, adjust it for the collision amount
+        if(allowCollisions)
+            collision = !checkCollisions();
+
+        if(allowTerrainFollowing && !collision)
+            collision = !checkTerrainFollowing();
+
+        if(collision)
+        {
+System.out.println("J3DNavHandler: Need to notify of collision geometry");
+            if(collisionListener != null)
+                collisionListener.avatarCollision(null);
+
+            oneFrameTranslation.z = 0;
+        }
+
+        // Now set the translation amounts that have been adjusted by any
+        // collisions.
+        viewTranslation.add(oneFrameTranslation);
+        viewTx.setTranslation(viewTranslation);
+
+        try
+        {
+            viewTg.setTransform(viewTx);
+        }
+        catch(Exception e)
+        {
+            //check for bad transform:
+            viewTx.rotX(0);
+            viewTg.setTransform(viewTx);
+            // e.printStackTrace();
+        }
+
+        startFrameDurationCalc = System.currentTimeMillis();
+
+        if(updateListener != null)
+        {
+            try
+            {
+                updateListener.viewerPositionUpdated(viewTx);
+            }
+            catch(Exception e)
+            {
+                System.out.println("Error sending frame update message");
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -1174,17 +1445,6 @@ public class NavigationHandler
     }
 
     /**
-     * Set the listener for frame update notifications. By setting a value of
-     * null it will clear the currently set instance
-     *
-     * @param l The listener to use for this transition
-     */
-    public void setFrameUpdateListener(FrameUpdateListener l)
-    {
-        updateListener = l;
-    }
-
-    /**
      * Check the terrain height at the current position. This is done when
      * we first start moving a viewpoint with a mouse press.
      *
@@ -1377,78 +1637,6 @@ public class NavigationHandler
         // pretend there was nothing below us
         if(shortest_length != -1)
             lastTerrainHeight = (float)intersectionPoint.y;
-    }
-
-    /**
-     * Internal processing method for the per-frame update behaviour. Assumes
-     * that the frameDuration has been calculated before calling this method.
-     */
-    private void processClockTick()
-    {
-        double motionDelay = 0.000005 * frameDuration;
-
-        oneFrameRotation.rotX(inputRotationX * motionDelay);
-        viewTx.mul(oneFrameRotation);
-
-        //  RotateY:
-        oneFrameRotation.rotY(inputRotationY * motionDelay);
-        viewTx.mul(oneFrameRotation);
-
-        //  Translation:
-        oneFrameTranslation.set(dragTranslationAmt);
-        oneFrameTranslation.scale(motionDelay);
-
-        viewTx.transform(oneFrameTranslation);
-
-        boolean collision = false;
-
-        // If we allow collisions, adjust it for the collision amount
-        if(allowCollisions)
-            collision = !checkCollisions();
-
-        if(allowTerrainFollowing && !collision)
-            collision = !checkTerrainFollowing();
-
-        if(collision)
-        {
-System.out.println("J3DNavHandler: Need to notify of collision geometry");
-            if(collisionListener != null)
-                collisionListener.avatarCollision(null);
-
-            oneFrameTranslation.z = 0;
-        }
-
-        // Now set the translation amounts that have been adjusted by any
-        // collisions.
-        viewTranslation.add(oneFrameTranslation);
-        viewTx.setTranslation(viewTranslation);
-
-        try
-        {
-            viewTg.setTransform(viewTx);
-        }
-        catch(Exception e)
-        {
-            //check for bad transform:
-            viewTx.rotX(0);
-            viewTg.setTransform(viewTx);
-            // e.printStackTrace();
-        }
-
-        startFrameDurationCalc = System.currentTimeMillis();
-
-        if(updateListener != null)
-        {
-            try
-            {
-                updateListener.viewerPositionUpdated(viewTx);
-            }
-            catch(Exception e)
-            {
-                System.out.println("Error sending frame update message");
-                e.printStackTrace();
-            }
-        }
     }
 
     /**
