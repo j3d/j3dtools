@@ -27,7 +27,7 @@ import org.j3d.ui.navigation.NavigationStateManager;
  * representation.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class MouseIconDemo extends DemoFrame
     implements NavigationStateListener
@@ -177,10 +177,6 @@ public class MouseIconDemo extends DemoFrame
         world_object_group.addChild(torus_tg);
         world_object_group.compile();
 
-        // Add them to the locale
-        locale.addBranchGraph(view_group);
-        locale.addBranchGraph(world_object_group);
-
         PhysicalBody body = new PhysicalBody();
         PhysicalEnvironment env = new PhysicalEnvironment();
 
@@ -193,6 +189,11 @@ public class MouseIconDemo extends DemoFrame
 
         viewHandler.setViewInfo(view, view_tg);
         viewHandler.setNavigationSpeed(1.0f);
+        view_group.addChild(viewHandler.getTimerBehavior());
+
+        // Add them to the locale
+        locale.addBranchGraph(view_group);
+        locale.addBranchGraph(world_object_group);
     }
 
     public static void main(String[] argv)

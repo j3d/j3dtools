@@ -33,7 +33,7 @@ import org.j3d.ui.navigation.NavigationToolbar;
  * change the current button 1 state.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class NavSelectDemo extends DemoJFrame
 {
@@ -125,10 +125,6 @@ public class NavSelectDemo extends DemoJFrame
         world_object_group.addChild(torus_tg);
         world_object_group.compile();
 
-        // Add them to the locale
-        locale.addBranchGraph(view_group);
-        locale.addBranchGraph(world_object_group);
-
         PhysicalBody body = new PhysicalBody();
         PhysicalEnvironment env = new PhysicalEnvironment();
 
@@ -141,6 +137,11 @@ public class NavSelectDemo extends DemoJFrame
 
         viewHandler.setViewInfo(view, view_tg);
         viewHandler.setNavigationSpeed(1.0f);
+        view_group.addChild(viewHandler.getTimerBehavior());
+
+        // Add them to the locale
+        locale.addBranchGraph(view_group);
+        locale.addBranchGraph(world_object_group);
     }
 
     public static void main(String[] argv)
