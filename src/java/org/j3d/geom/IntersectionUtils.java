@@ -56,7 +56,7 @@ import org.j3d.util.UserSupplementData;
  * </a>
  *
  * @author Justin Couch
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class IntersectionUtils
 {
@@ -386,18 +386,44 @@ public class IntersectionUtils
             throw new IllegalStateException("Not allowed to read coordinates");
 
         int vtx_format = geom.getVertexFormat();
-
-        if((vtx_format & GeometryArray.INTERLEAVED) != 0)
-            throw new IllegalArgumentException("We can't handle interleaved geometry yet");
-
-
         int vtx_count = geom.getVertexCount();
 
         if((workingCoords == null) || (workingCoords.length != vtx_count * 3))
             workingCoords = new float[vtx_count * 3];
 
+        if((vtx_format & GeometryArray.INTERLEAVED) != 0)
+        {
+            float[] interleaved_data = geom.getInterleavedVertices();
+            int step = 0;
+            int offset = 0;
 
-        geom.getCoordinates(0, workingCoords);
+            if((vtx_format & GeometryArray.TEXTURE_COORDINATE_2) != 0)
+                step += 2 * geom.getTexCoordSetCount();
+            else if((vtx_format & GeometryArray.TEXTURE_COORDINATE_3) != 0)
+                step += 3 * geom.getTexCoordSetCount();
+            else if ( (vtx_format & GeometryArray.TEXTURE_COORDINATE_4) != 0)
+                step += 4 * geom.getTexCoordSetCount();
+
+            if((vtx_format & GeometryArray.COLOR_3) != 0)
+                step += 3;
+            else if((vtx_format & GeometryArray.COLOR_4) != 0)
+                step += 4;
+
+            if((vtx_format & GeometryArray.NORMALS) != 0 )
+                step += 3;
+
+            for (int i = step; i < interleaved_data.length; i += step)
+            {
+                workingCoords[offset++] = interleaved_data[i++];
+                workingCoords[offset++] = interleaved_data[i++];
+                workingCoords[offset++] = interleaved_data[i++];
+            }
+        }
+        else
+        {
+            // Get non-interleaved coords
+            geom.getCoordinates(0, workingCoords);
+        }
 
         reverseTx.invert(vworldTransform);
 
@@ -445,17 +471,45 @@ public class IntersectionUtils
             throw new IllegalStateException("Not allowed to read coordinates");
 
         int vtx_format = geom.getVertexFormat();
-
-        if((vtx_format & GeometryArray.INTERLEAVED) != 0)
-            throw new IllegalArgumentException("We can't handle interleaved geometry yet");
-
-
         int vtx_count = geom.getVertexCount();
 
         if((workingCoords == null) || (workingCoords.length != vtx_count * 3))
-            workingCoords = new float[vtx_count * 3];
+            workingCoords = new float[vtx_count * 4];
 
-        geom.getCoordinates(0, workingCoords);
+        if((vtx_format & GeometryArray.INTERLEAVED) != 0)
+        {
+            float[] interleaved_data = geom.getInterleavedVertices();
+            int step = 0;
+            int offset = 0;
+
+            if((vtx_format & GeometryArray.TEXTURE_COORDINATE_2) != 0)
+                step += 2 * geom.getTexCoordSetCount();
+            else if((vtx_format & GeometryArray.TEXTURE_COORDINATE_3) != 0)
+                step += 3 * geom.getTexCoordSetCount();
+            else if ( (vtx_format & GeometryArray.TEXTURE_COORDINATE_4) != 0)
+                step += 4 * geom.getTexCoordSetCount();
+
+            if((vtx_format & GeometryArray.COLOR_3) != 0)
+                step += 3;
+            else if((vtx_format & GeometryArray.COLOR_4) != 0)
+                step += 4;
+
+            if((vtx_format & GeometryArray.NORMALS) != 0 )
+                step += 3;
+
+            for (int i = step; i < interleaved_data.length; i += step)
+            {
+                workingCoords[offset++] = interleaved_data[i++];
+                workingCoords[offset++] = interleaved_data[i++];
+                workingCoords[offset++] = interleaved_data[i++];
+                workingCoords[offset++] = interleaved_data[i++];
+            }
+        }
+        else
+        {
+            // Get non-interleaved coords
+            geom.getCoordinates(0, workingCoords);
+        }
 
         reverseTx.invert(vworldTransform);
 
