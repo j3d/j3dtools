@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.texture.procedural directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -14,7 +14,7 @@ PACKAGE = org.j3d.texture.procedural
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-SOURCE =
+SOURCE = PerlinNoiseGenerator.java
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
