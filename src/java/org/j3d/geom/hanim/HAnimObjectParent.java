@@ -23,7 +23,7 @@ package org.j3d.geom.hanim;
  * a joint could have either a joint or a humanoid as the parent.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface HAnimObjectParent
 {
@@ -35,4 +35,13 @@ public interface HAnimObjectParent
      * @param child Reference to the child that has changed
      */
     public void childUpdateRequired(HAnimObject child);
+
+    /**
+     * Get the object's index into the greater list of things. For example, a
+     * joint needs to be able to update it's matrix in a large array of
+     * matrices and it needs to update the same matrix every time.
+     *
+     * @return The index of the object into global lists
+     */
+    public int requestNextObjectIndex();
 }
