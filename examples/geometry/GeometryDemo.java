@@ -32,7 +32,7 @@ import org.j3d.ui.navigation.MouseViewHandler;
  * of the rendering attributes like the face set.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class GeometryDemo extends DemoFrame
     implements ActionListener, ItemListener
@@ -114,6 +114,7 @@ public class GeometryDemo extends DemoFrame
         MenuItem torus_menu = new MenuItem("Torus");
         MenuItem spring_menu = new MenuItem("Spring");
         MenuItem mobius_menu = new MenuItem("Mobius");
+        mobius_menu.setEnabled(false);
 
         box_menu.addActionListener(this);
         cone_menu.addActionListener(this);
@@ -220,7 +221,7 @@ public class GeometryDemo extends DemoFrame
         generatorMap.put(sphere_menu, new SphereGenerator());
         generatorMap.put(cylinder_menu, new CylinderGenerator());
         generatorMap.put(torus_menu, new TorusGenerator());
-//        generatorMap.put(spring_menu, new SpringGenerator());
+        generatorMap.put(spring_menu, new SpringGenerator());
 //        generatorMap.put(mobius_menu, new MobiusGenerator());
 
         viewHandler = new MouseViewHandler();
@@ -251,7 +252,7 @@ public class GeometryDemo extends DemoFrame
         Object src = evt.getSource();
 
         currentGenerator = (GeometryGenerator)generatorMap.get(src);
-
+/*
         if(currentGenerator instanceof MobiusGenerator)
         {
             targetPolyAttr.setCullFace(PolygonAttributes.CULL_NONE);
@@ -262,7 +263,7 @@ public class GeometryDemo extends DemoFrame
             targetPolyAttr.setCullFace(PolygonAttributes.CULL_BACK);
             targetPolyAttr.setBackFaceNormalFlip(false);
         }
-
+*/
         rebuildGeometry();
     }
 
@@ -444,6 +445,7 @@ public class GeometryDemo extends DemoFrame
         TransformGroup view_tg = new TransformGroup(angle);
         view_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         view_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        view_tg.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
         view_tg.addChild(camera);
 
         view_group.addChild(view_tg);
@@ -458,11 +460,8 @@ public class GeometryDemo extends DemoFrame
 
         // Now the geometry. Let's just add a couple of the basic primitives
         // for testing.
-//        targetMaterial =
-//           new Material(ambientBlue, black, blue, specular, 75.0f);
         targetMaterial = new Material();
         targetMaterial.setAmbientColor(ambientBlue);
-//        targetMaterial.setEmissiveColor(blue);
         targetMaterial.setDiffuseColor(blue);
         targetMaterial.setSpecularColor(specular);
         targetMaterial.setShininess(75.0f);
@@ -485,8 +484,8 @@ public class GeometryDemo extends DemoFrame
         world_object_group.addChild(targetShape);
 
         // And the axis...
-//        Axis axis = new Axis();
-//        world_object_group.addChild(axis);
+        Axis axis = new Axis();
+        world_object_group.addChild(axis);
         world_object_group.compile();
 
         // Add them to the locale
@@ -504,6 +503,7 @@ public class GeometryDemo extends DemoFrame
         view.attachViewPlatform(camera);
 
         viewHandler.setViewInfo(view, view_tg);
+        viewHandler.setNavigationSpeed(1.0f);
     }
 
     public static void main(String[] argv)
