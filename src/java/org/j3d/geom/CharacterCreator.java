@@ -55,7 +55,7 @@ import org.j3d.util.CharHashMap;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class CharacterCreator
 {
@@ -92,9 +92,6 @@ public class CharacterCreator
     /** Array used to pass a character to the glyph creation routines */
     private char[] sourceChar;
 
-    /** Collection of number of coordinates in each contour */
-    private int[] contourCounts;
-
     /**
      * Create a new fontstyle object representing the given font.
      *
@@ -116,7 +113,6 @@ public class CharacterCreator
         triOutputIndex = new int[512]; // arbitrary large number
         triangulator = new TriangulationUtils();
         sourceChar = new char[1];
-        contourCounts = new int[10];
     }
 
     /**
@@ -196,6 +192,11 @@ public class CharacterCreator
         neg_trans.scale(1.0, -1.0);
         neg_trans.translate(tx, -ty);
 
+        int vtx_count = 0;
+        int start_vtx = 0;
+        int total_coords = 0;
+        int total_index = 0;
+        boolean just_closed = false;
 
         CharacterData ch_data = new CharacterData();
         Rectangle2D l_bounds = glyph_vec.getLogicalBounds();
@@ -211,29 +212,16 @@ public class CharacterCreator
                                   (float)l_bounds.getY() * scale,
                                   (float)l_bounds.getWidth() * scale,
                                   1);
-
-        // start total_coords at 2 because the triangulation algorithm requires
-        // that the first vertex slot be empty.
-        int total_coords = 2;
-        int vtx_count = 0;
-        int n_contours = 0;
+        total_coords = 0;
+        total_index = 0;
         float last_x = 0;
         float last_y = 0;
-        boolean just_closed = false;
+        float init_x = 0;
+        float init_y = 0;
 
-        // Create contours for each path within the glyph. Then pass that
-        // through to the triangulator.
         while(!glyph_path.isDone())
         {
-            int seg_type = glyph_path.currentSegment(newCoords);
-
-            if(last_x == newCoords[0] && last_y == newCoords[1])
-            {
-                glyph_path.next();
-                continue;
-            }
-
-            switch(seg_type)
+            switch(glyph_path.currentSegment(newCoords))
             {
                 case PathIterator.SEG_MOVETO:
                     // end of one outline, move to the next. So,
@@ -251,59 +239,136 @@ public class CharacterCreator
                         charCoords = tmp;
                     }
 
+                    init_x = newCoords[0] * scale;
+                    init_y = newCoords[1] * scale;
+
                     charCoords[total_coords++] = newCoords[0] * scale;
                     charCoords[total_coords++] = newCoords[1] * scale;
-                    last_x = newCoords[0];
-                    last_y = newCoords[1];
-                    contourCounts[n_contours] = 1;
+                    charCoords[total_coords++] = 0;
 
-//System.out.println("moveto " + newCoords[0] + " " + newCoords[1] + " " + just_closed);
+//System.out.println("moveto " + newCoords[0] + " " + newCoords[1] + " " + just_closed + " i " + (total_coords - 3));
 
-                    if(!just_closed && total_coords != 4)
+                    if(just_closed || total_coords == 3)
+                        break;
+
+                    if(triOutputIndex.length < vtx_count * 3)
+                        triOutputIndex = new int[vtx_count * 3];
+
+                    num_triangles =
+                        triangulator.triangulateConcavePolygon(charCoords,
+                                                               start_vtx,
+                                                               vtx_count,
+                                                               triOutputIndex,
+                                                               FACE_NORMAL);
+
+                    if(num_triangles > 0)
                     {
-                        n_contours++;
+                        num_triangles *= 3;
+                        for(int i = 0; i < num_triangles; i++)
+                            triOutputIndex[i] /= 3;
 
-                        if(contourCounts.length == n_contours)
+                        if(charIndex.length < total_index + num_triangles)
                         {
-                            int[] tmp = new int[contourCounts.length + 10];
-                            System.arraycopy(contourCounts,
+                            int[] tmp =
+                                new int[total_index + num_triangles];
+                            System.arraycopy(charIndex,
                                              0,
                                              tmp,
                                              0,
-                                             contourCounts.length);
-                            contourCounts = tmp;
+                                             total_index);
+                            charIndex = tmp;
                         }
 
-                        just_closed = false;
+                        System.arraycopy(triOutputIndex,
+                                         0,
+                                         charIndex,
+                                         total_index,
+                                         num_triangles);
+                        total_index += num_triangles;
                     }
+                    else if(num_triangles < 0)
+                    {
+                        System.out.println("can't tesselate \'" +
+                                           character + "\'");
+                    }
+
+                    start_vtx = (vtx_count + 1) * 3;
+                    vtx_count = 1;
+                    just_closed = false;
+
                     break;
 
                 case PathIterator.SEG_LINETO:
+                    if(last_x == newCoords[0] && last_y == newCoords[1])
+                        break;
+
                     charCoords[total_coords++] = newCoords[0] * scale;
                     charCoords[total_coords++] = newCoords[1] * scale;
+                    charCoords[total_coords++] = 0;
+                    vtx_count++;
+
                     last_x = newCoords[0];
                     last_y = newCoords[1];
-                    vtx_count++;
-                    contourCounts[n_contours]++;
-
-//System.out.println("coord " + newCoords[0] + " " + newCoords[1]);
+//System.out.println("line " + (total_coords - 3) + " : " + newCoords[0] + " " + newCoords[1]);
                     break;
 
                 case PathIterator.SEG_CLOSE:
                     just_closed = true;
-                    n_contours++;
 
-//System.out.println("closing");
-                    if(contourCounts.length == n_contours)
+                    if(triOutputIndex.length < vtx_count * 3)
+                        triOutputIndex = new int[vtx_count * 3];
+
+                    if(charCoords[total_coords - 3] == init_x &&
+                       charCoords[total_coords - 2] == init_y)
                     {
-                        int[] tmp = new int[contourCounts.length + 10];
-                        System.arraycopy(contourCounts,
-                                         0,
-                                         tmp,
-                                         0,
-                                         contourCounts.length);
-                        contourCounts = tmp;
+                        vtx_count--;
+                        total_coords -= 3;
                     }
+
+//System.out.println("close at " + total_coords + " : " + start_vtx + " " + vtx_count);
+                    num_triangles =
+                        triangulator.triangulateConcavePolygon(charCoords,
+                                                               start_vtx,
+                                                               vtx_count,
+                                                               triOutputIndex,
+                                                               FACE_NORMAL);
+
+//System.out.println("num index post triangle = " + num_triangles);
+
+                    if(num_triangles > 0)
+                    {
+                        num_triangles *= 3;
+                        for(int i = 0; i < num_triangles; i++)
+                            triOutputIndex[i] /= 3;
+
+                        if(charIndex.length < total_index + num_triangles)
+                        {
+                            int[] tmp =
+                                new int[total_index + num_triangles];
+                            System.arraycopy(charIndex,
+                                             0,
+                                             tmp,
+                                             0,
+                                             total_index);
+                            charIndex = tmp;
+                        }
+
+                        System.arraycopy(triOutputIndex,
+                                         0,
+                                         charIndex,
+                                         total_index,
+                                         num_triangles);
+
+                        total_index += num_triangles;
+                    }
+                    else if(num_triangles < 0)
+                    {
+                        System.out.println("can't tesselate \'" +
+                                           character + "\'");
+                    }
+
+                    start_vtx = (vtx_count + 1) * 3;
+                    vtx_count = 0;
                     break;
 
                 // Javadoc guarantees that no other types are used on fonts
@@ -312,60 +377,22 @@ public class CharacterCreator
             glyph_path.next();
         }
 
-        if(!just_closed)
-            n_contours++;
-
-for(int i = 0; i < n_contours; i++)
-   System.out.println("contour["+i+"]: " + contourCounts[i]);
-
-        // triangulator requires first contour to be anitclockwise. It appears
-        // that the java text code is generating clockwise due to the -Y scale
-        // transform that has been applied. For the moment, just assume that is
-        // true always and thus reverse the order of the first contour vertices.
-        int n_vert = contourCounts[0] * 3;
-
-        for(int i = 1; i < contourCounts[0]; i++)
-        {
-            float tmp = charCoords[i * 3];
-            charCoords[i * 3] = charCoords[n_vert - i * 3];
-            charCoords[n_vert - i * 3] = tmp;
-
-            tmp = charCoords[i * 3 + 1];
-            charCoords[i * 3 + 1] = charCoords[n_vert - i * 3 + 1];
-            charCoords[n_vert - i * 3 + 1] = tmp;
-
-            tmp = charCoords[i * 3 + 2];
-            charCoords[i * 3 + 2] = charCoords[n_vert - i * 3 + 2];
-            charCoords[n_vert - i * 3 + 2] = tmp;
-        }
-
-        int total_index = (vtx_count - 2) * 3;
-
-        if(triOutputIndex.length < total_index)
-            triOutputIndex = new int[total_index];
-
-System.out.println("total_contours " + n_contours);
-
-        triangulator.triangulatePolygon2D(n_contours,
-                                          contourCounts,
-                                          charCoords,
-                                          triOutputIndex);
 
         // Change the Y coordinate to reflect the normal Y orientation of up
         // in 3D land, where Y is down in 2D land. Also, turn the triangles
         // around now too as they'll be changed to clockwise when ccw is needed.
-
-        // Turn the 2D into 3D coords by setting the Z to zero.
-        ch_data.coordinates = createFloatBuffer(total_coords * (total_coords >> 1));
-        for(int i = 0; i < total_coords / 2; i++)
+        for(int i = 0; i < total_index / 3; i++)
         {
-            ch_data.coordinates.put(charCoords[i * 2]);
-            ch_data.coordinates.put(charCoords[i * 2 + 1]);
-            ch_data.coordinates.put(0);
+            int tmp = charIndex[i * 3];
+            charIndex[i * 3] = charIndex[i * 3 + 2];
+            charIndex[i * 3 + 2] = tmp;
         }
 
+        ch_data.coordinates = createFloatBuffer(total_coords);
+        ch_data.coordinates.put(charCoords, 0, total_coords);
+
         ch_data.coordIndex = createIntBuffer(total_index);
-        ch_data.coordIndex.put(triOutputIndex, 0, total_index);
+        ch_data.coordIndex.put(charIndex, 0, total_index);
         ch_data.numIndex = total_index;
 
         charDataMap.put(character, ch_data);
