@@ -45,7 +45,7 @@ import javax.vecmath.Vector3f;
  * just be too great.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class GeometryGenerator
 {
@@ -237,7 +237,8 @@ public abstract class GeometryGenerator
             (data.geometryComponents & GeometryData.TEXTURE_2D_DATA) == 0;
 
         System.out.println();
-        for(int i = 0; i < data.vertexCount; i++) {
+        for(int i = 0; i < data.vertexCount; i++)
+        {
             System.out.print(i);
             System.out.print("v: ");
             System.out.print(data.coordinates[i * 3]);
@@ -246,7 +247,8 @@ public abstract class GeometryGenerator
             System.out.print(' ');
             System.out.print(data.coordinates[i * 3 + 2]);
 
-            if(data.normals != null) {
+            if(data.normals != null)
+            {
                 System.out.print(", n: ");
                 System.out.print(data.normals[i * 3]);
                 System.out.print(' ');
@@ -255,15 +257,23 @@ public abstract class GeometryGenerator
                 System.out.print(data.normals[i * 3 + 2]);
             }
 
-            if(data.textureCoordinates != null) {
-                System.out.print(", t: ");
-                System.out.print(data.textureCoordinates[i * 2]);
-                System.out.print(' ');
-                System.out.print(data.textureCoordinates[i * 2 + 1]);
-
-                if(has_3d_texture) {
+            if(data.textureCoordinates != null)
+            {
+                if(has_3d_texture)
+                {
+                    System.out.print(", t: ");
+                    System.out.print(data.textureCoordinates[i * 3]);
                     System.out.print(' ');
                     System.out.print(data.textureCoordinates[i * 3 + 1]);
+                    System.out.print(' ');
+                    System.out.print(data.textureCoordinates[i * 3 + 2]);
+                }
+                else
+                {
+                    System.out.print(", t: ");
+                    System.out.print(data.textureCoordinates[i * 2]);
+                    System.out.print(' ');
+                    System.out.print(data.textureCoordinates[i * 2 + 1]);
                 }
 
             }
