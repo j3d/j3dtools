@@ -36,9 +36,19 @@ import org.j3d.geom.UnsupportedTypeException;
  * is the depth. Internally, this generator just creates the height points and
  * then uses the {@link ElevationGridGenerator} to create the geometry array
  * data.
+ * <p>
+ *
+ * The generator may take a seed terrain to start with. A common example of
+ * this is to use this generator to make a height map and then pass that
+ * through again from a heightfield to image coverter to generate clouds.
+ * If a seed terrain is given, then the number of coordinates along both sides
+ * must conform to the iteration requirements. It is best to provide a basic
+ * terrain site with either 3 or 5 points on a side although the generator will
+ * accept a seed terrain, so long as it is square and contains more than 2
+ * points on a side.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class FractalTerrainGenerator extends GeometryGenerator
 {
@@ -96,6 +106,9 @@ public class FractalTerrainGenerator extends GeometryGenerator
     /** Working value for subdividing a given quad */
     private float[] subdivPoints;
 
+    /** The seed terrain, if provided */
+    private float[][] seedTerrain;
+
     /**
      * Construct a default terrain with the following properties:<BR>
      * Size: 100x100
@@ -113,7 +126,27 @@ public class FractalTerrainGenerator extends GeometryGenerator
              DEFAULT_SEALEVEL,
              DEFAULT_ITERATIONS,
              DEFAULT_ROUGHNESS,
-             0);
+             0,
+             null);
+    }
+
+    /**
+     * Create a new fractal terrain that uses the given seed terrain
+     *
+     * @param terrain The spot heights to use
+     * @throws IllegalArgumentException The provided matrix is not square
+     */
+    public FractalTerrainGenerator(float[][] terrain)
+    {
+        this(DEFAULT_SIZE,
+             DEFAULT_SIZE,
+             DEFAULT_HEIGHT,
+             true,
+             DEFAULT_SEALEVEL,
+             DEFAULT_ITERATIONS,
+             DEFAULT_ROUGHNESS,
+             0,
+             terrain);
     }
 
     /**
@@ -134,13 +167,39 @@ public class FractalTerrainGenerator extends GeometryGenerator
              seaLevel,
              DEFAULT_ITERATIONS,
              DEFAULT_ROUGHNESS,
-             0);
+             0,
+             null);
     }
 
     /**
-     * Construct a default cylinder with end caps and selectable number of
-     * faces around the radius. The default height is 2 and radius 1. The
-     * minimum number of facets is 3.
+     * Create a new fractal terrain that can select whether the sea is in
+     * use or not and is based on the given seed terrain.
+     *
+     * @param useSea true if the sea level is to be used
+     * @param seaLevel The height of the sea
+     * @param terrain The spot heights to use
+     * @throws IllegalArgumentException seaLevel, if used is greater than the
+     *    default height of the ground (20) or the provided terrain matrix is
+     *    not square
+     */
+    public FractalTerrainGenerator(float[][] terrain,
+                                   boolean useSea,
+                                   float seaLevel)
+    {
+        this(DEFAULT_SIZE,
+             DEFAULT_SIZE,
+             DEFAULT_HEIGHT,
+             useSea,
+             seaLevel,
+             DEFAULT_ITERATIONS,
+             DEFAULT_ROUGHNESS,
+             0,
+             terrain);
+    }
+
+    /**
+     * Construct a new fractal terrain with a given width and depth. A sea level
+     * is used and defaults to a height of zero.
      *
      * @param width The width of the terrain to generate
      * @param depth The depth of the terrain to generate
@@ -155,13 +214,38 @@ public class FractalTerrainGenerator extends GeometryGenerator
              DEFAULT_SEALEVEL,
              DEFAULT_ITERATIONS,
              DEFAULT_ROUGHNESS,
-             0);
+             0,
+             null);
     }
 
     /**
-     * Construct a default cylinder with the option of having end caps and
-     * selectable number of faces around the radius. The default height is 2
-     * and radius 1.The minimum number of facets is 3.
+     * Construct a fractal terrain of the given width and depth that is based
+     * on the given seed terrain. A sea level is used and defaults to a height
+     * of zero.
+     *
+     * @param width The width of the terrain to generate
+     * @param depth The depth of the terrain to generate
+     * @throws IllegalArgumentException The width or height is non-positive or
+     *    the terrain given is non-square.
+     */
+    public FractalTerrainGenerator(float[][] terrain, float width, float depth)
+    {
+        this(width,
+             depth,
+             DEFAULT_HEIGHT,
+             true,
+             DEFAULT_SEALEVEL,
+             DEFAULT_ITERATIONS,
+             DEFAULT_ROUGHNESS,
+             0,
+             terrain);
+    }
+
+    /**
+     * Construct a new terrain that starts at the given maximum height and
+     * is iterated through the given number of times. The seed is can be used
+     * to control the seed value for the random number generator. A value of
+     * zero says to use the default seed provided by the Java runtime.
      *
      * @param height The (approx) max height of the terrain to generate
      * @param iterations The number of subdivisions to calculate
@@ -182,12 +266,13 @@ public class FractalTerrainGenerator extends GeometryGenerator
              DEFAULT_SEALEVEL,
              iterations,
              roughness,
-             seed);
+             seed,
+             null);
     }
 
     /**
-     * Construct a cylinder of a given height and radius with ends. There are
-     * 16 faces around the radius.
+     * Construct a terrain generator with the given width and depth. Maximum
+     * height can be set as well as the iterations to generate terrain.
      *
      * @param width The width of the terrain to generate
      * @param depth The depth of the terrain to generate
@@ -212,13 +297,12 @@ public class FractalTerrainGenerator extends GeometryGenerator
              DEFAULT_SEALEVEL,
              iterations,
              roughness,
-             seed);
+             seed,
+             null);
     }
 
     /**
-     * Construct a cylinder of a given height and radius with the option of
-     * ends and selectable number of faces around the radius. The minimum
-     * number of facets is 3.
+     * Construct a terrain generator with all items configurable.
      *
      * @param width The width of the terrain to generate
      * @param depth The depth of the terrain to generate
@@ -228,6 +312,7 @@ public class FractalTerrainGenerator extends GeometryGenerator
      * @param iterations The number of subdivisions to calculate
      * @param roughness Division factor for each iteration of height
      * @param seed The seed for the random number generator (0 to be ignored)
+     * @param terrain The spot heights to use
      * @throws IllegalArgumentException Various reasons. See message or other
      *     constructors
      */
@@ -238,7 +323,8 @@ public class FractalTerrainGenerator extends GeometryGenerator
                                    float seaLevel,
                                    int iterations,
                                    float roughness,
-                                   long seed)
+                                   long seed,
+                                   float[][] terrain)
     {
         if((width <= 0) || (height <= 0))
             throw new IllegalArgumentException("Width or height <= 0");
@@ -266,6 +352,17 @@ public class FractalTerrainGenerator extends GeometryGenerator
             randomiser.setSeed(seed);
 
         normal = new Vector3f();
+
+        if(terrain == null)
+            seedTerrain = new float[][] {{0, 0}, {0, 0}};
+        else
+        {
+            // possibly should check all the items...
+            if((terrain.length < 2) || (terrain.length != terrain[0].length))
+                throw new IllegalArgumentException("Non-square terrain");
+
+            seedTerrain = terrain;
+        }
 
         int side_points = calcSidePoints(iterations);
 
@@ -384,6 +481,39 @@ public class FractalTerrainGenerator extends GeometryGenerator
     }
 
     /**
+     * Set the terrain that is used as a seed for the generator. This can be
+     * used to set a basic shape of the terrain. Provided points must be a
+     * square array. A null reference can be used to return the seed terrain
+     * to the default.
+     *
+     * @param terrain The new seed terrain to use or null
+     * @throws IllegalArgumentException The provided matrix is not square
+     */
+    public void setSeedTerrain(float[][] terrain)
+    {
+        if(terrain == null)
+            seedTerrain = new float[][] {{0, 0}, {0, 0}};
+        else
+        {
+            // possibly should check all the items...
+            if((terrain.length < 2) || (terrain.length != terrain[0].length))
+                throw new IllegalArgumentException("Non-square terrain");
+
+            seedTerrain = terrain;
+        }
+
+        int side_points = calcSidePoints(iterations);
+
+        gridGenerator = new ElevationGridGenerator(terrainWidth,
+                                                   terrainDepth,
+                                                   side_points,
+                                                   side_points);
+
+        facetCount = side_points * side_points;
+        terrainChanged = true;
+    }
+
+    /**
      * Force the generator to create a new set of points without having to
      * reset any other data.
      */
@@ -440,9 +570,7 @@ public class FractalTerrainGenerator extends GeometryGenerator
 
         terrainChanged = false;
 
-        float[][] start_surface = new float[2][2];
-
-        float[][] terrain = subdivideSurface(start_surface, 1, 2, terrainHeight);
+        float[][] terrain = subdivideSurface();
 
         // now scour the heights and truncate the sea level if needed
         if(useSeaLevel)
@@ -468,82 +596,82 @@ public class FractalTerrainGenerator extends GeometryGenerator
      * The current surface consists of each box as four consecutive heights.
      * This means that height values do get doubled up for each box
      *
-     * @param surface The current surface to subdivide
-     * @param itr The current iteration
-     * @param points The number of points on the current side length
-     * @param delta The current max perturbation height
      * @return The height map for the final generation
      */
-    private float[][] subdivideSurface(float[][] surface,
-                                       int itr,
-                                       int points,
-                                       float delta)
+    private float[][] subdivideSurface()
     {
-        int new_points = points + (int)Math.pow(2, (itr - 1));
+        int new_points = 0;
+        int old_points = seedTerrain.length;
         int count;
         float height;
         int sign;
-        int i, j;
+        int i, j, k;
         int old = 0;
+        float delta = terrainHeight;
 
-        float[][] new_surface = new float[new_points][new_points];
+        float[][] new_surface = null;
+        float[][] old_surface = seedTerrain;
 
-        for(i = 0; i < new_points; i++)
+        for(k = 1; k <= iterations; k++)
         {
-            count = 0;
+            old = 0;
+            new_points = old_points + (int)Math.pow(2, (k - 1));
+            new_surface = new float[new_points][new_points];
 
-            if((i % 2) != 1)
+            for(i = 0; i < new_points; i++)
             {
-                // Copy the existing row and insert new points
-                for(j = 0; j < points - 1; j++)
+                count = 0;
+
+                if((i % 2) != 1)
                 {
+                    // Copy the existing row and insert new points
+                    for(j = 0; j < old_points - 1; j++)
+                    {
+                        sign = randomiser.nextBoolean() ? 1 : -1;
+                        height = (old_surface[old][j] + old_surface[old][j + 1]) / 2;
+                        height += delta * randomiser.nextFloat() * sign;
+
+                        new_surface[i][count++] = old_surface[old][j];
+                        new_surface[i][count++] = height;
+                    }
+
+                    new_surface[i][count++] = old_surface[old][j];
+                    old++;
+                }
+                else
+                {
+                    // This is the new row being inserted halfway between the old
+                    // and the new.
+                    for(j = 0; j < old_points - 1; j++)
+                    {
+                        sign = randomiser.nextBoolean() ? 1 : -1;
+                        height = (old_surface[old - 1][j] + old_surface[old][j]) / 2;
+                        height += delta * randomiser.nextFloat() * sign;
+
+                        new_surface[i][count++] = height;
+
+                        sign = randomiser.nextBoolean() ? 1 : -1;
+                        height = (old_surface[old - 1][j] + old_surface[old - 1][j + 1] +
+                                  old_surface[old][j] + old_surface[old][j + 1]) / 4;
+                        height += delta * randomiser.nextFloat() * sign;
+
+                        new_surface[i][count++] = height;
+                    }
+
                     sign = randomiser.nextBoolean() ? 1 : -1;
-                    height = (surface[old][j] + surface[old][j + 1]) / 2;
+                    height = (old_surface[old - 1][j] + old_surface[old][j]) / 2;;
                     height += delta * randomiser.nextFloat() * sign;
 
-                    new_surface[i][count++] = surface[old][j];
                     new_surface[i][count++] = height;
                 }
-                new_surface[i][count++] = surface[old][j];
-                old++;
             }
-            else
-            {
-                // This is the new row being inserted halfway between the old
-                // and the new.
-                for(j = 0; j < points - 1; j++)
-                {
-                    sign = randomiser.nextBoolean() ? 1 : -1;
-                    height = (surface[old - 1][j] + surface[old][j]) / 2;
-                    height += delta * randomiser.nextFloat() * sign;
 
-                    new_surface[i][count++] = height;
-
-                    sign = randomiser.nextBoolean() ? 1 : -1;
-                    height = (surface[old - 1][j] + surface[old - 1][j + 1] +
-                              surface[old][j] + surface[old][j + 1]) / 4;
-                    height += delta * randomiser.nextFloat() * sign;
-
-                    new_surface[i][count++] = height;
-                }
-
-                sign = randomiser.nextBoolean() ? 1 : -1;
-                height = (surface[old - 1][j] + surface[old][j]) / 2;;
-                height += delta * randomiser.nextFloat() * sign;
-
-                new_surface[i][count++] = height;
-            }
+            delta /= roughness;
+            old_surface = new_surface;
+            old_points = new_points;
         }
 
-        float[][] ret_val = new_surface;
-
-        if(itr < iterations)
-            ret_val = subdivideSurface(new_surface,
-                                       itr + 1,
-                                       new_points,
-                                       delta / roughness);
-
-        return ret_val;
+        return new_surface;
     }
 
     /**
@@ -555,7 +683,7 @@ public class FractalTerrainGenerator extends GeometryGenerator
      */
     private final int calcSidePoints(int itrs)
     {
-        int points = 2;
+        int points = seedTerrain.length;
 
         for(int i = 0; i < itrs; i++)
             points += (int)Math.pow(2, i);
