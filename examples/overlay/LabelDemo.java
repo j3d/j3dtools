@@ -29,7 +29,7 @@ import org.j3d.geom.overlay.UpdateControlBehavior;
  * the user to draw over it with a mouse.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class LabelDemo extends DemoFrame
 {
@@ -117,7 +117,6 @@ public class LabelDemo extends DemoFrame
 
         overlay.setAntialiased(false);
         overlay.initialize();
-        overlay.repaint();
     }
 
     public static void main(String[] argv)
