@@ -30,7 +30,7 @@ package org.j3d.geom;
  * generate 2D values if asked.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class GeometryData
 {
@@ -57,6 +57,19 @@ public class GeometryData
 
     /** Generate the geometry as an indexed triangle fan array */
     public static final int INDEXED_TRIANGLE_FANS = 8;
+
+    /** Generate the geometry as a line array */
+    public static final int LINES = 9;
+
+    /** Generate the geometry as an line strip array */
+    public static final int LINE_STRIPS = 10;
+
+    /** Generate the geometry as an indexed line array */
+    public static final int INDEXED_LINES = 11;
+
+    /** Generate the geometry as an indexed line strip array */
+    public static final int INDEXED_LINE_STRIPS = 12;
+
 
     /** Request for lighting normal data to be produced */
     public static final int NORMAL_DATA = 0x02;
