@@ -9,6 +9,7 @@ PACKAGES = org.j3d.util \
 	   org.j3d.util.interpolator \
 	   org.j3d.device.input \
        org.j3d.geom \
+       org.j3d.geom.terrain \
 	   org.j3d.ui \
 	   org.j3d.ui.image \
 	   org.j3d.ui.navigation \
