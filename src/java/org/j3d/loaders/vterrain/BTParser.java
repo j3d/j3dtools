@@ -27,7 +27,7 @@ import java.io.IOException;
  * </a>
  *
  * @author  Paul Byrne, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class BTParser
 {
@@ -134,6 +134,7 @@ public class BTParser
         int version = 0;   // 0 for v1.0, 1 for v1.1, 2 for v1.2 etc
 
         header.version = new String(buffer, "US-ASCII");
+
         if(header.version.equals(BTHeader.VERSION_1_0))
             version = 0;
         else if(header.version.equals(BTHeader.VERSION_1_1))
@@ -148,7 +149,7 @@ public class BTParser
         int columns = header.columns;
         boolean floats_used = false;
 
-        int data_size = readInt();
+        int data_size = readShort();
 
         if(version > 0)
             floats_used = (readShort() == 1);
@@ -221,7 +222,7 @@ public class BTParser
      */
     private long readLong() throws IOException
     {
-        input.read(buffer, 0, 8 );
+        input.read(buffer, 0, 8);
         long ret = buffer[7];
 
         for(int i = 6; i >= 0; i--)
@@ -241,7 +242,7 @@ public class BTParser
      */
     private int readInt() throws IOException
     {
-        input.read( buffer, 0, 4 );
+        input.read(buffer, 0, 4);
         int ret = buffer[3];
         for(int i = 2; i >= 0; i--)
         {
