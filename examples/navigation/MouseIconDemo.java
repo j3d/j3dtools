@@ -27,7 +27,7 @@ import org.j3d.ui.navigation.NavigationStateManager;
  * representation.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class MouseIconDemo extends DemoFrame
     implements NavigationStateListener
@@ -53,9 +53,9 @@ public class MouseIconDemo extends DemoFrame
         viewHandler = new MouseViewHandler();
         viewHandler.setCanvas(canvas);
 
-        navHandler.setButtonNavigation(MouseEvent.BUTTON1_MASK, FLY_STATE);
-        navHandler.setButtonNavigation(MouseEvent.BUTTON2_MASK, TILT_STATE);
-        navHandler.setButtonNavigation(MouseEvent.BUTTON3_MASK, PAN_STATE);
+        viewHandler.setButtonNavigation(MouseEvent.BUTTON1_MASK, FLY_STATE);
+        viewHandler.setButtonNavigation(MouseEvent.BUTTON2_MASK, TILT_STATE);
+        viewHandler.setButtonNavigation(MouseEvent.BUTTON3_MASK, PAN_STATE);
 
         NavigationStateManager nav_mgr = new NavigationStateManager(canvas);
         nav_mgr.setNavigationStateListener(this);
@@ -125,6 +125,7 @@ public class MouseIconDemo extends DemoFrame
         TransformGroup view_tg = new TransformGroup();
         view_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         view_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        view_tg.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
         view_tg.addChild(camera);
         view_group.addChild(view_tg);
 
@@ -156,7 +157,7 @@ public class MouseIconDemo extends DemoFrame
 
         TransformGroup torus_tg = new TransformGroup(torus_angle);
 
-        Shape3D torus = new Torus(0.125f, 0.5f, blueAppearance).getChild() ;
+        Shape3D torus = new Torus(0.125f, 0.5f, blueAppearance);
         torus_tg.addChild(torus);
 
         world_object_group.addChild(torus_tg);
@@ -177,6 +178,7 @@ public class MouseIconDemo extends DemoFrame
         view.attachViewPlatform(camera);
 
         viewHandler.setViewInfo(view, view_tg);
+        viewHandler.setNavigationSpeed(1.0);
     }
 
     public static void main(String[] argv)

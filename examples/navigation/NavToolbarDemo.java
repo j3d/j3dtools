@@ -18,6 +18,7 @@ import javax.vecmath.*;
 
 // Application Specific imports
 import org.j3d.geom.Torus;
+import org.j3d.ui.navigation.NavigationState;
 import org.j3d.ui.navigation.NavigationStateListener;
 import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationStateManager;
@@ -30,7 +31,7 @@ import org.j3d.ui.navigation.NavigationToolbar;
  * interaction.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class NavToolbarDemo extends DemoJFrame
 {
@@ -48,6 +49,13 @@ public class NavToolbarDemo extends DemoJFrame
 
         viewHandler = new MouseViewHandler();
         viewHandler.setCanvas(canvas);
+
+        viewHandler.setButtonNavigation(MouseEvent.BUTTON1_MASK,
+                                        NavigationState.FLY_STATE);
+        viewHandler.setButtonNavigation(MouseEvent.BUTTON2_MASK,
+                                        NavigationState.TILT_STATE);
+        viewHandler.setButtonNavigation(MouseEvent.BUTTON3_MASK,
+                                        NavigationState.PAN_STATE);
 
         NavigationToolbar nav_bar = new NavigationToolbar();
         Container content = getContentPane();
@@ -83,6 +91,7 @@ public class NavToolbarDemo extends DemoJFrame
         TransformGroup view_tg = new TransformGroup();
         view_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         view_tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        view_tg.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
         view_tg.addChild(camera);
         view_group.addChild(view_tg);
 
@@ -114,7 +123,7 @@ public class NavToolbarDemo extends DemoJFrame
 
         TransformGroup torus_tg = new TransformGroup(torus_angle);
 
-        Shape3D torus = new Torus(0.125f, 0.5f, blueAppearance).getChild() ;
+        Shape3D torus = new Torus(0.125f, 0.5f, blueAppearance);
         torus_tg.addChild(torus);
 
         world_object_group.addChild(torus_tg);
@@ -135,6 +144,7 @@ public class NavToolbarDemo extends DemoJFrame
         view.attachViewPlatform(camera);
 
         viewHandler.setViewInfo(view, view_tg);
+        viewHandler.setNavigationSpeed(1.0);
     }
 
     public static void main(String[] argv)
