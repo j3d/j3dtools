@@ -24,10 +24,13 @@ import javax.vecmath.*;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class MatrixUtils
 {
+    /** Work variable for the fallback lookat calculations. */
+    private AxisAngle4f orient;
+
     /**
      * Construct a default instance of this class.
      */
@@ -57,6 +60,15 @@ public class MatrixUtils
         double det = d * d + d1 * d1 + d2 * d2;
         if(det != 1)
         {
+            if(det == 0)
+            {
+                res.setIdentity();
+                res.m03 = eye.x;
+                res.m13 = eye.y;
+                res.m23 = eye.z;
+                return;
+            }
+
             det = 1 / Math.sqrt(det);
             d *= det;
             d1 *= det;
@@ -70,6 +82,9 @@ public class MatrixUtils
         det = (up.x * up.x + up.y * up.y + up.z * up.z);
         if(det != 1)
         {
+            if(det == 0)
+                throw new IllegalArgumentException("Up vector is all zeroes");
+
             det = 1 / Math.sqrt(det);
             d4 *= det;
             d5 *= det;
@@ -84,6 +99,17 @@ public class MatrixUtils
 
         if(det != 1)
         {
+            // If this value is zero then we have a case where the up vector is
+            // parallel to the eye-center vector. In this case, set the
+            // translation to the normal location and recalculate everything
+            // again using the slow way using a reference of the normal view
+            // orientation pointing along the -Z axis.
+            if(det == 0)
+            {
+                lookAtFallback(eye, (float)d, (float)d1, (float)d2, res);
+                return;
+            }
+
             det = 1 / Math.sqrt(det);
             d7 *= det;
             d8 *= det;
@@ -97,17 +123,17 @@ public class MatrixUtils
         res.m00 = (float)d7;
         res.m01 = (float)d8;
         res.m02 = (float)d9;
-        res.m03 = (float)(-eye.x * res.m00 + -eye.y * res.m01 + -eye.z * res.m02);
+        res.m03 = (float)(-eye.x * res.m00 - eye.y * res.m01 - eye.z * res.m02);
 
         res.m10 = (float)d4;
         res.m11 = (float)d5;
         res.m12 = (float)d6;
-        res.m13 = (float)(-eye.x * res.m10 + -eye.y * res.m11 + -eye.z * res.m12);
+        res.m13 = (float)(-eye.x * res.m10 - eye.y * res.m11 - eye.z * res.m12);
 
         res.m20 = (float)d;
         res.m21 = (float)d1;
         res.m22 = (float)d2;
-        res.m23 = (float)(-eye.x * res.m20 + -eye.y * res.m21 + -eye.z * res.m22);
+        res.m23 = (float)(-eye.x * res.m20 - eye.y * res.m21 - eye.z * res.m22);
 
         res.m30 = 0;
         res.m31 = 0;
@@ -230,4 +256,52 @@ public class MatrixUtils
         mat.m32 = 0;
     }
 
+    /**
+     * Perform a LookAt camera calculation and place it in the given matrix.
+     * If using this for a viewing transformation, you should invert() the
+     * matrix after the call.
+     *
+     * @param eye The eye location
+     * @param center The place to look at
+     * @param up The up vector
+     * @param res The result to put the calculation into
+     */
+    private void lookAtFallback(Point3f eye,
+                                float evX,
+                                float evY,
+                                float evZ,
+                                Matrix4f res)
+    {
+         // cross product of the -Z axis and the direction vector (ev? params).
+         // This gives the rotation axis to put into the matrix. Since we know
+         // the original -Z axis is (0, 0, -1) then we can skip a lot of the
+         // calculations to be done.
+        float rot_x = evY;   //  0 * evZ - -1 * evY;
+        float rot_y = -evX;  // -1 * evX - 0 * evZ;
+        float rot_z = 0;     //  0 * evY - 0 * evX;
+
+        // Angle is  cos(theta) = (A / |A|) . (B / |B|)
+        // A is the -Z vector. B is ev? values that need to be normalised first
+        float n = evX * evX + evY * evY + evZ * evZ;
+        if(n != 0 || n != 1)
+        {
+            n = 1 / (float)Math.sqrt(n);
+            evX *= n;
+            evY *= n;
+            evZ *= n;
+        }
+
+        float dot = -evZ;   // 0 * evX + 0 * evY + -1 * evZ;
+        float angle = (float)Math.acos(dot);
+
+        if(orient == null)
+            orient = new AxisAngle4f(rot_x, rot_y, rot_z, angle);
+        else
+            orient.set(rot_x, rot_y, rot_z, angle);
+
+        res.set(orient);
+        res.m03 = eye.x;
+        res.m13 = eye.y;
+        res.m23 = eye.z;
+    }
 }
