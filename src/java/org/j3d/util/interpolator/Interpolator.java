@@ -10,7 +10,7 @@
 package org.j3d.util.interpolator;
 
 // Standard imports
-import javax.vecmath.Point3f;
+// none
 
 // Application specific imports
 // none
@@ -24,7 +24,7 @@ import javax.vecmath.Point3f;
  * and compute correct values.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class Interpolator
 {
@@ -91,65 +91,60 @@ public abstract class Interpolator
 
     /**
      * Find the key in the array. Performs a fast binary search of the values
-     * to locate the right index. Most of the time the key will not be in the
-     * array so this will return the index to the key that is the least
-     * smallest of all keys compared to this key. If the key is smaller than
-     * all known keys, a value of -1 is returned. A binary search is O(log n).
+     * to locate the right index.  Returns the index i such that
+     * key[i]<key<=key[i+1].  If the key is less than or equal to all
+     * keys, returns -1.
+     * The binary search is O(log n).
      *
      * @param key The key to search for
-     * @return The index of the key that is just greater than this key
+     * @return The index i such that key[i]<key<=key[i+1].
      */
     protected int findKeyIndex(float key)
     {
         // some special case stuff - check the extents of the array to avoid
         // the binary search
-        if((key <= keys[0]) || (currentSize == 0))
+        if((currentSize == 0) || (key <= keys[0]))
             return -1;
         else if(key == keys[currentSize - 1])
             return currentSize - 1;
         else if(key > keys[currentSize - 1])
+        // REVISIT - this return value is an exception from the general
+        // pattern.  I think currentSize-1 would make more sense here.
+        // I wont change it since it appears to be working.
+        // [GC 21-Oct-2002]
             return currentSize;
 
-        int mid = -1;
-        for(int i = 1; i < currentSize; i++)
-        {
-            if(keys[i] > key)
-            {
-                mid = i - 1;
-                break;
-            }
-        }
-
-        // This binary search just doesn't seem to work right. Don't know why
-        // but we've gone for the horribly in-efficient linear search above.
-        // this must be fixed soon....
-/*
         int start = 0;
         int end = currentSize - 1;
-        int mid = (currentSize - 1) >> 1;
+        int mid = currentSize >> 1;  // identical to (start + end + 1) >> 1
 
-        // basic binary search. Done without being recursive for speed.
+        // Non-recursive binary search.
+        // Differs a little from a classical binary search
+        // in that we cannot discard the middle value from
+        // the search when key>keys[mid].  The new
+        // range boundaries are adjusted to include mid (start=mid)
+        // instead of excluding mid (start=mid+1).  In doing this,
+        // we must also make our mid computation round up to avoid
+        // a possible infinite loop with mid==start.
+
         while(start < end)
         {
-            mid = ((end - start) >> 1) + start;
             float test = keys[mid];
 
             if(test == key)
                 break;
-            else if(key < test)
+            else if(key <= test)
                 end = mid - 1;
             else
-                start = mid + 1;
+                start = mid;     // note we don't exclude mid from range
+
+            // We recompute mid at the end so that
+            // it is correct when loop terminates.
+            // Note that we round up.  This is required to avoid
+            // getting stuck with mid==start.
+            mid = (start + end + 1) >> 1;
         }
 
-        // An adjustment for if the key is just bigger than the mid point
-        // and the tests above have accidently shifted the mid point one
-        // place too high (mid + 1) because start and end are one index apart.
-        // This normally only happens when we have an odd number of items in
-        // the array.
-        if(keys[mid] > key)
-            mid--;
-*/
         return mid;
     }
 }
