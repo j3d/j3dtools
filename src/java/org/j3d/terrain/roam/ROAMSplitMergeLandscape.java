@@ -32,7 +32,7 @@ import org.j3d.util.frustum.ViewFrustum;
  * +ve x axis and the -ve z axis
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class ROAMSplitMergeLandscape extends Landscape
 {
@@ -59,7 +59,7 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
     private static final int AXIS_TILE_COUNT = 7;
 
     /** The patch size to use for this landscape */
-    private final int patchSize;
+    protected final int patchSize;
 
     /** 1 over patchSize for calcs */
     private final int invPatchSize;

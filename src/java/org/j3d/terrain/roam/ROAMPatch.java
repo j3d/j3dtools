@@ -41,7 +41,7 @@ import org.j3d.util.frustum.ViewFrustum;
 public abstract class ROAMPatch
 {
     /** The final size in number of grid points for this patch */
-    private final int PATCH_SIZE;
+    protected final int PATCH_SIZE;
 
     /** The values of the nodes in the NW triangle of this patch */
     protected TreeNode NWTree;
@@ -80,13 +80,13 @@ public abstract class ROAMPatch
     protected VertexData vertexData;
 
     /** The maximum Y for this patch */
-    private float maxY;
+    protected float maxY;
 
     /** The minimumY for this patch */
-    private float minY;
+    protected float minY;
 
     /** Flag to indicate if a clear has been requested */
-    private boolean resetRequested;
+    protected boolean resetRequested;
 
     /** Flag to see if this is the first time used or not */
     private boolean firstUse;
@@ -214,7 +214,7 @@ public abstract class ROAMPatch
      * @param yOrig The tileOrigin of the Y grid coord for this patch in the
      *    global set of grid coordinates
      */
-    void setOrigin(int xOrig, int yOrig)
+    protected void setOrigin(int xOrig, int yOrig)
     {
         tileOrigin.x = xOrig / PATCH_SIZE;
         tileOrigin.y = yOrig / PATCH_SIZE;
@@ -484,7 +484,7 @@ public abstract class ROAMPatch
      * Create the geometry needed for this patch. Just sets how many vertices
      * are to be used based on the triangles of the two halves of the tree.
      */
-    private void createGeometry()
+    protected void createGeometry()
     {
         vertexData.reset();
 

@@ -32,7 +32,7 @@ import org.j3d.util.frustum.ViewFrustum;
  * @author  Paul Byrne, Justin Couch
  * @version
  */
-class TreeNode extends QueueItem
+public class TreeNode extends QueueItem
 {
     /** The visibility status of this node in the tree is not known. */
     public static final int UNDEFINED = -1;
@@ -108,6 +108,13 @@ class TreeNode extends QueueItem
     {
     }
 
+    /**
+     * Get the visibility state of this node.
+     */
+    public int getVisibility()
+    {
+        return visible;
+    }
 
     /**
      * Used to populate a node retrieved from the TreeNodeCache
@@ -570,7 +577,7 @@ class TreeNode extends QueueItem
      * Either return a node from the cache or if the cache is empty, return
      * a new tree node.
      */
-    static TreeNode getTreeNode()
+    public static TreeNode getTreeNode()
     {
         TreeNode ret_val;
 

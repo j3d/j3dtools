@@ -18,9 +18,9 @@ package org.j3d.terrain.roam;
  * kept around.
  *
  * @author  Justin Couch, based on original ideas by Paul Byrne
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
-class VertexData
+public class VertexData
 {
     /** This data contains coordinate information only */
     static final byte COORD_ONLY = 1;
@@ -52,7 +52,7 @@ class VertexData
      * @param hasTexture true if we have to represent texture coordinates
      * @param hasColor true if we have to represent color values
      */
-    VertexData(int patchSize, boolean hasTexture, boolean hasColor)
+    public VertexData(int patchSize, boolean hasTexture, boolean hasColor)
     {
         coords = new float[patchSize * patchSize * 2 * 3 * 3];
 
@@ -75,7 +75,7 @@ class VertexData
      *
      * @return The flat array of coordinates
      */
-    float[] getCoords()
+    public float[] getCoords()
     {
         return coords;
     }
@@ -85,7 +85,7 @@ class VertexData
      *
      * @return The flat array of color components
      */
-    byte[] getColors()
+    public byte[] getColors()
     {
         return colors;
     }
@@ -95,7 +95,7 @@ class VertexData
      *
      * @return The flat array of texture coordinates
      */
-    float[] getTextureCoords()
+    public float[] getTextureCoords()
     {
         return textureCoords;
     }
@@ -263,7 +263,7 @@ class VertexData
      *
      * @return The total number of registered vertices
      */
-    int getVertexCount()
+    public int getVertexCount()
     {
         return index / 3;
     }
