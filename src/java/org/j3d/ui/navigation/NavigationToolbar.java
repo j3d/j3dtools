@@ -34,7 +34,7 @@ import org.j3d.util.ImageLoader;
  *
  * @author <a href="http://www.geocities.com/seregi/index.html">Laszlo Seregi</a><br>
  *    Updated for j3d.org by Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NavigationToolbar extends JPanel
     implements ActionListener, NavigationStateListener
@@ -76,7 +76,7 @@ public class NavigationToolbar extends JPanel
      */
     public NavigationToolbar()
     {
-        this(null, true);
+        this(true);
     }
 
     /**
@@ -86,30 +86,6 @@ public class NavigationToolbar extends JPanel
      * @param horizontal True to lay out the buttons horizontally
      */
     public NavigationToolbar(boolean horizontal)
-    {
-        this(null, horizontal);
-    }
-
-    /**
-     * Create a new navigation toolbar that has the given list of viewpoints
-     * to be displayed. List may be null and may be changed at a later date.
-     * The buttons will be laid out horizontally
-     *
-     * @param vps The list of viewpoints to use
-     */
-    public NavigationToolbar(ViewpointData[] vps)
-    {
-        this(vps, true);
-    }
-
-    /**
-     * Create a new navigation toolbar that has the given list of viewpoints
-     * to be displayed. List may be null and may be changed at a later date.
-     *
-     * @param horizontal True to lay out the buttons horizontally
-     * @param vps The list of viewpoints to use
-     */
-    public NavigationToolbar(ViewpointData[] vps, boolean horizontal)
     {
         if(horizontal)
             setLayout(new GridLayout(1, 3));
@@ -207,12 +183,15 @@ public class NavigationToolbar extends JPanel
         switch(navigationState)
         {
             case NavigationStateListener.WALK_STATE:
+                walkButton.setSelected(true);
                 break;
 
             case NavigationStateListener.PAN_STATE:
+                panButton.setSelected(true);
                 break;
 
             case NavigationStateListener.TILT_STATE:
+                tiltButton.setSelected(true);
                 break;
         }
     }
