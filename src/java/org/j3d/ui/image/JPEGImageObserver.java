@@ -11,6 +11,7 @@ package org.j3d.ui.image;
 
 // Standard imports
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -26,6 +27,11 @@ import org.j3d.ui.CapturedImageObserver;
  * <P>
  * This oneshot will only write a single image the first time it is called.
  * After that it will ignore any incoming requests.
+ * <P>
+ *
+ * If the filename already exists, it will automatically overwrite the existing
+ * image. If the filename contains non-existant intermediate directories, these
+ * will be automatically created.
  * <P>
  *
  * This uses the Sun codec classes to save the image to disk. Don't know how
@@ -44,6 +50,14 @@ public class JPEGImageObserver implements CapturedImageObserver
 
     /** The currently set filename. */
     private String filename;
+
+    /**
+     * Construct a default observer with no filename set and it has not yet
+     * captured an image.
+     */
+    public JPEGImageObserver()
+    {
+    }
 
     /**
      * Tell the observer to capture the next frame it is told about. If the
@@ -94,7 +108,12 @@ public class JPEGImageObserver implements CapturedImageObserver
 
         try
         {
-            FileOutputStream out = new FileOutputStream(filename);
+            File file = new File(filename);
+
+            File dirs = file.getParentFile();
+            dirs.mkdirs();
+
+            FileOutputStream out = new FileOutputStream(file);
             JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
             JPEGEncodeParam param = encoder.getDefaultJPEGEncodeParam(img);
 
