@@ -184,7 +184,7 @@ import org.j3d.util.UserSupplementData;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class NavigationProcessor
 {
@@ -236,6 +236,9 @@ public class NavigationProcessor
 
     /** The transform that belongs to the view transform group */
     private Transform3D viewTx;
+
+    /** Path from the world root to the viewTg when in a shared graph */
+    private SceneGraphPath viewPath;
 
     /** An observer for collision information */
     private CollisionListener collisionListener;
@@ -587,6 +590,25 @@ public class NavigationProcessor
      */
     public void setViewInfo(View view, TransformGroup tg)
     {
+        setViewInfo(view, tg, null);
+    }
+
+    /**
+     * Set the view and it's related transform group to use and the path to
+     * get there from the root of the scene. The transform group must allow
+     * for reading the local to Vworld coordinates so that we can accurately
+     * implement terrain following. A null value for the path is permitted.
+     *
+     * @param view is the View object that we're modifying.
+     * @param tg The transform group above the view object that should be used
+     * @param path The path from the root to the transform to use or null
+     * @throws IllegalArgumentException One of the values is null and the
+     *   other is not
+     * @throws IllegalStateException The transform group does not allow
+     *   reading of the vworld transforms or does not allow it to be set
+     */
+    public void setViewInfo(View view, TransformGroup tg, SceneGraphPath path)
+    {
         if(((view != null) && (tg == null)) ||
            ((view == null) && (tg != null)))
             throw new IllegalArgumentException("View or TG is null when " +
@@ -594,6 +616,7 @@ public class NavigationProcessor
 
         this.view = view;
         this.viewTg = tg;
+        viewPath = path;
 
         if(tg == null)
             return;
@@ -614,6 +637,18 @@ public class NavigationProcessor
         // TODO:
         // Adjust the step height to the values from the scaled down vector
         // component so that it relates to the world coordinate system.
+    }
+
+    /**
+     * Change the currently set scene graph path for the world root to this new
+     * path without changing the rest of the view setup. Null will clear the
+     * current path set.
+     *
+     * @param path The new path to use for the viewpoint
+     */
+    public void setViewPath(SceneGraphPath path)
+    {
+        viewPath = path;
     }
 
     /**
@@ -1176,7 +1211,11 @@ public class NavigationProcessor
     {
         boolean ret_val = true;
 
-        viewTg.getLocalToVworld(worldEyeTransform);
+        if(viewPath != null)
+            viewTg.getLocalToVworld(viewPath, worldEyeTransform);
+        else
+            viewTg.getLocalToVworld(worldEyeTransform);
+
         worldEyeTransform.mul(viewTx);
 
         worldEyeTransform.get(locationVector);
@@ -1416,7 +1455,11 @@ public class NavigationProcessor
     {
         boolean ret_val = true;
 
-        viewTg.getLocalToVworld(worldEyeTransform);
+        if(viewPath != null)
+            viewTg.getLocalToVworld(viewPath, worldEyeTransform);
+        else
+            viewTg.getLocalToVworld(worldEyeTransform);
+
         worldEyeTransform.mul(viewTx);
 
         // Where are we now?
@@ -1653,7 +1696,11 @@ public class NavigationProcessor
         if(terrain == null)
             return;
 
-        viewTg.getLocalToVworld(worldEyeTransform);
+        if(viewPath != null)
+            viewTg.getLocalToVworld(viewPath, worldEyeTransform);
+        else
+            viewTg.getLocalToVworld(worldEyeTransform);
+
         worldEyeTransform.mul(viewTx);
 
         worldEyeTransform.get(locationVector);
