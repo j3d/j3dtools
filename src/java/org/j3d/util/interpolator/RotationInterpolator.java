@@ -10,6 +10,7 @@
 package org.j3d.util.interpolator;
 
 // Standard imports
+import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Quat4f;
 
 // Application specific imports
@@ -19,15 +20,25 @@ import javax.vecmath.Quat4f;
  * An interpolator that works with positional coordinates.
  * <P>
  *
- * The interpolation routine is just a simple linear interpolation between
- * each of the points. The interpolator may take arbitrarily spaced keyframes
- * and compute correct values.
+ * Two different interpolation schemes are provided - a simple linear system
+ * and quaternion based. The interpolator may take arbitrarily
+ * spaced keyframes and compute correct values.
+ * <P>
+ * The simple interpolation routine is just a linear interpolation between
+ * each component of each of the points.
+ * <p>
+ *
+ * For quaternion based interpolation, the code uses the algorithm presented by
+ * Graphics Gems III, Page 96.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class RotationInterpolator extends Interpolator
 {
+    /** Flag to nominate that the interpolation routine should be quaternions */
+    public static final int QUATERNION = 3;
+
     /** Reference to the shared quaternion return value for key values */
     private Quat4f sharedPoint;
 
@@ -36,6 +47,10 @@ public class RotationInterpolator extends Interpolator
 
     /** The key values indexed as [index][x, y, z, r] */
     private float[][] keyValues;
+
+    // Working vars for quaternion based interpolation
+    private AxisAngle4f angle1, angle2;
+    private Quat4f quat1, quat2;
 
     /**
      * Create a new linear interpolator instance with the default size for the
@@ -72,6 +87,14 @@ public class RotationInterpolator extends Interpolator
 
         sharedPoint = new Quat4f();
         sharedVector = new float[4];
+
+        if(type == QUATERNION)
+        {
+            angle1 = new AxisAngle4f();
+            angle2 = new AxisAngle4f();
+            quat1 = new Quat4f();
+            quat2 = new Quat4f();
+        }
     }
 
     /**
@@ -196,6 +219,41 @@ public class RotationInterpolator extends Interpolator
                     sharedPoint.z = pnt[2];
                     sharedPoint.w = pnt[3];
                     break;
+
+                case QUATERNION:
+                    p1 = keyValues[loc + 1];
+                    p0 = keyValues[loc];
+
+                    angle1.set(p0);
+                    angle2.set(p1);
+
+                    quat1.set(angle1);
+                    quat2.set(angle2);
+
+                    double cos_omega = quat1.x * quat2.x +
+                                       quat1.y * quat2.y +
+                                       quat1.z * quat2.z +
+                                       quat1.w * quat2.w;
+
+                    // If opposite hemispheres then negate quat1
+                    if (cos_omega < 0.0)
+                        quat1.negate();
+
+                    fraction = 0;
+
+                    // just in case we get two keys the same
+                    prev_key = keys[loc];
+                    found_key = keys[loc + 1];
+
+                    if(found_key != prev_key)
+                        fraction = (key - prev_key) / (found_key - prev_key);
+
+                    quat1.interpolate(quat2, fraction);
+
+                    angle1.set(quat1);
+                    angle1.get(sharedVector);
+
+                    sharedPoint.set(sharedVector);
             }
         }
 
@@ -273,6 +331,39 @@ System.out.println("w " + p0[3] + " w_dist " + w_dist);
                     sharedVector[2] = pnt[2];
                     sharedVector[3] = pnt[3];
                     break;
+
+                case QUATERNION:
+                    p1 = keyValues[loc + 1];
+                    p0 = keyValues[loc];
+
+                    angle1.set(p0);
+                    angle2.set(p1);
+
+                    quat1.set(angle1);
+                    quat2.set(angle2);
+
+                    double cos_omega = quat1.x * quat2.x +
+                                       quat1.y * quat2.y +
+                                       quat1.z * quat2.z +
+                                       quat1.w * quat2.w;
+
+                    // If opposite hemispheres then negate quat1
+                    if (cos_omega < 0.0)
+                        quat1.negate();
+
+                    fraction = 0;
+
+                    // just in case we get two keys the same
+                    prev_key = keys[loc];
+                    found_key = keys[loc + 1];
+
+                    if(found_key != prev_key)
+                        fraction = (key - prev_key) / (found_key - prev_key);
+
+                    quat1.interpolate(quat2, fraction);
+
+                    angle1.set(quat1);
+                    angle1.get(sharedVector);
             }
         }
 
