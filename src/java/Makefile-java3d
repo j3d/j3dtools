@@ -46,13 +46,11 @@ JAVADOC_PACKAGES = org.j3d.util \
     org.j3d.util.interpolator \
     org.j3d.util.frustum \
     org.j3d.device.input.spaceball \
-    org.j3d.device.input.spaceball.transformation \
     org.j3d.device.input.vfx \
     org.j3d.device.input.polhemus \
     org.j3d.texture \
     org.j3d.geom \
     org.j3d.geom.terrain \
-    org.j3d.geom.overlay \
     org.j3d.geom.particle \
     org.j3d.geom.spline \
     org.j3d.ui \

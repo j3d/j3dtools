@@ -49,7 +49,6 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.texture \
 	org.j3d.geom \
 	org.j3d.geom.terrain \
-	org.j3d.geom.overlay \
 	org.j3d.geom.particle \
 	org.j3d.geom.spline \
 	org.j3d.ui \
