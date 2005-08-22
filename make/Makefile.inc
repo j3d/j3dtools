@@ -1,12 +1,12 @@
 #*********************************************************************
 #
-#                         (C) 2001-02 j3d.org
+#                         (C) 2001-05 j3d.org
 #                         http://code.j3d.org/
 #
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.6 $
+# Version: $Revision: 1.7 $
 #
 #*********************************************************************
 
@@ -15,7 +15,7 @@ ifndef PROJECT_ROOT
 endif
 
 ifndef JAVA_HOME
-  JAVA_HOME=/usr/local/java/jdk1.3
+  JAVA_HOME=/usr/local/java/jdk1.4
 endif
 
 SRC_DIR=$(PROJECT_ROOT)/src
@@ -33,9 +33,12 @@ MAKEDIR   = mkdir -p
 RMDIR     = rm -fr
 PRINT     = @echo
 COPY      = cp 
-COPY_PATH = cp -P
+COPY_PATH = cp --parents
 CHMOD     = chmod
 CD        = cd
+
+#JAVAC_FLAGS=-deprecation
+#JAVADOC_FLAGS=
 
 MAKEFLAGS=-s
 

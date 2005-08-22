@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.10 $
+# Version: $Revision: 1.11 $
 #
 #*********************************************************************
 
@@ -140,7 +140,7 @@ JNI_LIST_BUILD = $(patsubst %,$(JAVA_SRC_DIR)/%/.native,$(NATIVE_LIST))
 # Option listing for the various commands
 #
 JAVAC_OPTIONS = -d $(DESTINATION) -classpath $(CLASSPATH) \
-                -sourcepath $(SOURCEPATH)
+                -sourcepath $(SOURCEPATH) $(JAVAC_FLAGS)
 JAVAH_OPTIONS = -d $(INCLUDE_DIR) -classpath $(CLASSPATH)
 
 ifdef MANIFEST
@@ -165,6 +165,10 @@ JAVADOC_OPTIONS  = \
 	 
 ifdef OVERVIEW
   JAVADOC_OPTIONS += -overview $(OVERVIEW)
+endif
+
+ifdef JAVADOC_FLAGS
+  JAVADOC_OPTIONS += $(JAVADOC_FLAGS)
 endif
 
 #
