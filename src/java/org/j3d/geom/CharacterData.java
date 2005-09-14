@@ -31,7 +31,7 @@ import java.nio.FloatBuffer;
  * axis.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CharacterData
 {
@@ -46,4 +46,7 @@ public class CharacterData
 
     /** The 2D bounds of the character - in the X,Z plane. */
     public Rectangle2D.Float bounds;
+
+    /** Baseline information for the text character. */
+    public float ascent;
 }

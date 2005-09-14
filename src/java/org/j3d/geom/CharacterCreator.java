@@ -55,7 +55,7 @@ import org.j3d.util.CharHashMap;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class CharacterCreator
 {
@@ -175,12 +175,11 @@ public class CharacterCreator
      */
     private void createNewGlyph(char character)
     {
-//            GlyphVector glyph_vec =
-//                font.layoutGlyphVector(fontContext, new_chars);
-
         sourceChar[0] = character;
         GlyphVector glyph_vec =
             font.createGlyphVector(fontContext, sourceChar);
+
+        java.awt.font.LineMetrics metrics = font.getLineMetrics(sourceChar, 0, 1, fontContext);
 
         // Font Y-axis is downwards, so create an affine transform to flip it.
         Rectangle2D v_bounds = glyph_vec.getVisualBounds();
@@ -195,17 +194,43 @@ public class CharacterCreator
         CharacterData ch_data = new CharacterData();
         Rectangle2D l_bounds = glyph_vec.getLogicalBounds();
 
-        Shape glyph_shape = glyph_vec.getOutline();
-        PathIterator glyph_path =
-            glyph_shape.getPathIterator(neg_trans, flatness);
-        int num_triangles;
+/*
+System.out.println("char \'" + character + "\'");
+System.out.println("Logical bounds " + l_bounds);
+System.out.println("visual bounds " + v_bounds);
+System.out.println(" offset " +
+                   metrics.getBaselineOffsets()[0] + ", " +
+                   metrics.getBaselineOffsets()[1] + " desc " +
+                   metrics.getHeight() + " a " +
+                   metrics.getDescent() + " h " +
+                   metrics.getAscent());
+*/
+
         float scale = 1 / (float)l_bounds.getHeight();
+//System.out.println("scale " + scale);
 
         ch_data.bounds =
             new Rectangle2D.Float((float)l_bounds.getX() * scale,
                                   (float)l_bounds.getY() * scale,
                                   (float)l_bounds.getWidth() * scale,
                                   1);
+
+        ch_data.ascent = metrics.getAscent() * scale;
+
+        if(Character.isWhitespace(character))
+        {
+            ch_data.numIndex = 0;
+            charDataMap.put(character, ch_data);
+            return;
+        }
+
+        Shape glyph_shape = glyph_vec.getOutline();
+        PathIterator glyph_path =
+            glyph_shape.getPathIterator(neg_trans, flatness / scale);
+        int num_triangles;
+
+//System.out.println("final ascent " + ch_data.ascent);
+
         int vtx_count = 0;
         int start_vtx = 0;
         int total_coords = 0;
@@ -213,6 +238,8 @@ public class CharacterCreator
         boolean new_curve = true;
         int second_curve_start = 0;
         int closest_point = 0;
+
+//System.out.println("processing " + character + " flatness " + (flatness / scale));
 
         while(!glyph_path.isDone())
         {
@@ -286,13 +313,11 @@ public class CharacterCreator
                                              total_coords -
                                               second_curve_start + lower + 3);
 
-/*
-System.out.println("adjusting curve: closest " + closest_point +
-                   " total " + total_coords + " amt " + lower);
-System.out.println("2nd copy " + second_curve_start +
-                   " to " + (closest_point + 3) +
-                   " amt " + (total_coords - second_curve_start + lower + 3));
-*/
+//System.out.println("adjusting curve: closest " + closest_point +
+//                   " total " + total_coords + " amt " + lower);
+//System.out.println("2nd copy " + second_curve_start +
+//                   " to " + (closest_point + 3) +
+//                   " amt " + (total_coords - second_curve_start + lower + 3));
                             // Adjust for the extra replicated coordinate
                             total_coords += 3;
                             vtx_count++;
@@ -388,7 +413,14 @@ System.out.println("2nd copy " + second_curve_start +
                     break;
 
                 case PathIterator.SEG_LINETO:
-//System.out.println("line " + total_coords + " : " + newCoords[0] + " " + newCoords[1]);
+// System.out.println("line " + total_coords + " : " + newCoords[0] + " " + newCoords[1]);
+                    if(charCoords.length < total_coords + 2)
+                    {
+                        float[] tmp = new float[total_coords + 256];
+                        System.arraycopy(charCoords, 0, tmp, 0, total_coords);
+                        charCoords = tmp;
+                    }
+
                     charCoords[total_coords++] = newCoords[0] * scale;
                     charCoords[total_coords++] = newCoords[1] * scale;
                     charCoords[total_coords++] = 0;
@@ -415,6 +447,13 @@ System.out.println("2nd copy " + second_curve_start +
             // duplicate closest point on the first curve for
             // the insertion process, make sure we add an extra
             // value.
+
+//System.out.println("Character " + character +
+//                   " char len " + charCoords.length +
+//                   " cp " + closest_point +
+//                   " tc " + total_coords +
+//                   " len " + lower);
+
             System.arraycopy(charCoords,
                              closest_point,
                              charCoords,
