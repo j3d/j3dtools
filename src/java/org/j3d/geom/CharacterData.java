@@ -31,7 +31,7 @@ import java.nio.FloatBuffer;
  * axis.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class CharacterData
 {
@@ -44,9 +44,9 @@ public class CharacterData
     /** The list of indices creating the triangles representing the text */
     public IntBuffer coordIndex;
 
-    /** The 2D bounds of the character - in the X,Z plane. */
+    /** The 2D bounds of the character - in the X,Y plane. */
     public Rectangle2D.Float bounds;
 
-    /** Baseline information for the text character. */
-    public float ascent;
+    /** The generic scale that was applied to get these bounds */
+    public float scale;
 }

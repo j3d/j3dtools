@@ -55,7 +55,7 @@ import org.j3d.util.CharHashMap;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class CharacterCreator
 {
@@ -126,6 +126,16 @@ public class CharacterCreator
     }
 
     /**
+     * Get the Java 2D FontRenderContext used to create this FontStyle object.
+     *
+     * @return The Font object used to render this text
+     */
+    public FontRenderContext getFontRenderContext()
+    {
+        return fontContext;
+    }
+
+    /**
      * Get the flatness value used to create the internal glyphs.
      *
      * @return A value greater than zero
@@ -179,7 +189,7 @@ public class CharacterCreator
         GlyphVector glyph_vec =
             font.createGlyphVector(fontContext, sourceChar);
 
-        java.awt.font.LineMetrics metrics = font.getLineMetrics(sourceChar, 0, 1, fontContext);
+//java.awt.font.LineMetrics metrics = font.getLineMetrics(sourceChar, 0, 1, fontContext);
 
         // Font Y-axis is downwards, so create an affine transform to flip it.
         Rectangle2D v_bounds = glyph_vec.getVisualBounds();
@@ -206,6 +216,8 @@ System.out.println(" offset " +
                    metrics.getAscent());
 */
 
+//        float scale = 1 / (float)(metrics.getAscent() + metrics.getDescent());
+
         float scale = 1 / (float)l_bounds.getHeight();
 //System.out.println("scale " + scale);
 
@@ -215,7 +227,7 @@ System.out.println(" offset " +
                                   (float)l_bounds.getWidth() * scale,
                                   1);
 
-        ch_data.ascent = metrics.getAscent() * scale;
+        ch_data.scale = scale;
 
         if(Character.isWhitespace(character))
         {
