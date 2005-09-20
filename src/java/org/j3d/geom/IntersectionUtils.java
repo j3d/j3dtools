@@ -59,7 +59,7 @@ import org.j3d.util.UserSupplementData;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class IntersectionUtils
 {
@@ -293,6 +293,9 @@ public class IntersectionUtils
                                     Point3d point,
                                     boolean intersectOnly)
     {
+        if(numTris == 0)
+            return false;
+
         if(coords.length < numTris * 9)
             throw new IllegalArgumentException("coords too small for numCoords");
 
@@ -361,6 +364,9 @@ public class IntersectionUtils
                                 Point3d point,
                                 boolean intersectOnly)
     {
+        if(numQuads == 0)
+            return false;
+
         if(coords.length < numQuads * 12)
             throw new IllegalArgumentException("coords too small for numCoords");
 
@@ -430,6 +436,9 @@ public class IntersectionUtils
                                          Point3d point,
                                          boolean intersectOnly)
     {
+        if(numStrips == 0)
+            return false;
+
         // Add all the strip lengths up first
         int total_coords = 0;
 
@@ -514,6 +523,9 @@ public class IntersectionUtils
                                        Point3d point,
                                        boolean intersectOnly)
     {
+        if(numStrips == 0)
+            return false;
+
         // Add all the strip lengths up first
         int total_coords = 0;
 
@@ -608,6 +620,9 @@ public class IntersectionUtils
                                            Point3d point,
                                            boolean intersectOnly)
     {
+        if(numIndex == 0)
+            return false;
+
         // assign the working coords to be big enough for a quadrilateral as
         // that is what we are most likely to see as the biggest item
         if(working2dCoords == null)
@@ -691,6 +706,9 @@ public class IntersectionUtils
                                        Point3d point,
                                        boolean intersectOnly)
     {
+        if(numIndex == 0)
+            return false;
+
         // assign the working coords to be big enough for a quadrilateral as
         // that is what we are most likely to see as the biggest item
         if(working2dCoords == null)
