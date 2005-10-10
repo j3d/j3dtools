@@ -25,6 +25,31 @@ include $(PROJECT_ROOT)/make/Makefile.inc
 
 VERSION=0.1
 
+help:
+	$(PRINT) 
+	$(PRINT) "                   The Xj3D Project"
+	$(PRINT) 
+	$(PRINT) "More information on this project can be found at http://www.xj3d.org"
+	$(PRINT) 
+	$(PRINT) "The following options are offered and will build the entire codebase:"
+	$(PRINT) 
+	$(PRINT) "class:       Compile just the classes. Don't make JAR files."
+	$(PRINT) "bin:         Build parsers and classes"
+	$(PRINT) "jar:         Make the java JAR file"
+	$(PRINT) "javadoc:     Generate the javadoc information"
+	$(PRINT) "docs:        Generate both parser and javadoc files"
+	$(PRINT) "all:         Build everything (including docs)"
+	$(PRINT) "clean:       Blow all the library classes away"
+	$(PRINT) "nuke:        Blow both lib and example code away"
+	$(PRINT) 
+	$(PRINT) "The following allow you to build only the files needed by a"
+	$(PRINT) "specific renderer, without compiling the others."
+	$(PRINT) 
+	$(PRINT) "j3d:         Java3D classes"
+	$(PRINT) "j3d-jar:     Java3D bin and jar files"
+	$(PRINT) "j3d-javadoc: Java3D javadoc"
+	$(PRINT) 
+
 all: class jar javadoc
 
 class:
@@ -46,3 +71,14 @@ javadoc:
 clean:
 	cd $(JAVA_DIR) && make clean
 	
+#
+# Java3D-specific renderer
+#
+j3d:
+	cd $(JAVA_DIR) && make -f Makefile-java3d buildall
+
+j3d-javadoc:
+	cd $(JAVA_DIR) && make -f Makefile-java3d javadoc
+
+j3d-jar: j3d
+	cd $(JAVA_DIR) && make -f Makefile-java3d jar
