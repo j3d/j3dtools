@@ -23,7 +23,7 @@ package org.j3d.ui.navigation;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface NavigationState
 {
@@ -41,6 +41,9 @@ public interface NavigationState
 
     /** The navigation state is Examine */
     public static int EXAMINE_STATE = 5;
+
+    /** The navigation state is Examine */
+    public static int LOOKAT_STATE = 6;
 
     /** The navigation state is such that there is no navigation */
     public static int NO_STATE = 0;
