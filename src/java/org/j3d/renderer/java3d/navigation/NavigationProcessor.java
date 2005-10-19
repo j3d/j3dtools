@@ -184,7 +184,7 @@ import org.j3d.util.MatrixUtils;
  *   Terrain/Collision implementation by Justin Couch
  *   Replaced the Swing timer system with J3D behavior system: Morten Gustavsen.
  *   Modified the tilt navigation mode : Svein Tore Edvardsen.
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class NavigationProcessor
 {
@@ -558,25 +558,34 @@ public class NavigationProcessor
      * in examine mode.
      *
      * @param center The new center to use
+     * @param lookPos The position to look from.  NULL is the current user position.
      */
-    public void setCenterOfRotation(float[] center)
+    public void setCenterOfRotation(float[] center, float[] lookPos)
     {
         centerOfRotation.x = center[0];
         centerOfRotation.y = center[1];
         centerOfRotation.z = center[2];
 
-        if(navigationState == NavigationState.EXAMINE_STATE)
+        if(navigationState == NavigationState.EXAMINE_STATE ||
+            navigationState == NavigationState.LOOKAT_STATE)
         {
-            viewTg.getTransform(viewTx);
-            viewTx.get(viewTranslation);
+            if (lookPos == null)
+            {
+                viewTg.getTransform(viewTx);
+                viewTx.get(viewTranslation);
+                locationPoint.set(viewTranslation);
+            } else
+            {
+                locationPoint.x = lookPos[0];
+                locationPoint.y = lookPos[1];
+                locationPoint.z = lookPos[2];
+            }
 
-            double x = viewTranslation.x - centerOfRotation.x;
-            double z = viewTranslation.z - centerOfRotation.z;
+            double x = locationPoint.x - centerOfRotation.x;
+            double z = locationPoint.z - centerOfRotation.z;
 
             rotationRadius = Math.sqrt(x * x + z * z);
             lastAngle = Math.atan2(z, x);
-
-            locationPoint.set(viewTranslation);
 
             matUtils.lookAt(locationPoint, centerOfRotation, Y_UP, lookatTmp);
             viewTx.set(lookatTmp);
@@ -789,9 +798,9 @@ public class NavigationProcessor
      */
     public void startMove()
     {
-
         if(movementInProgress || (viewTg == null) ||
-           (navigationState == NavigationState.NO_STATE))
+           (navigationState == NavigationState.NO_STATE) ||
+            navigationState == NavigationState.LOOKAT_STATE)
             return;
 
         viewTg.getTransform(viewTx);
@@ -1003,6 +1012,27 @@ public class NavigationProcessor
         processClockTick();
     }
 
+    /**
+     * Get the current user position in world coordinates.
+     *
+     * @param pos The position vector to fill in
+     */
+    public void getPosition(Vector3d pos) {
+
+        if(viewPath != null)
+            viewTg.getLocalToVworld(viewPath, worldEyeTransform);
+        else
+            viewTg.getLocalToVworld(worldEyeTransform);
+
+        worldEyeTransform.mul(viewTx);
+
+        worldEyeTransform.get(locationVector);
+
+        pos.x = locationVector.x;
+        pos.y = locationVector.y;
+        pos.z = locationVector.z;
+    }
+
     //----------------------------------------------------------
     // Internal convenience methods
     //----------------------------------------------------------
@@ -1026,6 +1056,8 @@ public class NavigationProcessor
     {
         if(navigationState == NavigationState.EXAMINE_STATE)
             processExamineMotion();
+        else if (navigationState == NavigationState.LOOKAT_STATE)
+            return;
         else
             processDefaultMotion();
     }
