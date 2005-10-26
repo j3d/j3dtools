@@ -36,7 +36,7 @@ import javax.vecmath.Vector3f;
  * geometry type, but is supported non-the-less for completeness.
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ConeGenerator extends GeometryGenerator
 {
@@ -1085,6 +1085,7 @@ public class ConeGenerator extends GeometryGenerator
         float x, z;
         double angle;
         int i;
+        double halfCount = (Math.PI / 2 - Math.PI / (facetCount / 2));
 
         // Reverse loop count because it is *much* faster than the forward
         // version.
@@ -1092,8 +1093,8 @@ public class ConeGenerator extends GeometryGenerator
         {
             angle = segment_angle * i;
 
-            x = (float)(bottomRadius * Math.cos(angle));
-            z = (float)(bottomRadius * Math.sin(angle));
+            x = (float)(bottomRadius * Math.cos(angle - halfCount));
+            z = (float)(bottomRadius * Math.sin(angle - halfCount));
 
             baseCoordinates[count++] = x;
             baseCoordinates[count++] = z;
