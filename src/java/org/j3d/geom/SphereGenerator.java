@@ -39,7 +39,7 @@ import javax.vecmath.Vector3f;
  * that the normal points directly away from the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class SphereGenerator extends GeometryGenerator
 {
@@ -1492,8 +1492,8 @@ public class SphereGenerator extends GeometryGenerator
 
         for(i = 0; i < facetCount; i++)
         {
-            cos_table[i] = (float)Math.cos(segment_angle * i + Math.PI / 2);
-            sin_table[i] = (float)Math.sin(segment_angle * i + Math.PI / 2);
+            cos_table[i] = (float)Math.cos(segment_angle * i + Math.PI);
+            sin_table[i] = (float)Math.sin(segment_angle * i + Math.PI);
 
             quadCoordinates[count++] = (float)(y_radius * sin_table[i]);
             quadCoordinates[count++] = y;
