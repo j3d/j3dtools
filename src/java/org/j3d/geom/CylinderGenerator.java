@@ -28,7 +28,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {
@@ -2201,6 +2201,7 @@ public class CylinderGenerator extends GeometryGenerator
         float x, z;
         double angle;
         int i;
+        double halfCount = (Math.PI / 2 - Math.PI / (facetCount / 2));
 
         // Reverse loop count because it is *much* faster than the forward
         // version.
@@ -2208,8 +2209,8 @@ public class CylinderGenerator extends GeometryGenerator
         {
             angle = segment_angle * i;
 
-            x = (float)(radius * Math.cos(angle));
-            z = (float)(radius * Math.sin(angle));
+            x = (float)(radius * Math.cos(angle - halfCount));
+            z = (float)(radius * Math.sin(angle - halfCount));
 
             baseCoordinates[count++] = x;
             baseCoordinates[count++] = z;
