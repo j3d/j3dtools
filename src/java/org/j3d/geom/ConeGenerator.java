@@ -36,7 +36,7 @@ import javax.vecmath.Vector3f;
  * geometry type, but is supported non-the-less for completeness.
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ConeGenerator extends GeometryGenerator
 {
@@ -51,6 +51,9 @@ public class ConeGenerator extends GeometryGenerator
 
     /** Flag to indicate if the geometry should create the base of the cone */
     private boolean useBottom;
+
+    /** Flag to indicate if the geometry should create the top of the cone */
+    private boolean useTop;
 
     /** The number of sections used around the cone */
     private int facetCount;
@@ -94,7 +97,7 @@ public class ConeGenerator extends GeometryGenerator
      */
     public ConeGenerator()
     {
-        this(2, 1, DEFAULT_FACETS, true);
+        this(2, 1, DEFAULT_FACETS, true, true);
     }
 
     /**
@@ -106,7 +109,7 @@ public class ConeGenerator extends GeometryGenerator
      */
     public ConeGenerator(float height, float radius)
     {
-        this(height, radius, DEFAULT_FACETS, true);
+        this(height, radius, DEFAULT_FACETS, true, true);
     }
 
     /**
@@ -121,7 +124,7 @@ public class ConeGenerator extends GeometryGenerator
      */
     public ConeGenerator(float height, float radius, int facets)
     {
-        this(height, radius, facets, true);
+        this(height, radius, facets, true, true);
     }
 
     /**
@@ -131,11 +134,12 @@ public class ConeGenerator extends GeometryGenerator
      *
      * @param height The height of the cone to generate
      * @param radius The radius of the bottom of the cone
+     * @param hasTop  True if to generate faces for the top
      * @param hasBottom  True if to generate faces for the bottom
      */
-    public ConeGenerator(float height, float radius, boolean hasBottom)
+    public ConeGenerator(float height, float radius, boolean hasTop, boolean hasBottom)
     {
-        this(height, radius, DEFAULT_FACETS, hasBottom);
+        this(height, radius, DEFAULT_FACETS, hasTop, hasBottom);
     }
 
     /**
@@ -146,6 +150,7 @@ public class ConeGenerator extends GeometryGenerator
      * @param height The height of the cone to generate
      * @param radius The radius of the bottom of the cone
      * @param facets The number of facets on the side of the cone
+     * @param hasTop  True if to generate faces for the top
      * @param hasBottom  True if to generate faces for the bottom
      * @throws IllegalArgumentException The number of facets is less than 3
      *    or the radius is not positive
@@ -153,6 +158,7 @@ public class ConeGenerator extends GeometryGenerator
     public ConeGenerator(float height,
                          float radius,
                          int facets,
+                         boolean hasTop,
                          boolean hasBottom)
     {
         if(facets < 3)
@@ -165,6 +171,7 @@ public class ConeGenerator extends GeometryGenerator
         coneHeight = height;
         bottomRadius = radius;
         useBottom = hasBottom;
+        useTop = hasTop;
         baseChanged = true;
         facetsChanged = true;
     }
@@ -388,7 +395,7 @@ public class ConeGenerator extends GeometryGenerator
             generateTriTexture3D(data);
 
         // now let's do the index list
-        int index_size = facetCount * 4 + (useBottom ? facetCount * 4 : 0);
+        int index_size = (useTop ? facetCount * 4 : 0 ) + (useBottom ? facetCount * 4 : 0);
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -402,14 +409,17 @@ public class ConeGenerator extends GeometryGenerator
         int idx = 0;
         int vtx = 0;
 
-        // each face consists of an anti-clockwise
-        for(int i = facetCount; --i >= 0; )
+        if (useTop)
         {
-            int start = idx;
-            indexes[idx++] = vtx++;
-            indexes[idx++] = vtx++;
-            indexes[idx++] = vtx + 1;
-            indexes[idx++] = vtx;
+            // each face consists of an anti-clockwise
+            for(int i = facetCount; --i >= 0; )
+            {
+                int start = idx;
+                indexes[idx++] = vtx++;
+                indexes[idx++] = vtx++;
+                indexes[idx++] = vtx + 1;
+                indexes[idx++] = vtx;
+            }
         }
 
         if(!useBottom)
@@ -448,7 +458,10 @@ public class ConeGenerator extends GeometryGenerator
             generateTriTexture3D(data);
 
         // now let's do the index list
-        int index_size = (facetCount + 1) * 3;
+        int index_size = 0;
+
+        if (useTop)
+            index_size = (facetCount + 1) * 3;
 
         if(useBottom)
             index_size <<= 1;
@@ -465,12 +478,15 @@ public class ConeGenerator extends GeometryGenerator
         int idx = 0;
         int vtx = 0;
 
-        // each face consists of an anti-clockwise
-        for(int i = facetCount; --i >= 0; )
+        if (useTop)
         {
-            indexes[idx++] = vtx++;
-            indexes[idx++] = vtx++;
-            indexes[idx++] = vtx + 1;
+            // each face consists of an anti-clockwise
+            for(int i = facetCount; --i >= 0; )
+            {
+                indexes[idx++] = vtx++;
+                indexes[idx++] = vtx++;
+                indexes[idx++] = vtx + 1;
+            }
         }
 
         if(!useBottom)
@@ -534,11 +550,20 @@ public class ConeGenerator extends GeometryGenerator
             generateTriTexture3D(data);
 
         // now let's do the index list
-        int index_size = (facetCount + 1) * 2;
-        if(useBottom)
-            index_size <<= 1;
+        int index_size = 0;
+        int num_strips = 0;
 
-        int num_strips = useBottom ? 2 : 1;
+        if (useTop)
+        {
+            num_strips++;
+            index_size = (facetCount + 1) * 2;
+        }
+
+        if(useBottom)
+        {
+            num_strips++;
+            index_size <<= 1;
+        }
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -561,14 +586,17 @@ public class ConeGenerator extends GeometryGenerator
         int idx = 0;
         int vtx = 0;
 
-        // each face consists of an anti-clockwise triangle
-        for(int i = 0; i <= facetCount; i++)
+        if (useTop)
         {
-            indexes[idx++] = vtx++;
-            indexes[idx++] = vtx++;
-        }
+            // each face consists of an anti-clockwise triangle
+            for(int i = 0; i <= facetCount; i++)
+            {
+                indexes[idx++] = vtx++;
+                indexes[idx++] = vtx++;
+            }
 
-        strip_counts[0] = (facetCount + 1) << 1;
+            strip_counts[0] = (facetCount + 1) << 1;
+        }
 
         if(!useBottom)
             return;
@@ -610,8 +638,8 @@ public class ConeGenerator extends GeometryGenerator
             generateTriTexture3D(data);
 
         // now let's do the index list
-        int index_size = facetCount * 3 + ((useBottom) ? facetCount + 2 : 0);
-        int num_strips = facetCount + ((useBottom) ? 1 : 0);
+        int index_size = (useTop ? facetCount * 3 : 0) + ((useBottom) ? facetCount + 2 : 0);
+        int num_strips = (useTop ? facetCount : 0) + ((useBottom) ? 1 : 0);
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -634,13 +662,16 @@ public class ConeGenerator extends GeometryGenerator
         int idx = 0;
         int vtx = 0;
 
-        // each face consists of an anti-clockwise triangle
-        for(int i = 0; i < facetCount; i++)
+        if (useTop)
         {
-            indexes[idx++] = vtx++;
-            indexes[idx++] = vtx++;
-            indexes[idx++] = vtx + 1;
-            stripCounts[i] = 3;
+            // each face consists of an anti-clockwise triangle
+            for(int i = 0; i < facetCount; i++)
+            {
+                indexes[idx++] = vtx++;
+                indexes[idx++] = vtx++;
+                indexes[idx++] = vtx + 1;
+                stripCounts[i] = 3;
+            }
         }
 
         if(useBottom)
@@ -692,22 +723,25 @@ public class ConeGenerator extends GeometryGenerator
         int base_count = 0;
         float height_2 = coneHeight / 2;
 
-        // Reverse loop count because it is *much* faster than the forward
-        // version.
-        for(i = facetCount; --i >= 0; )
+        if (useTop)
         {
-            //side coords
-            coords[count++] = 0;
-            coords[count++] = height_2;
-            coords[count++] = 0;
+            // Reverse loop count because it is *much* faster than the forward
+            // version.
+            for(i = facetCount; --i >= 0; )
+            {
+                //side coords
+                coords[count++] = 0;
+                coords[count++] = height_2;
+                coords[count++] = 0;
 
-            coords[count++] = baseCoordinates[base_count++];
-            coords[count++] = -height_2;
-            coords[count++] = baseCoordinates[base_count++];
+                coords[count++] = baseCoordinates[base_count++];
+                coords[count++] = -height_2;
+                coords[count++] = baseCoordinates[base_count++];
 
-            coords[count++] = baseCoordinates[base_count];
-            coords[count++] = -height_2;
-            coords[count++] = baseCoordinates[base_count + 1];
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = -height_2;
+                coords[count++] = baseCoordinates[base_count + 1];
+            }
         }
 
         // The last set of coordinates reuses the first two base coords
@@ -765,15 +799,18 @@ public class ConeGenerator extends GeometryGenerator
         int i;
         float height_2 = coneHeight / 2;
 
-        for(i = facetCount + 1; --i >= 0; )
+        if (useTop)
         {
-            coords[count++] = 0;
-            coords[count++] = height_2;
-            coords[count++] = 0;
+            for(i = facetCount + 1; --i >= 0; )
+            {
+                coords[count++] = 0;
+                coords[count++] = height_2;
+                coords[count++] = 0;
 
-            coords[count++] = baseCoordinates[base_count++];
-            coords[count++] = -height_2;
-            coords[count++] = baseCoordinates[base_count++];
+                coords[count++] = baseCoordinates[base_count++];
+                coords[count++] = -height_2;
+                coords[count++] = baseCoordinates[base_count++];
+            }
         }
 
         if(useBottom)
@@ -822,33 +859,37 @@ public class ConeGenerator extends GeometryGenerator
 
         int i;
         float[] normals = data.normals;
-        Vector3f norm;
+        Vector3f norm = new Vector3f();
         int count = 0;
         vtx_cnt = 0;
 
-        for(i = facetCount; --i >= 0; )
+        if (useTop)
         {
-            norm = createFaceNormal(data.coordinates,
-                                    vtx_cnt + 3,
-                                    vtx_cnt,
-                                    vtx_cnt + 6);
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            for(i = facetCount; --i >= 0; )
+            {
+                norm = createFaceNormal(data.coordinates,
+                                        vtx_cnt + 3,
+                                        vtx_cnt,
+                                        vtx_cnt + 6);
 
-            norm = createRadialNormal(data.coordinates, vtx_cnt + 3);
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+                createBottomRadialNormal(data.coordinates, vtx_cnt + 3, norm);
 
-            norm = createRadialNormal(data.coordinates, vtx_cnt + 6);
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+                createBottomRadialNormal(data.coordinates, vtx_cnt + 6, norm);
 
-            vtx_cnt += 9;
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+
+                vtx_cnt += 9;
+            }
         }
 
         // Now generate the bottom if we need it.
@@ -869,6 +910,38 @@ public class ConeGenerator extends GeometryGenerator
             normals[count++] = 0;
             normals[count++] = -1;
             normals[count++] = 0;
+        }
+    }
+
+    /**
+     * Create a normal based on the given vertex position, assuming that it is
+     * a point in space, relative to the origin of the bottom. This will create a normal that
+     * points directly along the vector from the origin to the point.
+     *
+     * @param coords The coordinate array to read values from
+     * @param p The index of the point to calculate
+     * @return A temporary value containing the normal value
+     */
+    private void createBottomRadialNormal(float[] coords, int p, Vector3f normal)
+    {
+        float x = coords[p];
+        float y = coneHeight / 2 - coords[p + 1];
+        float z = coords[p + 2];
+
+        float mag = x * x + y * y + z * z;
+
+        if(mag != 0.0)
+        {
+            mag = 1.0f / ((float) Math.sqrt(mag));
+            normal.x = x * mag;
+            normal.y = y * mag;
+            normal.z = z * mag;
+        }
+        else
+        {
+            normal.x = 0;
+            normal.y = 0;
+            normal.z = 0;
         }
     }
 
@@ -902,22 +975,25 @@ public class ConeGenerator extends GeometryGenerator
         Vector3f norm;
         int count = 0;
 
-        for(i = facetCount + 1; --i >= 0; )
+        if (useBottom)
         {
-            norm = createFaceNormal(data.coordinates,
-                                    count + 3,
-                                    count,
-                                    count + 9);
+            for(i = facetCount + 1; --i >= 0; )
+            {
+                norm = createFaceNormal(data.coordinates,
+                                        count + 3,
+                                        count,
+                                        count + 9);
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
 
-            norm = createRadialNormal(data.coordinates, count);
+                norm = createRadialNormal(data.coordinates, count);
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+                normals[count++] = norm.x;
+                normals[count++] = norm.y;
+                normals[count++] = norm.z;
+            }
         }
 
         // Now generate the bottom if we need it.
@@ -968,24 +1044,31 @@ public class ConeGenerator extends GeometryGenerator
         int pos;
         int count = 0;
 
-        for(i = 0; i < facetCount; i++) {
-            pos = i * 4;
+        if (useTop)
+        {
+            for(i = 0; i < facetCount; i++) {
+                pos = i * 4;
 
-            tex_coords[count++] = texCoordinates2D[pos];
-            tex_coords[count++] = texCoordinates2D[pos + 1];
+                tex_coords[count++] = texCoordinates2D[pos];
+                tex_coords[count++] = texCoordinates2D[pos + 1];
 
-            tex_coords[count++] = texCoordinates2D[pos + 2];
-            tex_coords[count++] = texCoordinates2D[pos + 3];
+                tex_coords[count++] = texCoordinates2D[pos + 2];
+                tex_coords[count++] = texCoordinates2D[pos + 3];
 
-            tex_coords[count++] = texCoordinates2D[pos + 6];
-            tex_coords[count++] = texCoordinates2D[pos + 7];
+                tex_coords[count++] = texCoordinates2D[pos + 6];
+                tex_coords[count++] = texCoordinates2D[pos + 7];
+            }
         }
 
         if(!useBottom)
             return;
 
         // The base
-        int offset = (facetCount + 1) * 4;
+        int offset;
+        if (useTop)
+            offset = (facetCount + 1) * 4;
+        else
+            offset = 0;
 
         for(i = 0; i < facetCount; i++) {
             pos = i * 2 + offset + 2;
@@ -1120,8 +1203,10 @@ public class ConeGenerator extends GeometryGenerator
         // not a good idea because we should also leave this set to recalc
         // the 3D coordinates.
         facetsChanged = false;
+        int vtx_count = 0;
 
-        int vtx_count = (facetCount + 1) << 1;
+        if (useTop)
+            vtx_count = (facetCount + 1) << 1;
 
         if(useBottom)
             vtx_count += (facetCount + 1) << 1;
@@ -1141,29 +1226,33 @@ public class ConeGenerator extends GeometryGenerator
         float s, a;
         float[] bottom_s = new float[facetCount + 1];
         float[] bottom_t = new float[facetCount + 1];
-        for(i = 0; i < facetCount; i++)
-        {
-            s = i * segment_angle;
 
-            texCoordinates2D[count++] = s;
+        if (useTop)
+        {
+            for(i = 0; i < facetCount; i++)
+            {
+                s = i * segment_angle;
+
+                texCoordinates2D[count++] = s;
+                texCoordinates2D[count++] = 1;
+
+                texCoordinates2D[count++] = s;
+                texCoordinates2D[count++] = 0;
+
+                a = i * angle;
+                bottom_s[i] = (float)(0.5f - bottomRadius * Math.cos(a) / 2);
+                bottom_t[i] = (float)(0.5f - bottomRadius * Math.sin(a) / 2);
+            }
+
+            texCoordinates2D[count++] = 1;
             texCoordinates2D[count++] = 1;
 
-            texCoordinates2D[count++] = s;
+            texCoordinates2D[count++] = 1;
             texCoordinates2D[count++] = 0;
 
-            a = i * angle;
-            bottom_s[i] = (float)(0.5f - bottomRadius * Math.cos(a) / 2);
-            bottom_t[i] = (float)(0.5f - bottomRadius * Math.sin(a) / 2);
+            bottom_s[facetCount] = bottom_s[0];
+            bottom_t[facetCount] = bottom_t[0];
         }
-
-        texCoordinates2D[count++] = 1;
-        texCoordinates2D[count++] = 1;
-
-        texCoordinates2D[count++] = 1;
-        texCoordinates2D[count++] = 0;
-
-        bottom_s[facetCount] = bottom_s[0];
-        bottom_t[facetCount] = bottom_t[0];
 
         if(useBottom)
         {

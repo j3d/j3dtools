@@ -28,7 +28,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {
@@ -49,6 +49,9 @@ public class CylinderGenerator extends GeometryGenerator
 
     /** Flag to indicate if the geometry should create the top */
     private boolean useTop;
+
+    /** Flag to indicate if the geometry should create the side */
+    private boolean useSide;
 
     /** Flag to indicate if the geometry should create the bottom */
     private boolean useBottom;
@@ -97,7 +100,7 @@ public class CylinderGenerator extends GeometryGenerator
      */
     public CylinderGenerator()
     {
-        this(DEFAULT_HEIGHT, DEFAULT_RADIUS, DEFAULT_FACETS, true, true);
+        this(DEFAULT_HEIGHT, DEFAULT_RADIUS, DEFAULT_FACETS, true, true, true);
     }
 
     /**
@@ -109,7 +112,7 @@ public class CylinderGenerator extends GeometryGenerator
      */
     public CylinderGenerator(boolean ends)
     {
-        this(DEFAULT_HEIGHT, DEFAULT_RADIUS, DEFAULT_FACETS, ends, ends);
+        this(DEFAULT_HEIGHT, DEFAULT_RADIUS, DEFAULT_FACETS, ends, ends, true);
     }
 
     /**
@@ -122,7 +125,7 @@ public class CylinderGenerator extends GeometryGenerator
      */
     public CylinderGenerator(int facets)
     {
-        this(DEFAULT_HEIGHT, DEFAULT_RADIUS, facets, true, true);
+        this(DEFAULT_HEIGHT, DEFAULT_RADIUS, facets, true, true, true);
     }
 
     /**
@@ -136,7 +139,7 @@ public class CylinderGenerator extends GeometryGenerator
      */
     public CylinderGenerator(int facets, boolean ends)
     {
-        this(DEFAULT_HEIGHT, DEFAULT_RADIUS, facets, ends, ends);
+        this(DEFAULT_HEIGHT, DEFAULT_RADIUS, facets, ends, ends, true);
     }
 
     /**
@@ -148,7 +151,7 @@ public class CylinderGenerator extends GeometryGenerator
      */
     public CylinderGenerator(float height, float radius)
     {
-        this(height, radius, DEFAULT_FACETS, true, true);
+        this(height, radius, DEFAULT_FACETS, true, true, true);
     }
 
     /**
@@ -163,7 +166,7 @@ public class CylinderGenerator extends GeometryGenerator
      */
     public CylinderGenerator(float height, float radius, int facets)
     {
-        this(height, radius, facets, true, true);
+        this(height, radius, facets, true, true, true);
     }
 
     /**
@@ -173,10 +176,11 @@ public class CylinderGenerator extends GeometryGenerator
      * @param height The height of the cylinder to generate
      * @param radius The radis of the cylinder to generate
      * @param ends true to use end caps
+     * @param side true to display the sides
      */
-    public CylinderGenerator(float height, float radius, boolean ends)
+    public CylinderGenerator(float height, float radius, boolean ends, boolean side)
     {
-        this(height, radius, DEFAULT_FACETS, ends, ends);
+        this(height, radius, DEFAULT_FACETS, ends, ends, side);
     }
 
     /**
@@ -187,10 +191,12 @@ public class CylinderGenerator extends GeometryGenerator
      * @param radius The radis of the cylinder to generate
      * @param top Whether to generate the top of the cylinder
      * @param bottom Whether to generate the bottom of the cylinder
+     * @param side Whether to generate the side of the cylinder
      */
-    public CylinderGenerator(float height, float radius, boolean top, boolean bottom)
+    public CylinderGenerator(float height, float radius, boolean top, boolean bottom,
+        boolean side)
     {
-        this(height, radius, DEFAULT_FACETS, top, bottom);
+        this(height, radius, DEFAULT_FACETS, top, bottom, side);
     }
 
     /**
@@ -202,14 +208,16 @@ public class CylinderGenerator extends GeometryGenerator
      * @param radius The radis of the cylinder to generate
      * @param facets The number of faces to use around the radius
      * @param ends true to use end caps
+     * @param side true to display the side
      * @throws IllegalArgumentException The number of facets is less than 3
      */
     public CylinderGenerator(float height,
                              float radius,
                              int facets,
-                             boolean ends)
+                             boolean ends,
+                             boolean side)
     {
-        this(height, radius, facets, true, true);
+        this(height, radius, facets, true, true, side);
     }
 
     /**
@@ -222,13 +230,15 @@ public class CylinderGenerator extends GeometryGenerator
      * @param facets The number of faces to use around the radius
      * @param top Whether to generate the top of the cylinder
      * @param bottom Whether to generate the bottom of the cylinder
+     * @param side Whether to generate the side of the cylinder
      * @throws IllegalArgumentException The number of facets is less than 3
      */
     public CylinderGenerator(float height,
                              float radius,
                              int facets,
                              boolean top,
-                             boolean bottom) {
+                             boolean bottom,
+                             boolean side) {
 
         if(facets < 3)
             throw new IllegalArgumentException("Number of facets is < 3");
@@ -237,9 +247,9 @@ public class CylinderGenerator extends GeometryGenerator
         cylinderHeight = height;
         this.radius = radius;
 
-        // These are reversed in the code so reverse here
-        useTop = bottom;
-        useBottom = top;
+        useTop = top;
+        useBottom = bottom;
+        useSide = side;
         baseChanged = true;
         facetsChanged = true;
         normal = new Vector3f();
@@ -278,8 +288,10 @@ public class CylinderGenerator extends GeometryGenerator
      * @param height The height of the cone to generate
      * @param radius The radius of the bottom of the cone
      * @param ends True if to generate faces for the ends
+     * @param side true if to generate faces for the sides
      */
-    public void setDimensions(float height, float radius, boolean ends)
+    public void setDimensions(float height, float radius, boolean ends,
+        boolean side)
     {
         if((cylinderHeight != height) || (this.radius != radius))
         {
@@ -291,8 +303,12 @@ public class CylinderGenerator extends GeometryGenerator
         if(ends != useTop != useBottom)
             facetsChanged = true;
 
+        if (side != useSide)
+            facetsChanged = true;
+
         useTop = ends;
         useBottom = ends;
+        useSide = side;
     }
 
     /**
@@ -330,7 +346,8 @@ public class CylinderGenerator extends GeometryGenerator
         switch(data.geometryType)
         {
             case GeometryData.TRIANGLES:
-                ret_val = facetCount * 6;
+                if (useSide)
+                    ret_val = facetCount * 6;
                 if(useTop)
                     ret_val += facetCount * 3;
                 if(useBottom)
@@ -338,7 +355,8 @@ public class CylinderGenerator extends GeometryGenerator
                 break;
 
             case GeometryData.QUADS:
-                ret_val = facetCount * 4;
+                if (useSide)
+                    ret_val = facetCount * 4;
                 if(useTop)
                     ret_val += facetCount * 4;
                 if(useBottom)
@@ -347,8 +365,8 @@ public class CylinderGenerator extends GeometryGenerator
 
             // These all have the same vertex count
             case GeometryData.TRIANGLE_STRIPS:
-                ret_val = (facetCount + 1) * 2;
-
+                if (useSide)
+                    ret_val = (facetCount + 1) * 2;
                 if(useTop)
                     ret_val += (facetCount + 1) * 2;
                 if(useBottom)
@@ -356,8 +374,8 @@ public class CylinderGenerator extends GeometryGenerator
                 break;
 
             case GeometryData.TRIANGLE_FANS:
-                ret_val = facetCount * 4;
-
+                if (useSide)
+                    ret_val = facetCount * 4;
                 if(useTop)
                     ret_val += (facetCount + 2);
                 if(useBottom)
@@ -367,13 +385,12 @@ public class CylinderGenerator extends GeometryGenerator
             case GeometryData.INDEXED_QUADS:
             case GeometryData.INDEXED_TRIANGLE_STRIPS:
             case GeometryData.INDEXED_TRIANGLE_FANS:
-                ret_val = facetCount * 2;
-
+                if (useSide)
+                    ret_val = facetCount * 2;
                 if(useTop)
                     ret_val += 1 + facetCount;
                 if(useBottom)
                     ret_val += 1 + facetCount;
-
                 break;
 
             default:
@@ -510,19 +527,22 @@ public class CylinderGenerator extends GeometryGenerator
         int idx = 0;
         int vtx = 0;
 
-        // each face consists of an anti-clockwise
-        for(int i = facetCount; --i > 0; vtx += 2)
+        if (useSide)
         {
-            indexes[idx++] = vtx;
-            indexes[idx++] = vtx + 1;
-            indexes[idx++] = vtx + 3;
-            indexes[idx++] = vtx + 2;
-        }
+            // each face consists of an anti-clockwise
+            for(int i = facetCount; --i > 0; vtx += 2)
+            {
+                indexes[idx++] = vtx;
+                indexes[idx++] = vtx + 1;
+                indexes[idx++] = vtx + 3;
+                indexes[idx++] = vtx + 2;
+            }
 
-        indexes[idx++] = vtx++;
-        indexes[idx++] = vtx++;
-        indexes[idx++] = 0;
-        indexes[idx++] = 1;
+            indexes[idx++] = vtx++;
+            indexes[idx++] = vtx++;
+            indexes[idx++] = 0;
+            indexes[idx++] = 1;
+        }
 
         int middle;
         if(useTop)
@@ -599,31 +619,34 @@ public class CylinderGenerator extends GeometryGenerator
         int idx = 0;
         int vtx = 0;
 
-        // each face consists of an anti-clockwise
-        for(int i = facetCount; --i > 0; vtx += 2)
+        if (useSide)
         {
+            // each face consists of an anti-clockwise
+            for(int i = facetCount; --i > 0; vtx += 2)
+            {
+                // triangle 1
+                indexes[idx++] = vtx;
+                indexes[idx++] = vtx + 1;
+                indexes[idx++] = vtx + 3;
+
+                // triangle 2
+                indexes[idx++] = vtx + 3;
+                indexes[idx++] = vtx + 2;
+                indexes[idx++] = vtx;
+            }
+
             // triangle 1
             indexes[idx++] = vtx;
             indexes[idx++] = vtx + 1;
-            indexes[idx++] = vtx + 3;
+            indexes[idx++] = 1;
 
             // triangle 2
-            indexes[idx++] = vtx + 3;
-            indexes[idx++] = vtx + 2;
+            indexes[idx++] = 1;
+            indexes[idx++] = 0;
             indexes[idx++] = vtx;
+
+            vtx += 2;
         }
-
-        // triangle 1
-        indexes[idx++] = vtx;
-        indexes[idx++] = vtx + 1;
-        indexes[idx++] = 1;
-
-        // triangle 2
-        indexes[idx++] = 1;
-        indexes[idx++] = 0;
-        indexes[idx++] = vtx;
-
-        vtx += 2;
 
         int middle;
 
@@ -681,7 +704,10 @@ public class CylinderGenerator extends GeometryGenerator
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
 
-        int num_strips = 1;
+        int num_strips = 0;
+
+        if (useSide)
+            num_strips++;
 
         if (useTop)
             num_strips++;
@@ -696,15 +722,18 @@ public class CylinderGenerator extends GeometryGenerator
                                                 data.stripCounts.length,
                                                 num_strips);
 
-        data.stripCounts[0] = (1 + facetCount) * 2;
+        int scnt=0;
+        int basecount = (1 + facetCount) * 2;
+
         data.numStrips = num_strips;
 
-        int scnt=1;
+        if (useSide)
+            data.stripCounts[scnt++] = basecount;
 
         if (useTop)
-            data.stripCounts[scnt++] = data.stripCounts[0];
+            data.stripCounts[scnt++] = basecount;
         if (useBottom)
-            data.stripCounts[scnt++] = data.stripCounts[0];
+            data.stripCounts[scnt++] = basecount;
     }
 
     /**
@@ -771,9 +800,15 @@ public class CylinderGenerator extends GeometryGenerator
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
 
-        // now let's do the index list
-        int index_size = (facetCount + 1) * 2;
-        int num_strips = 1;
+        int index_size = 0;
+        int num_strips = 0;
+
+        if (useSide)
+        {
+            // now let's do the index list
+            index_size = (facetCount + 1) * 2;
+            num_strips = 1;
+        }
 
         if (useTop)
         {
@@ -806,19 +841,22 @@ public class CylinderGenerator extends GeometryGenerator
         data.numStrips = num_strips;
         int idx = 0;
         int vtx = 0;
-        int s_idx = 1;
+        int s_idx = 0;
 
-        stripCounts[0] = (facetCount + 1) * 2;
-
-        // The side is one big strip
-        for(int i = facetCount; --i >= 0; )
+        if (useSide)
         {
-            indexes[idx++] = vtx++;
-            indexes[idx++] = vtx++;
-        }
+            stripCounts[s_idx++] = (facetCount + 1) * 2;
 
-        indexes[idx++] = 0;
-        indexes[idx++] = facetCount;
+            // The side is one big strip
+            for(int i = facetCount; --i >= 0; )
+            {
+                indexes[idx++] = vtx++;
+                indexes[idx++] = vtx++;
+            }
+
+            indexes[idx++] = 0;
+            indexes[idx++] = facetCount;
+        }
 
         int middle;
         if(useTop)
@@ -880,9 +918,14 @@ public class CylinderGenerator extends GeometryGenerator
         else if((data.geometryComponents & GeometryData.TEXTURE_3D_DATA) != 0)
             generateTriTexture3D(data);
 
-        // now let's do the index list
-        int index_size = facetCount * 4;
-        int num_strips = facetCount;
+        int index_size = 0;
+        int num_strips = 0;
+
+        if (useSide)
+        {
+            index_size = facetCount * 4;
+            num_strips = facetCount;
+        }
 
         if (useTop)
         {
@@ -916,26 +959,30 @@ public class CylinderGenerator extends GeometryGenerator
         data.numStrips = num_strips;
         int idx = 0;
         int vtx = 0;
+        int scnt = 0;
 
-        // each face consists of an anti-clockwise
-        for(int i = facetCount; --i > 0; )
+        if (useSide)
         {
+            // each face consists of an anti-clockwise
+            for(int i = facetCount; --i > 0; )
+            {
+                indexes[idx++] = vtx;
+                indexes[idx++] = vtx + 1;
+                indexes[idx++] = vtx + 3;
+                indexes[idx++] = vtx + 2;
+                stripCounts[i] = 4;
+
+                vtx += 2;
+            }
+
             indexes[idx++] = vtx;
             indexes[idx++] = vtx + 1;
-            indexes[idx++] = vtx + 3;
-            indexes[idx++] = vtx + 2;
-            stripCounts[i] = 4;
-
+            indexes[idx++] = 1;
+            indexes[idx++] = 0;
             vtx += 2;
+
+            stripCounts[scnt++] = 4;
         }
-
-        indexes[idx++] = vtx;
-        indexes[idx++] = vtx + 1;
-        indexes[idx++] = 1;
-        indexes[idx++] = 0;
-        vtx += 2;
-
-        stripCounts[0] = 4;
 
         int middle;
 
@@ -944,7 +991,7 @@ public class CylinderGenerator extends GeometryGenerator
             // Do the top face as one fan
             middle = vtx++;
             indexes[idx++] = middle;
-            stripCounts[num_strips - 2] = facetCount + 2;
+            stripCounts[scnt++] = facetCount + 2;
 
             for(int i = facetCount; --i >= 0; )
                 indexes[idx++] = vtx++;
@@ -958,7 +1005,7 @@ public class CylinderGenerator extends GeometryGenerator
             // to the top.
             middle = vtx++;
             indexes[idx++] = middle;
-            stripCounts[num_strips - 1] = facetCount + 2;
+            stripCounts[scnt++] = facetCount + 2;
 
             vtx = data.vertexCount - 1;
             for(int i = facetCount; --i >= 0; )
@@ -983,8 +1030,10 @@ public class CylinderGenerator extends GeometryGenerator
     private void generateUnindexedTriCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = facetCount * 6;
+        int vtx_cnt = 0;
 
+        if (useSide)
+            vtx_cnt = facetCount * 6;
         if(useTop)
             vtx_cnt += facetCount * 3;
         if(useBottom)
@@ -1007,25 +1056,56 @@ public class CylinderGenerator extends GeometryGenerator
         int base_count = 0;
         float half_height = cylinderHeight / 2;
 
-        for(i = facetCount; --i > 0; )
+        if (useSide)
         {
+            for(i = facetCount; --i > 0; )
+            {
+                //side coords triangle 1
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = -half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
+
+                coords[count++] = baseCoordinates[base_count + 2];
+                coords[count++] = -half_height;
+                coords[count++] = baseCoordinates[base_count + 3];
+
+                coords[count++] = baseCoordinates[base_count + 2];
+                coords[count++] = half_height;
+                coords[count++] = baseCoordinates[base_count + 3];
+
+                //side coords triangle 2
+                coords[count++] = baseCoordinates[base_count + 2];
+                coords[count++] = half_height;
+                coords[count++] = baseCoordinates[base_count + 3];
+
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
+
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = -half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
+
+                base_count += 2;
+            }
+
             //side coords triangle 1
             coords[count++] = baseCoordinates[base_count];
             coords[count++] = -half_height;
             coords[count++] = baseCoordinates[base_count + 1];
 
-            coords[count++] = baseCoordinates[base_count + 2];
+            coords[count++] = baseCoordinates[0];
             coords[count++] = -half_height;
-            coords[count++] = baseCoordinates[base_count + 3];
+            coords[count++] = baseCoordinates[1];
 
-            coords[count++] = baseCoordinates[base_count + 2];
+            coords[count++] = baseCoordinates[0];
             coords[count++] = half_height;
-            coords[count++] = baseCoordinates[base_count + 3];
+            coords[count++] = baseCoordinates[1];
 
             //side coords triangle 2
-            coords[count++] = baseCoordinates[base_count + 2];
+            coords[count++] = baseCoordinates[0];
             coords[count++] = half_height;
-            coords[count++] = baseCoordinates[base_count + 3];
+            coords[count++] = baseCoordinates[1];
 
             coords[count++] = baseCoordinates[base_count];
             coords[count++] = half_height;
@@ -1034,35 +1114,7 @@ public class CylinderGenerator extends GeometryGenerator
             coords[count++] = baseCoordinates[base_count];
             coords[count++] = -half_height;
             coords[count++] = baseCoordinates[base_count + 1];
-
-            base_count += 2;
         }
-
-        //side coords triangle 1
-        coords[count++] = baseCoordinates[base_count];
-        coords[count++] = -half_height;
-        coords[count++] = baseCoordinates[base_count + 1];
-
-        coords[count++] = baseCoordinates[0];
-        coords[count++] = -half_height;
-        coords[count++] = baseCoordinates[1];
-
-        coords[count++] = baseCoordinates[0];
-        coords[count++] = half_height;
-        coords[count++] = baseCoordinates[1];
-
-        //side coords triangle 2
-        coords[count++] = baseCoordinates[0];
-        coords[count++] = half_height;
-        coords[count++] = baseCoordinates[1];
-
-        coords[count++] = baseCoordinates[base_count];
-        coords[count++] = half_height;
-        coords[count++] = baseCoordinates[base_count + 1];
-
-        coords[count++] = baseCoordinates[base_count];
-        coords[count++] = -half_height;
-        coords[count++] = baseCoordinates[base_count + 1];
 
         if(useTop)
         {
@@ -1149,7 +1201,10 @@ public class CylinderGenerator extends GeometryGenerator
     private void generateUnindexedTriStripCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = (facetCount + 1) * 2;
+        int vtx_cnt = 0;
+
+        if (useSide)
+            vtx_cnt = (facetCount + 1) * 2;
 
         if(useTop)
             vtx_cnt += (facetCount + 1) * 2;
@@ -1174,27 +1229,30 @@ public class CylinderGenerator extends GeometryGenerator
         int count = 0;
         int base_count = 0;
 
-        // The side is one big strip
-        for(i = facetCount; --i >= 0; )
+        if (useSide)
         {
-            coords[count++] = baseCoordinates[base_count];
+            // The side is one big strip
+            for(i = facetCount; --i >= 0; )
+            {
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
+
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = -half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
+
+                base_count += 2;
+            }
+
+            coords[count++] = baseCoordinates[0];
             coords[count++] = half_height;
-            coords[count++] = baseCoordinates[base_count + 1];
+            coords[count++] = baseCoordinates[1];
 
-            coords[count++] = baseCoordinates[base_count];
+            coords[count++] = baseCoordinates[0];
             coords[count++] = -half_height;
-            coords[count++] = baseCoordinates[base_count + 1];
-
-            base_count += 2;
+            coords[count++] = baseCoordinates[1];
         }
-
-        coords[count++] = baseCoordinates[0];
-        coords[count++] = half_height;
-        coords[count++] = baseCoordinates[1];
-
-        coords[count++] = baseCoordinates[0];
-        coords[count++] = -half_height;
-        coords[count++] = baseCoordinates[1];
 
         if(useTop)
         {
@@ -1258,7 +1316,10 @@ public class CylinderGenerator extends GeometryGenerator
     private void generateUnindexedTriFanCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = facetCount * 4;
+        int vtx_cnt = 0;
+
+        if (useSide)
+            vtx_cnt = facetCount * 4;
 
         if(useTop)
             vtx_cnt += (facetCount + 2);
@@ -1283,9 +1344,30 @@ public class CylinderGenerator extends GeometryGenerator
         int base_count = 0;
         float half_height = cylinderHeight / 2;
 
-        for(i = facetCount; --i > 0; )
+        if (useSide)
         {
-            //side coords triangle 1
+            for(i = facetCount; --i > 0; )
+            {
+                //side coords triangle 1
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
+
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = -half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
+
+                coords[count++] = baseCoordinates[base_count + 2];
+                coords[count++] = -half_height;
+                coords[count++] = baseCoordinates[base_count + 3];
+
+                coords[count++] = baseCoordinates[base_count + 2];
+                coords[count++] = half_height;
+                coords[count++] = baseCoordinates[base_count + 3];
+
+                base_count += 2;
+            }
+
             coords[count++] = baseCoordinates[base_count];
             coords[count++] = half_height;
             coords[count++] = baseCoordinates[base_count + 1];
@@ -1294,32 +1376,14 @@ public class CylinderGenerator extends GeometryGenerator
             coords[count++] = -half_height;
             coords[count++] = baseCoordinates[base_count + 1];
 
-            coords[count++] = baseCoordinates[base_count + 2];
+            coords[count++] = baseCoordinates[0];
             coords[count++] = -half_height;
-            coords[count++] = baseCoordinates[base_count + 3];
+            coords[count++] = baseCoordinates[1];
 
-            coords[count++] = baseCoordinates[base_count + 2];
+            coords[count++] = baseCoordinates[0];
             coords[count++] = half_height;
-            coords[count++] = baseCoordinates[base_count + 3];
-
-            base_count += 2;
+            coords[count++] = baseCoordinates[1];
         }
-
-        coords[count++] = baseCoordinates[base_count];
-        coords[count++] = half_height;
-        coords[count++] = baseCoordinates[base_count + 1];
-
-        coords[count++] = baseCoordinates[base_count];
-        coords[count++] = -half_height;
-        coords[count++] = baseCoordinates[base_count + 1];
-
-        coords[count++] = baseCoordinates[0];
-        coords[count++] = -half_height;
-        coords[count++] = baseCoordinates[1];
-
-        coords[count++] = baseCoordinates[0];
-        coords[count++] = half_height;
-        coords[count++] = baseCoordinates[1];
 
         if(useTop)
         {
@@ -1378,7 +1442,10 @@ public class CylinderGenerator extends GeometryGenerator
     private void generateUnindexedQuadCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = facetCount * 4;
+        int vtx_cnt = 0;
+
+        if (useSide)
+             vtx_cnt = facetCount * 4;
 
         if(useTop)
             vtx_cnt += facetCount * 4;
@@ -1403,43 +1470,46 @@ public class CylinderGenerator extends GeometryGenerator
         int base_count = 0;
         float half_height = cylinderHeight / 2;
 
-        for(i = facetCount; --i > 0; )
+        if (useSide)
         {
-            //side coords triangle 1
+            for(i = facetCount; --i > 0; )
+            {
+                //side coords triangle 1
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = -half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
+
+                coords[count++] = baseCoordinates[base_count + 2];
+                coords[count++] = -half_height;
+                coords[count++] = baseCoordinates[base_count + 3];
+
+                coords[count++] = baseCoordinates[base_count + 2];
+                coords[count++] = half_height;
+                coords[count++] = baseCoordinates[base_count + 3];
+
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
+
+                base_count += 2;
+            }
+
             coords[count++] = baseCoordinates[base_count];
             coords[count++] = -half_height;
             coords[count++] = baseCoordinates[base_count + 1];
 
-            coords[count++] = baseCoordinates[base_count + 2];
+            coords[count++] = baseCoordinates[0];
             coords[count++] = -half_height;
-            coords[count++] = baseCoordinates[base_count + 3];
+            coords[count++] = baseCoordinates[1];
 
-            coords[count++] = baseCoordinates[base_count + 2];
+            coords[count++] = baseCoordinates[0];
             coords[count++] = half_height;
-            coords[count++] = baseCoordinates[base_count + 3];
+            coords[count++] = baseCoordinates[1];
 
             coords[count++] = baseCoordinates[base_count];
             coords[count++] = half_height;
             coords[count++] = baseCoordinates[base_count + 1];
-
-            base_count += 2;
         }
-
-        coords[count++] = baseCoordinates[base_count];
-        coords[count++] = -half_height;
-        coords[count++] = baseCoordinates[base_count + 1];
-
-        coords[count++] = baseCoordinates[0];
-        coords[count++] = -half_height;
-        coords[count++] = baseCoordinates[1];
-
-        coords[count++] = baseCoordinates[0];
-        coords[count++] = half_height;
-        coords[count++] = baseCoordinates[1];
-
-        coords[count++] = baseCoordinates[base_count];
-        coords[count++] = half_height;
-        coords[count++] = baseCoordinates[base_count + 1];
 
         if(useTop)
         {
@@ -1544,7 +1614,10 @@ public class CylinderGenerator extends GeometryGenerator
     private void generateIndexedCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = facetCount * 2;
+        int vtx_cnt = 0;
+
+        if (useSide)
+            vtx_cnt = facetCount * 2;
 
         if(useTop)
             vtx_cnt += 1 + facetCount;
@@ -1569,17 +1642,20 @@ public class CylinderGenerator extends GeometryGenerator
         int base_count = 0;
         float half_height = cylinderHeight / 2;
 
-        for(i = facetCount; --i >=0; )
+        if (useSide)
         {
-            coords[count++] = baseCoordinates[base_count];
-            coords[count++] = half_height;
-            coords[count++] = baseCoordinates[base_count + 1];
+            for(i = facetCount; --i >=0; )
+            {
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
 
-            coords[count++] = baseCoordinates[base_count];
-            coords[count++] = -half_height;
-            coords[count++] = baseCoordinates[base_count + 1];
+                coords[count++] = baseCoordinates[base_count];
+                coords[count++] = -half_height;
+                coords[count++] = baseCoordinates[base_count + 1];
 
-            base_count += 2;
+                base_count += 2;
+            }
         }
 
         if(useTop)
@@ -1645,14 +1721,44 @@ public class CylinderGenerator extends GeometryGenerator
 
         int i;
         float[] normals = data.normals;
-        Vector3f norm;
         int count = 0;
         int vtx = 0;
 
-        createRadialFlatNormal(vtx++);
-
-        for(i = facetCount; --i > 0; )
+        if (useSide)
         {
+            createRadialFlatNormal(vtx++);
+
+            for(i = facetCount; --i > 0; )
+            {
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+
+                normals[count + 9] = normal.x;
+                normals[count + 10] = normal.y;
+                normals[count + 11] = normal.z;
+
+                normals[count + 12] = normal.x;
+                normals[count + 13] = normal.y;
+                normals[count + 14] = normal.z;
+
+                createRadialFlatNormal(vtx++);
+
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+
+                count += 6;
+            }
+
             normals[count++] = normal.x;
             normals[count++] = normal.y;
             normals[count++] = normal.z;
@@ -1665,7 +1771,7 @@ public class CylinderGenerator extends GeometryGenerator
             normals[count + 13] = normal.y;
             normals[count + 14] = normal.z;
 
-            createRadialFlatNormal(vtx++);
+            createRadialFlatNormal(0);
 
             normals[count++] = normal.x;
             normals[count++] = normal.y;
@@ -1682,35 +1788,7 @@ public class CylinderGenerator extends GeometryGenerator
             count += 6;
         }
 
-        normals[count++] = normal.x;
-        normals[count++] = normal.y;
-        normals[count++] = normal.z;
-
-        normals[count + 9] = normal.x;
-        normals[count + 10] = normal.y;
-        normals[count + 11] = normal.z;
-
-        normals[count + 12] = normal.x;
-        normals[count + 13] = normal.y;
-        normals[count + 14] = normal.z;
-
-        createRadialFlatNormal(0);
-
-        normals[count++] = normal.x;
-        normals[count++] = normal.y;
-        normals[count++] = normal.z;
-
-        normals[count++] = normal.x;
-        normals[count++] = normal.y;
-        normals[count++] = normal.z;
-
-        normals[count++] = normal.x;
-        normals[count++] = normal.y;
-        normals[count++] = normal.z;
-
-        count += 6;
-
-        // Now generate the bottom if we need it.
+        // Now generate the top if we need it.
         if(useTop)
         {
             // The three vertices of the top in an unrolled loop
@@ -1776,33 +1854,35 @@ public class CylinderGenerator extends GeometryGenerator
 
         int i;
         float[] normals = data.normals;
-        Vector3f norm;
         int count = 0;
         int vtx = 0;
 
-        for(i = facetCount; --i >= 0; )
+        if (useSide)
         {
-            createRadialFlatNormal(vtx++);
+            for(i = facetCount; --i >= 0; )
+            {
+                createRadialFlatNormal(vtx++);
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+            }
+
+            // Last row of the facets is the same as the first items
+            normals[count++] = normals[0];
+            normals[count++] = normals[1];
+            normals[count++] = normals[2];
+
+            normals[count++] = normals[3];
+            normals[count++] = normals[4];
+            normals[count++] = normals[5];
         }
 
-        // Last row of the facets is the same as the first items
-        normals[count++] = normals[0];
-        normals[count++] = normals[1];
-        normals[count++] = normals[2];
-
-        normals[count++] = normals[3];
-        normals[count++] = normals[4];
-        normals[count++] = normals[5];
-
-        // Now generate the bottom if we need it.
+        // Now generate the top if we need it.
         if(useTop)
         {
             // The vertices of the top
@@ -1860,24 +1940,33 @@ public class CylinderGenerator extends GeometryGenerator
 
         int i;
         float[] normals = data.normals;
-        Vector3f norm;
         int count = 0;
         int vtx = 0;
 
-        createRadialFlatNormal(vtx++);
-
-        for(i = facetCount; --i > 0; )
-        {
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
-
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
-
+        if (useSide) {
             createRadialFlatNormal(vtx++);
 
+            for(i = facetCount; --i > 0; )
+            {
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+
+                createRadialFlatNormal(vtx++);
+
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+            }
+
             normals[count++] = normal.x;
             normals[count++] = normal.y;
             normals[count++] = normal.z;
@@ -1885,23 +1974,15 @@ public class CylinderGenerator extends GeometryGenerator
             normals[count++] = normal.x;
             normals[count++] = normal.y;
             normals[count++] = normal.z;
+
+            normals[count++] = normals[0];
+            normals[count++] = normals[1];
+            normals[count++] = normals[2];
+
+            normals[count++] = normals[3];
+            normals[count++] = normals[4];
+            normals[count++] = normals[5];
         }
-
-        normals[count++] = normal.x;
-        normals[count++] = normal.y;
-        normals[count++] = normal.z;
-
-        normals[count++] = normal.x;
-        normals[count++] = normal.y;
-        normals[count++] = normal.z;
-
-        normals[count++] = normals[0];
-        normals[count++] = normals[1];
-        normals[count++] = normals[2];
-
-        normals[count++] = normals[3];
-        normals[count++] = normals[4];
-        normals[count++] = normals[5];
 
         // Now generate the bottom if we need it.
         if(useTop)
@@ -1952,14 +2033,36 @@ public class CylinderGenerator extends GeometryGenerator
 
         int i;
         float[] normals = data.normals;
-        Vector3f norm;
         int count = 0;
         int vtx = 0;
 
-        createRadialFlatNormal(vtx++);
-
-        for(i = facetCount; --i > 0; )
+        if (useSide)
         {
+            createRadialFlatNormal(vtx++);
+
+            for(i = facetCount; --i > 0; )
+            {
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+
+                normals[count + 6] = normal.x;
+                normals[count + 7] = normal.y;
+                normals[count + 8] = normal.z;
+
+                createRadialFlatNormal(vtx++);
+
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+
+                count += 3;
+            }
+
             normals[count++] = normal.x;
             normals[count++] = normal.y;
             normals[count++] = normal.z;
@@ -1968,7 +2071,7 @@ public class CylinderGenerator extends GeometryGenerator
             normals[count + 7] = normal.y;
             normals[count + 8] = normal.z;
 
-            createRadialFlatNormal(vtx++);
+            createRadialFlatNormal(0);
 
             normals[count++] = normal.x;
             normals[count++] = normal.y;
@@ -1981,27 +2084,7 @@ public class CylinderGenerator extends GeometryGenerator
             count += 3;
         }
 
-        normals[count++] = normal.x;
-        normals[count++] = normal.y;
-        normals[count++] = normal.z;
-
-        normals[count + 6] = normal.x;
-        normals[count + 7] = normal.y;
-        normals[count + 8] = normal.z;
-
-        createRadialFlatNormal(0);
-
-        normals[count++] = normal.x;
-        normals[count++] = normal.y;
-        normals[count++] = normal.z;
-
-        normals[count++] = normal.x;
-        normals[count++] = normal.y;
-        normals[count++] = normal.z;
-
-        count += 3;
-
-        // Now generate the bottom if we need it.
+        // Now generate the top if we need it.
         if(useTop)
         {
             // The three vertices of the top in an unrolled loop
@@ -2074,25 +2157,26 @@ public class CylinderGenerator extends GeometryGenerator
 
         int i;
         float[] normals = data.normals;
-        Vector3f norm;
         int count = 0;
         int vtx = 0;
 
-
-        for(i = facetCount; --i >= 0; )
+        if (useSide)
         {
-            createRadialFlatNormal(vtx++);
+            for(i = facetCount; --i >= 0; )
+            {
+                createRadialFlatNormal(vtx++);
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+                normals[count++] = normal.x;
+                normals[count++] = normal.y;
+                normals[count++] = normal.z;
+            }
         }
 
-        // Now generate the bottom if we need it.
+        // Now generate the top if we need it.
         if(useTop)
         {
             // top
@@ -2233,8 +2317,10 @@ public class CylinderGenerator extends GeometryGenerator
         // not a good idea because we should also leave this set to recalc
         // the 3D coordinates.
         facetsChanged = false;
+        int vtx_count = 0;
 
-        int vtx_count = (facetCount + 1) * 2;
+        if (useSide)
+            vtx_count = (facetCount + 1) * 2;
 
         if (useTop)
             vtx_count += (facetCount + 1) * 2;
@@ -2258,26 +2344,29 @@ public class CylinderGenerator extends GeometryGenerator
         float[] bottom_s = new float[facetCount + 1];
         float[] bottom_t = new float[facetCount + 1];
 
-        for(i = 0; i < facetCount; i++)
+        if (useSide)
         {
-            s = i * segment_angle;
+            for(i = 0; i < facetCount; i++)
+            {
+                s = i * segment_angle;
 
-            texCoordinates2D[count++] = s;
+                texCoordinates2D[count++] = s;
+                texCoordinates2D[count++] = 1;
+
+                texCoordinates2D[count++] = s;
+                texCoordinates2D[count++] = 0;
+
+                a = i * angle;
+                bottom_s[i] = (float)(0.5f - radius * Math.cos(a) / 2);
+                bottom_t[i] = (float)(0.5f - radius * Math.sin(a) / 2);
+            }
+
+            texCoordinates2D[count++] = 1;
             texCoordinates2D[count++] = 1;
 
-            texCoordinates2D[count++] = s;
+            texCoordinates2D[count++] = 1;
             texCoordinates2D[count++] = 0;
-
-            a = i * angle;
-            bottom_s[i] = (float)(0.5f - radius * Math.cos(a) / 2);
-            bottom_t[i] = (float)(0.5f - radius * Math.sin(a) / 2);
         }
-
-        texCoordinates2D[count++] = 1;
-        texCoordinates2D[count++] = 1;
-
-        texCoordinates2D[count++] = 1;
-        texCoordinates2D[count++] = 0;
 
         if (useTop)
         {
