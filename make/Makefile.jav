@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.11 $
+# Version: $Revision: 1.12 $
 #
 #*********************************************************************
 
@@ -47,9 +47,9 @@ SPACE         = $(EMPTY) $(EMPTY)
 
 OS_NAME=$(shell uname)
 ifeq (, $(strip $(findstring CYGWIN, $(OS_NAME))))
-  PATH_SEP=':'
+  PATH_SEP:=':'
 else
-  PATH_SEP=';'
+  PATH_SEP:=';'
 endif
 
 ifdef JARS
@@ -78,14 +78,14 @@ ifdef OTHER_JARLIST
   ifdef CLASSPATH
     CP1:="$(CP)$(PATH_SEP)$(OTHER_JARLIST)"
   else
-    CP1 := "$(OTHER_JARLIST)"
+    CP1:= "$(OTHER_JARLIST)"
   endif
 endif
 
 ifdef CP1
-  CLASSPATH="$(CP1)"
+  CLASSPATH:="$(CP1)"
 else
-  CLASSPATH="$(CP)"
+  CLASSPATH:="$(CP)"
 endif
 
 JAVADOC_CLASSPATH=$(CLASS_DIR)$(PATH_SEP)$(OTHER_JARLIST)
