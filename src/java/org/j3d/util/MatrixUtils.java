@@ -24,7 +24,7 @@ import javax.vecmath.*;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class MatrixUtils
 {
@@ -387,8 +387,11 @@ public class MatrixUtils
     {
         float mdet = src.determinant();
 
-        if(Math.abs(mdet) < 0.0005)
+        if(Math.abs(mdet) < 0.0000005f)
+        {
+            dest.setIdentity();
             return false;
+        }
 
         mdet = 1 / mdet;
 
