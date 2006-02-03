@@ -6,16 +6,12 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.7 $
+# Version: $Revision: 1.8 $
 #
 #*********************************************************************
 
 ifndef PROJECT_ROOT
   export PROJECT_ROOT=/usr/local/src/projects/j3d.org
-endif
-
-ifndef JAVA_HOME
-  JAVA_HOME=/usr/local/java/jdk1.4
 endif
 
 SRC_DIR=$(PROJECT_ROOT)/src
