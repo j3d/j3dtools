@@ -30,7 +30,7 @@ import java.text.NumberFormat;
  * generate 2D values if asked.
  *
  * @author Justin Couch
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class GeometryData implements Cloneable
 {
@@ -168,7 +168,7 @@ public class GeometryData implements Cloneable
         format.setMinimumFractionDigits(3);
 
         boolean has_3d_texture =
-            (geometryComponents & GeometryData.TEXTURE_2D_DATA) == 0;
+            (geometryComponents & GeometryData.TEXTURE_3D_DATA) > 0;
 
         System.out.println();
         for(int i = 0; i < vertexCount; i++)
