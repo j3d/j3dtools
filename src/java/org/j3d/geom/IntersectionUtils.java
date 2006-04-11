@@ -59,7 +59,7 @@ import org.j3d.util.UserSupplementData;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class IntersectionUtils
 {
@@ -636,9 +636,9 @@ public class IntersectionUtils
 
         for(int i = 0; i < numIndex; )
         {
-            i0 = indexes[i++];
-            i1 = indexes[i++];
-            i2 = indexes[i++];
+            i0 = indexes[i++] * 3;
+            i1 = indexes[i++] * 3;
+            i2 = indexes[i++] * 3;
 
             wkPolygon[0] = coords[i0++];
             wkPolygon[1] = coords[i0++];
@@ -722,10 +722,10 @@ public class IntersectionUtils
 
         for(int i = 0; i < numIndex; )
         {
-            i0 = indexes[i++];
-            i1 = indexes[i++];
-            i2 = indexes[i++];
-            i3 = indexes[i++];
+            i0 = indexes[i++] * 3;
+            i1 = indexes[i++] * 3;
+            i2 = indexes[i++] * 3;
+            i3 = indexes[i++] * 3;
 
             wkPolygon[0] = coords[i0++];
             wkPolygon[1] = coords[i0++];
