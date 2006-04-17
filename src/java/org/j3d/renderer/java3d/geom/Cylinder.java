@@ -34,7 +34,7 @@ import org.j3d.geom.GeometryData;
  * geometry does not have texture coordinates set.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Cylinder extends Shape3D
 {
@@ -180,7 +180,7 @@ public class Cylinder extends Shape3D
         if(!getCapability(ALLOW_GEOMETRY_WRITE))
             return;
 
-        generator.setDimensions(height, radius, true);
+        generator.setDimensions(height, radius, true, true);
         generator.generate(data);
 
         int format = TriangleStripArray.COORDINATES |

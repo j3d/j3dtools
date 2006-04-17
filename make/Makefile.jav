@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.12 $
+# Version: $Revision: 1.13 $
 #
 #*********************************************************************
 
@@ -47,9 +47,9 @@ SPACE         = $(EMPTY) $(EMPTY)
 
 OS_NAME=$(shell uname)
 ifeq (, $(strip $(findstring CYGWIN, $(OS_NAME))))
-  PATH_SEP:=':'
+  PATH_SEP=':'
 else
-  PATH_SEP:=';'
+  PATH_SEP=';'
 endif
 
 ifdef JARS
@@ -68,9 +68,9 @@ CP = $(CLASS_DIR)
 
 ifdef LOCAL_JARLIST
   ifdef CP
-    CP :="$(CP)$(PATH_SEP)$(LOCAL_JARLIST)"
+    CP:="$(CP)$(PATH_SEP)$(LOCAL_JARLIST)"
   else
-    CP :="$(LOCAL_JARLIST)"
+    CP:="$(LOCAL_JARLIST)"
   endif
 endif
 
@@ -78,14 +78,14 @@ ifdef OTHER_JARLIST
   ifdef CLASSPATH
     CP1:="$(CP)$(PATH_SEP)$(OTHER_JARLIST)"
   else
-    CP1:= "$(OTHER_JARLIST)"
+    CP1:="$(OTHER_JARLIST)"
   endif
 endif
 
 ifdef CP1
-  CLASSPATH:="$(CP1)"
+  CLASSPATH="$(CP1)"
 else
-  CLASSPATH:="$(CP)"
+  CLASSPATH="$(CP)"
 endif
 
 JAVADOC_CLASSPATH=$(CLASS_DIR)$(PATH_SEP)$(OTHER_JARLIST)
@@ -95,11 +95,6 @@ JAVADOC_CLASSPATH=$(CLASS_DIR)$(PATH_SEP)$(OTHER_JARLIST)
 ifdef PROJECT_CLASSPATH
     CLASSPATH := $(CLASSPATH)$(PATH_SEP)"$(PROJECT_CLASSPATH)"
     JAVADOC_CLASSPATH := $(JAVADOC_CLASSPATH)$(PATH_SEP)"$(PROJECT_CLASSPATH)"
-
-  ifndef IS_WIN32
-    CLASSPATH := $(subst ",,$(CLASSPATH))
-    JAVADOC_CLASSPATH := $(subst ",,$(JAVADOC_CLASSPATH))
-  endif
 endif
 
 #
@@ -157,6 +152,7 @@ JAVADOC_OPTIONS  = \
      -author \
      -use \
      -version \
+     -quiet \
      -windowtitle $(WINDOWTITLE) \
      -doctitle $(DOCTITLE) \
      -header $(HEADER) \
