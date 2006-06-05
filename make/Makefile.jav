@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.13 $
+# Version: $Revision: 1.14 $
 #
 #*********************************************************************
 
@@ -272,7 +272,15 @@ clean : $(PLIST_CLEAN)
 	@ $(DELETE) $(JAR_DIR)/$*
 	$(PRINT) Building the new JAR file $*
 	@ $(RMDIR) $(JAR_TMP_DIR)/*
-	$(CD) $(CLASS_DIR) && $(COPY_PATH) $(JAR_CLASS_FILES) $(JAR_TMP_DIR)
+	if [ -n "$(JAR_CLASS_FILES)" ] ; then \
+	  for X in $(JAR_CONTENT) ; do \
+	    $(MAKEDIR) $(JAR_TMP_DIR)/"$$X" ; \
+	    $(COPY) $(CLASS_DIR)/"$$X"/*.* $(JAR_TMP_DIR)/"$$X" ; \
+	  done ; \
+	fi
+	if [ -x $(ECLIPSE_DIR)/plugins/$(subst .jar,$(EMPTY),$*) ] ; then \
+	  $(COPY) -r $(ECLIPSE_DIR)/plugins/$(subst .jar,$(EMPTY),$*)/* $(JAR_TMP_DIR); \
+	fi
 	$(JAR) $(JAR_OPTIONS) $(JAR_MANIFEST) $(JAR_DIR)/$* $(JAR_CONTENT_CMD)
 
 # Rule 13. Create given jar file by invoking its Makefile which triggers
