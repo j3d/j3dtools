@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.8 $
+# Version: $Revision: 1.9 $
 #
 #*********************************************************************
 
@@ -23,6 +23,7 @@ JAVA_DIR=$(SRC_DIR)/java
 NATIVE_DIR=$(SRC_DIR)/native
 INCLUDE_DIR=$(NATIVE_DIR)/include
 EXAMPLES_DIR=$(PROJECT_ROOT)/examples
+ECLIPSE_DIR=${SRC_DIR}/eclipse
 
 DELETE    = rm -f
 MAKEDIR   = mkdir -p
