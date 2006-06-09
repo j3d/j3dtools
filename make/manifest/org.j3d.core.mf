@@ -1,0 +1,48 @@
+Extension-List: java3d
+java3d-Extension-Name: javax.media.j3d
+java3d-Specification-Version: 1.3
+java3d-Implementation-Version: 1.3.1
+java3d-Implementation-Vendor-Id: com.sun
+java3d-Implementation-Title: Java3D Core Runtime Environment
+java3d-Implementation-URL: http://java.sun.com/products/autodl/java3d/prefer_ogl/java3d-$(os.name)$.jar
+Extension-Name: j3d-org-core
+Specification-Vendor: Justin Couch
+Specification-Version: 0.9
+Implementation-Vendor-Id: org.j3d
+Implementation-Vendor: Yumetech, Inc
+Implementation-Version: 0.9
+Bundle-ManifestVersion: 2
+Bundle-Name: j3d.org Core Runtime
+Bundle-SymbolicName: org.j3d.core; singleton:=true
+Bundle-Version: 0.9
+Bundle-Localization: plugin
+Bundle-Vendor: j3d.org
+Require-Bundle: javax.vecmath
+Export-Package: org.j3d.util,
+ org.j3d.io,
+ org.j3d.util.device,
+ org.j3d.util.interpolator,
+ org.j3d.util.frustum,
+ org.j3d.device.input.spaceball,
+ org.j3d.device.input.vfx,
+ org.j3d.device.input.polhemus,
+ org.j3d.device.output.elumens,
+ org.j3d.ui,
+ org.j3d.ui.image,
+ org.j3d.ui.navigation,
+ org.j3d.loaders,
+ org.j3d.loaders.discreet,	
+ org.j3d.loaders.dem,	
+ org.j3d.loaders.stl,
+ org.j3d.loaders.vterrain,
+ org.j3d.geom,
+ org.j3d.geom.hanim,
+ org.j3d.geom.terrain,
+ org.j3d.geom.particle,
+ org.j3d.geom.spline,
+ org.j3d.geom.spring,
+ org.j3d.terrain,
+ org.j3d.terrain.roam,
+ org.j3d.texture,
+ org.j3d.texture.procedural
+Eclipse-AutoStart: true
