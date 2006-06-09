@@ -69,6 +69,10 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.loaders.vterrain \
 	org.j3d.loaders.dem \
 
+# A version number we tack onto the JAR file name for eclipse versioning
+# purposes.
+JAR_VERSION=0.9.0
+
 # Names of JAR files we want to create
 JARS = j3d-org-util.jar \
 	j3d-org-geom-core.jar \
@@ -85,7 +89,8 @@ JARS = j3d-org-util.jar \
 	j3d-org-terrain.jar \
 	j3d-org-texture.jar \
 	j3d-org-elumens.jar \
-	j3d-org-all.jar
+	j3d-org-all.jar \
+        org.j3d.core.jar
 
 # List of packages that have native code libraries in use and require
 # JNI header generation

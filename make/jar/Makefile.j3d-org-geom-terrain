@@ -6,9 +6,13 @@
 # Package makefile producing j3d-org-geom/terrain.jar
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
+
+# A version number we tack onto the JAR file name for eclipse versioning
+# purposes.
+JAR_VERSION=0.9.0
 
 # No need to put in subdirs here. We only do that if we want to explicitly
 # exclude some directory and then we name everything around it.

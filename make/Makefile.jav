@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.14 $
+# Version: $Revision: 1.15 $
 #
 #*********************************************************************
 
@@ -139,10 +139,10 @@ JAVAC_OPTIONS = -d $(DESTINATION) -classpath $(CLASSPATH) \
 JAVAH_OPTIONS = -d $(INCLUDE_DIR) -classpath $(CLASSPATH)
 
 ifdef MANIFEST
-  JAR_OPTIONS = -cvmf
+  JAR_OPTIONS = -cmf
   JAR_MANIFEST = $(MANIFEST_DIR)/$(MANIFEST)
 else
-  JAR_OPTIONS = -cvf
+  JAR_OPTIONS = -cf
 endif
 
 JAVADOC_OPTIONS  = \
@@ -278,8 +278,18 @@ clean : $(PLIST_CLEAN)
 	    $(COPY) $(CLASS_DIR)/"$$X"/*.* $(JAR_TMP_DIR)/"$$X" ; \
 	  done ; \
 	fi
-	if [ -x $(ECLIPSE_DIR)/plugins/$(subst .jar,$(EMPTY),$*) ] ; then \
-	  $(COPY) -r $(ECLIPSE_DIR)/plugins/$(subst .jar,$(EMPTY),$*)/* $(JAR_TMP_DIR); \
+	if [ -x $(ECLIPSE_DIR)/plugins/$(subst _$(JAR_VERSION).jar,$(EMPTY),$*) ] ; then \
+	  $(COPY) -r $(ECLIPSE_DIR)/plugins/$(subst _$(JAR_VERSION).jar,$(EMPTY),$*)/* $(JAR_TMP_DIR); \
+	fi
+	if [ -n "$(INCLUDE_JARS)" ] ; then \
+	  for X in $(INCLUDE_JARS) ; do \
+	    $(COPY) $(JAR_DIR)/"$$X" $(JAR_TMP_DIR) ; \
+	  done ; \
+	fi
+	if [ -n "$(INCLUDE_LIBS)" ] ; then \
+	  for X in $(INCLUDE_LIBS) ; do \
+	    $(COPY) $(LIB_DIR)/"$$X" $(JAR_TMP_DIR) ; \
+	  done ; \
 	fi
 	$(JAR) $(JAR_OPTIONS) $(JAR_MANIFEST) $(JAR_DIR)/$* $(JAR_CONTENT_CMD)
 
@@ -287,7 +297,7 @@ clean : $(PLIST_CLEAN)
 # rule 12
 %.jar :
 	$(PRINT) Building JAR file $@
-	@ $(MAKE) -k -f $(patsubst %,$(JAR_MAKE_DIR)/Makefile.$*,$@) $@.JAR
+	@ $(MAKE) -k -f $(patsubst %,$(JAR_MAKE_DIR)/Makefile.$*,$@) $(patsubst %,$*_$(JAR_VERSION).jar,$@).JAR
 	$(PRINT) Cleaning up
 	@ $(RMDIR) $(JAR_TMP_DIR)
 
