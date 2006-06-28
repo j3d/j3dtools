@@ -11,6 +11,7 @@ package org.j3d.loaders.c3d;
 
 // External imports
 import java.util.ArrayList;
+import java.util.HashMap;
 
 // Local imports
 // None
@@ -27,7 +28,7 @@ import java.util.ArrayList;
  * <a href="http://www.c3d.org">http://www.c3d.org/</a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class C3DParameterGroup
 {
@@ -64,6 +65,9 @@ public class C3DParameterGroup
     /** Collection of all parameters added to this group */
     private ArrayList parameters;
 
+    /** Alternate mapping of parameter name strings to parameter object */
+    private HashMap parameterMap;
+
     /**
      * Construct a new group that represents the given name
      *
@@ -80,6 +84,7 @@ public class C3DParameterGroup
         this.description = desc;
 
         parameters = new ArrayList();
+        parameterMap = new HashMap();
     }
 
     //----------------------------------------------------------
@@ -265,6 +270,7 @@ public class C3DParameterGroup
         }
 
         parameters.add(param);
+        parameterMap.put(param.getName(), param);
     }
 
     /**
@@ -285,5 +291,32 @@ public class C3DParameterGroup
             return;
 
         parameters.remove(param);
+        parameterMap.remove(param.getName());
+    }
+
+    /**
+     * Get a parameter description based on the name string. If there is not a
+     * matching description, this returns null. All parameter names are
+     * capitalised, so make sure that this name matches.
+     *
+     * @param name The name string to go looking for
+     * @return The C3DParameter instance matching the name, or null
+     */
+    public C3DParameter getParameter(String name)
+    {
+        return (C3DParameter)parameterMap.get(name);
+    }
+
+    /**
+     * Get all of the parameters for this group.
+     *
+     * @return A new array containing all the parameter objects
+     */
+    public C3DParameter[] getParameters()
+    {
+        C3DParameter[] params = new C3DParameter[parameters.size()];
+        parameters.toArray(params);
+
+        return params;
     }
 }

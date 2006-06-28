@@ -21,7 +21,7 @@ package org.j3d.loaders.c3d;
  * <p>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class DECBufferReader extends BufferReader
 {
@@ -37,7 +37,7 @@ class DECBufferReader extends BufferReader
      */
     int readShort(int start)
     {
-        int ch1 = buffer[start];
+        int ch1 = buffer[start] & 255;
         int ch2 = (buffer[start + 1] & 255);
 
         return ((ch2 << 8) + ch1);
@@ -51,7 +51,7 @@ class DECBufferReader extends BufferReader
      */
     int readInt(int start)
     {
-        int ch1 = buffer[start];
+        int ch1 = buffer[start] & 255;
         int ch2 = (buffer[start + 1] & 255);
         int ch3 = (buffer[start + 2] & 255);
         int ch4 = (buffer[start + 3] & 255);

@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders.c3d directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -22,6 +22,7 @@ SOURCE = C3DHeader.java \
   C3DFloatParameter.java \
   C3DParameterGroup.java \
   C3DTrajectoryData.java \
+  C3DAnalogData.java \
   BufferReader.java \
   IntelBufferReader.java \
   MIPSBufferReader.java \

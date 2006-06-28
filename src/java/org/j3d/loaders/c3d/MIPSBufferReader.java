@@ -21,7 +21,7 @@ package org.j3d.loaders.c3d;
  * <p>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class MIPSBufferReader extends BufferReader
 {
@@ -37,7 +37,7 @@ class MIPSBufferReader extends BufferReader
      */
     int readShort(int start)
     {
-        int ch1 = buffer[start];
+        int ch1 = buffer[start] & 255;
         int ch2 = (buffer[start + 1] & 255);
 
         return ((ch1 << 8) + ch2);
@@ -51,7 +51,7 @@ class MIPSBufferReader extends BufferReader
      */
     int readInt(int start)
     {
-        int ch1 = buffer[start];
+        int ch1 = buffer[start] & 255;
         int ch2 = (buffer[start + 1] & 255);
         int ch3 = (buffer[start + 2] & 255);
         int ch4 = (buffer[start + 3] & 255);
@@ -59,4 +59,3 @@ class MIPSBufferReader extends BufferReader
         return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + ch4);
     }
 }
-

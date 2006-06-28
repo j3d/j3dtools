@@ -33,7 +33,7 @@ import org.j3d.util.IntHashMap;
  * <a href="http://www.c3d.org">http://www.c3d.org/</a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class C3DParser
 {
@@ -81,6 +81,21 @@ public class C3DParser
 
     /** The track data. One for each tracked object */
     private C3DTrajectoryData[] trajectories;
+
+    /** The analog sampled data */
+    private C3DAnalogData[] analogSamples;
+
+    /** Marker labels extracted from the parameter block */
+    private String[] markerLabels;
+
+    /** Marker descriptions extracted from the parameter block */
+    private String[] markerDescriptions;
+
+    /** Analog channel labels extracted from the parameter block */
+    private String[] analogLabels;
+
+    /** Analog channel descriptions extracted from the parameter block */
+    private String[] analogDescriptions;
 
     /** The observer of updates, if registered */
     private C3DParseObserver observer;
@@ -165,11 +180,24 @@ public class C3DParser
      * return null. Otherwise, the array will contain the exact number of
      * trajectories read.
      *
-     * @return The set of groups from the last-read stream, or null
+     * @return The set of trajectories from the last-read stream, or null
      */
     public C3DTrajectoryData[] getTrajectories()
     {
         return trajectories;
+    }
+
+    /**
+     * Get the last parsed set of analog samples. If this parser has been
+     * cleared or the user requested that data not be retained, this will
+     * return null. Otherwise, the array will contain the exact number of
+     * trajectories read.
+     *
+     * @return The set of samples from the last-read stream, or null
+     */
+    public C3DAnalogData[] getAnalogSamples()
+    {
+        return analogSamples;
     }
 
     /**
@@ -289,6 +317,8 @@ public class C3DParser
         header.start3DFrame = reader.readShort(6) - 1;
         header.end3DFrame = reader.readShort(8) - 1;
 
+        header.numTrajectorySamples = header.end3DFrame - header.start3DFrame + 1;
+
         header.maxInterpolationGap = reader.readShort(10);
         header.scaleFactor = reader.readFloat(12);
         header.startDataBlock = reader.readShort(16);
@@ -366,6 +396,8 @@ public class C3DParser
 
         // Read all the param blocks into one big array and process from there.
         int num_param_blocks = buffer[2] & 0xFF;
+        int analog_group_id = 0;
+        int point_group_id = 0;
 
         byte[] tmp = buffer;
         buffer = new byte[512 * num_param_blocks];
@@ -426,6 +458,11 @@ public class C3DParser
                     grp = new C3DParameterGroup(name, locked, id, desc);
                     param_groups.put(id, grp);
                 }
+
+                if(name.equals("ANALOG"))
+                    analog_group_id = id;
+                else if(name.equals("POINT"))
+                    point_group_id = id;
 
                 offset += 5 + num_name_chars + desc_size;
             }
@@ -526,11 +563,89 @@ public class C3DParser
                 parameters = null;
         }
 
+        // Finally go through and extract all the info we need for the various
+        // points and labels, particularly for trajectory data.
+        if(header.numTrajectories != 0)
+        {
+            markerLabels = new String[header.numTrajectories];
+            markerDescriptions = new String[header.numTrajectories];
+
+            C3DParameterGroup grp =
+                (C3DParameterGroup)param_groups.get(point_group_id);
+
+            // Go looking for the LABEL and DESCRIPTION parameters
+            C3DStringParameter label_param =
+                (C3DStringParameter)grp.getParameter("LABELS");
+
+            String[] labels = (String[])label_param.getValue();
+
+            int size = (labels.length < header.numTrajectories) ?
+                       labels.length : header.numTrajectories;
+
+            System.arraycopy(labels,
+                             0,
+                             markerLabels,
+                             0,
+                             size);
+
+            C3DStringParameter desc_param =
+                (C3DStringParameter)grp.getParameter("DESCRIPTIONS");
+
+            String[] descriptions = (String[])desc_param.getValue();
+
+            size = (descriptions.length < header.numTrajectories) ?
+                   descriptions.length : header.numTrajectories;
+
+            System.arraycopy(descriptions,
+                             0,
+                             markerDescriptions,
+                             0,
+                             size);
+        }
+
+        if(header.numAnalogChannels != 0)
+        {
+            analogLabels = new String[header.numAnalogChannels];
+            analogDescriptions = new String[header.numAnalogChannels];
+
+            C3DParameterGroup grp =
+                (C3DParameterGroup)param_groups.get(analog_group_id);
+
+            // Go looking for the LABEL and DESCRIPTION parameters
+            C3DStringParameter label_param =
+                (C3DStringParameter)grp.getParameter("LABELS");
+
+            String[] labels = (String[])label_param.getValue();
+
+            int size = (labels.length < header.numAnalogChannels) ?
+                       labels.length : header.numAnalogChannels;
+
+            System.arraycopy(labels,
+                             0,
+                             analogLabels,
+                             0,
+                             size);
+
+            C3DStringParameter desc_param =
+                (C3DStringParameter)grp.getParameter("DESCRIPTIONS");
+
+            String[] descriptions = (String[])desc_param.getValue();
+
+            size = (descriptions.length < header.numAnalogChannels) ?
+                   descriptions.length : header.numAnalogChannels;
+
+            System.arraycopy(descriptions,
+                             0,
+                             analogDescriptions,
+                             0,
+                             size);
+        }
+
         return ret_val;
     }
 
     /**
-     * Parse the trajectories.
+     * Parse the trajectories and analog data values.
      *
      * @param retainData true if the parser should maintain a copy of all the
      *   data read locally
@@ -538,6 +653,185 @@ public class C3DParser
      */
     private void parseTrajectories(boolean retainData) throws IOException
     {
+        if(header.numTrajectories != 0)
+        {
+            trajectories = new C3DTrajectoryData[header.numTrajectories];
+            for(int i = 0; i < header.numTrajectories; i++)
+                trajectories[i] =
+                    new C3DTrajectoryData(markerLabels[i],
+                                          markerDescriptions[i],
+                                          header.numTrajectorySamples);
+        }
+
+        if(header.numAnalogChannels != 0)
+        {
+            analogSamples = new C3DAnalogData[header.numAnalogChannels];
+
+            for(int i = 0; i < header.numAnalogChannels; i++)
+                analogSamples[i] =
+                    new C3DAnalogData(i + 1,
+                                      analogLabels[i],
+                                      analogDescriptions[i],
+                                      header.numTrajectorySamples,
+                                      header.numAnalogSamplesPer3DFrame);
+        }
+
+        // Clear these out as they're no longer needed
+        markerLabels = null;
+        markerDescriptions = null;
+        analogLabels = null;
+        analogDescriptions = null;
+
+        if(header.scaleFactor < 0)
+            parseFloatTrajectories(retainData);
+        else
+            parseIntTrajectories(retainData);
+
+    }
+
+    /**
+     * Parse the trajectories and analog data values in floating point format.
+     *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally
+     * @throws IOException some problem reading the basic file.
+     */
+    private void parseFloatTrajectories(boolean retainData) throws IOException
+    {
+        int offset = 0;
+
+        for(int i = 0; i < header.numTrajectorySamples; i++)
+        {
+            for(int j = 0; j < header.numTrajectories; j++)
+            {
+                trajectories[j].coordinates[i * 3] = reader.readFloat(offset);
+
+                if(offset + 4 == 512)
+                {
+                    readBlocks(1);
+                    offset = -4;
+                }
+
+                trajectories[j].coordinates[i * 3 + 1] = reader.readFloat(offset + 4);
+
+                if(offset + 8 == 512)
+                {
+                    readBlocks(1);
+                    offset = -8;
+                }
+
+                trajectories[j].coordinates[i * 3 + 2] = reader.readFloat(offset + 8);
+
+                if(offset + 12 == 512)
+                {
+                    readBlocks(1);
+                    offset = -12;
+                }
+
+                int mask = reader.readInt(offset + 12);
+                trajectories[j].cameraMasks[i] = (short)(mask & 0xFF);
+                trajectories[j].residuals[i] = (int)(mask & 0xFF00) * header.scaleFactor;
+
+                offset += 16;
+
+                if(offset == 512)
+                {
+                    readBlocks(1);
+                    offset = 0;
+                }
+            }
+
+            for(int j = 0; j < header.numAnalogSamplesPer3DFrame; j++)
+            {
+                for(int k = 0; k < header.numAnalogChannels; k++)
+                {
+                    analogSamples[k].analogSamples[i * header.numAnalogSamplesPer3DFrame + j] =
+                        reader.readFloat(offset);
+
+                    offset += 4;
+
+                    if(offset == 512)
+                    {
+                        readBlocks(1);
+                        offset = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Parse the trajectories and analog data values in integer format.
+     *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally
+     * @throws IOException some problem reading the basic file.
+     */
+    private void parseIntTrajectories(boolean retainData) throws IOException
+    {
+        int offset = 0;
+
+        for(int i = 0; i < header.numTrajectorySamples; i++)
+        {
+            for(int j = 0; j < header.numTrajectories; j++)
+            {
+                trajectories[j].coordinates[i * 3] =
+                    reader.readShort(offset) * header.scaleFactor;
+
+                if(offset + 2 == 512)
+                {
+                    readBlocks(1);
+                    offset = -2;
+                }
+
+                trajectories[j].coordinates[i * 3 + 1] =
+                    reader.readFloat(offset + 2) * header.scaleFactor;
+
+                if(offset + 4 == 512)
+                {
+                    readBlocks(1);
+                    offset = -4;
+                }
+
+                trajectories[j].coordinates[i * 3 + 2] =
+                    reader.readFloat(offset + 6) * header.scaleFactor;
+
+                if(offset + 6 == 512)
+                {
+                    readBlocks(1);
+                    offset = -6;
+                }
+
+                int mask = reader.readShort(offset + 8);
+                trajectories[j].cameraMasks[i] = (short)(mask & 0xFF);
+                trajectories[j].residuals[i] = (int)(mask & 0xFF00) * header.scaleFactor;
+
+                offset += 8;
+
+                if(offset == 512)
+                {
+                    readBlocks(1);
+                    offset = 0;
+                }
+            }
+
+            for(int j = 0; j < header.numAnalogSamplesPer3DFrame; j++)
+            {
+                for(int k = 0; k < header.numAnalogChannels; k++)
+                {
+                    analogSamples[k].analogSamples[i * header.numAnalogSamplesPer3DFrame + j] =
+                        reader.readFloat(offset);
+
+                    offset += 4;
+
+                    if(offset == 512)
+                    {
+                        readBlocks(1);
+                        offset = 0;
+                    }
+                }
+            }
+        }
     }
 
     /**

@@ -16,11 +16,11 @@ package org.j3d.loaders.c3d;
 // None
 
 /**
- * The representation of a single trajectory.
+ * The representation of a single channel of analog samples.
  * <p>
  *
- * A trajectory may contain coordinate and/or analog data samples. Coordinates
- * are expressed in 3D space in X,Y,Z orientation. All values are placed as
+ * A trajectory may contain coordinate and/or analog data samples. This
+ * represents one channel of sampled analog values. All values are placed as
  * their real floating point representations. If the underlying file had values
  * in integer format, scaling will be performed before storing in this array.
  * <p>
@@ -29,53 +29,57 @@ package org.j3d.loaders.c3d;
  * <a href="http://www.c3d.org">http://www.c3d.org/</a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.1 $
  */
-public class C3DTrajectoryData
+public class C3DAnalogData
 {
+    /**
+     * The channel number for this analog data. Note that channel numbers are
+     * 1-based, not 0-based as is traditional for C/Java apps.
+     */
+    public final int channelNumber;
+
     /** The name or label associated with this trajectory data */
     public final String label;
 
     /** The description string associated with this data */
     public final String description;
 
-    /**
-     * 3D coordinate data for this frame. Values are interleaved as
-     * [x1,y1,z1,x2,y2,z2....].
-     */
-    public float[] coordinates;
-
     /** The number of valid frames of coordinate data */
     public int numFrames;
 
     /**
-     * The bit mask of camera IDs that contributed to each frame. Using a short
-     * rather than a byte defined by the C3D spec as there are proposals to
-     * support more than 7 cameras proposed by Vicon.
+     * Analog sample data to go with each coordinate. The length of this array
+     * will be number of samples times the number of frames.
      */
-    public short[] cameraMasks;
+    public float[] analogSamples;
 
-    /**
-     * Accuracy information about the coordinates made each frame.
-     */
-    public float[] residuals;
+    /** The number of analog samples per frame of coordinate data */
+    public int numAnalogSamples;
 
     /**
      * Construct a new data object representing a specific trajectory
      *
      * @param label The name or label of this data
      * @param description A description from the parameter information
+     * @param channel The channel number for this data
      * @param numFrames The number of valid frames of data to process
+     * @param numAnalogSamples The number of samples per coordinate frame. If
+     *    there are no analog samples, set this to zero
      */
-    public C3DTrajectoryData(String label, String description, int numFrames)
+    public C3DAnalogData(int channel,
+                         String label,
+                         String description,
+                         int numFrames,
+                         int numAnalogSamples)
     {
+        channelNumber = channel;
         this.label = label;
         this.description = description;
         this.numFrames = numFrames;
+        this.numAnalogSamples = numAnalogSamples;
 
-        coordinates = new float[numFrames * 3];
-        cameraMasks = new short[numFrames];
-        residuals = new float[numFrames];
+        analogSamples = new float[numFrames * numAnalogSamples];
     }
 
     //----------------------------------------------------------
@@ -89,10 +93,14 @@ public class C3DTrajectoryData
      */
     public String toString()
     {
-        StringBuffer buf = new StringBuffer("C3DTrajectoryData: ");
-        buf.append(label);
+        StringBuffer buf = new StringBuffer("C3DAnalogData: Channel: ");
+        buf.append(channelNumber);
+
         buf.append("\n Number of frames: ");
         buf.append(numFrames);
+
+        buf.append("\n Number of analog samples per frame: ");
+        buf.append(numAnalogSamples);
 
         return buf.toString();
     }
