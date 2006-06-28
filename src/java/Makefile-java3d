@@ -31,6 +31,7 @@ BUILD_ORDER = org.j3d.util \
     org.j3d.loaders.vterrain \
     org.j3d.loaders.dem \
     org.j3d.loaders.discreet \
+    org.j3d.loaders.c3d \
     org.j3d.renderer.java3d.util \
     org.j3d.renderer.java3d.ui \
     org.j3d.renderer.java3d.navigation \
@@ -72,6 +73,7 @@ JAVADOC_PACKAGES = org.j3d.util \
     org.j3d.loaders.vterrain \
     org.j3d.loaders.dem \
     org.j3d.loaders.discreet \
+    org.j3d.loaders.c3d \
     org.j3d.renderer.java3d.util \
     org.j3d.renderer.java3d.ui \
     org.j3d.renderer.java3d.navigation \
@@ -100,6 +102,7 @@ JARS = j3d-org-util.jar \
     j3d-org-loader-stl.jar \
     j3d-org-loader-vterrain.jar \
     j3d-org-loader-3ds.jar \
+    j3d-org-loader-c3d.jar \
     j3d-org-navigation.jar \
     j3d-org-terrain.jar \
     j3d-org-texture.jar \

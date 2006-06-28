@@ -30,7 +30,8 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.loaders.stl \
 	org.j3d.loaders.vterrain \
 	org.j3d.loaders.dem \
-	org.j3d.loaders.discreet
+	org.j3d.loaders.discreet \
+	org.j3d.loaders.c3d \
 
 #	org.j3d.loaders.ac3d.util \
 #	org.j3d.loaders.ac3d.models \
@@ -68,6 +69,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.loaders.stl \
 	org.j3d.loaders.vterrain \
 	org.j3d.loaders.dem \
+	org.j3d.loaders.c3d \
 
 # A version number we tack onto the JAR file name for eclipse versioning
 # purposes.
@@ -85,6 +87,7 @@ JARS = j3d-org-util.jar \
 	j3d-org-loader-stl.jar \
 	j3d-org-loader-vterrain.jar \
 	j3d-org-loader-3ds.jar \
+	j3d-org-loader-c3d.jar \
 	j3d-org-navigation.jar \
 	j3d-org-terrain.jar \
 	j3d-org-texture.jar \
