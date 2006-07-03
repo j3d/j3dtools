@@ -20,7 +20,7 @@ package org.j3d.loaders.c3d;
  * <p>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class C3DStringParameter extends C3DParameter
 {
@@ -112,19 +112,17 @@ public class C3DStringParameter extends C3DParameter
      * first elements of the array.
      *
      * @param str The string to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(String[] str)
+    public void setValue(String[] str, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[2];
-        dimensions[0] = str[0].length();
-        dimensions[1] = str.length;
-
+        dimensions = dim;
         data = str;
     }
 
@@ -135,20 +133,17 @@ public class C3DStringParameter extends C3DParameter
      * first elements of the array.
      *
      * @param str The string to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(String[][] str)
+    public void setValue(String[][] str, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[3];
-        dimensions[0] = str[0][0].length();
-        dimensions[1] = str[0].length;
-        dimensions[2] = str.length;
-
+        dimensions = dim;
         data = str;
     }
 
@@ -159,21 +154,17 @@ public class C3DStringParameter extends C3DParameter
      * first elements of the array.
      *
      * @param str The string to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(String[][][] str)
+    public void setValue(String[][][] str, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[4];
-        dimensions[0] = str[0][0][0].length();
-        dimensions[1] = str[0][0].length;
-        dimensions[2] = str[0].length;
-        dimensions[3] = str.length;
-
+        dimensions = dim;
         data = str;
     }
 
@@ -184,22 +175,17 @@ public class C3DStringParameter extends C3DParameter
      * first elements of the array.
      *
      * @param str The string to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(String[][][][] str)
+    public void setValue(String[][][][] str, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[5];
-        dimensions[0] = str[0][0][0][0].length();
-        dimensions[1] = str[0][0][0].length;
-        dimensions[2] = str[0][0].length;
-        dimensions[3] = str[0].length;
-        dimensions[4] = str.length;
-
+        dimensions = dim;
         data = str;
     }
 
@@ -210,23 +196,17 @@ public class C3DStringParameter extends C3DParameter
      * first elements of the array.
      *
      * @param str The string to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(String[][][][][] str)
+    public void setValue(String[][][][][] str, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[6];
-        dimensions[0] = str[0][0][0][0][0].length();
-        dimensions[1] = str[0][0][0][0].length;
-        dimensions[2] = str[0][0][0].length;
-        dimensions[3] = str[0][0].length;
-        dimensions[4] = str[0].length;
-        dimensions[5] = str.length;
-
+        dimensions = dim;
         data = str;
     }
 
@@ -237,24 +217,17 @@ public class C3DStringParameter extends C3DParameter
      * first elements of the array.
      *
      * @param str The string to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(String[][][][][][] str)
+    public void setValue(String[][][][][][] str, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[7];
-        dimensions[0] = str[0][0][0][0][0][0].length();
-        dimensions[1] = str[0][0][0][0][0].length;
-        dimensions[2] = str[0][0][0][0].length;
-        dimensions[3] = str[0][0][0].length;
-        dimensions[4] = str[0][0].length;
-        dimensions[5] = str[0].length;
-        dimensions[6] = str.length;
-
+        dimensions = dim;
         data = str;
     }
 }

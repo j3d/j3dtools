@@ -20,7 +20,7 @@ package org.j3d.loaders.c3d;
  * <p>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class C3DIntParameter extends C3DParameter
 {
@@ -102,10 +102,11 @@ public class C3DIntParameter extends C3DParameter
      * Set the parameter value as a single array value.
      *
      * @param d The int values to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(int[] d)
+    public void setValue(int[] d, int[] dim)
         throws IllegalStateException
     {
         if(locked)
@@ -123,19 +124,17 @@ public class C3DIntParameter extends C3DParameter
      * first elements of the array.
      *
      * @param d The int values to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(int[][] d)
+    public void setValue(int[][] d, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[2];
-        dimensions[0] = d[0].length;
-        dimensions[1] = d.length;
-
+        dimensions = dim;
         data = d;
     }
 
@@ -146,20 +145,17 @@ public class C3DIntParameter extends C3DParameter
      * first elements of the array.
      *
      * @param d The int values to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(int[][][] d)
+    public void setValue(int[][][] d, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[3];
-        dimensions[0] = d[0][0].length;
-        dimensions[1] = d[0].length;
-        dimensions[2] = d.length;
-
+        dimensions = dim;
         data = d;
     }
 
@@ -170,21 +166,17 @@ public class C3DIntParameter extends C3DParameter
      * first elements of the array.
      *
      * @param d The int values to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(int[][][][] d)
+    public void setValue(int[][][][] d, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[4];
-        dimensions[0] = d[0][0][0].length;
-        dimensions[1] = d[0][0].length;
-        dimensions[2] = d[0].length;
-        dimensions[3] = d.length;
-
+        dimensions = dim;
         data = d;
     }
 
@@ -195,22 +187,17 @@ public class C3DIntParameter extends C3DParameter
      * first elements of the array.
      *
      * @param d The int values to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(int[][][][][] d)
+    public void setValue(int[][][][][] d, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[5];
-        dimensions[0] = d[0][0][0][0].length;
-        dimensions[1] = d[0][0][0].length;
-        dimensions[2] = d[0][0].length;
-        dimensions[3] = d[0].length;
-        dimensions[4] = d.length;
-
+        dimensions = dim;
         data = d;
     }
 
@@ -221,23 +208,17 @@ public class C3DIntParameter extends C3DParameter
      * first elements of the array.
      *
      * @param d The int values to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(int[][][][][][] d)
+    public void setValue(int[][][][][][] d, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[6];
-        dimensions[0] = d[0][0][0][0][0].length;
-        dimensions[1] = d[0][0][0][0].length;
-        dimensions[2] = d[0][0][0].length;
-        dimensions[3] = d[0][0].length;
-        dimensions[4] = d[0].length;
-        dimensions[5] = d.length;
-
+        dimensions = dim;
         data = d;
     }
 
@@ -248,24 +229,17 @@ public class C3DIntParameter extends C3DParameter
      * first elements of the array.
      *
      * @param d The int values to use as the value
+     * @param dim The dimensions of each value length
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      */
-    public void setValue(int[][][][][][][] d)
+    public void setValue(int[][][][][][][] d, int[] dim)
         throws IllegalStateException
     {
         if(locked)
             throw new IllegalStateException(LOCKED_PARAM_MSG);
 
-        dimensions = new int[7];
-        dimensions[0] = d[0][0][0][0][0][0].length;
-        dimensions[1] = d[0][0][0][0][0].length;
-        dimensions[2] = d[0][0][0][0].length;
-        dimensions[3] = d[0][0][0].length;
-        dimensions[4] = d[0][0].length;
-        dimensions[5] = d[0].length;
-        dimensions[6] = d.length;
-
+        dimensions = dim;
         data = d;
     }
 }

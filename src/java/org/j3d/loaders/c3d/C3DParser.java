@@ -33,7 +33,7 @@ import org.j3d.util.IntHashMap;
  * <a href="http://www.c3d.org">http://www.c3d.org/</a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class C3DParser
 {
@@ -56,6 +56,22 @@ public class C3DParser
     private static final String USER_PARAM_ERR =
         "User code implementing C3DParseObserver has generated an exception " +
         "during the parametersComplete() callback.";
+
+    /** Message when the parameter definitions run over the size of the number of
+     * blocks that we were told were allocated to the parameter section.
+     */
+    private static final String PARAM_BLOCK_SIZE_MSG =
+        "The file incorrectly states the size of the parameter block for the " +
+        "number of parameters we've attempted to read. Some parameters will " +
+        "be invalid or truncated";
+
+    /** The label block is missing from the parameters  */
+    private static final String LABEL_PARAM_MISSING_ERR =
+        "The label parameter values are missing from the file";
+
+    /** The label description block is missing from the parameters  */
+    private static final String DESC_PARAM_MISSING_ERR =
+        "The description parameter values are missing from the file";
 
     /** Buffer while reading bytes from the stream */
     private byte[] buffer;
@@ -400,11 +416,11 @@ public class C3DParser
         int point_group_id = 0;
 
         byte[] tmp = buffer;
-        buffer = new byte[512 * num_param_blocks];
+        buffer = new byte[512 * (num_param_blocks + 1)];
 
-        readBlocks(num_param_blocks - 1);
+        readBlocks(num_param_blocks);
 
-        System.arraycopy(buffer, 0, buffer, 512, 512 * (num_param_blocks - 1));
+        System.arraycopy(buffer, 0, buffer, 512, 512 * num_param_blocks);
         System.arraycopy(tmp, 0, buffer, 0, 512);
 
         reader.setBuffer(buffer);
@@ -474,7 +490,7 @@ public class C3DParser
                 int[] dimensions = new int[num_dimensions];
 
                 for(int i = 0; i < num_dimensions; i++)
-                    dimensions[i] = buffer[offset + 6 + num_name_chars + i];
+                    dimensions[i] = buffer[offset + 6 + num_name_chars + i] & 255;
 
                 offset += 6 + num_name_chars + num_dimensions;
 
@@ -493,41 +509,48 @@ public class C3DParser
                     param_groups.put(-id, grp);
                 }
 
-                switch(data_size)
+                try
                 {
-                    case -1:
-                        C3DStringParameter sp =
-                            new C3DStringParameter(name, false, id);
-                        offset = readStringParams(sp, dimensions, offset);
-                        sp.setLocked(locked);
-                        grp.addParameterUnlocked(sp);
-                        break;
+                    switch(data_size)
+                    {
+                        case -1:
+                            C3DStringParameter sp =
+                                new C3DStringParameter(name, false, id);
+                            offset = readStringParams(sp, dimensions, offset);
+                            sp.setLocked(locked);
+                            grp.addParameterUnlocked(sp);
+                            break;
 
-                    case 1:
-                        C3DByteParameter bp =
-                            new C3DByteParameter(name, false, id);
-                        offset = readByteParams(bp, dimensions, offset);
-                        bp.setLocked(locked);
-                        grp.addParameterUnlocked(bp);
-                        break;
+                        case 1:
+                            C3DByteParameter bp =
+                                new C3DByteParameter(name, false, id);
+                            offset = readByteParams(bp, dimensions, offset);
+                            bp.setLocked(locked);
+                            grp.addParameterUnlocked(bp);
+                            break;
 
-                    case 2:
-                        C3DIntParameter ip =
-                            new C3DIntParameter(name, false, id);
-                        offset = readIntParams(ip, dimensions, offset);
-                        ip.setLocked(locked);
-                        grp.addParameterUnlocked(ip);
-                        break;
+                        case 2:
+                            C3DIntParameter ip =
+                                new C3DIntParameter(name, false, id);
+                            offset = readIntParams(ip, dimensions, offset);
+                            ip.setLocked(locked);
+                            grp.addParameterUnlocked(ip);
+                            break;
 
-                    case 4:
-                        C3DFloatParameter fp =
-                            new C3DFloatParameter(name, false, id);
-                        offset = readFloatParams(fp, dimensions, offset);
-                        fp.setLocked(locked);
-                        grp.addParameterUnlocked(fp);
-                        break;
+                        case 4:
+                            C3DFloatParameter fp =
+                                new C3DFloatParameter(name, false, id);
+                            offset = readFloatParams(fp, dimensions, offset);
+                            fp.setLocked(locked);
+                            grp.addParameterUnlocked(fp);
+                            break;
+                    }
                 }
-
+                catch(ArrayIndexOutOfBoundsException aioobe)
+                {
+                    errorReporter.errorReport(PARAM_BLOCK_SIZE_MSG, null);
+                    have_params = false;
+                }
 
                 int desc_size = buffer[offset];
                 String desc = reader.readString(offset + 1, desc_size);
@@ -577,30 +600,40 @@ public class C3DParser
             C3DStringParameter label_param =
                 (C3DStringParameter)grp.getParameter("LABELS");
 
-            String[] labels = (String[])label_param.getValue();
+            if(label_param == null)
+                errorReporter.errorReport(LABEL_PARAM_MISSING_ERR, null);
+            else
+            {
+                String[] labels = (String[])label_param.getValue();
 
-            int size = (labels.length < header.numTrajectories) ?
-                       labels.length : header.numTrajectories;
+                int size = (labels.length < header.numTrajectories) ?
+                           labels.length : header.numTrajectories;
 
-            System.arraycopy(labels,
-                             0,
-                             markerLabels,
-                             0,
-                             size);
+                System.arraycopy(labels,
+                                 0,
+                                 markerLabels,
+                                 0,
+                                 size);
+            }
 
             C3DStringParameter desc_param =
                 (C3DStringParameter)grp.getParameter("DESCRIPTIONS");
 
-            String[] descriptions = (String[])desc_param.getValue();
+            if(desc_param == null)
+                errorReporter.errorReport(DESC_PARAM_MISSING_ERR, null);
+            else
+            {
+                String[] descriptions = (String[])desc_param.getValue();
 
-            size = (descriptions.length < header.numTrajectories) ?
-                   descriptions.length : header.numTrajectories;
+                int size = (descriptions.length < header.numTrajectories) ?
+                           descriptions.length : header.numTrajectories;
 
-            System.arraycopy(descriptions,
-                             0,
-                             markerDescriptions,
-                             0,
-                             size);
+                System.arraycopy(descriptions,
+                                 0,
+                                 markerDescriptions,
+                                 0,
+                                 size);
+            }
         }
 
         if(header.numAnalogChannels != 0)
@@ -615,30 +648,40 @@ public class C3DParser
             C3DStringParameter label_param =
                 (C3DStringParameter)grp.getParameter("LABELS");
 
-            String[] labels = (String[])label_param.getValue();
+            if(label_param == null)
+                errorReporter.errorReport(LABEL_PARAM_MISSING_ERR, null);
+            else
+            {
+                String[] labels = (String[])label_param.getValue();
 
-            int size = (labels.length < header.numAnalogChannels) ?
-                       labels.length : header.numAnalogChannels;
+                int size = (labels.length < header.numAnalogChannels) ?
+                           labels.length : header.numAnalogChannels;
 
-            System.arraycopy(labels,
-                             0,
-                             analogLabels,
-                             0,
-                             size);
+                System.arraycopy(labels,
+                                 0,
+                                 analogLabels,
+                                 0,
+                                 size);
+            }
 
             C3DStringParameter desc_param =
                 (C3DStringParameter)grp.getParameter("DESCRIPTIONS");
 
-            String[] descriptions = (String[])desc_param.getValue();
+            if(desc_param == null)
+                errorReporter.errorReport(DESC_PARAM_MISSING_ERR, null);
+            else
+            {
+                String[] descriptions = (String[])desc_param.getValue();
 
-            size = (descriptions.length < header.numAnalogChannels) ?
-                   descriptions.length : header.numAnalogChannels;
+                int size = (descriptions.length < header.numAnalogChannels) ?
+                            descriptions.length : header.numAnalogChannels;
 
-            System.arraycopy(descriptions,
-                             0,
-                             analogDescriptions,
-                             0,
-                             size);
+                System.arraycopy(descriptions,
+                                 0,
+                                 analogDescriptions,
+                                 0,
+                                 size);
+            }
         }
 
         return ret_val;
@@ -879,7 +922,7 @@ public class C3DParser
                     sd2[i] = reader.readString(offset + d[0] * i, d[0]);
 
                 offset += d[0] * d[1];
-                param.setValue(sd2);
+                param.setValue(sd2, d);
                 break;
 
             case 3:
@@ -889,7 +932,7 @@ public class C3DParser
                         sd3[i][j] = reader.readString(offset + d[0] * i * j, d[0]);
 
                 offset += d[0] * d[1] * d[2];
-                param.setValue(sd3);
+                param.setValue(sd3, d);
                 break;
 
             case 4:
@@ -900,7 +943,7 @@ public class C3DParser
                             sd4[i][j][k] = reader.readString(offset + d[0] * i * j * k, d[0]);
 
                 offset += d[0] * d[1] * d[2] * d[3];
-                param.setValue(sd4);
+                param.setValue(sd4, d);
                 break;
 
             case 5:
@@ -912,7 +955,7 @@ public class C3DParser
                                 sd5[i][j][k][l] = reader.readString(offset + d[0] * i * j * k * l, d[0]);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4];
-                param.setValue(sd5);
+                param.setValue(sd5, d);
                 break;
 
             case 6:
@@ -925,7 +968,7 @@ public class C3DParser
                                     sd6[i][j][k][l][m] = reader.readString(offset + d[0] * i * j * k * l * m, d[0]);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4] * d[5];
-                param.setValue(sd6);
+                param.setValue(sd6, d);
                 break;
 
             case 7:
@@ -939,7 +982,7 @@ public class C3DParser
                                         sd7[i][j][k][l][m][n] = reader.readString(offset + d[0] * i * j * k * l * m * n, d[0]);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4] * d[5] * d[6];
-                param.setValue(sd7);
+                param.setValue(sd7, d);
                 break;
         }
 
@@ -968,7 +1011,7 @@ public class C3DParser
                 byte[] sd1 = new byte[d[0]];
                 System.arraycopy(buffer, offset, sd1, 0, d[0]);
                 offset += d[0];
-                param.setValue(sd1);
+                param.setValue(sd1, d);
                 break;
 
             case 2:
@@ -977,7 +1020,7 @@ public class C3DParser
                     System.arraycopy(buffer, offset + d[0] * i, sd2[i], 0, d[0]);
 
                 offset += d[0] * d[1];
-                param.setValue(sd2);
+                param.setValue(sd2, d);
                 break;
 
             case 3:
@@ -987,7 +1030,7 @@ public class C3DParser
                         System.arraycopy(buffer, offset + d[0] * i * j, sd3[i][j], 0, d[0]);
 
                 offset += d[0] * d[1] * d[2];
-                param.setValue(sd3);
+                param.setValue(sd3, d);
                 break;
 
             case 4:
@@ -998,7 +1041,7 @@ public class C3DParser
                             System.arraycopy(buffer, offset + d[0] * i * j * k, sd4[i][j][k], 0, d[0]);
 
                 offset += d[0] * d[1] * d[2] * d[3];
-                param.setValue(sd4);
+                param.setValue(sd4, d);
                 break;
 
             case 5:
@@ -1010,7 +1053,7 @@ public class C3DParser
                                 System.arraycopy(buffer, offset + d[0] * i * j * k * l, sd5[i][j][k][l], 0, d[0]);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4];
-                param.setValue(sd5);
+                param.setValue(sd5, d);
                 break;
 
             case 6:
@@ -1023,7 +1066,7 @@ public class C3DParser
                                     System.arraycopy(buffer, offset + d[0] * i * j * k * l * m, sd6[i][j][k][l][m], 0, d[0]);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4] * d[5];
-                param.setValue(sd6);
+                param.setValue(sd6, d);
                 break;
 
             case 7:
@@ -1037,7 +1080,7 @@ public class C3DParser
                                         System.arraycopy(buffer, offset + d[0] * i * j * k * l * m * n, sd7[i][j][k][l][m][n], 0, d[0]);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4] * d[5] * d[6];
-                param.setValue(sd7);
+                param.setValue(sd7, d);
                 break;
         }
 
@@ -1068,7 +1111,7 @@ public class C3DParser
                     sd1[i] = reader.readShort(offset + 2 * i);
 
                 offset += d[0] * 2;
-                param.setValue(sd1);
+                param.setValue(sd1, d);
                 break;
 
             case 2:
@@ -1078,7 +1121,7 @@ public class C3DParser
                         sd2[i][j] = reader.readShort(offset + 2 * i * j);
 
                 offset += d[0] * d[1] * 2;
-                param.setValue(sd2);
+                param.setValue(sd2, d);
                 break;
 
             case 3:
@@ -1089,7 +1132,7 @@ public class C3DParser
                             sd3[i][j][k] = reader.readShort(offset + 2 * i * j * k);
 
                 offset += d[0] * d[1] * d[2] * 2;
-                param.setValue(sd3);
+                param.setValue(sd3, d);
                 break;
 
             case 4:
@@ -1101,7 +1144,7 @@ public class C3DParser
                                 sd4[i][j][k][l] = reader.readShort(offset + 2 * i * j * k * l);
 
                 offset += d[0] * d[1] * d[2] * d[3] * 2;
-                param.setValue(sd4);
+                param.setValue(sd4, d);
                 break;
 
             case 5:
@@ -1114,7 +1157,7 @@ public class C3DParser
                                     sd5[i][j][k][l][m] = reader.readShort(offset + 2 * i * j * k * l * m);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4] * 2;
-                param.setValue(sd5);
+                param.setValue(sd5, d);
                 break;
 
             case 6:
@@ -1128,7 +1171,7 @@ public class C3DParser
                                         sd6[i][j][k][l][m][n] = reader.readShort(offset + 2 * i * j * k * l * m * n);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4] * d[5] * 2;
-                param.setValue(sd6);
+                param.setValue(sd6, d);
                 break;
 
             case 7:
@@ -1143,7 +1186,7 @@ public class C3DParser
                                             sd7[i][j][k][l][m][n][p] = reader.readShort(offset + 2 * i * j * k * l * m * n * p);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4] * d[5] * d[6] * 2;
-                param.setValue(sd7);
+                param.setValue(sd7, d);
                 break;
         }
 
@@ -1174,7 +1217,7 @@ public class C3DParser
                     sd1[i] = reader.readFloat(offset + 4 * i);
 
                 offset += d[0] * 4;
-                param.setValue(sd1);
+                param.setValue(sd1, d);
                 break;
 
             case 2:
@@ -1184,7 +1227,7 @@ public class C3DParser
                         sd2[i][j] = reader.readFloat(offset + 4 * i * j);
 
                 offset += d[0] * d[1] * 4;
-                param.setValue(sd2);
+                param.setValue(sd2, d);
                 break;
 
             case 3:
@@ -1195,7 +1238,7 @@ public class C3DParser
                             sd3[i][j][k] = reader.readFloat(offset + 4 * i * j * k);
 
                 offset += d[0] * d[1] * d[2] * 4;
-                param.setValue(sd3);
+                param.setValue(sd3, d);
                 break;
 
             case 4:
@@ -1207,7 +1250,7 @@ public class C3DParser
                                 sd4[i][j][k][l] = reader.readFloat(offset + 4 * i * j * k * l);
 
                 offset += d[0] * d[1] * d[2] * d[3] * 4;
-                param.setValue(sd4);
+                param.setValue(sd4, d);
                 break;
 
             case 5:
@@ -1220,7 +1263,7 @@ public class C3DParser
                                     sd5[i][j][k][l][m] = reader.readFloat(offset + 4 * i * j * k * l * m);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4] * 4;
-                param.setValue(sd5);
+                param.setValue(sd5, d);
                 break;
 
             case 6:
@@ -1234,7 +1277,7 @@ public class C3DParser
                                         sd6[i][j][k][l][m][n] = reader.readFloat(offset + 4 * i * j * k * l * m * n);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4] * d[5] * 4;
-                param.setValue(sd6);
+                param.setValue(sd6, d);
                 break;
 
             case 7:
@@ -1249,7 +1292,7 @@ public class C3DParser
                                             sd7[i][j][k][l][m][n][p] = reader.readFloat(offset + 4 * i * j * k * l * m * n * p);
 
                 offset += d[0] * d[1] * d[2] * d[3] * d[4] * d[5] * d[6] * 4;
-                param.setValue(sd7);
+                param.setValue(sd7, d);
                 break;
         }
 
