@@ -1,12 +1,12 @@
 #*********************************************************************
 #
-#                         (C) 2001-02 j3d.org
+#                         (C) 2001-06 j3d.org
 #                         http://code.j3d.org/
 #
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.15 $
+# Version: $Revision: 1.16 $
 #
 #*********************************************************************
 
@@ -62,6 +62,11 @@ ifdef JARS_3RDPARTY
 	OTHER_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(OTHER_JARTMP))
 endif
 
+ifdef JARS_JAVADOC
+	JAVADOC_JARTMP  = $(patsubst %,$(LIB_DIR)/%,$(JARS_JAVADOC))
+	JAVADOC_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(JAVADOC_JARTMP))
+endif
+
 SOURCEPATH = $(JAVA_SRC_DIR)
 
 CP = $(CLASS_DIR)
@@ -88,7 +93,7 @@ else
   CLASSPATH="$(CP)"
 endif
 
-JAVADOC_CLASSPATH=$(CLASS_DIR)$(PATH_SEP)$(OTHER_JARLIST)
+JAVADOC_CLASSPATH=$(CLASS_DIR)$(PATH_SEP)$(JAVADOC_JARLIST)
 
 # has the user defined an external classpath to use here? If so, append
 # it to the ordinary classpath.
