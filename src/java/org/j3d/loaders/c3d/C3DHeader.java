@@ -27,7 +27,7 @@ package org.j3d.loaders.c3d;
  * <li>The number of trajectory samples stored within the file</li>
  * <li>The number of analog samples stored within the file</li>
  * <li>The trajectory and analog sample rates</li>
- * <ul>
+ * </ul>
  *
  * A standard C3D header also includes the following information that is not
  * kept by this class as it is only useful for parsing.
@@ -42,7 +42,7 @@ package org.j3d.loaders.c3d;
  * <a href="http://www.c3d.org">http://www.c3d.org/</a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class C3DHeader
 {
