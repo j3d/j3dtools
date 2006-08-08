@@ -24,7 +24,7 @@ import javax.vecmath.*;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class MatrixUtils
 {
@@ -43,6 +43,18 @@ public class MatrixUtils
     /** A temp 4x4 matrix used during the invert() routines */
     private float[] resMat4;
 
+	/** A temp 3x3 double matrix used during the invert() routines 
+	 *  when double precision is required */
+	private double[] tempMat3d;
+	
+	/** A temp 4x4 double matrix used during the invert() routines 
+	 *  when double precision is required */
+	private double[] tempMat4d;
+	
+	/** Scratch matrix object used in double precision invert()
+	 *  calculation */
+	private Matrix4d matrix4d;
+	
     /**
      * Construct a default instance of this class.
      */
@@ -51,6 +63,10 @@ public class MatrixUtils
         tempMat3 = new float[9];
         tempMat4 = new float[16];
         resMat4 = new float[16];
+		
+		tempMat3d = new double[9];
+		tempMat4d = new double[16];
+		matrix4d = new Matrix4d();
     }
 
     /**
@@ -384,73 +400,124 @@ public class MatrixUtils
      * @return true if the inversion was successful
      */
     public boolean inverse(Matrix4f src, Matrix4f dest)
-    {
-        float mdet = src.determinant();
+	{
+		float mdet = src.determinant();
+		
+		if(Math.abs(mdet) < 0.0000005f)
+		{
+			dest.setIdentity();
+			return false;
+		} 
+		if ((mdet > Float.MAX_VALUE)||(mdet < Float.MIN_VALUE)) 
+		{
+			inversed( src );
+		}
+		else 
+		{
+			mdet = 1 / mdet;
+			
+			// copy the matrix into an array for faster calcs
+			tempMat4[0] = src.m00;
+			tempMat4[1] = src.m01;
+			tempMat4[2] = src.m02;
+			tempMat4[3] = src.m03;
+			
+			tempMat4[4] = src.m10;
+			tempMat4[5] = src.m11;
+			tempMat4[6] = src.m12;
+			tempMat4[7] = src.m13;
+			
+			tempMat4[8] = src.m20;
+			tempMat4[9] = src.m21;
+			tempMat4[10] = src.m22;
+			tempMat4[11] = src.m23;
+			
+			tempMat4[12] = src.m30;
+			tempMat4[13] = src.m31;
+			tempMat4[14] = src.m32;
+			tempMat4[15] = src.m33;
+			
+			for(int i = 0; i < 4; i++)
+			{
+				for(int j = 0; j < 4; j++)
+				{
+					int sign = 1 - ((i + j) % 2) * 2;
+					submatrix(i, j);
+					resMat4[i + j * 4] = determinant3x3() * sign * mdet;
+				}
+			}
+		}
+		// Now copy it back to the destination
+		dest.m00 = resMat4[0];
+		dest.m01 = resMat4[1];
+		dest.m02 = resMat4[2];
+		dest.m03 = resMat4[3];
+		
+		dest.m10 = resMat4[4];
+		dest.m11 = resMat4[5];
+		dest.m12 = resMat4[6];
+		dest.m13 = resMat4[7];
+		
+		dest.m20 = resMat4[8];
+		dest.m21 = resMat4[9];
+		dest.m22 = resMat4[10];
+		dest.m23 = resMat4[11];
+		
+		dest.m30 = resMat4[12];
+		dest.m31 = resMat4[13];
+		dest.m32 = resMat4[14];
+		dest.m33 = resMat4[15];
+		
+		return true;
+	}
 
-        if(Math.abs(mdet) < 0.0000005f)
-        {
-            dest.setIdentity();
-            return false;
-        }
-
-        mdet = 1 / mdet;
-
-        // copy the matrix into an array for faster calcs
-        tempMat4[0] = src.m00;
-        tempMat4[1] = src.m01;
-        tempMat4[2] = src.m02;
-        tempMat4[3] = src.m03;
-
-        tempMat4[4] = src.m10;
-        tempMat4[5] = src.m11;
-        tempMat4[6] = src.m12;
-        tempMat4[7] = src.m13;
-
-        tempMat4[8] = src.m20;
-        tempMat4[9] = src.m21;
-        tempMat4[10] = src.m22;
-        tempMat4[11] = src.m23;
-
-        tempMat4[12] = src.m30;
-        tempMat4[13] = src.m31;
-        tempMat4[14] = src.m32;
-        tempMat4[15] = src.m33;
-
-        for(int i = 0; i < 4; i++)
-        {
-            for(int j = 0; j < 4; j++)
-            {
-                int sign = 1 - ((i + j) % 2) * 2;
-                submatrix(i, j);
-                resMat4[i + j * 4] = determinant3x3() * sign * mdet;
-            }
-        }
-
-        // Now copy it back to the destination
-        dest.m00 = resMat4[0];
-        dest.m01 = resMat4[1];
-        dest.m02 = resMat4[2];
-        dest.m03 = resMat4[3];
-
-        dest.m10 = resMat4[4];
-        dest.m11 = resMat4[5];
-        dest.m12 = resMat4[6];
-        dest.m13 = resMat4[7];
-
-        dest.m20 = resMat4[8];
-        dest.m21 = resMat4[9];
-        dest.m22 = resMat4[10];
-        dest.m23 = resMat4[11];
-
-        dest.m30 = resMat4[12];
-        dest.m31 = resMat4[13];
-        dest.m32 = resMat4[14];
-        dest.m33 = resMat4[15];
-
-        return true;
-    }
-
-
+	/**
+	 * Perform the inverse calculation of the argument 4x4 matrix in
+	 * double precision, placing the result in the class-level 
+	 * float temp result matrix.
+	 *
+	 * @param src The source matrix to read the values from
+	 */
+	private void inversed(Matrix4f src) {
+		
+		matrix4d.set(src);
+		
+		double mdet = matrix4d.determinant();
+		
+		mdet = 1 / mdet;
+		
+		// copy the matrix into an array for faster calcs
+		tempMat4d[0] = matrix4d.m00;
+		tempMat4d[1] = matrix4d.m01;
+		tempMat4d[2] = matrix4d.m02;
+		tempMat4d[3] = matrix4d.m03;
+		
+		tempMat4d[4] = matrix4d.m10;
+		tempMat4d[5] = matrix4d.m11;
+		tempMat4d[6] = matrix4d.m12;
+		tempMat4d[7] = matrix4d.m13;
+		
+		tempMat4d[8] = matrix4d.m20;
+		tempMat4d[9] = matrix4d.m21;
+		tempMat4d[10] = matrix4d.m22;
+		tempMat4d[11] = matrix4d.m23;
+		
+		tempMat4d[12] = matrix4d.m30;
+		tempMat4d[13] = matrix4d.m31;
+		tempMat4d[14] = matrix4d.m32;
+		tempMat4d[15] = matrix4d.m33;
+		
+		for(int i = 0; i < 4; i++)
+		{
+			for(int j = 0; j < 4; j++)
+			{
+				int sign = 1 - ((i + j) % 2) * 2;
+				submatrixd(i, j);
+				resMat4[i + j * 4] = (float)(determinant3dx3d() * sign * mdet);
+			}
+		}
+	}
+	
     /**
      * Find the 3x3 submatrix for the 4x4 matrix given the intial start and
      * end positions. This uses the class-level temp matrices for input.
@@ -472,6 +539,27 @@ public class MatrixUtils
         }
     }
 
+	/**
+	 * Find the 3x3 submatrix for the 4x4 matrix given the intial start and
+	 * end positions. This uses the class-level double temp matrices for input.
+	 */
+	private void submatrixd(int i, int j)
+	{
+		// loop through 3x3 submatrix
+		for(int di = 0; di < 3; di++)
+		{
+			for(int dj = 0; dj < 3; dj++)
+			{
+				// map 3x3 element (destination) to 4x4 element (source)
+				int si = di + ((di >= i) ? 1 : 0);
+				int sj = dj + ((dj >= j) ? 1 : 0);
+				
+				// copy element
+				tempMat3d[di * 3 + dj] = tempMat4d[si * 4 + sj];
+			}
+		}
+	}
+	
     /**
      * Calculate the determinant of the 3x3 temp matrix.
      *
@@ -484,6 +572,18 @@ public class MatrixUtils
              tempMat3[2] * (tempMat3[3] * tempMat3[7] - tempMat3[6] * tempMat3[4]);
     }
 
+	/**
+	 * Calculate the determinant of the 3x3 double temp matrix.
+	 *
+	 * @return the determinant value
+	 */
+	private double determinant3dx3d()
+	{
+		return tempMat3d[0] * (tempMat3d[4] * tempMat3d[8] - tempMat3d[7] * tempMat3d[5]) -
+			tempMat3d[1] * (tempMat3d[3] * tempMat3d[8] - tempMat3d[6] * tempMat3d[5]) +
+			tempMat3d[2] * (tempMat3d[3] * tempMat3d[7] - tempMat3d[6] * tempMat3d[4]);
+	}
+	
     /**
      * Perform a LookAt camera calculation and place it in the given matrix.
      * If using this for a viewing transformation, you should invert() the
