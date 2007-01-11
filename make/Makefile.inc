@@ -1,23 +1,18 @@
 #*********************************************************************
 #
-#                         (C) 2001-05 j3d.org
+#                         (C) 2001-07 j3d.org
 #                         http://code.j3d.org/
 #
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.9 $
+# Version: $Revision: 1.10 $
 #
 #*********************************************************************
 
-ifndef PROJECT_ROOT
-  export PROJECT_ROOT=/usr/local/src/projects/j3d.org
-endif
-
-SRC_DIR=$(PROJECT_ROOT)/src
-DOCS_DIR=$(PROJECT_ROOT)/docs
-LIB_DIR=$(PROJECT_ROOT)/lib
-MAKE_DIR=$(PROJECT_ROOT)/make
+SRC_DIR=src
+DOCS_DIR=docs
+MAKE_DIR=make
 
 JAVA_DIR=$(SRC_DIR)/java
 NATIVE_DIR=$(SRC_DIR)/native

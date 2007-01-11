@@ -1,9 +1,6 @@
 #
 # Top Level makefile for the j3d.org code repository.
 #
-# To use this, make sure that you have the PROJECT_ROOT environment variable
-# set 
-#
 # This makefile is designed to build the entire library from scratch. It is
 # not desigend as a hacking system. It is recommended that you use the normal
 # javac/CLASSPATH setup for that. 
@@ -18,23 +15,21 @@
 #
 
 ifndef PROJECT_ROOT
-export PROJECT_ROOT=/usr/local/src/projects/j3d.org/code
+export PROJECT_ROOT=$(PWD)
 endif
 
 include $(PROJECT_ROOT)/make/Makefile.inc
 
-VERSION=0.1
-
 help:
 	$(PRINT) 
-	$(PRINT) "                   The Xj3D Project"
+	$(PRINT) "                   The j3d.org Code Repository"
 	$(PRINT) 
-	$(PRINT) "More information on this project can be found at http://www.xj3d.org"
+	$(PRINT) "More information on this project can be found at http://code.j3d.org"
 	$(PRINT) 
-	$(PRINT) "The following options are offered and will build the entire codebase:"
+	$(PRINT) "The following options are offered and will build the codebase but does"
+	$(PRINT) "not include any Java3D-specific classes:"
 	$(PRINT) 
 	$(PRINT) "class:       Compile just the classes. Don't make JAR files."
-	$(PRINT) "bin:         Build parsers and classes"
 	$(PRINT) "jar:         Make the java JAR file"
 	$(PRINT) "javadoc:     Generate the javadoc information"
 	$(PRINT) "docs:        Generate both parser and javadoc files"
@@ -53,32 +48,33 @@ help:
 all: class jar javadoc
 
 class:
-	cd $(JAVA_DIR) && make buildall
+	make -f $(JAVA_DIR)/Makefile buildall
 
 jar:
-	cd $(JAVA_DIR) && make jar
+	make -f $(JAVA_DIR)/Makefile jar
 
 jni:
-	cd $(JAVA_DIR) && make jni
+	make -f $(JAVA_DIR)/Makefile jni
 
 libs:
-	cd $(JAVA_DIR) && make nativeall
-	cd $(NATIVE_DIR) && make buildall
+	make -f $(JAVA_DIR)/Makefile nativeall
+	make -f $(NATIVE_DIR)/Makefile buildall
     
 javadoc:
-	cd $(JAVA_DIR) && make javadoc
+	make -f $(JAVA_DIR)/Makefile javadoc
 
 clean:
-	cd $(JAVA_DIR) && make clean
+	make -f $(JAVA_DIR)/Makefile clean
+	make -f $(NATIVE_DIR)/Makefile clean
 	
 #
 # Java3D-specific renderer
 #
 j3d:
-	cd $(JAVA_DIR) && make -f Makefile-java3d buildall
+	make -f $(JAVA_DIR)/Makefile-java3d buildall
 
 j3d-javadoc:
-	cd $(JAVA_DIR) && make -f Makefile-java3d javadoc
+	make -f $(JAVA_DIR)/Makefile-java3d javadoc
 
 j3d-jar: j3d
-	cd $(JAVA_DIR) && make -f Makefile-java3d jar
+	make -f $(JAVA_DIR)/Makefile-java3d jar

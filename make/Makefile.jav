@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.16 $
+# Version: $Revision: 1.17 $
 #
 #*********************************************************************
 
@@ -17,13 +17,14 @@ include $(PROJECT_ROOT)/make/Makefile.inc
 
 JAVA_DEV_ROOT = $(JAVA_DIR)
 
-CLASS_DIR     = $(PROJECT_ROOT)/classes
+CLASS_DIR     = classes
 JAVADOC_DIR   = $(DOCS_DIR)/javadoc
-JAR_DIR       = $(PROJECT_ROOT)/jars
+LIB_DIR       = lib
+JAR_DIR	      = jars
 JAR_MAKE_DIR  = $(MAKE_DIR)/jar
-JAVA_SRC_DIR  = $(JAVA_DEV_ROOT)
-DESTINATION   = $(PROJECT_ROOT)/classes
-JAR_TMP_DIR   = $(PROJECT_ROOT)/.jar_tmp
+JAVA_SRC_DIR  = src/java
+DESTINATION   = classes
+JAR_TMP_DIR   = .jar_tmp
 MANIFEST_DIR  = $(MAKE_DIR)/manifest
 
 #
@@ -34,7 +35,6 @@ ifdef JAVA_HOME
   JAR      = $(JAVA_HOME)/bin/jar
   JAVADOC  = $(JAVA_HOME)/bin/javadoc
   JAVAH    = $(JAVA_HOME)/bin/javah
-  JAR_INSTALL_DIR = $(JAVA_HOME)/jre/lib/ext
 else
   JAVAC    = javac
   JAR      = jar
@@ -42,8 +42,8 @@ else
   JAVAH	   = javah
 endif
 
-EMPTY         =
-SPACE         = $(EMPTY) $(EMPTY)
+EMPTY      =
+SPACE      = $(EMPTY) $(EMPTY)
 
 OS_NAME=$(shell uname)
 ifeq (, $(strip $(findstring CYGWIN, $(OS_NAME))))
@@ -53,30 +53,24 @@ else
 endif
 
 ifdef JARS
-	LOCAL_JARTMP  = $(patsubst %,$(JAR_DIR)/%,$(JARS))
-	LOCAL_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(LOCAL_JARTMP))
+  LOCAL_JARTMP  = $(patsubst %,$(JAR_DIR)/%,$(JARS))
+  LOCAL_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(LOCAL_JARTMP))
 endif
 
 ifdef JARS_3RDPARTY
-	OTHER_JARTMP  = $(patsubst %,$(LIB_DIR)/%,$(JARS_3RDPARTY))
-	OTHER_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(OTHER_JARTMP))
+  OTHER_JARTMP  = $(patsubst %,$(LIB_DIR)/%,$(JARS_3RDPARTY))
+  OTHER_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(OTHER_JARTMP))
 endif
 
 ifdef JARS_JAVADOC
-	JAVADOC_JARTMP  = $(patsubst %,$(LIB_DIR)/%,$(JARS_JAVADOC))
-	JAVADOC_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(JAVADOC_JARTMP))
+  JAVADOC_JARTMP  = $(patsubst %,$(LIB_DIR)/%,$(JARS_JAVADOC))
+  JAVADOC_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(JAVADOC_JARTMP))
 endif
-
-SOURCEPATH = $(JAVA_SRC_DIR)
 
 CP = $(CLASS_DIR)
 
 ifdef LOCAL_JARLIST
-  ifdef CP
-    CP:="$(CP)$(PATH_SEP)$(LOCAL_JARLIST)"
-  else
-    CP:="$(LOCAL_JARLIST)"
-  endif
+  CP:="$(CP)$(PATH_SEP)$(LOCAL_JARLIST)"
 endif
 
 ifdef OTHER_JARLIST
@@ -139,8 +133,7 @@ JNI_LIST_BUILD = $(patsubst %,$(JAVA_SRC_DIR)/%/.native,$(NATIVE_LIST))
 #
 # Option listing for the various commands
 #
-JAVAC_OPTIONS = -d $(DESTINATION) -classpath $(CLASSPATH) \
-                -sourcepath $(SOURCEPATH) $(JAVAC_FLAGS)
+JAVAC_OPTIONS = -d $(DESTINATION) -classpath $(CLASSPATH) $(JAVAC_FLAGS)
 JAVAH_OPTIONS = -d $(INCLUDE_DIR) -classpath $(CLASSPATH)
 
 ifdef MANIFEST
@@ -201,7 +194,7 @@ buildall : $(PLIST_BUILD)
 # Rule 5. Building a .class file from a .java file
 $(PACKAGE_DIR)/%.class : $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/%.java
 	$(PRINT) Compiling $*.java
-	@ $(JAVAC) $(JAVAC_OPTIONS) $<
+	@ $(JAVAC) $(JAVAC_OPTIONS) -sourcepath $(PACKAGE_LOC) $<
 
 # Rule 6. Building a .class file from a .java file. Invokes rule 5.
 %.class : $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/%.java
@@ -317,10 +310,10 @@ javadoc :
 	@ $(MAKEDIR) $(JAVADOC_DIR)
 	$(PRINT) Cleaning out old docs
 	@ $(RMDIR) $(JAVADOC_DIR)/*
-	@ $(PRINT) $(JAVADOC_PACKAGES) > $(JAVA_DEV_ROOT)/packages.tmp
+	@ $(PRINT) $(JAVADOC_PACKAGES) > packages.tmp
 	$(PRINT) Starting Javadoc process
-	@ $(JAVADOC) $(JAVADOC_OPTIONS) @$(JAVA_DEV_ROOT)/packages.tmp
-	@ $(DELETE) $(JAVA_DEV_ROOT)/packages.tmp
+	@ $(JAVADOC) $(JAVADOC_OPTIONS) @packages.tmp
+	@ $(DELETE) packages.tmp
 	$(PRINT) Done JavaDoc.
 
 # Rule 18. Install the JAR files after we have created them
