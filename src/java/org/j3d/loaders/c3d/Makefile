@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders.c3d directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.2 $
+# Version: $Revision: 1.3 $
 #
 #*********************************************************************
 
@@ -27,6 +27,7 @@ SOURCE = C3DHeader.java \
   IntelBufferReader.java \
   MIPSBufferReader.java \
   DECBufferReader.java \
+  C3DParseObserver.java \
   C3DParser.java \
 
 # The list of other files we need to copy from this directory to the classes

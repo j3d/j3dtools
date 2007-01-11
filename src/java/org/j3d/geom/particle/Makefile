@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.geom.particle directory
 #
 # Author: Justin Couch
-# Version: $Revision: 2.0 $
+# Version: $Revision: 2.1 $
 #
 #*********************************************************************
 
@@ -30,6 +30,7 @@ SOURCE = \
    FrameCountParticleFunction.java \
    GravityParticleFunction.java \
    MaxTimeParticleFunction.java \
+   BaseEmitter.java \
    MaxAgePointEmitter.java \
    MaxAgePointForceEmitter.java \
    MaxTimePointEmitter.java \

@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.ui.navigation directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.12 $
+# Version: $Revision: 1.13 $
 #
 #*********************************************************************
 
@@ -17,8 +17,9 @@ PACKAGE = org.j3d.ui.navigation
 SOURCE = HeightDataSource.java \
     HeightMapGeometry.java \
     NavigationState.java \
-    ViewpointSelectionListener.java \
     ViewpointData.java \
+    ViewpointSelectionListener.java \
+    NavigationStateListener.java \
     NavigationToolbar.java \
     ViewpointCellRenderer.java \
     ViewpointToolbar.java \
