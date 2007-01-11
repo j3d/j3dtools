@@ -11,11 +11,6 @@
 #ifndef _VFX_HMD_H
 #define _VFX_HMD_H
 
-#include <jni.h>
-#include "org_j3d_device_input_vfx_VFXDriver.h"
-#include "VFXsdk.h"
-
-
 #ifdef _WIN32
 /* Windoze silliness. */
 #include <io.h>
