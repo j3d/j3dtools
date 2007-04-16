@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.17 $
+# Version: $Revision: 1.18 $
 #
 #*********************************************************************
 
@@ -158,7 +158,7 @@ JAVADOC_OPTIONS  = \
 	 $(LINK_FILES)
 	 
 ifdef OVERVIEW
-  JAVADOC_OPTIONS += -overview $(OVERVIEW)
+  JAVADOC_OPTIONS += -overview $(JAVA_SRC_DIR)/$(OVERVIEW)
 endif
 
 ifdef JAVADOC_FLAGS
