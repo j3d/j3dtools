@@ -55,7 +55,7 @@ import org.j3d.util.CharHashMap;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class CharacterCreator
 {
@@ -152,9 +152,9 @@ public class CharacterCreator
      * @param numChars The number of valid characters in the array
      * @param output A place to put each of the character arrays
      */
-    public void createCharacterTriangles(char[] characters,
-                                         int numChars,
-                                         ArrayList output)
+    public synchronized void createCharacterTriangles(char[] characters,
+                                                     int numChars,
+                                                     ArrayList output)
     {
         // first find out what we don't have characters for:
         int needed_char_cnt = 0;
