@@ -30,22 +30,22 @@ import java.util.Hashtable;
  * consumer can be reset if needed to work on another image.
  *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 class ImageGenerator implements ImageConsumer
 {
     private Object holder;
-
+    
     private ColorModel colorModel;
     private Hashtable properties;
     private WritableRaster raster;
     private int width;
     private int height;
-
+    
     private BufferedImage image;
     private int[] intBuffer;
     private boolean loadComplete;
-
+    
     ImageGenerator()
     {
         holder = new Object();
@@ -53,11 +53,11 @@ class ImageGenerator implements ImageConsumer
         height = -1;
         loadComplete = false;
     }
-
+    
     //------------------------------------------------------------------------
     // Methods for ImageConsumer events
     //------------------------------------------------------------------------
-
+    
     /**
      * Notification of the image producer completing the source image.
      * Completion may be due to an error or other form of invalid data.
@@ -67,8 +67,8 @@ class ImageGenerator implements ImageConsumer
     public void imageComplete(int status)
     {
         if(status == STATICIMAGEDONE ||
-           status == IMAGEABORTED ||
-           status == IMAGEERROR)
+            status == IMAGEABORTED ||
+            status == IMAGEERROR)
         {
             synchronized(holder)
             {
@@ -79,7 +79,7 @@ class ImageGenerator implements ImageConsumer
         else
             System.err.println("Some other value passed to complete");
     }
-
+    
     /**
      * Set the color model to use for the new image based on the model used
      * by the source image.
@@ -91,7 +91,7 @@ class ImageGenerator implements ImageConsumer
         colorModel = model;
         createImage();
     }
-
+    
     /**
      * Notification of the dimensions of the source image.
      *
@@ -104,7 +104,7 @@ class ImageGenerator implements ImageConsumer
         height = h;
         createImage();
     }
-
+    
     /**
      * Notification of load hints that may be useful. Not used in this
      * implementation.
@@ -114,7 +114,7 @@ class ImageGenerator implements ImageConsumer
     public void setHints(int flags)
     {
     }
-
+    
     /**
      * Notification of a bunch of pixel values in byte form. Used for
      * 256 color or less images (eg GIF, greyscale etc).
@@ -128,26 +128,26 @@ class ImageGenerator implements ImageConsumer
      * @param scansize The number of pixel values between rows
      */
     public void setPixels(int x,
-                          int y,
-                          int w,
-                          int h,
-                          ColorModel model,
-                          byte[] pixels,
-                          int offset,
-                          int scansize)
+        int y,
+        int w,
+        int h,
+        ColorModel model,
+        byte[] pixels,
+        int offset,
+        int scansize)
     {
         if (loadComplete)
             return;
-
+        
         if((intBuffer == null) || (pixels.length > intBuffer.length))
             intBuffer = new int[pixels.length];
-
+        
         for(int i = pixels.length; --i >= 0 ; )
             intBuffer[i] = (int)pixels[i] & 0xFF;
-
+        
         raster.setPixels(x, y, w, h, intBuffer);
     }
-
+    
     /**
      * Notification of a bunch of pixel values as ints. These will be
      * full 3 or 4 component images.
@@ -161,20 +161,20 @@ class ImageGenerator implements ImageConsumer
      * @param scansize The number of pixel values between rows
      */
     public void setPixels(int x,
-                          int y,
-                          int w,
-                          int h,
-                          ColorModel model,
-                          int[] pixels,
-                          int offset,
-                          int scansize)
+        int y,
+        int w,
+        int h,
+        ColorModel model,
+        int[] pixels,
+        int offset,
+        int scansize)
     {
         if (loadComplete)
             return;
-
+        
         image.setRGB(x, y, w, h, pixels, offset, scansize);
     }
-
+    
     /**
      * Notification of the properties of the image to use.
      *
@@ -185,11 +185,11 @@ class ImageGenerator implements ImageConsumer
         properties = props;
         createImage();
     }
-
+    
     //------------------------------------------------------------------------
     // Local methods
     //------------------------------------------------------------------------
-
+    
     /**
      * Fetch the image. This image is not necessarily completely rendered
      * although we do try to guarantee it.
@@ -198,9 +198,9 @@ class ImageGenerator implements ImageConsumer
      */
     BufferedImage getImage()
     {
-        if(!loadComplete)
+        synchronized(holder)
         {
-            synchronized(holder)
+            if(!loadComplete)
             {
                 try
                 {
@@ -211,10 +211,10 @@ class ImageGenerator implements ImageConsumer
                 }
             }
         }
-
+        
         return image;
     }
-
+    
     /**
      * Reset the converter to work with a new image source. If an image is
      * currently loading then the results are indeterminate.
@@ -225,7 +225,7 @@ class ImageGenerator implements ImageConsumer
         {
             holder.notify();
         }
-
+        
         loadComplete = false;
         colorModel = null;
         raster = null;
@@ -234,7 +234,7 @@ class ImageGenerator implements ImageConsumer
         width = -1;
         height = -1;
     }
-
+    
     /**
      * Convenience method used to create the output image based on the data
      * that has been given to us so far. Will not create the image until all
@@ -245,12 +245,12 @@ class ImageGenerator implements ImageConsumer
     {
         // meet the preconditions first.
         if((image != null) ||
-           (width == -1) ||
-           (colorModel == null) || loadComplete)
+            (width == -1) ||
+            (colorModel == null) || loadComplete)
             return;
-
+        
         raster = colorModel.createCompatibleWritableRaster(width, height);
-
+        
         boolean premult = colorModel.isAlphaPremultiplied();
         image = new BufferedImage(colorModel, raster, premult, properties);
     }
