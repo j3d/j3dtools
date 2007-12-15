@@ -30,7 +30,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * at http://astronomy.swin.edu.au/~pbourke/curves/spline/.
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class BSplineGenerator extends GeometryGenerator
 {
@@ -899,7 +899,7 @@ public class BSplineGenerator extends GeometryGenerator
     private void generateIndexedLineCoordinates(GeometryData data)
         throws InvalidArraySizeException
     {
-        int vtx_cnt = getVertexCount( data);
+        int vtx_cnt = getVertexCount(data);
 
         if(data.coordinates == null)
             data.coordinates = new float[vtx_cnt * 3];
@@ -1049,26 +1049,37 @@ public class BSplineGenerator extends GeometryGenerator
         }
 
         double interval = 0;
-        double increment = knots[numKnots - 1] / (double)(facetCount + 1);
+//        double increment = knots[numKnots - 1] / (double)(facetCount - 1);
+        double increment = (numControlPoints - degree + 1) / (double)(facetCount + 1);
         int coord = 0;
 
         if(useControlPointWeights)
         {
-            for(int i = 0; i <= facetCount; i++)
+            for(int i = 0; i < facetCount; i++)
             {
                 calcSingleRationalPoint(interval, coord);
                 interval += increment;
                 coord += 3;
             }
+
+            int last = (numControlPoints - 1) * 3;
+            curveCoordinates[coord] = controlPointCoordinates[last];
+            curveCoordinates[coord + 1] = controlPointCoordinates[last + 1];
+            curveCoordinates[coord + 2] = controlPointCoordinates[last + 2];
         }
         else
         {
-            for(int i = 0; i <= facetCount; i++)
+            for(int i = 0; i < facetCount; i++)
             {
                 calcSingleNonRationalPoint(interval, coord);
                 interval += increment;
                 coord += 3;
             }
+
+            int last = (numControlPoints - 1) * 3;
+            curveCoordinates[coord] = controlPointCoordinates[last];
+            curveCoordinates[coord + 1] = controlPointCoordinates[last + 1];
+            curveCoordinates[coord + 2] = controlPointCoordinates[last + 2];
         }
     }
 
