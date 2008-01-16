@@ -106,6 +106,7 @@ JARS = j3d-org-util.jar \
     j3d-org-navigation.jar \
     j3d-org-terrain.jar \
     j3d-org-texture.jar \
+    j3d-org-java3d.jar \
     j3d-org-java3d-all.jar \
     org.j3d.core.jar
 
