@@ -36,7 +36,7 @@ import javax.vecmath.Vector3f;
  * geometry type, but is supported non-the-less for completeness.
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class ConeGenerator extends GeometryGenerator
 {
@@ -493,11 +493,11 @@ public class ConeGenerator extends GeometryGenerator
             return;
 
         int middle = vtx++;
-        for(int i = facetCount + 1; --i >= 0; )
+        for(int i = facetCount; --i >= 0; )
         {
             indexes[idx++] = vtx + 1;
-            indexes[idx++] = middle;
             indexes[idx++] = vtx++;
+            indexes[idx++] = middle;
         }
     }
 
@@ -801,7 +801,7 @@ public class ConeGenerator extends GeometryGenerator
 
         if (useTop)
         {
-            for(i = facetCount + 1; --i >= 0; )
+            for(i = facetCount; --i >= 0; )
             {
                 coords[count++] = 0;
                 coords[count++] = height_2;
