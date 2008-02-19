@@ -36,7 +36,7 @@ import javax.vecmath.Vector3f;
  * geometry type, but is supported non-the-less for completeness.
  *
  * @author Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class ConeGenerator extends GeometryGenerator
 {
@@ -461,10 +461,12 @@ public class ConeGenerator extends GeometryGenerator
         int index_size = 0;
 
         if (useTop)
-            index_size = (facetCount + 1) * 3;
+            index_size = facetCount;
 
-        if(useBottom)
+        if (useBottom)
             index_size <<= 1;
+
+		index_size *= 3;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];

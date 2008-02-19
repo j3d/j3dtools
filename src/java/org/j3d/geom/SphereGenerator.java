@@ -39,7 +39,7 @@ import javax.vecmath.Vector3f;
  * that the normal points directly away from the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class SphereGenerator extends GeometryGenerator
 {
@@ -467,7 +467,10 @@ public class SphereGenerator extends GeometryGenerator
             generateTexture3D(data);
 
         // now let's do the index list
-        int index_size = data.vertexCount * 6;
+        int half = facetCount / 4;
+        int index_size = half * (facetCount * 6);
+
+        if(!useHalf) index_size += index_size;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
@@ -480,7 +483,6 @@ public class SphereGenerator extends GeometryGenerator
         data.indexesCount = index_size;
         int count = 0;
 
-        int half = facetCount / 4;
         int i, k;
         int pos;
         int k_facet;

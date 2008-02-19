@@ -28,7 +28,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {
@@ -605,7 +605,13 @@ public class CylinderGenerator extends GeometryGenerator
             generateTriTexture3D(data);
 
         // now let's do the index list
-        int index_size = data.vertexCount * 3;
+        int index_size = 0;
+
+        if (useSide) index_size += facetCount * 2;
+        if (useTop) index_size += facetCount;
+        if (useBottom) index_size += facetCount;
+
+		index_size *= 3;
 
         if(data.indexes == null)
             data.indexes = new int[index_size];
