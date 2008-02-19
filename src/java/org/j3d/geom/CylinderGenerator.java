@@ -28,7 +28,7 @@ import javax.vecmath.Vector3f;
  * centered on the origin.
  *
  * @author Justin Couch
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class CylinderGenerator extends GeometryGenerator
 {
@@ -657,17 +657,18 @@ public class CylinderGenerator extends GeometryGenerator
             for(int i = facetCount; --i > 0; )
             {
                 indexes[idx++] = middle;
-                indexes[idx++] = vtx + 1;
                 indexes[idx++] = vtx++;
+                indexes[idx++] = vtx;
             }
 
             indexes[idx++] = middle;
-            indexes[idx++] = middle + 1;
             indexes[idx++] = vtx;
+            indexes[idx++] = middle + 1;
 
         }
         if (useBottom)
         {
+			vtx++;
             middle = vtx++;
 
             for(int i = facetCount; --i > 0; )
@@ -1644,7 +1645,7 @@ public class CylinderGenerator extends GeometryGenerator
 
         if (useSide)
         {
-            for(i = facetCount; --i >=0; )
+            for(i = facetCount; --i >= 0; )
             {
                 coords[count++] = baseCoordinates[base_count];
                 coords[count++] = half_height;
