@@ -30,7 +30,7 @@ import org.j3d.geom.UnsupportedTypeException;
  * at http://astronomy.swin.edu.au/~pbourke/curves/spline/.
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class BSplineGenerator extends GeometryGenerator
 {
@@ -565,6 +565,28 @@ public class BSplineGenerator extends GeometryGenerator
     public int getDegree()
     {
         return degree;
+    }
+    
+    /**
+     * Return a copy of the knot values.
+     *
+     * @return The knot values
+     */
+    public float[] getKnots()
+    {
+        float[] knts = null;
+        if (knots != null) 
+        {
+            knts = new float[knots.length];
+            for(int i = 0; i < knots.length; i++)
+            {
+                knts[i] = (float)knots[i];
+            }
+        }
+        else {
+            knts = new float[0];
+        }
+        return(knts);
     }
 
     /**
@@ -1160,10 +1182,10 @@ public class BSplineGenerator extends GeometryGenerator
      * @param k The order of the curve
      * @param t The position along the curve to check ie N(t)
      */
-    private double splineBlend(int i, int k, double t)
+    //private double splineBlend(int i, int k, double t)
+    public double splineBlend(int i, int k, double t)
     {
         double ret_val;
-
         // Do this just to make the maths traceable with the std algorithm
         float[] u = knots;
 
