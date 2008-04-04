@@ -10,8 +10,6 @@
  *
  ****************************************************************************/
 
-package org.j3d.texture.procedural;
-
 import java.util.Random;
 
 /**
@@ -27,7 +25,7 @@ import java.util.Random;
  * space by just setting the un-needed dimensions to a fixed value.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class PerlinNoiseGenerator
 {
@@ -222,22 +220,22 @@ public class PerlinNoiseGenerator
      */
     public float noise3(float x, float y, float z)
     {
-        float t = x + N;
+    	float t = x + (float)N;
         int bx0 = ((int)t) & BM;
         int bx1 = (bx0 + 1) & BM;
-        float rx0 = t - (int)t;
+        float rx0 = (float)(t - (int)t);
         float rx1 = rx0 - 1;
 
-        t = y + N;
+        t = y + (float)N;
         int by0 = ((int)t) & BM;
         int by1 = (by0 + 1) & BM;
-        float ry0 = t - (int)t;
+        float ry0 = (float)(t - (int)t);
         float ry1 = ry0 - 1;
 
-        t = z + N;
+        t = z + (float)N;
         int bz0 = ((int)t) & BM;
         int bz1 = (bz0 + 1) & BM;
-        float rz0 = t - (int)t;
+        float rz0 = (float)(t - (int)t);
         float rz1 = rz0 - 1;
 
         int i = p[bx0];
@@ -601,21 +599,21 @@ public class PerlinNoiseGenerator
         {
             p[i] = i;
 
-            g1[i] = (float)((Math.random() % (B + B)) - B) / B;
+            g1[i] = (float)(((Math.random() * Integer.MAX_VALUE) % (B + B)) - B) / B;
 
             for(j = 0; j < 2; j++)
-                g2[i][j] = (float)((Math.random() % (B + B)) - B) / B;
+                g2[i][j] = (float)(((Math.random() * Integer.MAX_VALUE) % (B + B)) - B) / B;
             normalize2(g2[i]);
 
             for(j = 0; j < 3; j++)
-                g3[i][j] = (float)((Math.random() % (B + B)) - B) / B;
+                g3[i][j] = (float)(((Math.random() * Integer.MAX_VALUE) % (B + B)) - B) / B;
             normalize3(g3[i]);
         }
 
         while(--i > 0)
         {
             k = p[i];
-            j = (int)(Math.random() % B);
+            j = (int)((Math.random() * Integer.MAX_VALUE) % B);
             p[i] = p[j];
             p[j] = k;
         }
