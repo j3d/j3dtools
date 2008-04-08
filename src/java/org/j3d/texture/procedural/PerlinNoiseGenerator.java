@@ -9,6 +9,7 @@
  * purpose. Use it at your own risk. If there's a problem you get to fix it.
  *
  ****************************************************************************/
+package org.j3d.texture.procedural;
 
 import java.util.Random;
 
@@ -25,7 +26,7 @@ import java.util.Random;
  * space by just setting the un-needed dimensions to a fixed value.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class PerlinNoiseGenerator
 {
