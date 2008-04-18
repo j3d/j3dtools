@@ -55,7 +55,7 @@ import org.j3d.util.CharHashMap;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class CharacterCreator
 {
@@ -266,12 +266,7 @@ System.out.println(" offset " +
                     // MOVETO. We want to check for that and make sure
                     // we don't unnecessarily do a double
                     // triangulation.
-                    if(charCoords.length < total_coords + 2)
-                    {
-                        float[] tmp = new float[total_coords + 256];
-                        System.arraycopy(charCoords, 0, tmp, 0, total_coords);
-                        charCoords = tmp;
-                    }
+                    resizeCharCoords(total_coords + 3);
 
                     if(total_coords == 0)
                     {
@@ -311,6 +306,7 @@ System.out.println(" offset " +
                             // duplicate closest point on the first curve for
                             // the insertion process, make sure we add an extra
                             // value.
+                            resizeCharCoords(Math.max((closest_point+lower), (total_coords+lower)));
                             System.arraycopy(charCoords,
                                              closest_point,
                                              charCoords,
@@ -318,6 +314,8 @@ System.out.println(" offset " +
                                              lower);
 
                             // Shift the whole lot down to the insert position
+                            resizeCharCoords(Math.max((total_coords+lower+3), 
+                                (closest_point+3+total_coords-second_curve_start+lower+3)));
                             System.arraycopy(charCoords,
                                              second_curve_start,
                                              charCoords,
@@ -426,12 +424,7 @@ System.out.println(" offset " +
 
                 case PathIterator.SEG_LINETO:
 // System.out.println("line " + total_coords + " : " + newCoords[0] + " " + newCoords[1]);
-                    if(charCoords.length < total_coords + 2)
-                    {
-                        float[] tmp = new float[total_coords + 256];
-                        System.arraycopy(charCoords, 0, tmp, 0, total_coords);
-                        charCoords = tmp;
-                    }
+                    resizeCharCoords(total_coords + 3);
 
                     charCoords[total_coords++] = newCoords[0] * scale;
                     charCoords[total_coords++] = newCoords[1] * scale;
@@ -465,7 +458,7 @@ System.out.println(" offset " +
 //                   " cp " + closest_point +
 //                   " tc " + total_coords +
 //                   " len " + lower);
-
+            resizeCharCoords(Math.max((closest_point+lower), (total_coords+lower)));
             System.arraycopy(charCoords,
                              closest_point,
                              charCoords,
@@ -473,6 +466,8 @@ System.out.println(" offset " +
                              lower);
 
             // Shift the whole lot down to the insert position
+            resizeCharCoords(Math.max((total_coords+lower+3), 
+                (closest_point+3+total_coords-second_curve_start+lower+3)));
             System.arraycopy(charCoords,
                              second_curve_start,
                              charCoords,
@@ -677,5 +672,25 @@ System.out.println("2nd copy " + second_curve_start +
         }
 
         return ret_val;
+    }
+    
+    /**
+     * Ensure that the charCoords array is sufficiently sized
+     *
+     * @param size The minimum size required
+     */
+    private void resizeCharCoords(int size) 
+    {
+        int len = charCoords.length;
+        if(len < size)
+        {
+            while(len < size)
+            {
+                len += 256;
+            }
+            float[] tmp = new float[len];
+            System.arraycopy(charCoords, 0, tmp, 0, charCoords.length);
+            charCoords = tmp;
+        }
     }
 }
