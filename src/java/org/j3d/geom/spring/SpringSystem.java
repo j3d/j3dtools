@@ -28,7 +28,7 @@ package org.j3d.geom.spring;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SpringSystem
 {
@@ -96,35 +96,54 @@ public class SpringSystem
 
                 int start;
                 int num;
-                if (i == 0){
-                    if (j == 0){
+                if (i == 0)
+                {
+                    if (j == 0)
+                    {
                         start = 0;
                         num = 3;
-                    } else if (j == height - 1){
+                    }
+                    else if (j == height - 1)
+                    {
                         start = 6;
                         num = 3;
-                    } else {
+                    }
+                    else
+                    {
                         start = 6;
                         num = 5;
                     }
-                } else if (i == width - 1){
-                    if (j == 0){
+                }
+                else if (i == width - 1)
+                {
+                    if (j == 0)
+                    {
                         start = 2;
                         num = 3;
-                    } else if (j == height - 1){
+                    }
+                    else if (j == height - 1)
+                    {
                         start = 4;
                         num = 3;
-                    } else {
+                    }
+                    else
+                    {
                         start = 2;
                         num = 5;
                     }
-                } else if (j == 0){
+                }
+                else if (j == 0)
+                {
                     start = 0;
                     num = 5;
-                } else if (j == height - 1){
+                }
+                else if (j == height - 1)
+                {
                     start = 4;
                     num = 5;
-                } else {
+                }
+                else
+                {
                     start = 0;
                     num = 8;
                 }
@@ -191,6 +210,29 @@ public class SpringSystem
                 for(int k = start; k < num; k++)
                     node.addSpring(nodes[(j + 2 * DY[k & 7]) * width + i + 2 * DX[k & 7]]);
             }
+        }
+    }
+
+    /**
+     * Create a custom spring field to be evaluated. A null value or zero
+     * length will clear the current field so that there is nothing to
+     * evaluate.
+     *
+     * @param nodes The list of nodes to use
+     * @param numValid The number of valid entries in the list to use
+     */
+    public void setCustomSpringField(SpringNode[] nodes, int numValid)
+    {
+        if((nodes == null) || (numValid == 0))
+        {
+            this.nodes = null;
+            numNodes = 0;
+        }
+        else
+        {
+            this.nodes = new SpringNode[numValid];
+            System.arraycopy(nodes, 0, this.nodes, 0, numValid);
+            numNodes = numValid;
         }
     }
 
