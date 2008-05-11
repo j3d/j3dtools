@@ -17,9 +17,14 @@ package org.j3d.geom.spring;
 
 /**
  * Representation of a node in a collection that many springs are connected to.
+ * <p>
+ *
+ * For memory efficiency purposes, each node has a position and normal
+ * direction that are sourced from a global array. An offset provides the direct
+ * reference into the array for it's specific information.
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SpringNode
 {
@@ -28,9 +33,17 @@ public class SpringNode
 
     /** A reference to the global array containing normal information */
     public float[] normal;
+
+    /**
+     * Direction the node is currently moving. Shouldn't be touched by anything
+     * other than our local internal evaluator.
+     */
     public float[] dir;
 
-    /** The offset into the array to work with the normal and positions */
+    /**
+     * The offset into the array to work with the normal and positions. This
+     * is the actual index (ie multply by 3 for the coord index).
+     */
     public int offset;
 
     /** Connections to other nodes */
@@ -39,22 +52,35 @@ public class SpringNode
     /** Natural length of each connection */
     public float[] naturalLengths;
 
+    /** The number of valid items in the {@link #connections} array */
     public int numConnections;
 
-    int nNormal;
+    /** number of valid normals from the contributing connections */
+    public int nNormal;
 
     /** Is this node currently locked in position? */
     public boolean locked;
 
     /**
+     * Create an empty version of this node. No internal references for normals
+     * or coordiantes will be made in this version and all other arrays must be
+     * initialized buy the end user. If they are not set up, the system
+     * will crash hard at a later date.
+     */
+    public SpringNode() {
+        locked = false;
+    }
+
+    /**
      * Create a new node at the given position and normal. The array values
-     * are kept as references, not copied.
+     * are kept as references, not copied. This is an internal version used by
+     * the {@link SpringSystem#createRectField()} method of SpringSystem.
      *
      * @param pos The position array that contains the location
      * @param norm The normal array that contains our normal
      * @param offset The offset into the arrays that this node is located at
      */
-    SpringNode(float[] pos, float[] norm, int offset)
+    public SpringNode(float[] pos, float[] norm, int offset)
     {
         position = pos;
         normal = norm;
