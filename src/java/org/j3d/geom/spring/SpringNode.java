@@ -24,7 +24,7 @@ package org.j3d.geom.spring;
  * reference into the array for it's specific information.
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class SpringNode
 {
@@ -69,6 +69,7 @@ public class SpringNode
      */
     public SpringNode() {
         locked = false;
+        dir = new float[3];
     }
 
     /**
