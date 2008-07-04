@@ -16,6 +16,7 @@ package org.j3d.loaders.ac3d;
 import java.io.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 // Local imports
 import org.j3d.loaders.InvalidFormatException;
@@ -34,7 +35,7 @@ import org.j3d.loaders.UnsupportedFormatException;
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Ac3dParser
 {
@@ -56,6 +57,22 @@ public class Ac3dParser
     /** The latest version of the file format this parser supports. */
     public static final int SUPPORTED_FORMAT_VERSION=0xb;
 
+    private static final int MATERIAL_TOKEN = 1;
+    private static final int OBJECT_TOKEN = 2;
+    private static final int KIDS_TOKEN = 3;
+    private static final int NUMVERT_TOKEN = 4;
+    private static final int NAME_TOKEN = 5;
+    private static final int LOCATION_TOKEN = 6;
+    private static final int ROTATION_TOKEN = 7;
+    private static final int NUMSURF_TOKEN = 8;
+    private static final int SURF_TOKEN = 9;
+    private static final int REFS_TOKEN = 10;
+    private static final int MAT_TOKEN = 11;
+    private static final int TEXTURE_TOKEN = 12;
+
+    /** Set of keywords and the constants that they map to for fast parsing */
+    private static HashMap<String, Integer> keywordsMap;
+
     /** Where the data comes from. */
     private BufferedReader reader;
 
@@ -68,6 +85,25 @@ public class Ac3dParser
     /** Parser for individual lines */
     private LineTokenizer lineTokenizer;
 
+    /**
+     * Static constructor to populate the keywords map
+     */
+    static
+    {
+        keywordsMap = new HashMap<String, Integer>();
+        keywordsMap.put("MATERIAL", MATERIAL_TOKEN);
+        keywordsMap.put("OBJECT", OBJECT_TOKEN);
+        keywordsMap.put("kids", KIDS_TOKEN);
+        keywordsMap.put("numvert", NUMVERT_TOKEN);
+        keywordsMap.put("name", NAME_TOKEN);
+        keywordsMap.put("loc", LOCATION_TOKEN);
+        keywordsMap.put("rot", ROTATION_TOKEN);
+        keywordsMap.put("numsurf", NUMSURF_TOKEN);
+        keywordsMap.put("SURF", SURF_TOKEN);
+        keywordsMap.put("refs", REFS_TOKEN);
+        keywordsMap.put("mat", MAT_TOKEN);
+        keywordsMap.put("texture", TEXTURE_TOKEN);
+    }
 
     /**
      * Construct a default parser that does not have an input source.
@@ -117,7 +153,49 @@ public class Ac3dParser
         while((buffer = reader.readLine()) != null)
         {
             String[] tokens = lineTokenizer.enumerateTokens(buffer);
-//            tokenHandler.handle(tokens);
+
+            int token_id = keywordsMap.get(tokens[0]);
+            switch(token_id)
+            {
+                case MATERIAL_TOKEN:
+                    break;
+
+                case OBJECT_TOKEN:
+                    break;
+
+                case KIDS_TOKEN:
+                    break;
+
+                case NUMVERT_TOKEN:
+                    break;
+
+                case NAME_TOKEN:
+                    break;
+
+                case LOCATION_TOKEN:
+                    break;
+
+                case ROTATION_TOKEN:
+                    break;
+
+                case NUMSURF_TOKEN:
+                    break;
+
+                case SURF_TOKEN:
+                    break;
+
+                case REFS_TOKEN:
+                    break;
+
+                case MAT_TOKEN:
+                    break;
+
+                case TEXTURE_TOKEN:
+                    break;
+
+                default:
+                    // Issue message here
+            }
         }
     }
 
