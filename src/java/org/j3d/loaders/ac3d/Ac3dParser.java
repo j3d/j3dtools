@@ -37,7 +37,7 @@ import org.j3d.loaders.UnsupportedFormatException;
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Ac3dParser
 {
@@ -100,22 +100,22 @@ public class Ac3dParser
     private static final int TEXTURE_TOKEN = 12;
 
 
-    /** Material token for the base RGB colour */ 
+    /** Material token for the base RGB colour */
     private static final int RGB_TOKEN = 13;
 
-    /** Material token for the base RGB colour */ 
+    /** Material token for the base RGB colour */
     private static final int AMBIENT_TOKEN = 14;
 
-    /** Material token for the emissive colour */ 
+    /** Material token for the emissive colour */
     private static final int EMISSIVE_TOKEN = 15;
 
-    /** Material token for the specular colour */ 
+    /** Material token for the specular colour */
     private static final int SPECULAR_TOKEN = 16;
 
-    /** Material token for the shininess amount*/ 
+    /** Material token for the shininess amount*/
     private static final int SHININESS_TOKEN = 17;
 
-    /** Material token for the transparency amount */ 
+    /** Material token for the transparency amount */
     private static final int TRANSPARENCY_TOKEN = 18;
 
     /** Set of keywords and the constants that they map to for fast parsing */
@@ -344,41 +344,41 @@ public class Ac3dParser
     private void parseMaterial(String[] tokens)
     {
         Ac3dMaterial material = new Ac3dMaterial();
-        
+
         if(tokens.length > 1)
             material.setName(tokens[1]);
 
-        for(int i = 2; i < tokens.length; i++) 
+        for(int i = 2; i < tokens.length; i++)
         {
-            switch(keywordsMap.get(tokens[i])) 
+            switch(keywordsMap.get(tokens[i]))
             {
                 case RGB_TOKEN:
-                    material.setRGB(parseFloats(tokens, i + 1, 3));
+                    material.setRGBColor(parseFloats(tokens, i + 1, 3));
                     i += 3;
                     break;
 
                 case AMBIENT_TOKEN:
-                    material.setAmbient(parseFloats(tokens, i + 1, 3));
+                    material.setAmbientColor(parseFloats(tokens, i + 1, 3));
                     i += 3;
                     break;
 
                 case EMISSIVE_TOKEN:
-                    material.setEmissive(parseFloats(tokens, i + 1, 3));
+                    material.setEmissiveColor(parseFloats(tokens, i + 1, 3));
                     i += 3;
                     break;
 
                 case SPECULAR_TOKEN:
-                    material.setSpecular(parseFloats(tokens, i + 1, 3));
+                    material.setSpecularColor(parseFloats(tokens, i + 1, 3));
                     i += 3;
                     break;
 
                 case SHININESS_TOKEN:
-                    material.setShininess(parseDecimal(tokens, i + 1));
+                    material.setShininess(parseDecimal(tokens[i + 1]));
                     i++;
                     break;
 
                 case TRANSPARENCY_TOKEN:
-                    material.setTransparency(parseFloat(tokens, i + 1));
+                    material.setTransparency(parseFloat(tokens[i + 1]));
                     i++;
                     break;
             }
@@ -399,7 +399,7 @@ public class Ac3dParser
     {
         Ac3dObject object = new Ac3dObject();
 
-        if(tokens.length == 2) 
+        if(tokens.length == 2)
         {
             object.setType(tokens[1]);
             objectDefStack.push(object);
@@ -417,7 +417,7 @@ public class Ac3dParser
     private void parseKids(String[] tokens)
     {
         Ac3dObject object = qualifyTagByAC3DObject(tokens, 2);
-        objects.add(objectDefStack.pop());  
+        objects.add(objectDefStack.pop());
     }
 
     /**
@@ -471,7 +471,7 @@ public class Ac3dParser
                 tokens.length);
         }
 
-        if(objectDefStack.size() == 0) 
+        if(objectDefStack.size() == 0)
             throw new ParsingErrorException("Parent not found on stack!");
 
         Ac3dObject tmpObj = objectDefStack.peek();
@@ -497,8 +497,8 @@ public class Ac3dParser
     private float[] parseFloats(String[] in, int offset, int num)
     {
         float[] rVal = new float[num];
-    
-        for (int i = 0; i < num; i++) 
+
+        for (int i = 0; i < num; i++)
         {
             rVal[i] = parseFloat(in[offset+i]);
         }
@@ -529,7 +529,7 @@ public class Ac3dParser
      * @param in The <code>String</code> to convert.
      * @return The converted <code>int</code>.
      */
-    private int parseHexidecimal(String in) 
+    private int parseHexidecimal(String in)
     {
         if (in.startsWith("0x") || in.startsWith("0X"))
         {
@@ -554,7 +554,7 @@ public class Ac3dParser
         {
             in+=".0";
         }
-        
+
         return Float.valueOf(in).floatValue();
     }
 }
