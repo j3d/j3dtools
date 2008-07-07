@@ -33,7 +33,7 @@ import org.j3d.util.IntHashMap;
  * <a href="http://www.c3d.org">http://www.c3d.org/</a>
  *
  * @author  Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class C3DParser
 {
@@ -163,6 +163,19 @@ public class C3DParser
             errorReporter = DefaultErrorReporter.getDefaultReporter();
         else
             errorReporter = reporter;
+    }
+
+    /**
+     * Set the observer for parsing events that can be used with this class.
+     * Only a single instance may be set at any time, so calling this will
+     * replace the currently registered instance. If called with a null value,
+     * it removes the currently set instance.
+     *
+     * @param obs The observer instance to use
+     */
+    public void setParseObserver(C3DParseObserver obs)
+    {
+        observer = obs;
     }
 
     /**
