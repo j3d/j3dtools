@@ -37,7 +37,7 @@ import org.j3d.loaders.UnsupportedFormatException;
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class Ac3dParser
 {
@@ -142,6 +142,9 @@ public class Ac3dParser
     /** Count of the surfaces per object read so far */
     private int surfaceCount;
 
+    /** The observer of updates, if registered */
+    private Ac3dParseObserver observer;
+
     /**
      * Static constructor to populate the keywords map
      */
@@ -199,6 +202,19 @@ public class Ac3dParser
             reader = (BufferedReader)rdr;
         else
             reader = new BufferedReader(rdr);
+    }
+
+    /**
+     * Set the observer for parsing events that can be used with this class.
+     * Only a single instance may be set at any time, so calling this will
+     * replace the currently registered instance. If called with a null value,
+     * it removes the currently set instance.
+     *
+     * @param obs The observer instance to use
+     */
+    public void setParseObserver(Ac3dParseObserver obs)
+    {
+        observer = obs;
     }
 
     /**

@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.loaders.ac3d directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.4 $
+# Version: $Revision: 1.5 $
 #
 #*********************************************************************
 
@@ -18,6 +18,7 @@ SOURCE = Ac3dMaterial.java \
  Ac3dSurface.java \
  Ac3dObject.java \
  LineTokenizer.java \
+ Ac3dParseObserver.java \
  Ac3dParser.java
 
 # LoaderTokenHandler.java
