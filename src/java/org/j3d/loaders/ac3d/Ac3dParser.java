@@ -37,7 +37,7 @@ import org.j3d.loaders.UnsupportedFormatException;
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class Ac3dParser
 {
@@ -131,7 +131,7 @@ public class Ac3dParser
     private ArrayList<Ac3dObject> objects;
 
     /** Keeps track of parent/child objects as they are declared */
-    private Stack<Ac3dObject> objectDefStack;
+    private Stack<Ac3dEntity> objectDefStack;
 
     /** Parser for individual lines */
     private LineTokenizer lineTokenizer;
@@ -182,7 +182,7 @@ public class Ac3dParser
         materials = new ArrayList<Ac3dMaterial>();
         objects = new ArrayList<Ac3dObject>();
         lineTokenizer = new LineTokenizer();
-        objectDefStack = new Stack<Ac3dObject>();
+        objectDefStack = new Stack<Ac3dEntity>();
 
         materialCount = 0;
         surfaceCount = -1;
@@ -254,30 +254,39 @@ public class Ac3dParser
                     break;
 
                 case NUMVERT_TOKEN:
+                    parseVertices(tokens);
                     break;
 
                 case NAME_TOKEN:
+                    parseName(tokens);
                     break;
 
                 case LOCATION_TOKEN:
+                    parseLocation(tokens);
                     break;
 
                 case ROTATION_TOKEN:
+                    parseRotation(tokens);
                     break;
 
                 case NUMSURF_TOKEN:
+                    parseNumSurfaces(tokens);
                     break;
 
                 case SURF_TOKEN:
+                    parseSurface(tokens);
                     break;
 
                 case REFS_TOKEN:
+                    parseSurfaceRefs(tokens);
                     break;
 
                 case MAT_TOKEN:
+                    parseMaterialRef(tokens);
                     break;
 
                 case TEXTURE_TOKEN:
+                    parseTexture(tokens);
                     break;
 
                 default:
@@ -433,7 +442,21 @@ public class Ac3dParser
     private void parseKids(String[] tokens)
     {
         Ac3dObject object = qualifyTagByAC3DObject(tokens, 2);
-        objects.add(objectDefStack.pop());
+        objects.add((Ac3dObject)objectDefStack.pop());
+    }
+
+    /**
+     * Parse the number of surfaces token definition.
+     *
+     * @param tokens The array of tokens to process
+     */
+    private void parseNumSurfaces(String[] tokens)
+    {
+        Ac3dObject object = qualifyTagByAC3DObject(tokens, 2);
+
+        // int num_surfaces = parseDecimal(tokens[1]);
+
+        surfaceCount = 0;
     }
 
     /**
@@ -443,6 +466,12 @@ public class Ac3dParser
      */
     private void parseSurface(String[] tokens)
     {
+        qualifyTagByAC3DObject(tokens, 2);
+        Ac3dSurface surface = new Ac3dSurface();
+
+        surface.setFlags(parseHexidecimal(tokens[1]));
+
+        objectDefStack.push(surface);
     }
 
     /**
@@ -451,8 +480,19 @@ public class Ac3dParser
      * @param tokens The array of tokens to process
      */
     private void parseVertices(String[] tokens)
+        throws IOException
     {
         Ac3dObject object = qualifyTagByAC3DObject(tokens, 2);
+
+        int num_vertices = parseDecimal(tokens[1]);
+        object.setNumvert(num_vertices);
+
+        for(int i = 0; i < num_vertices; i++)
+        {
+            String line = reader.readLine();
+            String[] ref = lineTokenizer.enumerateTokens(line);
+            object.addVertex(i, parseFloats(ref, 0, 3));
+        }
     }
 
     /**
@@ -464,6 +504,81 @@ public class Ac3dParser
     {
         Ac3dObject object = qualifyTagByAC3DObject(tokens, 2);
         object.setName(tokens[1]);
+    }
+
+    /**
+     * Parse a new texture object
+     *
+     * @param tokens The array of tokens to process
+     */
+    private void parseTexture(String[] tokens)
+    {
+        Ac3dObject object = qualifyTagByAC3DObject(tokens, 2);
+        object.setTexture(tokens[1]);
+    }
+
+    /**
+     * Parse a reference to a material object
+     *
+     * @param tokens The array of tokens to process
+     */
+    private void parseMaterialRef(String[] tokens)
+    {
+        Ac3dSurface surface = qualifyTagByAC3DSurface(tokens, 2);
+        surface.setMaterial(parseDecimal(tokens[1]));
+    }
+
+    /**
+     * Parse the rotation definition
+     *
+     * @param tokens The array of tokens to process
+     */
+    private void parseRotation(String[] tokens)
+    {
+        Ac3dObject object = qualifyTagByAC3DObject(tokens, 10);
+        object.setRotation(parseFloats(tokens, 1, 9));
+    }
+
+    /**
+     * Parse the location definition
+     *
+     * @param tokens The array of tokens to process
+     */
+    private void parseLocation(String[] tokens)
+    {
+        Ac3dObject object = qualifyTagByAC3DObject(tokens, 4);
+        object.setLocation(parseFloats(tokens, 1, 3));
+    }
+
+    /**
+     * Parse the references to surfaces in an object
+     *
+     * @param tokens The array of tokens to process
+     */
+    private void parseSurfaceRefs(String[] tokens) throws IOException
+    {
+        Ac3dSurface surface = qualifyTagByAC3DSurface(tokens, 2);
+        int num_refs = (parseDecimal(tokens[1]));
+
+        for (int i = 0; i < num_refs; i++)
+        {
+            String line = reader.readLine();
+            String[] ref = lineTokenizer.enumerateTokens(line);
+            surface.addRef(i, parseDecimal(ref[0]), parseFloats(ref, 1, 2));
+        }
+
+        // remove from call stack
+        objectDefStack.pop();
+
+        Ac3dEntity tmpObj = objectDefStack.peek();
+
+        if(tmpObj instanceof Ac3dObject)
+        {
+            Ac3dObject parent = (Ac3dObject)tmpObj;
+            parent.addSurface(surfaceCount, surface);
+        }
+
+        surfaceCount++;
     }
 
     /**
@@ -490,7 +605,8 @@ public class Ac3dParser
         if(objectDefStack.size() == 0)
             throw new ParsingErrorException("Parent not found on stack!");
 
-        Ac3dObject tmpObj = objectDefStack.peek();
+        Ac3dEntity tmpObj = objectDefStack.peek();
+
         if(!(tmpObj instanceof Ac3dObject))
         {
             throw new ParsingErrorException("Was expecting: \"" +
@@ -500,6 +616,44 @@ public class Ac3dParser
 
         return (Ac3dObject)tmpObj;
     }
+
+    /**
+     * <p>Helper function that qualifies a tag by whether or not its parent
+     * should be an instance of <code>AC3DSurface</code> or not, as well as
+     * the number of arguements for the command.</p>
+     *
+     * @param tokens All of the tokens for the command.
+     * @param numArgsRequired The number of arguements for the token
+     *                        command.
+     * @return The <code>Object</code> from the stack.
+     * @exception AC3DParseException
+     */
+    private Ac3dSurface qualifyTagByAC3DSurface(String[] tokens,
+                                                int numArgsRequired)
+        throws ParsingErrorException
+    {
+        if(tokens.length != numArgsRequired)
+        {
+            throw new ParsingErrorException("Wrong number of args for " +
+                tokens[0] + "; expecting " + numArgsRequired + ", got " +
+                tokens.length);
+        }
+
+        if(objectDefStack.size() > 0)
+            throw new ParsingErrorException("Parent not found on stack!");
+
+        Ac3dEntity tmpObj = objectDefStack.peek();
+
+        if(!(tmpObj instanceof Ac3dSurface))
+        {
+            throw new ParsingErrorException("Was expecting: \"" +
+                "Ac3dSurface" + ", instead got: \"" +
+                tmpObj.getClass().getName() + "\".");
+        }
+
+        return (Ac3dSurface)tmpObj;
+    }
+
 
     /**
      * <p>Helper function to parse a number of <code>float</code> strings
