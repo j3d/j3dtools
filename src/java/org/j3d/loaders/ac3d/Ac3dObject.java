@@ -24,9 +24,9 @@ import java.util.ArrayList;
  * </ul></p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class Ac3dObject
+public class Ac3dObject implements Ac3dEntity
 {
     /** Identity matrix. */
     private static float[] IDENTITY_MATRIX_ARRAY =
