@@ -32,6 +32,7 @@ BUILD_ORDER = org.j3d.util \
     org.j3d.loaders.dem \
     org.j3d.loaders.discreet \
     org.j3d.loaders.c3d \
+    org.j3d.loaders.ac3d \
     org.j3d.renderer.java3d.util \
     org.j3d.renderer.java3d.ui \
     org.j3d.renderer.java3d.navigation \
@@ -74,6 +75,7 @@ JAVADOC_PACKAGES = org.j3d.util \
     org.j3d.loaders.dem \
     org.j3d.loaders.discreet \
     org.j3d.loaders.c3d \
+    org.j3d.loaders.ac3d \
     org.j3d.renderer.java3d.util \
     org.j3d.renderer.java3d.ui \
     org.j3d.renderer.java3d.navigation \
