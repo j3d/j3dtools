@@ -37,7 +37,7 @@ import org.j3d.loaders.UnsupportedFormatException;
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class Ac3dParser
 {
@@ -99,24 +99,35 @@ public class Ac3dParser
     /** File format token for a texture name definition */
     private static final int TEXTURE_TOKEN = 12;
 
+    /** File format token for a texture name definition */
+    private static final int TEXTURE_REPEAT_TOKEN = 13;
+
+    /** File format token for object data */
+    private static final int DATA_TOKEN = 14;
+
+    /** File format token for the object's URL */
+    private static final int URL_TOKEN = 15;
+
+
+
 
     /** Material token for the base RGB colour */
-    private static final int RGB_TOKEN = 13;
+    private static final int RGB_TOKEN = 16;
 
     /** Material token for the base RGB colour */
-    private static final int AMBIENT_TOKEN = 14;
+    private static final int AMBIENT_TOKEN = 17;
 
     /** Material token for the emissive colour */
-    private static final int EMISSIVE_TOKEN = 15;
+    private static final int EMISSIVE_TOKEN = 18;
 
     /** Material token for the specular colour */
-    private static final int SPECULAR_TOKEN = 16;
+    private static final int SPECULAR_TOKEN = 19;
 
     /** Material token for the shininess amount*/
-    private static final int SHININESS_TOKEN = 17;
+    private static final int SHININESS_TOKEN = 20;
 
     /** Material token for the transparency amount */
-    private static final int TRANSPARENCY_TOKEN = 18;
+    private static final int TRANSPARENCY_TOKEN = 21;
 
     /** Set of keywords and the constants that they map to for fast parsing */
     private static HashMap<String, Integer> keywordsMap;
@@ -163,6 +174,9 @@ public class Ac3dParser
         keywordsMap.put("refs", REFS_TOKEN);
         keywordsMap.put("mat", MAT_TOKEN);
         keywordsMap.put("texture", TEXTURE_TOKEN);
+        keywordsMap.put("data", DATA_TOKEN);
+        keywordsMap.put("texrep", TEXTURE_REPEAT_TOKEN);
+        keywordsMap.put("url", URL_TOKEN);
 
         keywordsMap.put("rgb", RGB_TOKEN);
         keywordsMap.put("amb", AMBIENT_TOKEN);
@@ -287,6 +301,18 @@ public class Ac3dParser
 
                 case TEXTURE_TOKEN:
                     parseTexture(tokens);
+                    break;
+
+                case TEXTURE_REPEAT_TOKEN:
+                    parseTextureRepeat(tokens);
+                    break;
+
+                case DATA_TOKEN:
+                    parseData(tokens);
+                    break;
+
+                case URL_TOKEN:
+                    parseURL(tokens);
                     break;
 
                 default:
@@ -443,6 +469,54 @@ public class Ac3dParser
     {
         Ac3dObject object = qualifyTagByAC3DObject(tokens, 2);
         objects.add((Ac3dObject)objectDefStack.pop());
+    }
+
+    /**
+     * Parse the kids of the current object
+     *
+     * @param tokens The array of tokens to process
+     */
+    private void parseTextureRepeat(String[] tokens)
+    {
+        Ac3dObject object = qualifyTagByAC3DObject(tokens, 2);
+
+        object.setTextureRepeat(parseFloats(tokens, 0, 2));
+    }
+
+    /**
+     * Parse the kids of the current object
+     *
+     * @param tokens The array of tokens to process
+     */
+    private void parseData(String[] tokens)
+        throws IOException
+    {
+        Ac3dObject object = qualifyTagByAC3DObject(tokens, 1);
+        int num_chars = parseDecimal(tokens[1]);
+
+        String line = reader.readLine();
+
+        if(line.length() != num_chars)
+        {
+            String msg = "Number of data characters supplied in object " +
+               object.getName() + ". Expected " + num_chars + " but got " +
+               line.length();
+
+            throw new ParsingErrorException(msg);
+        }
+
+        object.setData(line);
+    }
+
+    /**
+     * Parse the kids of the current object
+     *
+     * @param tokens The array of tokens to process
+     */
+    private void parseURL(String[] tokens)
+    {
+        Ac3dObject object = qualifyTagByAC3DObject(tokens, 1);
+        object.setURL(tokens[1]);
     }
 
     /**

@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * </ul></p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Ac3dObject implements Ac3dEntity
 {
@@ -60,8 +60,14 @@ public class Ac3dObject implements Ac3dEntity
     /** The texture for the object. */
     private String texture;
 
-    /** The data identified for the object. */
-    private char[] data;
+    /** The two texture repeat values */
+    private float[] textureRepeat;
+
+    /** The object data identified for the object. */
+    private String data;
+
+    /** An optional URL for the document */
+    private String url;
 
     /**
      * Default constructor.
@@ -76,10 +82,12 @@ public class Ac3dObject implements Ac3dEntity
         surfaces = new ArrayList<Ac3dSurface>();
 
         location = new float[3];
-
-        data = new char[0];
+        textureRepeat = new float[2];
+        textureRepeat[0] = 1.0f;
+        textureRepeat[1] = 1.0f;
 
         rotation = new float[9];
+
         System.arraycopy(IDENTITY_MATRIX_ARRAY, 0, rotation, 0, 9);
     }
 
@@ -94,7 +102,6 @@ public class Ac3dObject implements Ac3dEntity
         this.name=name;
     }
 
-
     /**
      * Get the name associated with this object.
      *
@@ -105,7 +112,6 @@ public class Ac3dObject implements Ac3dEntity
         return name;
     }
 
-
     /**
      * Set the type of object that this instance represents.
      *
@@ -113,9 +119,8 @@ public class Ac3dObject implements Ac3dEntity
      */
     public void setType(String type)
     {
-        this.type=type;
+        this.type = type;
     }
-
 
     /**
      * Set the type of object that this instance represents. Type is
@@ -129,20 +134,17 @@ public class Ac3dObject implements Ac3dEntity
     }
 
     /**
-     * <p>Accessor for the number of children objects that this object
-     * aggregates.</p>
+     * Get the number of children objects that this object aggregates.
      *
      * @return The number of children that this object has.
      */
-
     public int getNumKids()
     {
         return kids.size();
     }
 
-
     /**
-     * <p>Mutator for the number of verticies for the object.</p>
+     * Set the number of verticies for the object.
      *
      * @param The number of verticies to set for the object.
      */
@@ -156,13 +158,11 @@ public class Ac3dObject implements Ac3dEntity
         }
     }
 
-
     /**
-     * <p>Accessor for the number of verticies for the object.</p>
+     * Get the number of verticies for the object.
      *
      * @return The number of verticies for the object.
      */
-
     public int getNumvert()
     {
         return vertices.length;
@@ -224,7 +224,7 @@ public class Ac3dObject implements Ac3dEntity
 
 
     /**
-     * <p>Adds a Ac3dSurface at the given index.
+     * Adds a Ac3dSurface at the given index.
      *
      * @param index The locationation at which to append the surface.
      * @param surface The surface to add.
@@ -233,7 +233,6 @@ public class Ac3dObject implements Ac3dEntity
     {
         surfaces.set(index, surface);
     }
-
 
     /**
      * <p>Accessor that returns the <code>Ac3dSurface</code> at the given
@@ -247,7 +246,7 @@ public class Ac3dObject implements Ac3dEntity
     }
 
     /**
-     * <p>Mutator to add one vertex at the specified index.</p>
+     * Mutator to add one vertex at the specified index.</p>
      *
      * @param index The index at which to add the vertex.
      * @param vertex Tuple of floats specifying the coordinate.
@@ -259,9 +258,8 @@ public class Ac3dObject implements Ac3dEntity
         vertices[3 * index + 2] = vertex[2];
     }
 
-
     /**
-     * <p>Accessor that returns the entire array of verticies.</p>
+     * Get the entire array of vertices.
      *
      * @return All of the verticies for the object.
      */
@@ -272,20 +270,17 @@ public class Ac3dObject implements Ac3dEntity
 
 
     /**
-     * <p>Accessor for an individual vertex at a given index.</p>
+     * Get an individual vertex at a given index.
      *
      * @return The vertex requested.
+     * @param vtx An array of length 3 to copy the vertex value to
      */
-    public float[] getVertexAtIndex(int index)
+    public void getVertexAtIndex(int index, float[] vtx)
     {
-        float[] rVal = new float[3];
-
-        for (int i=0; i<3; i++)
-            rVal[i]=vertices[(3*index)+i];
-
-        return rVal;
+        vtx[0] = vertices[3 * index];
+        vtx[1] = vertices[3 * index + 1];
+        vtx[2] = vertices[3 * index + 2];
     }
-
 
     /**
      * Set the name of the texture file to use
@@ -297,7 +292,6 @@ public class Ac3dObject implements Ac3dEntity
         this.texture = texture;
     }
 
-
     /**
      * <p>Accessor for the <code>texture</code> property.</p>
      *
@@ -308,6 +302,71 @@ public class Ac3dObject implements Ac3dEntity
         return texture;
     }
 
+    /**
+     * Change the texture repeat values. The array needs to be at least length
+     * two, with two values for the S and T axes. Default values are 1,1.
+     *
+     * @param rep The repeat factors
+     */
+    public void setTextureRepeat(float[] rep)
+    {
+        textureRepeat[0] = rep[0];
+        textureRepeat[1] = rep[1];
+        textureRepeat[2] = rep[2];
+    }
+
+    /**
+     * Get the current texture repeat values.
+     *
+     * @return A length 2 array for S and T repeat amounts
+     */
+    public float[] getTextureRepeat()
+    {
+        return textureRepeat;
+    }
+
+    /**
+     * Set the random character data that was associated with this object.
+     *
+     * @param str The string to use
+     */
+    public void setData(String str)
+    {
+        data = str;
+    }
+
+    /**
+     * Get the character data associated with this object. If no data is given
+     * this will return null.
+     *
+     * @return The data string or null if none
+     */
+    public String getData()
+    {
+        return data;
+    }
+
+    /**
+     * Set the informational URL that could be associated with this object. If
+     * there is none, it will be null. No checking of the sanity is done.
+     *
+     * @param str The string to use for the URL
+     */
+    public void setURL(String str)
+    {
+        url = str;
+    }
+
+    /**
+     * Get the URL associated with this object. If no URL is given this will
+     * return null.
+     *
+     * @return The URL string or null if none
+     */
+    public String getURL()
+    {
+        return url;
+    }
 
     /**
      * <p>Returns a stringified version of the internal state.</p>
