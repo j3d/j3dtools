@@ -28,7 +28,7 @@ package org.j3d.loaders.ac3d;
  * process at this point.
  *
  * @author  Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface Ac3dParseObserver
 {
@@ -41,12 +41,24 @@ public interface Ac3dParseObserver
     public boolean materialComplete(Ac3dMaterial mat);
 
     /**
-     * The parameter block has been read. The array will be the exact length
-     * for the number of groups declared in the file.
+     * An object has been completed.Object calls are top donw -
+     * the parent is read and sent, but at the time it is sent does not
+     * yet contain the children.
      *
-     * @param groups The listing of groups that were read
+     * @param parent The parent object that contains this surface
+     * @param object The object that was just read
      * @return true if to keep reading
      */
-    public boolean objectComplete(Ac3dObject obj);
+    public boolean objectComplete(Ac3dObject parent, Ac3dObject obj);
+
+    /**
+     * A surface definition from the previously declared object
+     * has been read.
+     *
+     * @param obj The parent object that contains this surface
+     * @param surf The surface object that has been read
+     * @return true if to keep reading
+     */
+    public boolean surfaceComplete(Ac3dObject obj, Ac3dSurface surf);
 }
 

@@ -24,9 +24,9 @@ import java.util.ArrayList;
  * </ul></p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
-public class Ac3dObject implements Ac3dEntity
+public class Ac3dObject
 {
     /** Identity matrix. */
     private static float[] IDENTITY_MATRIX_ARRAY =
@@ -42,17 +42,11 @@ public class Ac3dObject implements Ac3dEntity
     /** The type of object represented. */
     private String type;
 
-    /** References to all of the children for this object. */
-    private ArrayList<Ac3dObject> kids;
-
     /** The displacement vector for this object. */
     private float[] location;
 
     /** The rotational matrix for this object. */
     private float[] rotation;
-
-    /** The surfaces for the object. */
-    private ArrayList<Ac3dSurface> surfaces;
 
     /** The verticies for the object. */
     private float[] vertices;
@@ -69,15 +63,17 @@ public class Ac3dObject implements Ac3dEntity
     /** An optional URL for the document */
     private String url;
 
+    /** References to all of the children for this object. */
+    private ArrayList<Ac3dObject> kids;
+
+    /** The surfaces for the object. */
+    private ArrayList<Ac3dSurface> surfaces;
+
     /**
      * Default constructor.
      */
     public Ac3dObject()
     {
-        name="";
-        type="";
-        texture="";
-
         kids = new ArrayList<Ac3dObject>();
         surfaces = new ArrayList<Ac3dSurface>();
 
@@ -93,17 +89,18 @@ public class Ac3dObject implements Ac3dEntity
 
 
     /**
-     * Mutator for the <code>name</code> property.</p>
+     * Set the name property. A null value will clear the current name.
      *
      * @param name The value to set the internal name to.
      */
     public void setName(String name)
     {
-        this.name=name;
+        this.name = name;
     }
 
     /**
-     * Get the name associated with this object.
+     * Get the name associated with this object. If no name is set, it will
+     * return null.
      *
      * @return The value of the internal name.
      */
@@ -144,6 +141,30 @@ public class Ac3dObject implements Ac3dEntity
     }
 
     /**
+     * Add a child to this object.
+     *
+     * @param child The new child object instance to add
+     */
+    public void addChild(Ac3dObject child)
+    {
+        kids.add(child);
+    }
+
+    /**
+     * Get the child at the given index. If the index is out of bounds, null
+     * will be returned.
+     *
+     * @param index The index of the child to get
+     */
+    public Ac3dObject getChild(int index)
+    {
+        if(index < 0 || index >= kids.size())
+            return null;
+
+        return kids.get(index);
+    }
+
+    /**
      * Set the number of verticies for the object.
      *
      * @param The number of verticies to set for the object.
@@ -165,9 +186,8 @@ public class Ac3dObject implements Ac3dEntity
      */
     public int getNumvert()
     {
-        return vertices.length;
+        return vertices.length / 3;
     }
-
 
     /**
      * Change the location displacement vector.
@@ -180,7 +200,6 @@ public class Ac3dObject implements Ac3dEntity
         location[1] = loc[1];
         location[2] = loc[2];
     }
-
 
     /**
      * Get the current location displacement vector.
@@ -222,6 +241,15 @@ public class Ac3dObject implements Ac3dEntity
         return rotation;
     }
 
+    /**
+     * Query for the number of surfaces that this object contains.
+     *
+     * @return A non-negative value for the number of surfaces
+     */
+    public int getNumSurfaces()
+    {
+        return surfaces.size();
+    }
 
     /**
      * Adds a Ac3dSurface at the given index.
@@ -229,14 +257,13 @@ public class Ac3dObject implements Ac3dEntity
      * @param index The locationation at which to append the surface.
      * @param surface The surface to add.
      */
-    public void addSurface(int index, Ac3dSurface surface)
+    public void addSurface(Ac3dSurface surface)
     {
-        surfaces.set(index, surface);
+        surfaces.add(surface);
     }
 
     /**
-     * <p>Accessor that returns the <code>Ac3dSurface</code> at the given
-     * index.</p>
+     * Get the Ac3dSurface> at the given index.
      *
      * @return The surface at the requested index.
      */
@@ -268,14 +295,13 @@ public class Ac3dObject implements Ac3dEntity
         return vertices;
     }
 
-
     /**
      * Get an individual vertex at a given index.
      *
      * @return The vertex requested.
      * @param vtx An array of length 3 to copy the vertex value to
      */
-    public void getVertexAtIndex(int index, float[] vtx)
+    public void getVertex(int index, float[] vtx)
     {
         vtx[0] = vertices[3 * index];
         vtx[1] = vertices[3 * index + 1];
@@ -293,7 +319,8 @@ public class Ac3dObject implements Ac3dEntity
     }
 
     /**
-     * <p>Accessor for the <code>texture</code> property.</p>
+     * Get the texture file name associated with this material. If none is set
+     * it will return null.
      *
      * @return The value of the internal texture name.
      */
@@ -369,7 +396,7 @@ public class Ac3dObject implements Ac3dEntity
     }
 
     /**
-     * <p>Returns a stringified version of the internal state.</p>
+     * Generate a string representation of the internal state.
      *
      * @return A stringified version of the internal state.
      */
@@ -378,10 +405,41 @@ public class Ac3dObject implements Ac3dEntity
         StringBuffer ret_val = new StringBuffer();
 
         ret_val.append("[ name=\"");
-        ret_val.append(name);
+        if(name == null)
+            ret_val.append("(not set)");
+        else
+            ret_val.append(name);
         ret_val.append("\", type=\"");
-        ret_val.append(type);
-        ret_val.append("\", numKids=");
+
+        if(type == null)
+            ret_val.append("(not set)");
+        else
+            ret_val.append(type);
+
+        ret_val.append("\"");
+
+        if(texture != null)
+        {
+            ret_val.append(", texture=\"");
+            ret_val.append(texture);
+            ret_val.append("\"");
+        }
+
+        if(url != null)
+        {
+            ret_val.append(", url=\"");
+            ret_val.append(url);
+            ret_val.append("\"");
+        }
+
+        if(data != null)
+        {
+            ret_val.append(", data=\"");
+            ret_val.append(data);
+            ret_val.append("\"");
+        }
+
+        ret_val.append(", numKids=");
         ret_val.append(kids.size());
         ret_val.append(", numvert=");
         ret_val.append(vertices.length / 3);

@@ -26,9 +26,9 @@ package org.j3d.loaders.ac3d;
  * </ul></p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-public class Ac3dSurface implements Ac3dEntity
+public class Ac3dSurface
 {
 
     /** Number of vertex references. */
