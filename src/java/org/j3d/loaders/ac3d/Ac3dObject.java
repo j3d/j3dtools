@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * </ul></p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class Ac3dObject
 {
@@ -63,6 +63,9 @@ public class Ac3dObject
     /** An optional URL for the document */
     private String url;
 
+    /** The crease angle of the object. In degrees. */
+    private float creaseAngle;
+
     /** References to all of the children for this object. */
     private ArrayList<Ac3dObject> kids;
 
@@ -74,6 +77,8 @@ public class Ac3dObject
      */
     public Ac3dObject()
     {
+        creaseAngle = 45.0f;
+
         kids = new ArrayList<Ac3dObject>();
         surfaces = new ArrayList<Ac3dSurface>();
 
@@ -120,7 +125,7 @@ public class Ac3dObject
     }
 
     /**
-     * Set the type of object that this instance represents. Type is
+     * Get the type of object that this instance represents. Type is
      * determined by the AC3D file format.
      *
      * @return The type of object that this instance represents.
@@ -128,6 +133,28 @@ public class Ac3dObject
     public String getType()
     {
         return type;
+    }
+
+    /**
+     * Set the crease angle that the object should use when shading. Crease
+     * angle is represented in degrees.
+     *
+     * @param angle The crease angle to use
+     */
+    public void setCreaseAngle(float angle)
+    {
+        creaseAngle = angle;
+    }
+
+    /**
+     * Get the crease angle that the object uses for rendering surfaces and
+     * calculating normals. Angle is in degrees.
+     *
+     * @return The type of object that this instance represents.
+     */
+    public float getCreaseAngle()
+    {
+        return creaseAngle;
     }
 
     /**
@@ -171,7 +198,9 @@ public class Ac3dObject
      */
     public void setNumvert(int num)
     {
-        if(vertices.length < num * 3)
+        if(vertices == null)
+            vertices = new float[num * 3];
+        else if(vertices.length < num * 3)
         {
             float[] tmp = new float[num * 3];
             System.arraycopy(vertices, 0, tmp, 0, vertices.length);
@@ -442,13 +471,19 @@ public class Ac3dObject
         ret_val.append(", numKids=");
         ret_val.append(kids.size());
         ret_val.append(", numvert=");
-        ret_val.append(vertices.length / 3);
+        if(vertices == null)
+            ret_val.append("0");
+        else
+            ret_val.append(vertices.length / 3);
         ret_val.append(", location={");
         stringifyXf(location, ret_val);
         ret_val.append("}, rotation={");
         stringifyXf(rotation, ret_val);
         ret_val.append("}, numsurf=");
         ret_val.append(surfaces.size());
+
+        ret_val.append("}, creaseAngle=");
+        ret_val.append(creaseAngle);
 
         ret_val.append(" ]");
 

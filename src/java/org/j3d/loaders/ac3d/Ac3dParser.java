@@ -39,7 +39,7 @@ import org.j3d.util.ErrorReporter;
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class Ac3dParser
 {
@@ -62,7 +62,7 @@ public class Ac3dParser
     /** Message for a badly formatted kid definition */
     private static final String INVALID_OBJECT_KID_ERR =
         "When parsing a child OBJECT of another OBJECT an invalid " +
-        "definition was found";
+        "definition was found: ";
 
     /** Message for a badly formatted SURF definition */
     private static final String INVALID_SURFACE_TOKEN_ERR =
@@ -147,26 +147,29 @@ public class Ac3dParser
     /** File format token for the object's URL */
     private static final int URL_TOKEN = 15;
 
+    /** File format token for the object's crease angle */
+    private static final int CREASE_TOKEN = 16;
+
 
 
 
     /** Material token for the base RGB colour */
-    private static final int RGB_TOKEN = 16;
+    private static final int RGB_TOKEN = 17;
 
     /** Material token for the base RGB colour */
-    private static final int AMBIENT_TOKEN = 17;
+    private static final int AMBIENT_TOKEN = 18;
 
     /** Material token for the emissive colour */
-    private static final int EMISSIVE_TOKEN = 18;
+    private static final int EMISSIVE_TOKEN = 19;
 
     /** Material token for the specular colour */
-    private static final int SPECULAR_TOKEN = 19;
+    private static final int SPECULAR_TOKEN = 20;
 
     /** Material token for the shininess amount*/
-    private static final int SHININESS_TOKEN = 20;
+    private static final int SHININESS_TOKEN = 21;
 
     /** Material token for the transparency amount */
-    private static final int TRANSPARENCY_TOKEN = 21;
+    private static final int TRANSPARENCY_TOKEN = 22;
 
     /** Set of keywords and the constants that they map to for fast parsing */
     private static HashMap<String, Integer> keywordsMap;
@@ -213,6 +216,7 @@ public class Ac3dParser
         keywordsMap.put("data", DATA_TOKEN);
         keywordsMap.put("texrep", TEXTURE_REPEAT_TOKEN);
         keywordsMap.put("url", URL_TOKEN);
+        keywordsMap.put("crease", CREASE_TOKEN);
 
         keywordsMap.put("rgb", RGB_TOKEN);
         keywordsMap.put("amb", AMBIENT_TOKEN);
@@ -285,13 +289,15 @@ public class Ac3dParser
     /**
      * Performs the action of parsing the data stream already set.
      *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      * @throws InvalidFormatException The file format does not match the
      *   expected format for AC3D
      * @throws UnsupportedFormatException The format provided is later version
      *   than what we currently support
      * @throws IOException An I/O error occurred while processing the file
      */
-    public void parse() throws IOException
+    public void parse(boolean retainData) throws IOException
     {
         // Deal with header
         checkHeader();
@@ -308,11 +314,11 @@ public class Ac3dParser
             switch(token_id)
             {
                 case MATERIAL_TOKEN:
-                    forced_end = parseMaterial(tokens);
+                    forced_end = parseMaterial(tokens, retainData);
                     break;
 
                 case OBJECT_TOKEN:
-                    forced_end = parseObject(null, tokens);
+                    forced_end = parseObject(null, tokens, retainData);
                     break;
             }
         }
@@ -339,7 +345,9 @@ public class Ac3dParser
 
     /**
      * Fetch the materials from the previously loaded file. If nothing
-     * has been loaded yet, this will return a zero length array.
+     * has been loaded yet, this will return a zero length array. If the
+     * retainData flag was set to false on the parse() method, this will
+     * return a zero length array.
      *
      * @return An array of the materials found
      */
@@ -350,7 +358,9 @@ public class Ac3dParser
 
     /**
      * Fetch the objects from the previously loaded file. If nothing
-     * has been loaded yet, this will return a zero length array.
+     * has been loaded yet, this will return a zero length array. If the
+     * retainData flag was set to false on the parse() method, this will
+     * return a zero length array.
      *
      * @return An array of the materials found
      */
@@ -387,9 +397,11 @@ public class Ac3dParser
      * Parse a new material object
      *
      * @param tokens The array of tokens to process
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      * @return true if the parsing has been requested to end now
      */
-    private boolean parseMaterial(String[] tokens)
+    private boolean parseMaterial(String[] tokens, boolean retainData)
     {
         Ac3dMaterial material = new Ac3dMaterial();
 
@@ -435,7 +447,8 @@ public class Ac3dParser
         material.setIndex(materialCount);
         materialCount++;
 
-        materials.add(material);
+        if(retainData)
+            materials.add(material);
 
         boolean ret_val = false;
 
@@ -460,9 +473,13 @@ public class Ac3dParser
      * @param parent The parent object to this one, or null if at the
      *   root level
      * @param tokens The array of tokens to process
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      * @return true if the parsing has been requested to end now
      */
-    private boolean parseObject(Ac3dObject parent, String[] tokens)
+    private boolean parseObject(Ac3dObject parent,
+                                String[] tokens,
+                                boolean retainData)
         throws IOException
     {
         if(tokens.length != 2)
@@ -474,21 +491,51 @@ public class Ac3dParser
 
         if(parent != null)
             parent.addChild(object);
-        else
+        else if(retainData)
             objects.add(object);
 
         String buffer;
         boolean forced_end = false;
+        boolean object_complete = false;
 
-        while((buffer = reader.readLine()) != null && !forced_end)
+        while(!forced_end && !object_complete &&
+              (buffer = reader.readLine()) != null)
         {
             String[] kid_tokens = lineTokenizer.enumerateTokens(buffer);
 
-            int token_id = keywordsMap.get(kid_tokens[0]);
-            switch(token_id)
+            Integer tk_val = keywordsMap.get(kid_tokens[0]);
+
+            // check for a keyword we know about. If not, ignore this line
+            // and move on
+            if(tk_val == null)
+            {
+                String msg = "Unknown object token encountered in file: " +
+                             kid_tokens[0];
+
+                errorReporter.warningReport(msg, null);
+                continue;
+            }
+
+            switch(tk_val.intValue())
             {
                 case KIDS_TOKEN:
-                    forced_end = parseKids(object, kid_tokens);
+                    if(observer != null)
+                    {
+                        try
+                        {
+                            forced_end =
+                                !observer.objectComplete(parent, object);
+                        }
+                        catch(Exception e)
+                        {
+                            errorReporter.errorReport(USER_SURFACE_ERR, e);
+                        }
+                    }
+
+                    if(!forced_end)
+                        forced_end = parseKids(object, kid_tokens, retainData);
+                    object_complete = true;
+
                     break;
 
                 case NUMVERT_TOKEN:
@@ -527,35 +574,29 @@ public class Ac3dParser
                     parseURL(object, kid_tokens);
                     break;
 
+                case CREASE_TOKEN:
+                    parseCreaseAngle(object, kid_tokens);
+                    break;
+
                 default:
                     // Issue message here
             }
         }
 
-        boolean ret_val = false;
-
-        if(!forced_end && observer != null)
-        {
-            try
-            {
-                ret_val = !observer.objectComplete(parent, object);
-            }
-            catch(Exception e)
-            {
-                errorReporter.errorReport(USER_SURFACE_ERR, e);
-            }
-        }
-
-        return ret_val && !forced_end;
+        return forced_end;
     }
 
     /**
      * Parse the kids of the current object
      *
      * @param tokens The array of tokens to process
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      * @return true if the parsing has been requested to end now
      */
-    private boolean parseKids(Ac3dObject object, String[] tokens)
+    private boolean parseKids(Ac3dObject object,
+                              String[] tokens,
+                              boolean retainData)
         throws IOException
     {
         qualifyTagByAC3DObject(tokens, 2);
@@ -571,9 +612,12 @@ public class Ac3dParser
             int token_id = keywordsMap.get(kid_tokens[0]);
 
             if(token_id != OBJECT_TOKEN)
-                throw new ParsingErrorException(INVALID_OBJECT_KID_ERR);
+            {
+                String msg = INVALID_OBJECT_KID_ERR + kid_tokens[0];
+                throw new ParsingErrorException(msg);
+            }
 
-            forced_end = parseObject(object, kid_tokens);
+            forced_end = parseObject(object, kid_tokens, retainData);
         }
 
         return forced_end;
@@ -599,19 +643,15 @@ public class Ac3dParser
     private void parseData(Ac3dObject object, String[] tokens)
         throws IOException
     {
-        qualifyTagByAC3DObject(tokens, 1);
+        qualifyTagByAC3DObject(tokens, 2);
         int num_chars = parseDecimal(tokens[1]);
 
-        String line = reader.readLine();
+        char[] data_chars = new char[num_chars];
 
-        if(line.length() != num_chars)
-        {
-            String msg = "Number of data characters supplied in object " +
-               object.getName() + ". Expected " + num_chars + " but got " +
-               line.length();
-
-            throw new ParsingErrorException(msg);
-        }
+        reader.read(data_chars, 0, num_chars);
+        // read an extra char for end of line
+        reader.read();
+        String line = new String(data_chars);
 
         object.setData(line);
     }
@@ -625,6 +665,18 @@ public class Ac3dParser
     {
         qualifyTagByAC3DObject(tokens, 1);
         object.setURL(tokens[1]);
+    }
+
+    /**
+     * Parse the number of surfaces token definition.
+     *
+     * @param tokens The array of tokens to process
+     * @return true if the parsing has been requested to end now
+     */
+    private void parseCreaseAngle(Ac3dObject object, String[] tokens)
+    {
+        qualifyTagByAC3DObject(tokens, 2);
+        object.setCreaseAngle(parseFloat(tokens[1]));
     }
 
     /**
@@ -668,25 +720,42 @@ public class Ac3dParser
         Ac3dSurface surface = new Ac3dSurface();
         surface.setFlags(parseHexidecimal(tokens[1]));
 
-        while((buffer = reader.readLine()) != null)
+        buffer = reader.readLine();
+        tokens = lineTokenizer.enumerateTokens(buffer);
+
+        Integer tk_val = keywordsMap.get(tokens[0]);
+
+        // check for a keyword we know about. If not, ignore this line
+        // and move on
+        if(tk_val == null)
         {
-            tokens = lineTokenizer.enumerateTokens(buffer);
+            String msg = "Unknown surface token encountered in file: " +
+                         tokens[0];
 
-            token_id = keywordsMap.get(tokens[0]);
-            switch(token_id)
-            {
-                case REFS_TOKEN:
-                    parseSurfaceRefs(surface, tokens);
-                    break;
-
-                case MAT_TOKEN:
-                    parseMaterialRef(surface, tokens);
-                    break;
-
-                default:
-                    // Just ignore other tokens.
-            }
+            errorReporter.warningReport(msg, null);
+            return true;
         }
+
+        parseMaterialRef(surface, tokens);
+
+        // Now red the second line, which will be index refrences
+        buffer = reader.readLine();
+        tokens = lineTokenizer.enumerateTokens(buffer);
+
+        tk_val = keywordsMap.get(tokens[0]);
+
+        // check for a keyword we know about. If not, ignore this line
+        // and move on
+        if(tk_val == null)
+        {
+            String msg = "Unknown surface token encountered in file: " +
+                         tokens[0];
+
+            errorReporter.warningReport(msg, null);
+            return true;
+        }
+
+        parseSurfaceRefs(surface, tokens);
 
         object.addSurface(surface);
 
@@ -792,7 +861,8 @@ public class Ac3dParser
     private void parseSurfaceRefs(Ac3dSurface surface, String[] tokens)
         throws IOException
     {
-        int num_refs = (parseDecimal(tokens[1]));
+        int num_refs = parseDecimal(tokens[1]);
+        surface.setNumrefs(num_refs);
 
         for (int i = 0; i < num_refs; i++)
         {
