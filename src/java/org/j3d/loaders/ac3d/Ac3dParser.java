@@ -39,7 +39,7 @@ import org.j3d.util.ErrorReporter;
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class Ac3dParser
 {
@@ -649,8 +649,9 @@ public class Ac3dParser
         char[] data_chars = new char[num_chars];
 
         reader.read(data_chars, 0, num_chars);
-        // read an extra char for end of line
-        reader.read();
+        // read an extra char for end of line. Use readLine() rather than
+        // read() so that it picks up all forms of <CR><LF> combos.
+        reader.readLine();
         String line = new String(data_chars);
 
         object.setData(line);
