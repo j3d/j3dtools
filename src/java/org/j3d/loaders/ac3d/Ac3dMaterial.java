@@ -18,7 +18,7 @@ package org.j3d.loaders.ac3d;
  * AC3D file format.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Ac3dMaterial
 {
@@ -196,6 +196,16 @@ public class Ac3dMaterial
     }
 
     /**
+	 * Get the shininess factor of the object.
+	 *
+	 * @return The shininess factor value
+     */
+    public int getShininess()
+    {
+		return shininess;
+	}
+
+    /**
      * Set the transparency amount. 0 is completely opaque, 1 is completely
      * see through.
      *
@@ -207,6 +217,17 @@ public class Ac3dMaterial
     }
 
     /**
+	 * Get the transparency amount. 0 is completely opaque, 1 is completely
+	 * see through.
+	 *
+	 * @return The value of transparency between 0 and 1
+     */
+    public float getTransparency()
+    {
+		return transparency;
+	}
+
+    /**
      * Set the index of this material in the file.
      *
      * @param index A zero or positive number
@@ -215,6 +236,16 @@ public class Ac3dMaterial
     {
         this.index = index;
     }
+
+    /**
+	 * Get the index of this material in the file.
+	 *
+	 * @return The index of this material in the file
+     */
+    public int getIndex()
+    {
+		return index;
+	}
 
     /**
      * Provides a humantext string version of the current object state.
