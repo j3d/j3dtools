@@ -6,7 +6,7 @@
 # Package makefile producing j3d-org-loader-ac3d.jar
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.3 $
+# Version: $Revision: 1.4 $
 #
 #*********************************************************************
 
@@ -17,11 +17,6 @@ JAR_VERSION=0.9.0
 # No need to put in subdirs here. We only do that if we want to explicitly
 # exclude some directory and then we name everything around it.
 JAR_CONTENT= org/j3d/loaders/ac3d \
-	org/j3d/loaders/ac3d/models \
-	org/j3d/loaders/ac3d/parser \
-	org/j3d/loaders/ac3d/parser/exceptions \
-	org/j3d/loaders/ac3d/parser/handlers \
-	org/j3d/loaders/ac3d/util \
 
 # Manifest file name. Stored in the make/manifest directory
 MANIFEST=loader-ac3d.mf

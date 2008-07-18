@@ -6,7 +6,7 @@
 # Package makefile producing j3d-org-util.jar
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.6 $
+# Version: $Revision: 1.7 $
 #
 #*********************************************************************
 
@@ -27,6 +27,7 @@ JAR_CONTENT = org/j3d/util \
     org/j3d/ui/image \
     org/j3d/ui/navigation \
     org/j3d/loaders \
+    org/j3d/loaders/ac3d \
     org/j3d/loaders/c3d \
     org/j3d/loaders/dem \
     org/j3d/loaders/discreet	\
