@@ -18,6 +18,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
+import java.lang.NullPointerException;
 
 // Local imports
 import org.j3d.loaders.InvalidFormatException;
@@ -39,7 +40,7 @@ import org.j3d.util.ErrorReporter;
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class Ac3dParser
 {
@@ -310,17 +311,31 @@ public class Ac3dParser
         {
             String[] tokens = lineTokenizer.enumerateTokens(buffer);
 
-            int token_id = keywordsMap.get(tokens[0]);
-            switch(token_id)
-            {
-                case MATERIAL_TOKEN:
-                    forced_end = parseMaterial(tokens, retainData);
-                    break;
+			try
+			{
+				int token_id = keywordsMap.get(tokens[0]);
+				switch(token_id)
+				{
+					case MATERIAL_TOKEN:
+						forced_end = parseMaterial(tokens, retainData);
+						break;
 
-                case OBJECT_TOKEN:
-                    forced_end = parseObject(null, tokens, retainData);
-                    break;
-            }
+					case OBJECT_TOKEN:
+						forced_end = parseObject(null, tokens, retainData);
+						break;
+				}
+			}
+			catch(NullPointerException e)
+			{
+				System.out.println("Exception: Illegal token found :" + buffer);
+				e.printStackTrace();
+			}
+			catch(Exception e)
+			{
+				System.out.println("Exeception caught: " + e);
+				System.out.println("Check file formatting. Example would be extra lines at the end of file.");
+				e.printStackTrace();
+			}
         }
     }
 
