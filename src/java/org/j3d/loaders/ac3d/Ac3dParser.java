@@ -39,7 +39,7 @@ import org.j3d.util.ErrorReporter;
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class Ac3dParser
 {
@@ -433,7 +433,7 @@ public class Ac3dParser
                     break;
 
                 case SHININESS_TOKEN:
-                    material.setShininess(parseDecimal(tokens[i + 1]));
+                    material.setShininess(parseFloat(tokens[i + 1]));
                     i++;
                     break;
 

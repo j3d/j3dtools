@@ -18,7 +18,7 @@ package org.j3d.loaders.ac3d;
  * AC3D file format.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Ac3dMaterial
 {
@@ -41,7 +41,7 @@ public class Ac3dMaterial
     private float[] specular;
 
     /** The shininess factor to apply to the object */
-    private int shininess;
+    private float shininess;
 
     /** Transparency of the material. 0 is completely opaque. */
     private float transparency;
@@ -62,7 +62,7 @@ public class Ac3dMaterial
         ambient = new float[3];
         emissive = new float[3];
         specular = new float[3];
-        shininess = 0;
+        shininess = 0.0f;
         transparency = 0.0f;
         index = -1;
     }
@@ -190,7 +190,7 @@ public class Ac3dMaterial
      *
      * @param factor The shininess factor value
      */
-    public void setShininess(int factor)
+    public void setShininess(float factor)
     {
         shininess = factor;
     }
@@ -200,7 +200,7 @@ public class Ac3dMaterial
 	 *
 	 * @return The shininess factor value
      */
-    public int getShininess()
+    public float getShininess()
     {
 		return shininess;
 	}
