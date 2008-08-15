@@ -11,11 +11,15 @@
 
 package org.j3d.loaders.stl;
 
+// External imports
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.awt.Component;
-import java.io.*;
 import javax.swing.ProgressMonitorInputStream;
+
+// Local imports
+import org.j3d.loaders.InvalidFormatException;
 
 /**
  * Class to parse STL (stereolithography) files in binary format.<p>
@@ -23,165 +27,165 @@ import javax.swing.ProgressMonitorInputStream;
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class STLBinaryParser extends STLParser
 {
-    /**
-     * size of binary header
-     */
-    private static final int HEADER_SIZE = 84;
+    /** size of binary header */
+    private static  int HEADER_SIZE = 84;
 
-    /**
-     * size of one facet record in binary format
-     */
-    private static final int RECORD_SIZE = 50;
+    /** size of one facet record in binary format */
+    private static  int RECORD_SIZE = 50;
 
-    /**
-     * size of comments in header
-     */
-    private final static int COMMENT_SIZE = 80;
+    /** size of comments in header */
+    private  static int COMMENT_SIZE = 80;
 
+    /** The stream that is being read from */
     private BufferedInputStream itsStream;
-    private final byte[ ]       itsReadBuffer = new byte[ 48 ];
-    private final int[ ]        itsDataBuffer = new int[ 12 ];
 
-    public STLBinaryParser( )
+    /** Common buffer for reading */
+    private  byte[] itsReadBuffer;
+
+    /** Common buffer for reading the converted data from bytes */
+    private  int[] itsDataBuffer;
+
+    public STLBinaryParser()
     {
+        itsReadBuffer = new byte[48];
+        itsDataBuffer = new int[12];
     }
 
-    public void close( ) throws IOException
+    public void close() throws IOException
     {
-        if( itsStream != null )
+        if(itsStream != null)
         {
-            itsStream.close( );
+            itsStream.close();
         }
     }
 
-    public boolean parse( final URL url ) throws IOException
+    public boolean parse(URL url)
+        throws InvalidFormatException, IOException
     {
         InputStream stream = null;
         int length = -1;
         try
         {
-            final URLConnection connection = url.openConnection( );
-            stream = connection.getInputStream( );
-            length = connection.getContentLength( );
+            URLConnection connection = url.openConnection();
+            stream = connection.getInputStream();
+            length = connection.getContentLength();
         }
-        catch( IOException e )
+        catch(IOException e)
         {
-            if( stream != null )
+            if(stream != null)
             {
-                stream.close( );
+                stream.close();
             }
         }
-        itsStream = new BufferedInputStream( stream );
-        try
-        {
-            // skip header until number of facets info
-            for( int i = 0; i < COMMENT_SIZE; i ++ )
-            {
-                itsStream.read( );
-            }
-            // binary file contains only on object
-            itsNumOfObjects = 1;
-            itsNumOfFacets =
-                new int[ ]{ LittleEndianConverter.read4ByteBlock( itsStream ) };
-            itsNames = new String[ 1 ];
-            // if length of file is known, check if it matches with the content
-            if( length != -1 )
-            {
-                // binary file contains only on object
-                if( length != itsNumOfFacets[ 0 ] * RECORD_SIZE + HEADER_SIZE )
-                {
-                    throw new IOException( "File size does not match." );
-                }
-            }
-        }
-        catch( IOException e )
-        {
-            close( );
-            throw e;
-        }
-        return false;
+        itsStream = new BufferedInputStream(stream);
+        return parse(length);
     }
 
-    public boolean parse( final URL url, final Component parentComponent )
-    throws InterruptedIOException, IOException
+    public boolean parse(URL url,  Component parentComponent)
+        throws InvalidFormatException, IOException
     {
         InputStream stream = null;
         int length = -1;
         try
         {
-            final URLConnection connection = url.openConnection( );
-            stream = connection.getInputStream( );
-            length = connection.getContentLength( );
+            URLConnection connection = url.openConnection();
+            stream = connection.getInputStream();
+            length = connection.getContentLength();
         }
-        catch( IOException e )
+        catch(IOException e)
         {
-            if( stream != null )
+            if(stream != null)
             {
-                stream.close( );
+                stream.close();
             }
         }
-        stream = new ProgressMonitorInputStream
-        (
+        stream = new ProgressMonitorInputStream(
             parentComponent,
-            "parsing " + url.toString( ),
-            stream
-        );
-        itsStream = new BufferedInputStream( stream );
+            "parsing " + url.toString(),
+            stream);
+
+        itsStream = new BufferedInputStream(stream);
+        return parse(length);
+    }
+
+    /**
+     * Internal convenience method that does the stream parsing regardless of
+     * the input source the stream came from. Assumes itsStream is already
+     * initialised before it called here.
+     *
+     * @param length The length of data from the incoming stream, if not. Use
+     *   -1 not known.
+     * @return true if the method does not work out
+     */
+    private boolean parse(int length)
+        throws InvalidFormatException, IOException
+    {
         try
         {
             // skip header until number of facets info
-            for( int i = 0; i < COMMENT_SIZE; i ++ )
-            {
-                itsStream.read( );
-            }
+            for(int i = 0; i < COMMENT_SIZE; i ++)
+                itsStream.read();
+
             // binary file contains only on object
             itsNumOfObjects = 1;
             itsNumOfFacets =
-                new int[ ]{ LittleEndianConverter.read4ByteBlock( itsStream ) };
-            itsNames = new String[ 1 ];
+                new int[]{ LittleEndianConverter.read4ByteBlock(itsStream) };
+            itsNames = new String[1];
             // if length of file is known, check if it matches with the content
-            if( length != -1 )
+            // binary file contains only on object
+            if(length != -1 && 
+               length != itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE)
             {
-                // binary file contains only on object
-                if( length != itsNumOfFacets[ 0 ] * RECORD_SIZE + HEADER_SIZE )
-                {
-                    throw new IOException( "File size does not match." );
-                }
+                String msg = "File size does not match the expected size for" + 
+                    "the given number of facets. Given " + 
+                    itsNumOfFacets[0] + " facets for a total size of " +
+                    (itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE) +
+                    " but the file size is " + length;
+                close();
+
+                throw new InvalidFormatException(msg);
             }
         }
-        catch( IOException e )
+        catch(IOException e)
         {
-            close( );
+            close();
             throw e;
         }
         return false;
     }
 
-
-    public boolean getNextFacet( final double[ ] normal, double[ ][ ] vertices )
-    throws InterruptedIOException, IOException
+    /**
+     * Read the next face from the underlying stream
+     *
+     * @return true if the read completed successfully
+     */
+    public boolean getNextFacet(double[] normal, double[][] vertices)
+        throws IOException
     {
-        LittleEndianConverter.read( itsReadBuffer, itsDataBuffer, 0, 12, itsStream );
-        for( int i = 0; i < 3; i ++ )
+        LittleEndianConverter.read(itsReadBuffer, 
+                                   itsDataBuffer,
+                                   0,
+                                   12,
+                                   itsStream);
+        for(int i = 0; i < 3; i ++)
+            normal[i] = Float.intBitsToFloat(itsDataBuffer[i]);
+        
+        for(int i = 0; i < 3; i ++)
         {
-            normal[ i ] = Float.intBitsToFloat( itsDataBuffer[ i ] );
-        }
-        for( int i = 0; i < 3; i ++ )
-        {
-            for( int j = 0; j < 3; j ++ )
+            for(int j = 0; j < 3; j ++)
             {
-
-                vertices[ i ][ j ] =
-                    Float.intBitsToFloat( itsDataBuffer[ i * 3 + j + 3] );
+                vertices[i][j] =
+                    Float.intBitsToFloat(itsDataBuffer[i * 3 + j + 3]);
             }
         }
+
         // skip last 2 padding bytes
-        itsStream.read( );
-        itsStream.read( );
+        itsStream.read();
+        itsStream.read();
         return true;
     }
 }
