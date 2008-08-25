@@ -38,7 +38,7 @@ import org.j3d.util.ObjectArray;
  * http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class TriangulationUtils
 {
@@ -132,6 +132,47 @@ public class TriangulationUtils
         return ecTriangulator.triangulateConcavePolygon(coords,
                                                         startIndex,
                                                         numVertex,
+                                                        coordIndex,
+                                                        0,
+                                                        null,
+                                                        0,
+                                                        null,
+                                                        0,
+                                                        null,
+                                                        coordOutput,
+                                                        null,
+                                                        null,
+                                                        null,
+                                                        normal);
+    }
+
+    /**
+     * Triangulate a concave polygon using an indexed coordinates array.
+     * Assumes that the index of the first coordinate in the coordIndex is 0.  Will
+     * read every vertex from the coordIndex list (ie: numVertex = coordIndex.length)
+     *  The coordinates are not required to be a closed polygon as the
+     * algorithm will automatically close it. The output array is the new indexes
+     * to use.
+     * <p>
+     * If an error occurs, the result will be negative number of triangles.
+     *
+     * @author Eric Fickenscher
+     * @param coords The coordinates of the face
+     * @param coordOutput The array to copy the coord index values to
+     * @param normal The normal to this face these vertices are a part of
+     * @return The number of triangles in the output array
+     */
+    public int triangulateConcavePolygon(float[] coords,
+                                         int[] coordIndex,
+                                         int[] coordOutput,
+                                         float[] normal)
+    {
+        if(ecTriangulator == null)
+            ecTriangulator = new EarCutTriangulator(initSize);
+
+        return ecTriangulator.triangulateConcavePolygon(coords,
+                                                        0,
+                                                        coordIndex.length,
                                                         coordIndex,
                                                         0,
                                                         null,
@@ -247,6 +288,45 @@ public class TriangulationUtils
                                                         null,
                                                         normal);
     }
+
+    /**
+     * Triangulate a concave polygon in the given array. The array is a flat
+     * array of coordinates of [...Xn, Yn, Zn....] values.
+     * Assumes that the index of the first coordinate in the face is 0.
+     * Will read every vertex from the list (ie: numVertex = coords.length/3)
+     * The coordinates are not required to be a closed polygon as the algorithm
+     * will automatically close it. The output array is indexes into the
+     * original array (including compensating for the 3 index values per
+     * coordinate)
+     * <p>
+     * If an error occurs, the result will be negative number of triangles.
+     *
+     * @author Eric Fickenscher
+     * @param coords The coordinates of the face
+     * @param coordOutput The array to copy the coord index values to
+     * @param normal The normal to this face these vertices are a part of
+     * @return The number of triangles in the output array
+     */
+    public int triangulateConcavePolygon(float[] coords,
+                                         int[] coordOutput,
+                                         float[] normal)
+    {
+        if(ecTriangulator == null)
+            ecTriangulator = new EarCutTriangulator(initSize);
+
+        return ecTriangulator.triangulateConcavePolygon(coords,
+                                                        0,
+                                                        coords.length/3,
+                                                        0,
+                                                        0,
+                                                        0,
+                                                        coordOutput,
+                                                        null,
+                                                        null,
+                                                        null,
+                                                        normal);
+    }
+
 
     /**
      * Triangulate a concave polygon in the given array. The array is a flat
