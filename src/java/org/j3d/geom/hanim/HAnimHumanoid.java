@@ -29,14 +29,14 @@ import org.j3d.util.ErrorReporter;
  * critical is the output object.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class HAnimHumanoid extends HAnimObject
     implements HAnimObjectParent
 {
     /** Message for the array size not being long enough */
     private static final String MIN_ARRAY_SIZE_MSG =
-        "The source array is either null or not long enough";
+        "The source array is either null or not long enough for HAnimHumanoid::";
 
     /** Message for trying to set a wrong child type */
     private static final String INVALID_CHILD_TYPE_MSG =
@@ -265,7 +265,8 @@ public abstract class HAnimHumanoid extends HAnimObject
     public void setCenter(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "center");
 
         center[0] = val[0];
         center[1] = val[1];
@@ -296,7 +297,8 @@ public abstract class HAnimHumanoid extends HAnimObject
     public void setScale(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "scale");
 
         scale[0] = val[0];
         scale[1] = val[1];
@@ -327,7 +329,8 @@ public abstract class HAnimHumanoid extends HAnimObject
     public void setTranslation(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "translation");
 
         translation[0] = val[0];
         translation[1] = val[1];
@@ -359,7 +362,8 @@ public abstract class HAnimHumanoid extends HAnimObject
     public void setScaleOrientation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "scaleOrientation");
 
         scaleOrientation[0] = val[0];
         scaleOrientation[1] = val[1];
@@ -392,7 +396,8 @@ public abstract class HAnimHumanoid extends HAnimObject
     public void setRotation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "rotation");
 
         rotation[0] = val[0];
         rotation[1] = val[1];
@@ -424,7 +429,8 @@ public abstract class HAnimHumanoid extends HAnimObject
     public void setBboxCenter(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "bboxCenter");
 
         bboxCenter[0] = val[0];
         bboxCenter[1] = val[1];
@@ -454,7 +460,8 @@ public abstract class HAnimHumanoid extends HAnimObject
     public void setBboxSize(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "bboxSize");
 
         bboxSize[0] = val[0];
         bboxSize[1] = val[1];
@@ -555,7 +562,8 @@ public abstract class HAnimHumanoid extends HAnimObject
     public void setSkinCoord(float[] val, int numElements)
     {
         if(val == null || val.length < numElements * 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "skinCoord");
 
         if((skinCoords == null) || (skinCoords.length < numElements * 3))
             skinCoords = new float[numElements * 3];
@@ -605,7 +613,8 @@ public abstract class HAnimHumanoid extends HAnimObject
     public void setSkinNormal(float[] val, int numElements)
     {
         if(val == null || val.length < numElements * 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "skinNormal");
 
         if((skinNormals == null) || (skinNormals.length < numElements * 3))
             skinNormals = new float[numElements * 3];

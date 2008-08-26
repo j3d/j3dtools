@@ -25,13 +25,13 @@ package org.j3d.geom.hanim;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class HAnimDisplacer extends HAnimObject
 {
     /** Message for the array size not being long enough */
     private static final String MIN_ARRAY_SIZE_MSG =
-        "The source array is either null or not long enough";
+        "The source array is either null or not long enough for HAnimDisplacer::";
 
     /** The current coordinates of the segment */
     private int[] coordIndex;
@@ -112,7 +112,8 @@ public class HAnimDisplacer extends HAnimObject
     public void setDisplacements(float[] val, int numValid)
     {
         if(val == null || val.length < numValid)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "displacements");
 
         System.arraycopy(val, 0, displacements, 0, numValid);
         numDisplacements = numValid;
@@ -153,7 +154,8 @@ public class HAnimDisplacer extends HAnimObject
     public void setCoordIndex(int[] val, int numValid)
     {
         if(val == null || val.length < numValid)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "coordIndex");
 
         if((coordIndex == null) || (coordIndex.length < numValid))
         {

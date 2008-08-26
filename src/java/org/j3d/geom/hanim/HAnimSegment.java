@@ -23,13 +23,13 @@ import java.util.ArrayList;
  * <a href="http://h-anim.org/Specifications/H-Anim1.1/">6.5 Segment</a>.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class HAnimSegment extends HAnimObject
 {
     /** Message for the array size not being long enough */
     private static final String MIN_ARRAY_SIZE_MSG =
-        "The source array is either null or not long enough";
+        "The source array is either null or not long enough for HAnimSegment::";
 
     /** The current bboxCenter of the segment */
     protected float[] bboxCenter;
@@ -124,7 +124,8 @@ public class HAnimSegment extends HAnimObject
     public void setBboxCenter(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                              "bboxCenter");
 
         bboxCenter[0] = val[0];
         bboxCenter[1] = val[1];
@@ -158,7 +159,8 @@ public class HAnimSegment extends HAnimObject
     public void setBboxSize(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "bboxSize");
 
         bboxSize[0] = val[0];
         bboxSize[1] = val[1];
@@ -188,7 +190,8 @@ public class HAnimSegment extends HAnimObject
     public void setCenterOfMass(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "centerOfMass");
 
         centerOfMass[0] = val[0];
         centerOfMass[1] = val[1];
@@ -268,7 +271,7 @@ public class HAnimSegment extends HAnimObject
     public void setCoord(float[] val, int numElements)
     {
         if(val == null || val.length < numElements * 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG + "coord");
 
         if((coords == null) || (coords.length < numElements * 3))
             coords = new float[numElements * 3];

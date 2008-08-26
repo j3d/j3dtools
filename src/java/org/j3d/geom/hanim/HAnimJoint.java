@@ -30,14 +30,14 @@ import org.j3d.util.ErrorReporter;
  * we've added fields and support for it anyway.
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class HAnimJoint extends HAnimObject
     implements HAnimObjectParent
 {
     /** Message for the array size not being long enough */
     private static final String MIN_ARRAY_SIZE_MSG =
-        "The source array is either null or not long enough";
+        "The source array is either null or not long enough for HAnimJoint::";
 
     /** Message for trying to set a wrong child type */
     private static final String INVALID_CHILD_TYPE_MSG =
@@ -254,7 +254,8 @@ public class HAnimJoint extends HAnimObject
     public void setCenter(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "center");
 
         center[0] = val[0];
         center[1] = val[1];
@@ -300,7 +301,8 @@ public class HAnimJoint extends HAnimObject
     public void setScale(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "scale");
 
         scale[0] = val[0];
         scale[1] = val[1];
@@ -334,7 +336,8 @@ public class HAnimJoint extends HAnimObject
     public void setTranslation(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "translation");
 
         translation[0] = val[0];
         translation[1] = val[1];
@@ -369,7 +372,8 @@ public class HAnimJoint extends HAnimObject
     public void setScaleOrientation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "scaleOrientation");
 
         scaleOrientation[0] = val[0];
         scaleOrientation[1] = val[1];
@@ -405,7 +409,8 @@ public class HAnimJoint extends HAnimObject
     public void setRotation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "rotation");
 
         rotation[0] = val[0];
         rotation[1] = val[1];
@@ -440,7 +445,8 @@ public class HAnimJoint extends HAnimObject
     public void setBboxCenter(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "bboxCenter");
 
         bboxCenter[0] = val[0];
         bboxCenter[1] = val[1];
@@ -474,7 +480,8 @@ public class HAnimJoint extends HAnimObject
     public void setBboxSize(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "bboxSize");
 
         bboxSize[0] = val[0];
         bboxSize[1] = val[1];
@@ -505,7 +512,8 @@ public class HAnimJoint extends HAnimObject
     public void setLimitOrientation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "limitOrientation");
 
         limitOrientation[0] = val[0];
         limitOrientation[1] = val[1];
@@ -546,7 +554,8 @@ public class HAnimJoint extends HAnimObject
     public void setLowerLimit(float[] val, int numElements)
     {
         if(val == null || val.length < numElements * 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "lowerLimit");
 
         if((lowerLimit == null) || (lowerLimit.length < numElements * 3))
             lowerLimit = new float[numElements * 3];
@@ -588,7 +597,8 @@ public class HAnimJoint extends HAnimObject
     public void setUpperLimit(float[] val, int numElements)
     {
         if(val == null || val.length < numElements * 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "upperLimit");
 
         if((upperLimit == null) || (upperLimit.length < numElements * 3))
             upperLimit = new float[numElements * 3];
@@ -630,7 +640,8 @@ public class HAnimJoint extends HAnimObject
     public void setStiffness(float[] val, int numElements)
     {
         if(val == null || val.length < numElements)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "stiffness");
 
         if((stiffness == null) || (stiffness.length < numElements))
             stiffness = new float[numElements];
@@ -674,7 +685,8 @@ public class HAnimJoint extends HAnimObject
     public void setSkinCoordIndex(int[] val, int numValid)
     {
         if(val == null || val.length < numValid)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "skinCoordIndex");
 
         if((skinCoordIndex == null) || (skinCoordIndex.length < numValid))
         {
@@ -719,7 +731,8 @@ public class HAnimJoint extends HAnimObject
     public void setSkinCoordWeight(float[] val)
     {
         if(val == null || val.length < numSkinCoord)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "skinCoordWeight");
 
         // No need to resize here as it should have already been done by
         // setSkinCoordIndex.

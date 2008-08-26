@@ -23,13 +23,13 @@ import javax.vecmath.Matrix4f;
  * <a href="http://h-anim.org/Specifications/H-Anim1.1/">6.5 Site</a>.
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class HAnimSite extends HAnimObject
 {
     /** Message for the array size not being long enough */
     private static final String MIN_ARRAY_SIZE_MSG =
-        "The source array is either null or not long enough";
+        "The source array is either null or not long enough for HAnimSite::";
 
     /** The current center of the joint */
     private float[] center;
@@ -117,7 +117,7 @@ public class HAnimSite extends HAnimObject
     public void setCenter(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG + "center");
 
         center[0] = val[0];
         center[1] = val[1];
@@ -151,7 +151,7 @@ public class HAnimSite extends HAnimObject
     public void setScale(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG + "scale");
 
         scale[0] = val[0];
         scale[1] = val[1];
@@ -183,8 +183,9 @@ public class HAnimSite extends HAnimObject
      */
     public void setTranslation(float[] val)
     {
-        if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+        if(val == null || val.length < 3)
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "translation");
 
         translation[0] = val[0];
         translation[1] = val[1];
@@ -218,7 +219,8 @@ public class HAnimSite extends HAnimObject
     public void setScaleOrientation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "scaleOrientation");
 
         scaleOrientation[0] = val[0];
         scaleOrientation[1] = val[1];
@@ -253,7 +255,8 @@ public class HAnimSite extends HAnimObject
     public void setRotation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG);
+            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
+                                               "rotation");
 
         rotation[0] = val[0];
         rotation[1] = val[1];
@@ -314,9 +317,10 @@ public class HAnimSite extends HAnimObject
     public void addChild(Object kid)
     {
         if(children == null || children.length == numChildren)
-            children = new Object[numChildren];
+            children = new Object[numChildren + 4];
 
-        children[numChildren++] = kid;
+        children[numChildren] = kid;
+        numChildren++;
     }
 
     /**
