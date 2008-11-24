@@ -30,7 +30,7 @@ import org.j3d.loaders.InvalidFormatException;
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 class STLASCIIParser extends STLParser
 {
@@ -279,11 +279,14 @@ class STLASCIIParser extends STLParser
 
             if(line.length() > 6)
                 names.add(line.substring(6));
+            else
+                names.add(null);
         }
+
+        line = reader.readLine();
 
         while(line != null)
         {
-            line = reader.readLine();
             line_count++;
 
             if(line.indexOf("facet") >= 0)
@@ -325,6 +328,8 @@ class STLASCIIParser extends STLParser
 
                 throw new InvalidFormatException(msg);
             }
+
+            line = reader.readLine();
         }
 
         itsNumOfObjects = numOfObjects;
