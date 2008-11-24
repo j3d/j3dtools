@@ -11,39 +11,69 @@
 
 package org.j3d.loaders.stl;
 
+// External imports
+import java.io.*;
+import java.util.*;
+
 import java.net.URL;
 import java.net.URLConnection;
 import java.awt.Component;
-import java.io.*;
-import java.util.*;
 import javax.swing.ProgressMonitorInputStream;
+
+// Internal imports
+import org.j3d.loaders.InvalidFormatException;
 
 /**
  * Class to parse STL (stereolithography) files in ASCII format.<p>
+ *
  * @see STLFileReader
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 class STLASCIIParser extends STLParser
 {
+    /** Error message indicating that lack of a solid keyword */
+    private static final String NO_SOLID_NAME =
+        "The file is missing the name following \"solid\" keyword on line ";
+
+    /** Partial message for indicating the line number */
+    private static final String FOUND_ON_LINE =
+        " found on line ";
+
+    /** Error message of a keyword that we don't recognise */
+    private static final String UNKNOWN_KEYWORD_BASE =
+        "An unknown keyword ";
+
     private BufferedReader  itsReader;
     private StreamTokenizer itsTokenizer;
 
+    /**
+     * Create a new default parser instance.
+     */
     public STLASCIIParser()
     {
     }
 
-    public void close() throws IOException
+    /**
+     * Finish the parsing off now.
+     */
+    void close() throws IOException
     {
         if(itsReader != null)
-        {
             itsReader.close();
-        }
     }
 
-    public boolean getNextFacet(double[ ] normal, double[ ][ ] vertices)
+    /**
+     * Fetch a single face from the stream
+     *
+     * @param normal Array length 3 to copy the normals in to
+     * @param vertices A [3][3] array for each vertex
+     * @throws InvalidFormatException The file was structurally incorrect
+     * @throws IOException Something happened during the reading
+     */
+    boolean getNextFacet(double[] normal, double[][] vertices)
         throws IOException
     {
         int type = itsTokenizer.nextToken();
@@ -64,30 +94,34 @@ class STLASCIIParser extends STLParser
                 {
                     // eof is reached, i. e. no more objects in file
                     close();
-                    return false;
                 }
-                skipObjectName(itsTokenizer);
+                else
+                    skipObjectName(itsTokenizer);
             }
             // push back x coordinate of facet normal
             else
             {
                 itsTokenizer.pushBack();
             }
+
             readVector(itsTokenizer, normal);
+
             for(int i = 0; i < 3; i ++)
-            {
-                readVector(itsTokenizer, vertices[ i ]);
-            }
-            return true;
+                readVector(itsTokenizer, vertices[i]);
         }
         else
         {
             close();
-            throw new IOException("Unexpected data found");
+            throw new InvalidFormatException("Unexpected data found");
         }
+
+        return true;
     }
 
 
+    /**
+     * @throws InvalidFormatException The file was structurally incorrect
+     */
     public boolean parse(URL url, Component parentComponent)
         throws InterruptedIOException, IOException
     {
@@ -104,15 +138,15 @@ class STLASCIIParser extends STLParser
             }
             throw e;
         }
-        stream = new ProgressMonitorInputStream
-        (
-            parentComponent,
-            "analyzing " + url.toString(),
-            stream
-       );
+
+        stream = new ProgressMonitorInputStream(
+            parentComponent, "analyzing " + url.toString(), stream);
+
         BufferedReader reader =
             new BufferedReader(new InputStreamReader(stream));
+
         boolean isAscii = false;
+
         try
         {
             isAscii = parse(reader);
@@ -121,6 +155,7 @@ class STLASCIIParser extends STLParser
         {
             reader.close();
         }
+
         if(isAscii)
         {
             try
@@ -153,7 +188,10 @@ class STLASCIIParser extends STLParser
         return isAscii;
     }
 
-    public boolean parse(URL url)
+    /**
+     * @throws InvalidFormatException The file was structurally incorrect
+     */
+    boolean parse(URL url)
         throws IOException
     {
         InputStream stream = null;
@@ -169,9 +207,11 @@ class STLASCIIParser extends STLParser
             }
             throw e;
         }
+
         BufferedReader reader =
             new BufferedReader(new InputStreamReader(stream));
         boolean isAscii = false;
+
         try
         {
             isAscii = parse(reader);
@@ -211,24 +251,41 @@ class STLASCIIParser extends STLParser
         return isAscii;
     }
 
+    /**
+     * Parse the stream now from the given reader.
+     *
+     * @param reader The reader to source the file from
+     * @return true if this is a ASCII format file, false if not
+     * @throws InvalidFormatException The file was structurally incorrect
+     * @throws IOException Something happened during the reading
+     */
     private boolean parse(BufferedReader reader)
-        throws InterruptedIOException, IOException
+        throws IOException, InvalidFormatException
     {
         int numOfObjects = 0;
         int numOfFacets = 0;
-        ArrayList facetsPerObject = new ArrayList(10);
-        ArrayList names = new ArrayList(10);
+        ArrayList<Integer> facetsPerObject = new ArrayList<Integer>(10);
+        ArrayList<String> names = new ArrayList<String>(10);
         boolean isAscii = true;
         String line = reader.readLine();
+        int line_count = 1;
 
         // check if ASCII format
         if(line.indexOf("solid") < 0)
-        {
             return false;
+        else
+        {
+            line = line.trim();
+
+            if(line.length() > 6)
+                names.add(line.substring(6));
         }
 
         while(line != null)
         {
+            line = reader.readLine();
+            line_count++;
+
             if(line.indexOf("facet") >= 0)
             {
                 numOfFacets ++;
@@ -238,7 +295,10 @@ class STLASCIIParser extends STLParser
                 {
                     reader.readLine();
                 }
+
+                line_count += 6;
             }
+
             // watch order of if: solid contained also in endsolid
             // JC: We have found a lot of badly formatted STL files generated
             // from some program that incorrectly end a solid object with a
@@ -252,24 +312,32 @@ class STLASCIIParser extends STLParser
             }
             else if(line.indexOf("solid") >= 0)
             {
-                names.add(line.substring(6));
+                line = line.trim();
+
+                if(line.length() > 6)
+                    names.add(line.substring(6));
             }
             else
             {
                 // format not correct
-                return false;
+                String msg =
+                    UNKNOWN_KEYWORD_BASE + line + FOUND_ON_LINE + line_count;
+
+                throw new InvalidFormatException(msg);
             }
-            line = reader.readLine();
         }
+
         itsNumOfObjects = numOfObjects;
-        itsNumOfFacets = new int[ numOfObjects ];
-        itsNames = new String[ numOfObjects ];
+        itsNumOfFacets = new int[numOfObjects];
+        itsNames = new String[numOfObjects];
+
         for(int i = 0; i < numOfObjects; i ++)
         {
             Integer num = (Integer)facetsPerObject.get(i);
-            itsNumOfFacets[ i ] = num.intValue();
-            itsNames[ i ] = (String)names.get(i);
+            itsNumOfFacets[i] = num.intValue();
+            itsNames[i] = (String)names.get(i);
         }
+
         return true;
     }
 
@@ -310,7 +378,7 @@ class STLASCIIParser extends STLParser
             {
                 try
                 {
-                    vector[ i ] = Double.parseDouble(tokenizer.sval);
+                    vector[i] = Double.parseDouble(tokenizer.sval);
                 }
                 catch(NumberFormatException e)
                 {
