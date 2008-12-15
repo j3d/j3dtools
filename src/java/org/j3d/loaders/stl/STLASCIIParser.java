@@ -30,7 +30,7 @@ import org.j3d.loaders.InvalidFormatException;
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 class STLASCIIParser extends STLParser
 {
@@ -59,7 +59,7 @@ class STLASCIIParser extends STLParser
     /**
      * Finish the parsing off now.
      */
-    void close() throws IOException
+    public void close() throws IOException
     {
         if(itsReader != null)
             itsReader.close();
@@ -73,7 +73,7 @@ class STLASCIIParser extends STLParser
      * @throws InvalidFormatException The file was structurally incorrect
      * @throws IOException Something happened during the reading
      */
-    boolean getNextFacet(double[] normal, double[][] vertices)
+    public boolean getNextFacet(double[] normal, double[][] vertices)
         throws IOException
     {
         int type = itsTokenizer.nextToken();
@@ -191,7 +191,7 @@ class STLASCIIParser extends STLParser
     /**
      * @throws InvalidFormatException The file was structurally incorrect
      */
-    boolean parse(URL url)
+    public boolean parse(URL url)
         throws IOException
     {
         InputStream stream = null;
@@ -271,9 +271,11 @@ class STLASCIIParser extends STLParser
         int line_count = 1;
 
         // check if ASCII format
-        if(line.indexOf("solid") < 0)
+        if(!line.startsWith("solid")) {
             return false;
+        }
         else
+
         {
             line = line.trim();
 
