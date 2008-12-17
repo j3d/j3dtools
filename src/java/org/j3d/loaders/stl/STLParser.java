@@ -11,10 +11,13 @@
 
 package org.j3d.loaders.stl;
 
+// External imports
 import java.net.URL;
 import java.awt.Component;
 import java.io.IOException;
-import java.io.InterruptedIOException;
+
+// Local imports
+import org.j3d.loaders.InvalidFormatException;
 
 /**
  * Abstract base class for parsing STL (stereolithography) files. Subclasses
@@ -22,18 +25,17 @@ import java.io.InterruptedIOException;
  * ASCII.<p>
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
  */
 abstract class STLParser
 {
     protected int       itsNumOfObjects = 0;
-    protected int[ ]    itsNumOfFacets = null;
-    protected String[ ] itsNames = null;
+    protected int[]    itsNumOfFacets = null;
+    protected String[] itsNames = null;
 
-    public STLParser( )
+    public STLParser()
     {
-
     }
 
     /**
@@ -43,7 +45,7 @@ abstract class STLParser
      * of objects in file. If name is not contained then the appropriate
      * string is <code>null</code>.
      */
-    public String[ ] getObjectNames( )
+    String[] getObjectNames()
     {
         return itsNames;
     }
@@ -54,7 +56,7 @@ abstract class STLParser
      * @return Array with the number of facets per object. Size of array =
      *      number of objects in file.
      */
-    public int[ ] getNumOfFacets( )
+    int[] getNumOfFacets()
     {
         return itsNumOfFacets;
     }
@@ -63,7 +65,7 @@ abstract class STLParser
      * Get number of objects in file. {@link #parse} must be called once
      * before calling this method.
      */
-    public int getNumOfObjects( )
+    int getNumOfObjects()
     {
         return itsNumOfObjects;
     }
@@ -71,7 +73,7 @@ abstract class STLParser
     /**
      * Releases used resources. Must be called after finishing reading.
      */
-    public abstract void close( ) throws IOException;
+    abstract void close() throws IOException;
 
     /**
      * Parses the file to obtain the number of objects, object names and number
@@ -80,8 +82,8 @@ abstract class STLParser
      * @return <code>true</code> if file is in ASCII format, <code>false</code>
      *      otherwise. Use the appropriate subclass for reading.
      */
-    public abstract boolean parse( final URL url )
-    throws IOException;
+    abstract boolean parse(URL url)
+        throws IOException;
 
     /**
      * Parses the file to obtain the number of objects, object names and number
@@ -93,12 +95,8 @@ abstract class STLParser
      * @return <code>true</code> if file is in ASCII format, <code>false</code>
      *      otherwise. Use the appropriate subclass for reading.
      */
-    public abstract boolean parse
-    (
-        final URL       url,
-        final Component parentComponent
-    )
-    throws InterruptedIOException, IOException;
+    abstract boolean parse(URL url, Component parentComponent)
+        throws InvalidFormatException, IOException;
 
     /**
      * Returns the data for a facet. The orientation of the facets (which way
@@ -124,10 +122,6 @@ abstract class STLParser
      *      if end of file is reached. Further calls of this method after
      *      the end of file is reached will lead to an IOException.
      */
-    public abstract boolean getNextFacet
-    (
-        final double[ ] normal,
-        double[ ][ ] vertices
-    )
-    throws InterruptedIOException, IOException;
+    abstract boolean getNextFacet(double[] normal, double[][] vertices)
+        throws InvalidFormatException, IOException;
 }

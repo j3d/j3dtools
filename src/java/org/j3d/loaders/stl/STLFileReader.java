@@ -11,10 +11,14 @@
 
 package org.j3d.loaders.stl;
 
+// External Imports
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.awt.Component;
+
+// Local imports
+import org.j3d.loaders.InvalidFormatException;
 
 /**
  * Class to read STL (Stereolithography) files.<p>
@@ -26,9 +30,10 @@ import java.awt.Component;
  * In case that the file uses the binary STL format, no check can be done to
  * assure that the file is in STL format. A wrong format will only be
  * recognized if an invalid amount of data is contained in the file.<p>
+ *
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept. of Medical Computer Sciences
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class STLFileReader
 {
@@ -38,41 +43,44 @@ public class STLFileReader
      * Creates a <code>STLFileReader</code> object to read a STL file from a
      * file. The data may be in ASCII or binary format.
      * @param file <code>File</code> object of STL file to read.
+     * @throws InvalidFormatException The file was structurally incorrect
      */
-    public STLFileReader( final File file ) throws InterruptedIOException,
-    IOException, FileNotFoundException
+    public STLFileReader(File file)
+        throws InvalidFormatException, IOException
     {
-        this( file.toURL( ) );
+        this(file.toURL());
     }
 
     /**
      * Creates a <code>STLFileReader</code> object to read a STL file from a
      * file. The data may be in ASCII or binary format.
      * @param fileName Name of STL file to read.
+     * @throws InvalidFormatException The file was structurally incorrect
      */
-    public STLFileReader( final String fileName ) throws InterruptedIOException,
-    IOException, FileNotFoundException
+    public STLFileReader(String fileName)
+        throws InvalidFormatException, IOException
     {
-        this( new URL( fileName ) );
+        this(new URL(fileName));
     }
 
     /**
      * Creates a <code>STLFileReader</code> object to read a STL file from an
      * URL. The data may be in ASCII or binary format.
      * @param url URL of STL file to read.
+     * @throws InvalidFormatException The file was structurally incorrect
      */
-    public STLFileReader( final URL url )
-    throws IOException, FileNotFoundException
+    public STLFileReader(URL url)
+        throws InvalidFormatException, IOException
     {
-        final STLASCIIParser asciiParser = new STLASCIIParser( );
-        if( asciiParser.parse( url ) )
+        final STLASCIIParser asciiParser = new STLASCIIParser();
+        if(asciiParser.parse(url))
         {
             itsParser = asciiParser;
         }
         else
         {
-            final STLBinaryParser binParser = new STLBinaryParser( );
-            binParser.parse( url );
+            final STLBinaryParser binParser = new STLBinaryParser();
+            binParser.parse(url);
             itsParser = binParser;
         }
     }
@@ -84,19 +92,20 @@ public class STLFileReader
      * @param url URL of STL file to read.
      * @param parentComponent Parent <code>Component</code> of progress monitor.
      *      Use <code>null</code> if there is no parent.
+     * @throws InvalidFormatException The file was structurally incorrect
      */
-    public STLFileReader( final URL url, final Component parentComponent )
-    throws InterruptedIOException, IOException, FileNotFoundException
+    public STLFileReader(URL url, Component parentComponent)
+        throws InvalidFormatException, IOException
     {
-        final STLASCIIParser asciiParser = new STLASCIIParser( );
-        if( asciiParser.parse( url, parentComponent ) )
+        final STLASCIIParser asciiParser = new STLASCIIParser();
+        if(asciiParser.parse(url, parentComponent))
         {
             itsParser = asciiParser;
         }
         else
         {
-            final STLBinaryParser binParser = new STLBinaryParser( );
-            binParser.parse( url, parentComponent );
+            final STLBinaryParser binParser = new STLBinaryParser();
+            binParser.parse(url, parentComponent);
             itsParser = binParser;
         }
     }
@@ -108,11 +117,12 @@ public class STLFileReader
      * @param file <code>File</code> object of STL file to read.
      * @param parentComponent Parent <code>Component</code> of progress monitor.
      *      Use <code>null</code> if there is no parent.
+     * @throws InvalidFormatException The file was structurally incorrect
      */
-    public STLFileReader( final File file, final Component parentComponent )
-    throws InterruptedIOException, IOException, FileNotFoundException
+    public STLFileReader(File file, Component parentComponent)
+        throws InvalidFormatException, IOException
     {
-        this( file.toURL( ), parentComponent );
+        this(file.toURL(), parentComponent);
     }
 
     /**
@@ -122,15 +132,12 @@ public class STLFileReader
      * @param fileName Name of STL file to read.
      * @param parentComponent Parent <code>Component</code> of progress monitor.
      *      Use <code>null</code> if there is no parent.
+     * @throws InvalidFormatException The file was structurally incorrect
      */
-    public STLFileReader
-    (
-        final String    fileName,
-        final Component parentComponent
-    )
-    throws InterruptedIOException, IOException, FileNotFoundException
+    public STLFileReader (String fileName, Component parentComponent)
+        throws InvalidFormatException, IOException
     {
-        this( new URL( fileName ), parentComponent );
+        this(new URL(fileName), parentComponent);
     }
 
     /**
@@ -155,11 +162,12 @@ public class STLFileReader
      *      <code>normal</code> and <code>vertices</code>. <code>False</code>
      *      if end of file is reached. Further calls of this method after
      *      the end of file is reached will lead to an IOException.
+     * @throws InvalidFormatException The file was structurally incorrect
      */
-    public boolean getNextFacet( final double[ ] normal, double[ ][ ] vertices )
-    throws InterruptedIOException, IOException
+    public boolean getNextFacet(double[ ] normal, double[ ][ ] vertices)
+        throws InvalidFormatException, IOException
     {
-        return itsParser.getNextFacet( normal, vertices );
+        return itsParser.getNextFacet(normal, vertices);
     }
 
     /**
@@ -168,9 +176,9 @@ public class STLFileReader
      * of objects in file. If name is not contained then the appropriate
      * string is <code>null</code>.
      */
-    public String[ ] getObjectNames( )
+    public String[] getObjectNames()
     {
-        return itsParser.getObjectNames( );
+        return itsParser.getObjectNames();
     }
 
     /**
@@ -178,27 +186,27 @@ public class STLFileReader
      * @return Array with the number of facets per object. Size of array =
      *      number of objects in file.
      */
-    public int[ ] getNumOfFacets( )
+    public int[] getNumOfFacets()
     {
-        return itsParser.getNumOfFacets( );
+        return itsParser.getNumOfFacets();
     }
 
     /**
      * Get number of objects in file.
      */
-    public int getNumOfObjects( )
+    public int getNumOfObjects()
     {
-        return itsParser.getNumOfObjects( );
+        return itsParser.getNumOfObjects();
     }
 
     /**
      * Releases used resources. Must be called after finishing reading.
      */
-    public void close( ) throws IOException
+    public void close() throws IOException
     {
-        if( itsParser != null )
+        if(itsParser != null)
         {
-            itsParser.close( );
+            itsParser.close();
         }
     }
 }
