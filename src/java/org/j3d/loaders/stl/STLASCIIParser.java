@@ -30,7 +30,7 @@ import org.j3d.loaders.InvalidFormatException;
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 class STLASCIIParser extends STLParser
 {
@@ -40,7 +40,7 @@ class STLASCIIParser extends STLParser
 
     /** Error message of a keyword that we don't recognise */
     private static final String UNKNOWN_KEYWORD_BASE =
-        "An unknown keyword ";
+        "STL ASCII format file contains an unknown keyword ";
 
     /**
      * Error message when the solid header is found, but there is no
