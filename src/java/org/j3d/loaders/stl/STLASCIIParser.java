@@ -30,14 +30,10 @@ import org.j3d.loaders.InvalidFormatException;
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 class STLASCIIParser extends STLParser
 {
-    /** Error message indicating that lack of a solid keyword */
-    private static final String NO_SOLID_NAME =
-        "The file is missing the name following \"solid\" keyword on line ";
-
     /** Partial message for indicating the line number */
     private static final String FOUND_ON_LINE =
         " found on line ";
@@ -45,6 +41,14 @@ class STLASCIIParser extends STLParser
     /** Error message of a keyword that we don't recognise */
     private static final String UNKNOWN_KEYWORD_BASE =
         "An unknown keyword ";
+
+    /**
+     * Error message when the solid header is found, but there is no
+     * geometry after it. Basically an empty file.
+     */
+    private static final String EMPTY_FILE_MSG =
+        "The ASCII file format header was found, but there was no content " +
+        "defined in the file.";
 
     private BufferedReader  itsReader;
     private StreamTokenizer itsTokenizer;
@@ -286,6 +290,9 @@ class STLASCIIParser extends STLParser
         }
 
         line = reader.readLine();
+
+        if(line == null)
+            throw new InvalidFormatException(EMPTY_FILE_MSG);
 
         while(line != null)
         {
