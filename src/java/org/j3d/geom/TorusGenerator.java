@@ -30,7 +30,7 @@ import javax.vecmath.Vector3f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TorusGenerator extends GeometryGenerator
 {
@@ -559,6 +559,8 @@ public class TorusGenerator extends GeometryGenerator
 
         for(int i = num_strips; --i >= 0; )
             stripCounts[i] = strip_length;
+
+        data.numStrips = num_strips;
     }
 
     /**
