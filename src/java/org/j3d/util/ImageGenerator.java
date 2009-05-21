@@ -12,13 +12,13 @@
 
 package org.j3d.util;
 
-// Standard imports
+// External imports
 import java.awt.image.*;
 
 import java.awt.Image;
 import java.util.Hashtable;
 
-// Application specific imports
+// Local imports
 // none
 
 /**
@@ -27,25 +27,35 @@ import java.util.Hashtable;
  * <p>
  *
  * The generator only works on a single image instance at a time. The
- * consumer can be reset if needed to work on another image.
+ * consumer can be reset if needed to work on another image. If the image
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 class ImageGenerator implements ImageConsumer
 {
+    /** Semaphore to block return of a loader until the image is complete */
     private Object holder;
-    
+
+    /** Colour model given to us by the consumer */
     private ColorModel colorModel;
+
+    /** List of properties from the original image */
     private Hashtable properties;
+
+    /** Raster used to put the image values in to as the pixels are read */
     private WritableRaster raster;
+
+    /** Width of the image in pixels */
     private int width;
+
+    /** Height of the image in pixels */
     private int height;
-    
+
     private BufferedImage image;
     private int[] intBuffer;
     private boolean loadComplete;
-    
+
     ImageGenerator()
     {
         holder = new Object();
@@ -53,11 +63,11 @@ class ImageGenerator implements ImageConsumer
         height = -1;
         loadComplete = false;
     }
-    
+
     //------------------------------------------------------------------------
     // Methods for ImageConsumer events
     //------------------------------------------------------------------------
-    
+
     /**
      * Notification of the image producer completing the source image.
      * Completion may be due to an error or other form of invalid data.
@@ -68,7 +78,8 @@ class ImageGenerator implements ImageConsumer
     {
         if(status == STATICIMAGEDONE ||
             status == IMAGEABORTED ||
-            status == IMAGEERROR)
+            status == IMAGEERROR ||
+            status == SINGLEFRAMEDONE)
         {
             synchronized(holder)
             {
@@ -79,7 +90,7 @@ class ImageGenerator implements ImageConsumer
         else
             System.err.println("Some other value passed to complete");
     }
-    
+
     /**
      * Set the color model to use for the new image based on the model used
      * by the source image.
@@ -91,7 +102,7 @@ class ImageGenerator implements ImageConsumer
         colorModel = model;
         createImage();
     }
-    
+
     /**
      * Notification of the dimensions of the source image.
      *
@@ -104,7 +115,7 @@ class ImageGenerator implements ImageConsumer
         height = h;
         createImage();
     }
-    
+
     /**
      * Notification of load hints that may be useful. Not used in this
      * implementation.
@@ -114,7 +125,7 @@ class ImageGenerator implements ImageConsumer
     public void setHints(int flags)
     {
     }
-    
+
     /**
      * Notification of a bunch of pixel values in byte form. Used for
      * 256 color or less images (eg GIF, greyscale etc).
@@ -138,16 +149,16 @@ class ImageGenerator implements ImageConsumer
     {
         if (loadComplete)
             return;
-        
+
         if((intBuffer == null) || (pixels.length > intBuffer.length))
             intBuffer = new int[pixels.length];
-        
+
         for(int i = pixels.length; --i >= 0 ; )
             intBuffer[i] = (int)pixels[i] & 0xFF;
-        
+
         raster.setPixels(x, y, w, h, intBuffer);
     }
-    
+
     /**
      * Notification of a bunch of pixel values as ints. These will be
      * full 3 or 4 component images.
@@ -171,10 +182,10 @@ class ImageGenerator implements ImageConsumer
     {
         if (loadComplete)
             return;
-        
+
         image.setRGB(x, y, w, h, pixels, offset, scansize);
     }
-    
+
     /**
      * Notification of the properties of the image to use.
      *
@@ -185,11 +196,11 @@ class ImageGenerator implements ImageConsumer
         properties = props;
         createImage();
     }
-    
+
     //------------------------------------------------------------------------
     // Local methods
     //------------------------------------------------------------------------
-    
+
     /**
      * Fetch the image. This image is not necessarily completely rendered
      * although we do try to guarantee it.
@@ -211,10 +222,10 @@ class ImageGenerator implements ImageConsumer
                 }
             }
         }
-        
+
         return image;
     }
-    
+
     /**
      * Reset the converter to work with a new image source. If an image is
      * currently loading then the results are indeterminate.
@@ -225,7 +236,7 @@ class ImageGenerator implements ImageConsumer
         {
             holder.notify();
         }
-        
+
         loadComplete = false;
         colorModel = null;
         raster = null;
@@ -234,7 +245,7 @@ class ImageGenerator implements ImageConsumer
         width = -1;
         height = -1;
     }
-    
+
     /**
      * Convenience method used to create the output image based on the data
      * that has been given to us so far. Will not create the image until all
@@ -248,9 +259,9 @@ class ImageGenerator implements ImageConsumer
             (width == -1) ||
             (colorModel == null) || loadComplete)
             return;
-        
+
         raster = colorModel.createCompatibleWritableRaster(width, height);
-        
+
         boolean premult = colorModel.isAlphaPremultiplied();
         image = new BufferedImage(colorModel, raster, premult, properties);
     }
