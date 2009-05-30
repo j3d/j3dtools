@@ -4,7 +4,7 @@
 #    http://www.yumetech.com
 #
 # Author: Russell Dodds
-# Version: $Revision: 1.1 $
+# Version: $Revision: 1.2 $
 #
 #*********************************************************************
 
@@ -27,7 +27,6 @@ JARS_3RDPARTY =
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
-EXTRA =	j3d_devices.properties \
-  file_input.dtd
+EXTRA =	
 
 include $(PROJECT_ROOT)/make/Makefile.config
