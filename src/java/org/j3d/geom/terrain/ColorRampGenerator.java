@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        J3D.org Copyright (c) 2000
+ *                        J3D.org Copyright (c) 2000 - 2009
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -9,13 +9,14 @@
 
 package org.j3d.geom.terrain;
 
-// Standard imports
+// External imports
 import javax.vecmath.Color3f;
 import javax.vecmath.Color4f;
 
-// Application specific imports
+// Local imports
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.InvalidArraySizeException;
+import org.j3d.util.I18nManager;
 import org.j3d.util.interpolator.ColorInterpolator;
 
 /**
@@ -37,22 +38,34 @@ import org.j3d.util.interpolator.ColorInterpolator;
  *
  * Values outside the range provided are clamped.
  *
+ * <p>
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>rampHeightMsg: Message when a negative particle size is
+ *     provided. </li>
+ * <li>heightLengthMsg: Message when a negative particle size is
+ *     provided. </li>
+ * <li>rampLengthMsg: Message when a negative particle size is
+ *     provided. </li>
+ * </ul>
+ *
  * @author Justin Couch
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ColorRampGenerator
 {
     /** Error message for different array lengths */
-    private static final String LENGTH_MSG =
-        "Ramp and height arrays not same length";
+    private static final String LENGTH_MSG_PROP =
+        "org.j3d.geom.terrain.ColorRampGenerator.rampHeightMsg";
 
     /** Error message for different array lengths */
-    private static final String HEIGHT_LENGTH_MSG =
-        "Height array length is smaller than the given size";
+    private static final String HEIGHT_LENGTH_MSG_PROP =
+        "org.j3d.geom.terrain.ColorRampGenerator.heightLengthMsg";
 
     /** Error message for different array lengths */
-    private static final String RAMP_LENGTH_MSG =
-        "Ramp array length is smaller than the given size";
+    private static final String RAMP_LENGTH_MSG_PROP =
+        "org.j3d.geom.terrain.ColorRampGenerator.rampLengthMsg";
 
     /** The colour interpolator we are using */
     private ColorInterpolator interpolator;
@@ -146,7 +159,12 @@ public class ColorRampGenerator
     public void setColorRamp(float[] heights, Color3f[] ramp)
     {
         if(heights.length != ramp.length)
-            throw new IllegalArgumentException(LENGTH_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(LENGTH_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         hasAlpha = false;
         interpolator = new ColorInterpolator(heights.length);
@@ -171,7 +189,12 @@ public class ColorRampGenerator
     public void setColorRamp(float[] heights, Color4f[] ramp)
     {
         if(heights.length != ramp.length)
-            throw new IllegalArgumentException(LENGTH_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(LENGTH_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         hasAlpha = true;
         interpolator = new ColorInterpolator(heights.length);
@@ -199,7 +222,12 @@ public class ColorRampGenerator
     public void setColorRamp(float[] heights, float[][] ramp)
     {
         if(heights.length != ramp.length)
-            throw new IllegalArgumentException(LENGTH_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(LENGTH_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         setColorRamp(heights, ramp, heights.length);
     }
@@ -218,10 +246,20 @@ public class ColorRampGenerator
     public void setColorRamp(float[] heights, float[][] ramp, int size)
     {
         if(heights.length < size)
-            throw new IllegalArgumentException(HEIGHT_LENGTH_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(HEIGHT_LENGTH_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         if(ramp.length < size)
-            throw new IllegalArgumentException(RAMP_LENGTH_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(RAMP_LENGTH_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         hasAlpha = (ramp[0].length != 3);
         interpolator = new ColorInterpolator(size);
@@ -266,12 +304,22 @@ public class ColorRampGenerator
         if(hasAlpha)
         {
             if(heights.length != (ramp.length / 4))
-                throw new IllegalArgumentException(LENGTH_MSG);
+            {
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(LENGTH_MSG_PROP);
+                throw new IllegalArgumentException(msg);
+            }
         }
         else
         {
             if(heights.length != (ramp.length / 3))
-                throw new IllegalArgumentException(LENGTH_MSG);
+            {
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(LENGTH_MSG_PROP);
+                throw new IllegalArgumentException(msg);
+            }
         }
 
         setColorRamp(heights, ramp, heights.length, hasAlpha);
@@ -294,11 +342,21 @@ public class ColorRampGenerator
     {
 
         if(heights.length < size)
-            throw new IllegalArgumentException(HEIGHT_LENGTH_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(HEIGHT_LENGTH_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         if(((hasAlpha && (ramp.length / 4) < size)) ||
            ((!hasAlpha && (ramp.length / 3) < size)))
-            throw new IllegalArgumentException(RAMP_LENGTH_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(RAMP_LENGTH_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         this.hasAlpha = hasAlpha;
         interpolator = new ColorInterpolator(heights.length);

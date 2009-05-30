@@ -13,7 +13,7 @@ package org.j3d.geom.hanim;
 import javax.vecmath.Matrix4f;
 
 // Local imports
-// None
+import org.j3d.util.I18nManager;
 
 /**
  * Representation of a H-Anim Site object.
@@ -22,14 +22,21 @@ import javax.vecmath.Matrix4f;
  * The site object is defined by
  * <a href="http://h-anim.org/Specifications/H-Anim1.1/">6.5 Site</a>.
  *
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>minArraySizeSizeMsg: Generic error message when the provided incoming
+ *     array for setting a value is not big enough. </li>
+ * </ul>
+ *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class HAnimSite extends HAnimObject
 {
     /** Message for the array size not being long enough */
-    private static final String MIN_ARRAY_SIZE_MSG =
-        "The source array is either null or not long enough for HAnimSite::";
+    private static final String MIN_ARRAY_SIZE_PROP =
+        "org.j3d.geom.hanim.HAnimSite.minArraySizeMsg";
 
     /** The current center of the joint */
     private float[] center;
@@ -117,7 +124,12 @@ public class HAnimSite extends HAnimObject
     public void setCenter(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG + "center");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "center";
+
+            throw new IllegalArgumentException(msg);
+        }
 
         center[0] = val[0];
         center[1] = val[1];
@@ -151,7 +163,12 @@ public class HAnimSite extends HAnimObject
     public void setScale(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG + "scale");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "scale";
+
+            throw new IllegalArgumentException(msg);
+        }
 
         scale[0] = val[0];
         scale[1] = val[1];
@@ -184,8 +201,12 @@ public class HAnimSite extends HAnimObject
     public void setTranslation(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "translation");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "translation";
+
+            throw new IllegalArgumentException(msg);
+        }
 
         translation[0] = val[0];
         translation[1] = val[1];
@@ -219,8 +240,12 @@ public class HAnimSite extends HAnimObject
     public void setScaleOrientation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "scaleOrientation");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "scaleOrientation";
+
+            throw new IllegalArgumentException(msg);
+        }
 
         scaleOrientation[0] = val[0];
         scaleOrientation[1] = val[1];
@@ -255,8 +280,12 @@ public class HAnimSite extends HAnimObject
     public void setRotation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "rotation");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "rotation";
+
+            throw new IllegalArgumentException(msg);
+        }
 
         rotation[0] = val[0];
         rotation[1] = val[1];

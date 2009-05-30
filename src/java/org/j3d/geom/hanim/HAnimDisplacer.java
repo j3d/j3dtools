@@ -13,7 +13,7 @@ package org.j3d.geom.hanim;
 // None
 
 // Local imports
-// None
+import org.j3d.util.I18nManager;
 
 /**
  * Representation of a H-Anim Displacer object.
@@ -21,17 +21,23 @@ package org.j3d.geom.hanim;
  *
  * The joint object is defined by
  * <a href="http://h-anim.org/Specifications/H-Anim1.1/">6.5 Displacer</a>.
+ * <p>
  *
- *
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>minArraySizeSizeMsg: Generic error message when the provided incoming
+ *     array for setting a value is not big enough. </li>
+ * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class HAnimDisplacer extends HAnimObject
 {
     /** Message for the array size not being long enough */
-    private static final String MIN_ARRAY_SIZE_MSG =
-        "The source array is either null or not long enough for HAnimDisplacer::";
+    private static final String MIN_ARRAY_SIZE_PROP =
+        "org.j3d.geom.hanim.HAnimDisplacer.minArraySizeMsg";
 
     /** The current coordinates of the segment */
     private int[] coordIndex;
@@ -112,8 +118,12 @@ public class HAnimDisplacer extends HAnimObject
     public void setDisplacements(float[] val, int numValid)
     {
         if(val == null || val.length < numValid)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "displacements");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "displacements";
+
+            throw new IllegalArgumentException(msg);
+        }
 
         System.arraycopy(val, 0, displacements, 0, numValid);
         numDisplacements = numValid;
@@ -154,8 +164,12 @@ public class HAnimDisplacer extends HAnimObject
     public void setCoordIndex(int[] val, int numValid)
     {
         if(val == null || val.length < numValid)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "coordIndex");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "coordIndex";
+            throw new IllegalArgumentException(msg);
+        }
 
         if((coordIndex == null) || (coordIndex.length < numValid))
         {

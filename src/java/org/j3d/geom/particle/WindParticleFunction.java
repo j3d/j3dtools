@@ -13,7 +13,7 @@ package org.j3d.geom.particle;
 import java.util.Random;
 
 // Local imports
-// None
+import org.j3d.util.I18nManager;
 
 /**
  * WindParticleFunction models a directional wind source.
@@ -42,14 +42,22 @@ import java.util.Random;
  * and turbulence (direction variation) per frame, controlling the strength and
  * direction of the wind force.
  *
+ * <p>
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>negGustinessMsg: Message when a negative gustiness size is
+ *     provided. </li>
+ * </ul>
+ *
  * @author Justin Couch
- * @version $Revision: 2.1 $
+ * @version $Revision: 2.2 $
  */
 public class WindParticleFunction implements ParticleFunction
 {
     /** Message when the gustiness is negative */
     private static final String NEG_GUSTINESS_MSG =
-        "The gustiness is not allowed to be negative.";
+        "org.j3d.geom.particle.WindParticleFunction.negGustinessMsg.";
 
     /** Calculated force per square meter based on the wind speed */
     private float pressure;
@@ -107,7 +115,12 @@ public class WindParticleFunction implements ParticleFunction
                                 float turbulence)
     {
         if(gustiness < 0)
-            throw new IllegalArgumentException(NEG_GUSTINESS_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(NEG_GUSTINESS_MSG);
+            throw new IllegalArgumentException(msg);
+        }
 
         this.direction = new float[3];
         this.direction[0] = direction[0];
@@ -261,7 +274,12 @@ public class WindParticleFunction implements ParticleFunction
         throws IllegalArgumentException
     {
         if(gustiness < 0)
-            throw new IllegalArgumentException(NEG_GUSTINESS_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(NEG_GUSTINESS_MSG);
+            throw new IllegalArgumentException(msg);
+        }
 
         this.gustiness = gustiness;
     }

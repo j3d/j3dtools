@@ -13,7 +13,7 @@ package org.j3d.geom.particle;
 import java.util.Random;
 
 // Local imports
-// None
+import org.j3d.util.I18nManager;
 
 /**
  * Common base class that implements the {@link ParticleInitializer} interface
@@ -23,24 +23,37 @@ import java.util.Random;
  * Mass and surface area are initialised to be zero. Lifetime variation is
  * always set to zero, unless changed by the user.
  *
+ * <p>
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>negLifeTimeMsg: Error message for a non-positive lifetime being set</li>
+ * <li>negMassMsg: Error message for a non-positive mass being set</li>
+ * <li>negSurfaceAreaMsg: Error message for a non-positive surface area being set</li>
+ * <li>lifeVariationMsg: Error message for a lifetime variation out of
+ *     range being set</li>
+ * </ul>
+ *
  * @author Justin Couch
- * @version $Revision: 2.0 $
+ * @version $Revision: 2.1 $
  */
 public abstract class BaseEmitter implements ParticleInitializer
 {
     /** Message when the particle lifetime is less than or equal to zero */
-    private static final String LIFETIME_ERR =
-        "Particle lifetime must be greater than zero";
+    private static final String LIFETIME_ERR_PROP =
+        "org.j3d.geom.particle.BaseEmitter.negLifeTimeMsg";
 
     /** Message when the mass value is negative */
-    private static final String NEG_MASS_ERR = "Mass must be >= zero";
+    private static final String NEG_MASS_ERR_PROP =
+        "org.j3d.geom.particle.BaseEmitter.negMassMsg";
 
     /** Message when the surface area set is negative */
-    private static final String NEG_AREA_ERR = "Surface area must be >= zero";
+    private static final String NEG_AREA_ERR_PROP =
+        "org.j3d.geom.particle.BaseEmitter.negSurfaceAreaMsg";
 
     /** Message when the lifetime variation is out of limits */
-    private static final String LIFE_VAR_ERR =
-        "Particle lifetime variation must be within [0,1]";
+    private static final String LIFE_VAR_ERR_PROP =
+        "org.j3d.geom.particle.BaseEmitter.lifeVariationMsg";
 
     /** Base lifetime in milliseconds */
     protected int lifetime;
@@ -99,7 +112,11 @@ public abstract class BaseEmitter implements ParticleInitializer
         this();
 
         if(maxTime <= 0)
-            throw new IllegalArgumentException(LIFETIME_ERR);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(LIFETIME_ERR_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         lifetime = maxTime;
         particleCount = maxParticleCount;
@@ -154,7 +171,11 @@ public abstract class BaseEmitter implements ParticleInitializer
         throws IllegalArgumentException
     {
         if(time <= 0)
-            throw new IllegalArgumentException(LIFETIME_ERR);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(LIFETIME_ERR_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         lifetime = time;
     }
@@ -182,7 +203,11 @@ public abstract class BaseEmitter implements ParticleInitializer
         throws IllegalArgumentException
     {
         if(variation < 0 || variation > 1)
-            throw new IllegalArgumentException(LIFE_VAR_ERR);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(LIFE_VAR_ERR_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         lifetimeVariation = variation;
     }
@@ -264,7 +289,11 @@ public abstract class BaseEmitter implements ParticleInitializer
         throws IllegalArgumentException
     {
         if(area < 0)
-            throw new IllegalArgumentException(NEG_AREA_ERR);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(NEG_AREA_ERR_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         surfaceArea = area;
     }
@@ -289,7 +318,11 @@ public abstract class BaseEmitter implements ParticleInitializer
     public void setMass(float mass) throws IllegalArgumentException
     {
         if(mass < 0)
-            throw new IllegalArgumentException(NEG_MASS_ERR);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(NEG_MASS_ERR_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         initialMass = mass;
     }

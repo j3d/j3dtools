@@ -15,6 +15,7 @@ import java.util.ArrayList;
 // Local imports
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
+import org.j3d.util.I18nManager;
 
 /**
  * Abstract representation of a ParticleSystem.
@@ -26,10 +27,17 @@ import org.j3d.util.ErrorReporter;
  * <P>
  * A ParticleSystem can be represented in any way appropriate, the only
  * requirement is that is create a Node to be added to the scenegraph.
+ *
  * <p>
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>negParticleCountMsg: Message when a negative particle size is
+ *     provided. </li>
+ * </ul>
  *
  * @author Justin Couch, based on code by Daniel Selman
- * @version $Revision: 2.2 $
+ * @version $Revision: 2.3 $
  */
 public abstract class ParticleSystem implements ParticleFactory
 {
@@ -37,8 +45,8 @@ public abstract class ParticleSystem implements ParticleFactory
     private static final int NUM_INIT_FUNCTIONS = 5;
 
     /** Error message when the particle count is negative */
-    private static final String NEG_PARTICLE_COUNT_MSG =
-        "The max particle count value is negative. Must be non-negative.";
+    private static final String NEG_PARTICLE_COUNT_PROP =
+        "org.j3d.geom.particle.ParticleSystem.negParticleCountMsg";
 
     /** Local reporter to put errors in */
     protected ErrorReporter errorReporter;
@@ -116,7 +124,12 @@ public abstract class ParticleSystem implements ParticleFactory
         throws IllegalArgumentException
     {
         if(maxParticleCount < 0)
-            throw new IllegalArgumentException(NEG_PARTICLE_COUNT_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(NEG_PARTICLE_COUNT_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         systemName = name;
         particleFunctions = new ArrayList(NUM_INIT_FUNCTIONS);
@@ -411,7 +424,12 @@ public abstract class ParticleSystem implements ParticleFactory
         throws IllegalArgumentException
     {
         if(maxCount < 0)
-            throw new IllegalArgumentException(NEG_PARTICLE_COUNT_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(NEG_PARTICLE_COUNT_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         if(maxCount > deadParticles.length)
         {

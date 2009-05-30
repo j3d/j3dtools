@@ -16,6 +16,7 @@ import javax.vecmath.Matrix4f;
 
 // Local imports
 import org.j3d.util.ErrorReporter;
+import org.j3d.util.I18nManager;
 
 /**
  * Representation of a H-Anim Joint object.
@@ -29,19 +30,28 @@ import org.j3d.util.ErrorReporter;
  * do, and we have an internal Grouping node to handling this joint, so
  * we've added fields and support for it anyway.
  *
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>minArraySizeSizeMsg: Generic error message when the provided incoming
+ *     array for setting a value is not big enough. </li>
+ * <li>invChildTypeMsg: When the provided node doesn't meet the required set
+ *     of acceptable class types</li>
+ * </ul>
+ *
  * @author Justin Couch
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class HAnimJoint extends HAnimObject
     implements HAnimObjectParent
 {
     /** Message for the array size not being long enough */
-    private static final String MIN_ARRAY_SIZE_MSG =
-        "The source array is either null or not long enough for HAnimJoint::";
+    private static final String MIN_ARRAY_SIZE_PROP =
+        "org.j3d.geom.hanim.HAnimJoint.minArraySizeMsg";
 
     /** Message for trying to set a wrong child type */
-    private static final String INVALID_CHILD_TYPE_MSG =
-        "Invalid child type supplied. Must be one of Joint, Segment or Site";
+    private static final String INVALID_CHILD_TYPE_PROP =
+        "org.j3d.geom.hanim.HAnimJoint.invChildTypeMsg";
 
     /** The current bboxCenter of the joint */
     protected float[] bboxCenter;
@@ -254,8 +264,12 @@ public class HAnimJoint extends HAnimObject
     public void setCenter(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "center");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "center";
+            throw new IllegalArgumentException(msg);
+        }
 
         center[0] = val[0];
         center[1] = val[1];
@@ -301,8 +315,12 @@ public class HAnimJoint extends HAnimObject
     public void setScale(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "scale");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "scale";
+            throw new IllegalArgumentException(msg);
+        }
 
         scale[0] = val[0];
         scale[1] = val[1];
@@ -336,8 +354,12 @@ public class HAnimJoint extends HAnimObject
     public void setTranslation(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "translation");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "translation";
+            throw new IllegalArgumentException(msg);
+        }
 
         translation[0] = val[0];
         translation[1] = val[1];
@@ -372,8 +394,12 @@ public class HAnimJoint extends HAnimObject
     public void setScaleOrientation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "scaleOrientation");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "scaleOrientation";
+            throw new IllegalArgumentException(msg);
+        }
 
         scaleOrientation[0] = val[0];
         scaleOrientation[1] = val[1];
@@ -409,8 +435,12 @@ public class HAnimJoint extends HAnimObject
     public void setRotation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "rotation");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "rotation";
+            throw new IllegalArgumentException(msg);
+        }
 
         rotation[0] = val[0];
         rotation[1] = val[1];
@@ -445,8 +475,12 @@ public class HAnimJoint extends HAnimObject
     public void setBboxCenter(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "bboxCenter");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "bboxCenter";
+            throw new IllegalArgumentException(msg);
+        }
 
         bboxCenter[0] = val[0];
         bboxCenter[1] = val[1];
@@ -480,8 +514,12 @@ public class HAnimJoint extends HAnimObject
     public void setBboxSize(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "bboxSize");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "bboxSize";
+            throw new IllegalArgumentException(msg);
+        }
 
         bboxSize[0] = val[0];
         bboxSize[1] = val[1];
@@ -512,8 +550,12 @@ public class HAnimJoint extends HAnimObject
     public void setLimitOrientation(float[] val)
     {
         if(val == null || val.length < 4)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "limitOrientation");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "limitOrientation";
+            throw new IllegalArgumentException(msg);
+        }
 
         limitOrientation[0] = val[0];
         limitOrientation[1] = val[1];
@@ -554,8 +596,12 @@ public class HAnimJoint extends HAnimObject
     public void setLowerLimit(float[] val, int numElements)
     {
         if(val == null || val.length < numElements * 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "lowerLimit");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "lowerLimit";
+            throw new IllegalArgumentException(msg);
+        }
 
         if((lowerLimit == null) || (lowerLimit.length < numElements * 3))
             lowerLimit = new float[numElements * 3];
@@ -597,8 +643,12 @@ public class HAnimJoint extends HAnimObject
     public void setUpperLimit(float[] val, int numElements)
     {
         if(val == null || val.length < numElements * 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "upperLimit");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "upperLimit";
+            throw new IllegalArgumentException(msg);
+        }
 
         if((upperLimit == null) || (upperLimit.length < numElements * 3))
             upperLimit = new float[numElements * 3];
@@ -640,8 +690,12 @@ public class HAnimJoint extends HAnimObject
     public void setStiffness(float[] val, int numElements)
     {
         if(val == null || val.length < numElements)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "stiffness");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "stiffness";
+            throw new IllegalArgumentException(msg);
+        }
 
         if((stiffness == null) || (stiffness.length < numElements))
             stiffness = new float[numElements];
@@ -685,8 +739,12 @@ public class HAnimJoint extends HAnimObject
     public void setSkinCoordIndex(int[] val, int numValid)
     {
         if(val == null || val.length < numValid)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "skinCoordIndex");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "skinCoordIndex";
+            throw new IllegalArgumentException(msg);
+        }
 
         if((skinCoordIndex == null) || (skinCoordIndex.length < numValid))
         {
@@ -731,8 +789,12 @@ public class HAnimJoint extends HAnimObject
     public void setSkinCoordWeight(float[] val)
     {
         if(val == null || val.length < numSkinCoord)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "skinCoordWeight");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "skinCoordWeight";
+            throw new IllegalArgumentException(msg);
+        }
 
         // No need to resize here as it should have already been done by
         // setSkinCoordIndex.
@@ -782,7 +844,12 @@ public class HAnimJoint extends HAnimObject
             if(!(kids[i] instanceof HAnimJoint ||
                  kids[i] instanceof HAnimSegment ||
                  kids[i] instanceof HAnimSite))
-                throw new IllegalArgumentException(INVALID_CHILD_TYPE_MSG);
+            {
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg = intl_mgr.getString(INVALID_CHILD_TYPE_PROP);
+
+                throw new IllegalArgumentException(msg);
+            }
 
             children[i] = kids[i];
 
@@ -819,7 +886,12 @@ public class HAnimJoint extends HAnimObject
         if(!(kid instanceof HAnimJoint ||
              kid instanceof HAnimSegment ||
              kid instanceof HAnimSite))
-            throw new IllegalArgumentException(INVALID_CHILD_TYPE_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(INVALID_CHILD_TYPE_PROP);
+
+            throw new IllegalArgumentException(msg);
+        }
 
         if(children == null || children.length == numChildren)
         {

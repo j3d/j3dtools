@@ -13,7 +13,7 @@ package org.j3d.geom.hanim;
 import java.util.ArrayList;
 
 // Local imports
-// None
+import org.j3d.util.I18nManager;
 
 /**
  * Representation of a H-Anim Segment object.
@@ -22,14 +22,21 @@ import java.util.ArrayList;
  * The segment object is defined by
  * <a href="http://h-anim.org/Specifications/H-Anim1.1/">6.5 Segment</a>.
  *
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>minArraySizeSizeMsg: Generic error message when the provided incoming
+ *     array for setting a value is not big enough. </li>
+ * </ul>
+ *
  * @author Justin Couch
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class HAnimSegment extends HAnimObject
 {
     /** Message for the array size not being long enough */
-    private static final String MIN_ARRAY_SIZE_MSG =
-        "The source array is either null or not long enough for HAnimSegment::";
+    private static final String MIN_ARRAY_SIZE_PROP =
+        "org.j3d.geom.hanim.HAnimSegment.minArraySizeMsg";
 
     /** The current bboxCenter of the segment */
     protected float[] bboxCenter;
@@ -124,8 +131,12 @@ public class HAnimSegment extends HAnimObject
     public void setBboxCenter(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                              "bboxCenter");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "bboxCenter";
+
+            throw new IllegalArgumentException(msg);
+        }
 
         bboxCenter[0] = val[0];
         bboxCenter[1] = val[1];
@@ -159,8 +170,12 @@ public class HAnimSegment extends HAnimObject
     public void setBboxSize(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "bboxSize");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "bboxSize";
+
+            throw new IllegalArgumentException(msg);
+        }
 
         bboxSize[0] = val[0];
         bboxSize[1] = val[1];
@@ -190,8 +205,12 @@ public class HAnimSegment extends HAnimObject
     public void setCenterOfMass(float[] val)
     {
         if(val == null || val.length < 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG +
-                                               "centerOfMass");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "displacements";
+
+            throw new IllegalArgumentException(msg);
+        }
 
         centerOfMass[0] = val[0];
         centerOfMass[1] = val[1];
@@ -271,7 +290,12 @@ public class HAnimSegment extends HAnimObject
     public void setCoord(float[] val, int numElements)
     {
         if(val == null || val.length < numElements * 3)
-            throw new IllegalArgumentException(MIN_ARRAY_SIZE_MSG + "coord");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MIN_ARRAY_SIZE_PROP) + "coord";
+
+            throw new IllegalArgumentException(msg);
+        }
 
         if((coords == null) || (coords.length < numElements * 3))
             coords = new float[numElements * 3];

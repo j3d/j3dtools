@@ -14,6 +14,7 @@ package org.j3d.geom.particle;
 
 // Local imports
 import org.j3d.util.interpolator.ColorInterpolator;
+import org.j3d.util.I18nManager;
 
 /**
  * Apply a colour change over time to the particle.
@@ -23,15 +24,22 @@ import org.j3d.util.interpolator.ColorInterpolator;
  * but fades to yellow, then transparent over its age. The time values are in
  * seconds and the interpolation is assumed to be in HSV space, although the
  * colors are provided as RGB values.
+ * <p>
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>rampTimeMsg: Message when the lengths of the ramp and time arrays
+ *     exactly match</li>
+ * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 2.0 $
+ * @version $Revision: 2.1 $
  */
 public class ColorRampFunction implements ParticleFunction
 {
     /** Error message for different array lengths */
-    private static final String LENGTH_MSG =
-        "Ramp and time arrays not same length";
+    private static final String LENGTH_MSG_PROP =
+        "org.j3d.geom.particle.ColorRampFunction.rampTimeMsg";
 
     /** The colour interpolator we are using */
     private ColorInterpolator interpolator;
@@ -203,7 +211,12 @@ public class ColorRampFunction implements ParticleFunction
                              boolean hasAlpha)
     {
         if(times.length != numColors)
-            throw new IllegalArgumentException(LENGTH_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(LENGTH_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         this.hasAlpha = hasAlpha;
         interpolator = new ColorInterpolator(numColors,
