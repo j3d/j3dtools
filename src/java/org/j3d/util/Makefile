@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.util directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.14 $
+# Version: $Revision: 1.15 $
 #
 #*********************************************************************
 
@@ -16,6 +16,7 @@ PACKAGE = org.j3d.util
 # compiled in
 SOURCE = \
     ErrorReporter.java \
+    I18nManager.java \
     DefaultErrorReporter.java \
     HashSet.java \
     CharHashMap.java \
