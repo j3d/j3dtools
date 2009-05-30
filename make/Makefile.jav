@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.18 $
+# Version: $Revision: 1.19 $
 #
 #*********************************************************************
 
@@ -184,7 +184,7 @@ $(DESTINATION) :
 	@ $(MAKE) -k -f $(subst .build,Makefile,$@) all
 
 # Rule 4. Call rule 3 for every package
-buildall : $(PLIST_BUILD)
+buildall : $(PLIST_BUILD) $(OTHER_FILES)
 	$(PRINT) Done build.
 
 #
