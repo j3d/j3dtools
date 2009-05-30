@@ -1,4 +1,4 @@
-Class-Path: j3d-org-all_2.0.0.jar \
+Class-Path: j3d-org-all_2.0.0.jar 
 Extension-List: java3d
 java3d-Extension-Name: javax.media.j3d
 java3d-Specification-Version: 1.2

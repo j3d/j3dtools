@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.10 $
+# Version: $Revision: 1.11 $
 #
 #*********************************************************************
 
@@ -15,6 +15,8 @@ DOCS_DIR=docs
 MAKE_DIR=make
 
 JAVA_DIR=$(SRC_DIR)/java
+CONFIG_DIR=$(SRC_DIR)/config
+IMAGES_DIR=${SRC_DIR}/images
 NATIVE_DIR=$(SRC_DIR)/native
 INCLUDE_DIR=$(NATIVE_DIR)/include
 EXAMPLES_DIR=$(PROJECT_ROOT)/examples

@@ -12,7 +12,7 @@ import org.j3d.loaders.ac3d.*;
  * <p>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class AC3DReader implements Ac3dParseObserver
 {
@@ -56,6 +56,7 @@ public class AC3DReader implements Ac3dParseObserver
             System.out.println(parent.getName());
 
         System.out.println(obj);
+
         return true;
     }
 

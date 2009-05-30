@@ -32,6 +32,8 @@ help:
 	$(PRINT) "class:       Compile just the classes. Don't make JAR files."
 	$(PRINT) "jar:         Make the java JAR file"
 	$(PRINT) "javadoc:     Generate the javadoc information"
+	$(PRINT) "config:      Build the configuration files."
+	$(PRINT) "images:      Build the images."
 	$(PRINT) "docs:        Generate both parser and javadoc files"
 	$(PRINT) "all:         Build everything (including docs)"
 	$(PRINT) "clean:       Blow all the library classes away"
@@ -45,8 +47,14 @@ help:
 	$(PRINT) "j3d-javadoc: Java3D javadoc"
 	$(PRINT) 
 
-all: class jar javadoc
+all: class images config jar javadoc
 
+images:
+	make -f $(IMAGES_DIR)/Makefile buildall
+	
+config:
+	make -f $(CONFIG_DIR)/Makefile buildall
+	
 class:
 	make -f $(JAVA_DIR)/Makefile buildall
 

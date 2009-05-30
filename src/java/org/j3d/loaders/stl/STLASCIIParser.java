@@ -30,7 +30,7 @@ import org.j3d.loaders.InvalidFormatException;
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 class STLASCIIParser extends STLParser
 {
@@ -275,11 +275,11 @@ class STLASCIIParser extends STLParser
         int line_count = 1;
 
         // check if ASCII format
-        if(!line.startsWith("solid")) {
+        if(!line.startsWith("solid"))
+        {
             return false;
         }
         else
-
         {
             line = line.trim();
 
