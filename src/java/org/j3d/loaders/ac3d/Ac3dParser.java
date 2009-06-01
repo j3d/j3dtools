@@ -26,6 +26,7 @@ import org.j3d.loaders.ParsingErrorException;
 import org.j3d.loaders.UnsupportedFormatException;
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
+import org.j3d.util.I18nManager;
 
 /**
  * <p><code>AC3DFileParser</code> handles the work of parsing the AC3D data
@@ -40,61 +41,82 @@ import org.j3d.util.ErrorReporter;
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class Ac3dParser
 {
+    /** General message for an exception being caught */
+    private static final String GENERAL_EXCEPTION_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.generalErrorMsg";
+
+    /** Assembled message when the tag count is wrong pt1 */
+    private static final String TAG_FORMAT_PROP1 =
+        "org.j3d.loaders.ac3d.Ac3dParser.tagParseCountMsg1";
+
+    /** Assembled message when the tag count is wrong pt2 */
+    private static final String TAG_FORMAT_PROP2 =
+        "org.j3d.loaders.ac3d.Ac3dParser.tagParseCountMsg2";
+
+    /** Assembled message when the tag count is wrong pt3 */
+    private static final String TAG_FORMAT_PROP3 =
+        "org.j3d.loaders.ac3d.Ac3dParser.tagParseCountMsg3";
+
     /** Message when the header is not long enough */
-    private static final String HEADER_TOO_SHORT_ERR =
-        "AC3D data stream header too short.";
+    private static final String HEADER_TOO_SHORT_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.shortHeaderMsg";
 
     /** Message when the header is invalid */
-    private static final String INVALID_PREAMBLE =
-        "Data stream did not contain a valid preamble.";
+    private static final String INVALID_PREAMBLE_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.invalidPreambleMsg";
 
     /** Message when the version is not one supported */
-    private static final String UNSUPPORTED_VERSION_ERR =
-        "Format version in data stream grater than supported.";
+    private static final String UNSUPPORTED_VERSION_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.unsupportedVersionMsg";
 
     /** Message for a badly formatted OBJECT definition */
-    private static final String OBJECT_TOKEN_CNT_ERR =
-        "The OBJECT token contains either 1 or more than 2 tokens";
+    private static final String OBJECT_TOKEN_CNT_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.objectCountMsg";
 
     /** Message for a badly formatted kid definition */
-    private static final String INVALID_OBJECT_KID_ERR =
-        "When parsing a child OBJECT of another OBJECT an invalid " +
-        "definition was found: ";
+    private static final String INVALID_OBJECT_CHILD_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.invalidObjectChildMsg";
+
+    /** Message for a badly formatted kid definition */
+    private static final String INVALID_OBJECT_TOKEN_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.invalidObjectTokenMsg";
 
     /** Message for a badly formatted SURF definition */
-    private static final String INVALID_SURFACE_TOKEN_ERR =
-        "When parsing a child SURFACE of an OBJECT an invalid " +
-        "definition was found";
+    private static final String INVALID_SURFACE_CHILD_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.objectCountMsg";
 
+    /** Message for a badly formatted SURF definition */
+    private static final String INVALID_SURFACE_TOKEN_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.objectTokenMsg";
+
+    /** Message when any unknown token encountered */
+    private static final String ILLEGAL_TOKEN_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.invalidTokenMsg";
 
     /**
      * Message when the user code generates an exception in observer callback
      * for material definitions.
      */
-    private static final String USER_MATERIAL_ERR =
-        "User code implementing Ac3dParseObserver has generated an exception " +
-        "during the materialComplete() callback.";
+    private static final String USER_MATERIAL_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.materialCallbackErrMsg";
 
     /**
      * Message when the user code generates an exception in observer callback
      * for object definitions.
      */
-    private static final String USER_OBJECT_ERR =
-        "User code implementing Ac3dParseObserver has generated an exception " +
-        "during the objectComplete() callback.";
+    private static final String USER_OBJECT_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.objectCallbackErrMsg";
 
     /**
      * Message when the user code generates an exception in observer callback
      * for surface definitions.
      */
-    private static final String USER_SURFACE_ERR =
-        "User code implementing Ac3dParseObserver has generated an exception " +
-        "during the surfaceComplete() callback.";
-
+    private static final String USER_SURFACE_PROP =
+        "org.j3d.loaders.ac3d.Ac3dParser.surfaceCallbackErrMsg";
 
 
     /** The latest version of the file format this parser supports. */
@@ -311,31 +333,34 @@ public class Ac3dParser
         {
             String[] tokens = lineTokenizer.enumerateTokens(buffer);
 
-			try
-			{
-				int token_id = keywordsMap.get(tokens[0]);
-				switch(token_id)
-				{
-					case MATERIAL_TOKEN:
-						forced_end = parseMaterial(tokens, retainData);
-						break;
+            try
+            {
+                int token_id = keywordsMap.get(tokens[0]);
+                switch(token_id)
+                {
+                    case MATERIAL_TOKEN:
+                        forced_end = parseMaterial(tokens, retainData);
+                        break;
 
-					case OBJECT_TOKEN:
-						forced_end = parseObject(null, tokens, retainData);
-						break;
-				}
-			}
-			catch(NullPointerException e)
-			{
-				System.out.println("Exception: Illegal token found :" + buffer);
-				e.printStackTrace();
-			}
-			catch(Exception e)
-			{
-				System.out.println("Exeception caught: " + e);
-				System.out.println("Check file formatting. Example would be extra lines at the end of file.");
-				e.printStackTrace();
-			}
+                    case OBJECT_TOKEN:
+                        forced_end = parseObject(null, tokens, retainData);
+                        break;
+                }
+            }
+            catch(NullPointerException npe)
+            {
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(ILLEGAL_TOKEN_PROP) + buffer;
+                errorReporter.errorReport(msg, npe);
+            }
+            catch(Exception e)
+            {
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(ILLEGAL_TOKEN_PROP);
+                errorReporter.errorReport(msg, e);
+            }
         }
     }
 
@@ -395,17 +420,32 @@ public class Ac3dParser
         String header = reader.readLine();
 
         if(header.length() < 5)
-            throw new InvalidFormatException(HEADER_TOO_SHORT_ERR);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(HEADER_TOO_SHORT_PROP);
+            throw new InvalidFormatException(msg);
+        }
 
         String str = header.substring(0,3);
-        if(str.equals(HEADER_PREAMBLE))
-            throw new InvalidFormatException(INVALID_PREAMBLE);
+        if(!str.equals(HEADER_PREAMBLE))
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(INVALID_PREAMBLE_PROP);
+            throw new InvalidFormatException(msg);
+        }
 
         str = header.substring(4, header.length());
         int version = Integer.valueOf(str, 16);
 
         if(version > SUPPORTED_FORMAT_VERSION)
-            throw new UnsupportedFormatException(UNSUPPORTED_VERSION_ERR);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(UNSUPPORTED_VERSION_PROP);
+            throw new UnsupportedFormatException(msg);
+        }
     }
 
     /**
@@ -475,7 +515,7 @@ public class Ac3dParser
             }
             catch(Exception e)
             {
-                errorReporter.errorReport(USER_MATERIAL_ERR, e);
+                errorReporter.errorReport(USER_MATERIAL_PROP, e);
             }
         }
 
@@ -498,7 +538,12 @@ public class Ac3dParser
         throws IOException
     {
         if(tokens.length != 2)
-            throw new ParsingErrorException(OBJECT_TOKEN_CNT_ERR);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(OBJECT_TOKEN_CNT_PROP);
+            throw new ParsingErrorException(msg);
+        }
 
         Ac3dObject object = new Ac3dObject();
 
@@ -524,7 +569,9 @@ public class Ac3dParser
             // and move on
             if(tk_val == null)
             {
-                String msg = "Unknown object token encountered in file: " +
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(INVALID_OBJECT_TOKEN_PROP) +
                              kid_tokens[0];
 
                 errorReporter.warningReport(msg, null);
@@ -543,7 +590,10 @@ public class Ac3dParser
                         }
                         catch(Exception e)
                         {
-                            errorReporter.errorReport(USER_SURFACE_ERR, e);
+                            I18nManager intl_mgr = I18nManager.getManager();
+                            String msg = intl_mgr.getString(USER_SURFACE_PROP);
+
+                            errorReporter.errorReport(msg, e);
                         }
                     }
 
@@ -628,7 +678,10 @@ public class Ac3dParser
 
             if(token_id != OBJECT_TOKEN)
             {
-                String msg = INVALID_OBJECT_KID_ERR + kid_tokens[0];
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(INVALID_OBJECT_CHILD_PROP) +
+                             kid_tokens[0];
                 throw new ParsingErrorException(msg);
             }
 
@@ -731,7 +784,12 @@ public class Ac3dParser
         int token_id = keywordsMap.get(tokens[0]);
 
         if(token_id != SURF_TOKEN)
-            throw new ParsingErrorException(INVALID_SURFACE_TOKEN_ERR);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(INVALID_SURFACE_CHILD_PROP);
+            throw new ParsingErrorException(msg);
+        }
 
         Ac3dSurface surface = new Ac3dSurface();
         surface.setFlags(parseHexidecimal(tokens[1]));
@@ -745,7 +803,9 @@ public class Ac3dParser
         // and move on
         if(tk_val == null)
         {
-            String msg = "Unknown surface token encountered in file: " +
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(INVALID_SURFACE_TOKEN_PROP) +
                          tokens[0];
 
             errorReporter.warningReport(msg, null);
@@ -764,7 +824,9 @@ public class Ac3dParser
         // and move on
         if(tk_val == null)
         {
-            String msg = "Unknown surface token encountered in file: " +
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(INVALID_SURFACE_TOKEN_PROP) +
                          tokens[0];
 
             errorReporter.warningReport(msg, null);
@@ -785,7 +847,10 @@ public class Ac3dParser
             }
             catch(Exception e)
             {
-                errorReporter.errorReport(USER_SURFACE_ERR, e);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg = intl_mgr.getString(USER_SURFACE_PROP);
+
+                errorReporter.errorReport(msg, e);
             }
         }
 
@@ -903,9 +968,14 @@ public class Ac3dParser
     {
         if(tokens.length != numArgsRequired)
         {
-            throw new ParsingErrorException("Wrong number of args for " +
-                tokens[0] + "; expecting " + numArgsRequired + ", got " +
-                tokens.length);
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg1 = intl_mgr.getString(TAG_FORMAT_PROP1);
+            String msg2 = intl_mgr.getString(TAG_FORMAT_PROP2);
+            String msg3 = intl_mgr.getString(TAG_FORMAT_PROP3);
+            String final_msg = msg1 + tokens[0] + msg2 + numArgsRequired +
+                               msg3 + tokens.length;
+
+            throw new ParsingErrorException(final_msg);
         }
     }
 
