@@ -9,12 +9,14 @@
 
 package org.j3d.terrain;
 
-// Standard imports
+// External imports
 import javax.vecmath.Tuple3f;
 import javax.vecmath.Vector3f;
 
-// Application specific imports
+// Local imports
 import org.j3d.ui.navigation.HeightMapGeometry;
+
+import org.j3d.util.I18nManager;
 import org.j3d.util.frustum.ViewFrustum;
 
 /**
@@ -49,12 +51,29 @@ import org.j3d.util.frustum.ViewFrustum;
  * application control appearance settings. If this is not set then particular
  * implementation is free to do what it likes.
  *
+ * <p>
+ *
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>nullViewFrustumMsg: The view frustum in the constructor is null </li>
+ * <li>nullTerrainDataMsg: The terrain data in the constructor is null </li>
+ * </ul>
+ *
  * @author Justin Couch, based on original ideas from Paul Byrne
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public abstract class Landscape
     implements HeightMapGeometry
 {
+    /** Message for the view frustum instance being null */
+    private static final String NULL_VIEW_FRUSTUM_MSG_PROP =
+        "org.j3d.terrain.Landscape.nullViewFrustumMsg";
+
+    /** Message for the Terrain Data instance being null */
+    private static final String NULL_TERRAIN_MSG_PROP =
+        "org.j3d.terrain.Landscape.nullTerrainDataMsg";
+
     /** The current viewing frustum that is seeing the landscape */
     protected ViewFrustum landscapeView;
 
@@ -72,10 +91,18 @@ public abstract class Landscape
     public Landscape(ViewFrustum view, TerrainData data)
     {
         if(view == null)
-            throw new IllegalArgumentException("ViewFrustum not supplied");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(NULL_VIEW_FRUSTUM_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         if(data == null)
-            throw new IllegalArgumentException("Terrain data not supplied");
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(NULL_TERRAIN_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         terrainData = data;
         landscapeView = view;

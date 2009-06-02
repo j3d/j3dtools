@@ -9,7 +9,7 @@
 
 package org.j3d.terrain.roam;
 
-// Standard imports
+// External imports
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -18,9 +18,10 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Tuple3f;
 import javax.vecmath.Vector3f;
 
-// Application specific imports
+// Local imports
 import org.j3d.terrain.*;
 
+import org.j3d.util.I18nManager;
 import org.j3d.util.frustum.ViewFrustum;
 
 /**
@@ -30,27 +31,44 @@ import org.j3d.util.frustum.ViewFrustum;
  *
  * First patch is at 0,0 in x, z and then patches are laid out along the
  * +ve x axis and the -ve z axis
+ * <p>
+ *
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>negPatchSizeMsg: The patch size provided is non-positive </li>
+ * <li>pow2PatchSizeMsg: The patch size provided is not a power of 2 </li>
+ * <li>gridWidthSizeMsg: The patch size width is not 2^n + 1 </li>
+ * <li>gridDepthSizeMsg: The patch size depth is not 2^n + 1 </li>
+ * <li>unknownTerrainTypeMsg: The TerrainData instance provided is not
+ *     of a handled form.</li>
+ * </ul>
+ *
  *
  * @author Paul Byrne, Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class ROAMSplitMergeLandscape extends Landscape
 {
     /** Message for when the patchSize is <= 0 */
-    private static final String NEG_PATCH_SIZE_MSG =
-        "The patch size provided is negative or zero.";
+    private static final String NEG_PATCH_SIZE_MSG_PROP =
+        "org.j3d.terrain.roam.ROAMSplitMergeLandscape.negPatchSizeMsg";
 
     /** Message for when patchSize is not a ^2 */
-    private static final String NOT_POW2_MSG =
-        "The patchSize is not a power of two";
+    private static final String NOT_POW2_MSG_PROP =
+        "org.j3d.terrain.roam.ROAMSplitMergeLandscape.pow2PatchSizeMsg";
 
     /** Message for the static grid size is not a 2^n + 1 */
-    private static final String GRID_W_SIZE_MSG =
-        "The grid width is not (n * patchSize + 1) in size: ";
+    private static final String GRID_W_SIZE_MSG_PROP =
+        "org.j3d.terrain.roam.ROAMSplitMergeLandscape.gridWidthSizeMsg";
 
     /** Message for the static grid size is not a 2^n + 1 */
-    private static final String GRID_D_SIZE_MSG =
-        "The grid depth is not (n * patchSize + 1) in size: ";
+    private static final String GRID_D_SIZE_MSG_PROP =
+        "org.j3d.terrain.roam.ROAMSplitMergeLandscape.gridDepthSizeMsg";
+
+    /** Message when we have a Terrain implementation we don't understand */
+    private static final String INV_TERRAIN_TYPE_MSG_PROP =
+        "org.j3d.terrain.roam.ROAMSplitMergeLandscape.unknownTerrainTypeMsg";
 
     /** ROAMPatch size in grid points if the user doesn't supply one */
     private static final int DEFAULT_PATCH_SIZE = 65;
@@ -147,10 +165,18 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
         super(view, data);
 
         if(patchSize <= 0)
-            throw new IllegalArgumentException(NEG_PATCH_SIZE_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(NEG_PATCH_SIZE_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         if(!power2Check(patchSize - 1))
-            throw new IllegalArgumentException(NOT_POW2_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(NOT_POW2_MSG_PROP);
+            throw new IllegalArgumentException(msg);
+        }
 
         terrainDataType = data.getSourceDataType();
         accuracy = (float)Math.toRadians(0.1);
@@ -371,10 +397,18 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
                 int h = s_data.getGridDepth();
 
                 if(!checkPatchSide(w, ps))
-                    throw new IllegalArgumentException(GRID_W_SIZE_MSG + w);
+                {
+                    I18nManager intl_mgr = I18nManager.getManager();
+                    String msg = intl_mgr.getString(GRID_W_SIZE_MSG_PROP) + w;
+                    throw new IllegalArgumentException(msg);
+                }
 
                 if(!checkPatchSide(h, ps))
-                    throw new IllegalArgumentException(GRID_D_SIZE_MSG + h);
+                {
+                    I18nManager intl_mgr = I18nManager.getManager();
+                    String msg = intl_mgr.getString(GRID_D_SIZE_MSG_PROP) + h;
+                    throw new IllegalArgumentException(msg);
+                }
 
                 break;
 
@@ -387,7 +421,10 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
 
             default:
                 ret_val = 0;
-                System.out.println("Unknown terrain type");
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg = intl_mgr.getString(INV_TERRAIN_TYPE_MSG_PROP);
+
+                System.out.println(msg);
         }
 
         return ret_val;

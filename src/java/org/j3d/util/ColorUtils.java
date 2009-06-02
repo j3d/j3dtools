@@ -37,13 +37,13 @@ import javax.vecmath.Color4f;
  *
  *
  * @author Justin Couch
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class ColorUtils
 {
     /** The message string when s == 0 and h != NaN */
     private static final String INVALID_H_MSG_PROP =
-        "org.j3d.util.interpolator.ColorInterpolator.invalidHMsg";
+        "org.j3d.util.interpolator.ColorUtils.invalidHMsg";
 
     /**
      * Change an RGB color to HSV color. We don't bother converting the alpha
