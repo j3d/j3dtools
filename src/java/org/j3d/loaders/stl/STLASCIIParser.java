@@ -22,35 +22,52 @@ import javax.swing.ProgressMonitorInputStream;
 
 // Internal imports
 import org.j3d.loaders.InvalidFormatException;
+import org.j3d.util.I18nManager;
 
 /**
  * Class to parse STL (stereolithography) files in ASCII format.<p>
+ *
+ * <p>
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>invalidKeywordMsg: Unknown keyword encountered. </li>
+ * <li>emptyFileMsg: File contained the header but no content. </li>
+ * <li>invalidDataMsg: Some strange data was encountered. </li>
+ * <li>unexpectedEofMsg: We hit an EOF before we were expecting to.</li>
+ * </ul>
  *
  * @see STLFileReader
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 class STLASCIIParser extends STLParser
 {
-    /** Partial message for indicating the line number */
-    private static final String FOUND_ON_LINE =
-        " found on line ";
-
     /** Error message of a keyword that we don't recognise */
-    private static final String UNKNOWN_KEYWORD_BASE =
-        "STL ASCII format file contains an unknown keyword ";
+    private static final String UNKNOWN_KEYWORD_MSG_PROP =
+        "org.j3d.loaders.stl.STLASCIIParser.invalidKeywordMsg";
 
     /**
      * Error message when the solid header is found, but there is no
      * geometry after it. Basically an empty file.
      */
-    private static final String EMPTY_FILE_MSG =
-        "The ASCII file format header was found, but there was no content " +
-        "defined in the file.";
+    private static final String EMPTY_FILE_MSG_PROP =
+        "org.j3d.loaders.stl.STLASCIIParser.emptyFileMsg";
 
+    /** Unexpected data is encountered during parsing */
+    private static final String INVALID_DATA_MSG_PROP =
+        "org.j3d.loaders.stl.STLASCIIParser.invalidDataMsg";
+
+    /** Unexpected EOF is encountered during parsing */
+    private static final String EOF_WTF_MSG_PROP =
+        "org.j3d.loaders.stl.STLASCIIParser.unexpectedEofMsg";
+
+    /** Reader for the main stream */
     private BufferedReader  itsReader;
+
+    /** Token manager for parsing the file */
     private StreamTokenizer itsTokenizer;
 
     /**
@@ -84,7 +101,11 @@ class STLASCIIParser extends STLParser
         if(type  == StreamTokenizer.TT_EOF)
         {
             close();
-            throw new IOException("Unexpected EOF");
+
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(EOF_WTF_MSG_PROP);
+            throw new InvalidFormatException(msg);
         }
         else if(type == StreamTokenizer.TT_WORD)
         {
@@ -116,7 +137,11 @@ class STLASCIIParser extends STLParser
         else
         {
             close();
-            throw new InvalidFormatException("Unexpected data found");
+
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(INVALID_DATA_MSG_PROP);
+            throw new InvalidFormatException(msg);
         }
 
         return true;
@@ -292,7 +317,12 @@ class STLASCIIParser extends STLParser
         line = reader.readLine();
 
         if(line == null)
-            throw new InvalidFormatException(EMPTY_FILE_MSG);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(EMPTY_FILE_MSG_PROP);
+            throw new InvalidFormatException(msg);
+        }
 
         while(line != null)
         {
@@ -331,9 +361,10 @@ class STLASCIIParser extends STLParser
             }
             else
             {
-                // format not correct
-                String msg =
-                    UNKNOWN_KEYWORD_BASE + line + FOUND_ON_LINE + line_count;
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
+                             line;
 
                 throw new InvalidFormatException(msg);
             }
@@ -396,16 +427,25 @@ class STLASCIIParser extends STLParser
                 }
                 catch(NumberFormatException e)
                 {
-                    throw new IOException("Unexpected data found");
+                    I18nManager intl_mgr = I18nManager.getManager();
+
+                    String msg = intl_mgr.getString(INVALID_DATA_MSG_PROP);
+                    throw new InvalidFormatException(msg);
                 }
             }
             else if(type == StreamTokenizer.TT_EOF)
             {
-                throw new IOException("Unexpected EOF");
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(EOF_WTF_MSG_PROP);
+                throw new InvalidFormatException(msg);
             }
             else
             {
-                throw new IOException("Unexpected data found.");
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(INVALID_DATA_MSG_PROP);
+                throw new InvalidFormatException(msg);
             }
         }
     }
