@@ -29,6 +29,7 @@ import org.j3d.util.I18nManager;
  * Although the HAnim spec does not define bounding box fields, VRML/X3D
  * do, and we have an internal Grouping node to handling this joint, so
  * we've added fields and support for it anyway.
+ * <p>
  *
  * <b>Internationalisation Resource Names</b>
  * <p>
@@ -40,7 +41,7 @@ import org.j3d.util.I18nManager;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class HAnimJoint extends HAnimObject
     implements HAnimObjectParent

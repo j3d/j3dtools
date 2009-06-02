@@ -9,11 +9,12 @@
 
 package org.j3d.util.interpolator;
 
-// Standard imports
+// External imports
 import javax.vecmath.Color4f;
 
-// Application specific imports
+// Local imports
 import org.j3d.util.ColorUtils;
+import org.j3d.util.I18nManager;
 
 /**
  * An interpolator that works with color components.
@@ -31,15 +32,22 @@ import org.j3d.util.ColorUtils;
  * The RGB<->HSV color space conversions have been taken from Foley & van Dam
  * <i>Computer Graphics Principles and Practice, 2nd Edition</i>, Addison
  * Wesley, 1990.
+ * <p>
+ *
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>invalidHMsg: The combination of S and H is invalid when S is zero. </li>
+ * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class ColorInterpolator extends Interpolator
 {
     /** The message string when s == 0 and h != NaN */
-    private static final String INVALID_H_MSG =
-        "Invalid h (it has a value) value when s is zero";
+    private static final String INVALID_H_MSG_PROP =
+        "org.j3d.util.interpolator.ColorInterpolator.invalidHMsg";
 
     /** The interpolator should be in HSV color space */
     public static final int HSV_SPACE = 1;
@@ -167,7 +175,12 @@ public class ColorInterpolator extends Interpolator
         else
         {
             if((s == 0) && (!Float.isNaN(h)))
-                throw new IllegalArgumentException(INVALID_H_MSG);
+            {
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg = intl_mgr.getString(INVALID_H_MSG_PROP);
+
+                throw new IllegalArgumentException(msg);
+            }
 
             addKeyFrame(key, h, s, v, a);
         }

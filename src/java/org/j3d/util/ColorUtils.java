@@ -27,15 +27,23 @@ import javax.vecmath.Color4f;
  * The RGB <-> YUV colorspace conversion is based on the formulas found at
  * <a href="http://astronomy.swin.edu.au/~pbourke/colour/convert/">
  * http://astronomy.swin.edu.au/~pbourke/colour/convert/</a>
+ * <p>
+ *
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>invalidHMsg: The combination of S and H is invalid when S is zero. </li>
+ * </ul>
+ *
  *
  * @author Justin Couch
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class ColorUtils
 {
     /** The message string when s == 0 and h != NaN */
-    private static final String INVALID_H_MSG =
-        "Invalid h (it has a value) value when s is zero";
+    private static final String INVALID_H_MSG_PROP =
+        "org.j3d.util.interpolator.ColorInterpolator.invalidHMsg";
 
     /**
      * Change an RGB color to HSV color. We don't bother converting the alpha
@@ -151,7 +159,10 @@ public class ColorUtils
             }
             else
             {
-                throw new IllegalArgumentException(INVALID_H_MSG);
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg = intl_mgr.getString(INVALID_H_MSG_PROP);
+
+                throw new IllegalArgumentException(msg);
             }
         }
         else

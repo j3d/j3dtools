@@ -26,16 +26,23 @@ import java.util.ArrayList;
  *
  * This implementation is not thread-safe, so caution must be exercised about how
  * items are added and removed from the instance.
+ * <p>
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>noCompareValueMsg: containsValue() was handed a null. </li>
+ * </ul>
+ *
  *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @see java.util.HashMap
  */
 public class IntHashMap
 {
     /** Error message when containsValue(null) was called */
-    private static final String NO_VALUE_ERR =
-        "No value was provided to compare against";
+    private static final String NO_VALUE_ERR_PROP =
+        "org.j3d.util.IntHashMap.noCompareValueMsg";
 
     /** The hash table data. */
     private transient Entry[] table;
@@ -196,7 +203,12 @@ public class IntHashMap
     public boolean contains(Object value)
     {
         if(value == null)
-            throw new NullPointerException(NO_VALUE_ERR);
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(NO_VALUE_ERR_PROP);
+            throw new NullPointerException(msg);
+        }
 
         Entry[] tab = table;
         for(int i = tab.length ; i-- > 0 ; )
