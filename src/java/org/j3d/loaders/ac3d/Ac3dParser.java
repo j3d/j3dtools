@@ -40,8 +40,36 @@ import org.j3d.util.I18nManager;
  * code in other applications, as well. (Perhaps in a command line format
  * conversion tool...) Thus, the separation of Java3D and parsing code.</p>
  *
+ * <p>
+ *
+ * <b>Internationalisation Resource Names</b>
+ * <p>
+ * <ul>
+ * <li>generalErrorMsg: Generic error message when we have an internal
+ *     exception being generated. </li>
+ * <li>tagParseCountMsg1-3: Parts of a constructed message when we get a number
+ *     of elements for a tag that is not what we were expecting</li>
+ * <li>shortHeaderMsg: Message when the header is less than the required number
+ *     of bytes.</li>
+ * <li>invalidPreambleMsg: Message when the header preamble is badly formated </li>
+ * <li>unsupportedVersionMsg: File version is not one that we support</li>
+ * <li>objectCountMsg: Parsing and OBJECT token that doesn't have one additional
+ *     token declared after it.</li>
+ * <li>invalidObjectChildMsg: Keyword declared after an OBJECT token is invalid</li>
+ * <li>invalidObjectTokenMsg: Invalid token found within an OBJECT block</li>
+ * <li>invalidSurfaceChildMsg: Keyword declared after an SURFACE token is invalid</li>
+ * <li>invalidSurfaceTokenMsg: Invalid token found within an SURFACE block</li>
+ * <li>invalidTokenMsg: Token other than OBJECT or MATERIAL at the root level</li>
+ * <li>materialCallbackErrMsg: An error occured in user code in the material
+ *     callback</li>
+ * <li>objectCallbackErrMsg: An error occured in user code in the object
+ *     callback</li>
+ * <li>surfaceCallbackErrMsg: An error occured in user code in the surface
+ *     callback</li>
+ * </ul>
+ *
  * @author  Ryan Wilhm (ryan@entrophica.com)
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class Ac3dParser
 {
@@ -87,11 +115,11 @@ public class Ac3dParser
 
     /** Message for a badly formatted SURF definition */
     private static final String INVALID_SURFACE_CHILD_PROP =
-        "org.j3d.loaders.ac3d.Ac3dParser.objectCountMsg";
+        "org.j3d.loaders.ac3d.Ac3dParser.invalidSurfaceChildMsg";
 
     /** Message for a badly formatted SURF definition */
     private static final String INVALID_SURFACE_TOKEN_PROP =
-        "org.j3d.loaders.ac3d.Ac3dParser.objectTokenMsg";
+        "org.j3d.loaders.ac3d.Ac3dParser.invalidSurfaceTokenMsg";
 
     /** Message when any unknown token encountered */
     private static final String ILLEGAL_TOKEN_PROP =
