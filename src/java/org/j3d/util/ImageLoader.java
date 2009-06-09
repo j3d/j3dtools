@@ -12,18 +12,21 @@
 
 package org.j3d.util;
 
-// Standard imports
+// External imports
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.net.MalformedURLException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-// Application specific imports
+// Local imports
 // none
 
 /**
@@ -31,47 +34,71 @@ import javax.swing.ImageIcon;
  * mechanisms.
  * <p>
  *
+ * <b>Internationalisation Resource Names</b>
+ * <ul>
+ * <li>urlFormatErrorMsg: The filename they give us is treated as a URL
+ *     but is badly formatted.</li>
+ * </ul>
+ *
  * @author Justin Couch
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ImageLoader
 {
+    /** Resource for the file not found error message */
+    private static final String BAD_URL_MSG_PROP =
+        "org.j3d.util.ImageLoader.urlFormatErrorMsg";
+
     /** The default size of the map */
     private static final int DEFAULT_SIZE = 10;
-
-    /** The image toolkit used to load images with */
-    private static Toolkit toolkit;
-
-    /** The classloader used for images */
-    private static ClassLoader classLoader;
 
     /**
      * A hashmap of the loaded image instances. Weak so that we can discard
      * them if if needed because we're running out of memory.
      */
-    private static HashMap loadedImages;
+    private static HashMap<String, WeakReference> loadedImages;
 
     /**
      * A hashmap of the loaded icon instances. Weak so that we can discard
      * them if if needed because we're running out of memory.
      */
-    private static HashMap loadedIcons;
+    private static HashMap<String, WeakReference> loadedIcons;
+
+    /** Error reporter for sending out messages */
+    private static ErrorReporter errorReporter;
 
     /**
      * Static initialiser to get all the bits set up as needed.
      */
     static
     {
-        toolkit = Toolkit.getDefaultToolkit();
-        classLoader = ClassLoader.getSystemClassLoader();
-        loadedImages = new HashMap(DEFAULT_SIZE);
-        loadedIcons = new HashMap(DEFAULT_SIZE);
+        errorReporter = DefaultErrorReporter.getDefaultReporter();
+
+        loadedImages = new HashMap<String, WeakReference>(DEFAULT_SIZE);
+        loadedIcons = new HashMap<String, WeakReference>(DEFAULT_SIZE);
+    }
+
+    /**
+     * Register an error reporter with the engine so that any errors generated
+     * by the loading of script code can be reported in a nice, pretty fashion.
+     * Setting a value of null will clear the currently set reporter. If one
+     * is already set, the new value replaces the old.
+     *
+     * @param reporter The instance to use or null
+     */
+    public static void setErrorReporter(ErrorReporter reporter) {
+        errorReporter = reporter;
+
+        // Reset the default only if we are not shutting down the system.
+        if(reporter == null)
+            errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 
     /**
      * Load an icon for the named image file. Looks in the classpath for the
      * image so the path provided must be fully qualified relative to the
-     * classpath.
+     * classpath. Alternatively a fully qualified URL may be provided to fetch
+     * an image from an alternative place other than the classpath.
      *
      * @param name The path to load the icon for. If not found,
      *   no image is loaded.
@@ -107,7 +134,8 @@ public class ImageLoader
     /**
      * Load an image for the named image file. Looks in the classpath for the
      * image so the path provided must be fully qualified relative to the
-     * classpath.
+     * classpath. Alternatively a fully qualified URL may be provided to fetch
+     * an image from an alternative place other than the classpath.
      *
      * @param name The path to load the icon for. If not found,
      *   no image is loaded.
@@ -128,10 +156,11 @@ public class ImageLoader
 
         if(ret_val == null)
         {
-            URL url = classLoader.getSystemResource(name);
+            URL url = findFile(name);
 
             if(url != null)
             {
+                Toolkit toolkit = Toolkit.getDefaultToolkit();
                 ret_val = toolkit.createImage(url);
                 loadedImages.put(name, new WeakReference(ret_val));
             }
@@ -139,4 +168,61 @@ public class ImageLoader
 
         return ret_val;
     }
+
+    /**
+     * Find the path to the resource name by looking for fully qualified
+     * and partially qualified names. Works within JWS too.
+     *
+     * @param filename The name/path to the file to load
+     * @return The URL the file that needs to be loaded
+     */
+    private static URL findFile(final String filename)
+    {
+        URL ret_val = null;
+
+        // if URL or URI then just get the object
+        if(filename.startsWith("http:") ||
+            filename.startsWith("file:"))
+        {
+
+            try
+            {
+                ret_val = new URL(filename);
+            }
+            catch (MalformedURLException ioe)
+            {
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg = intl_mgr.getString(BAD_URL_MSG_PROP) + filename;
+
+                errorReporter.errorReport(msg, null);
+            }
+        }
+        else
+        {
+            // try to retrieve from the classpath
+            ret_val = (URL)AccessController.doPrivileged(
+                new PrivilegedAction()
+                {
+                    public Object run()
+                    {
+
+                        ClassLoader cl = ClassLoader.getSystemClassLoader();
+                        URL url = cl.getSystemResource(filename);
+
+                        // WebStart fallback
+                        if(url == null)
+                        {
+                            cl = ImageLoader.class.getClassLoader();
+                            url = cl.getResource(filename);
+                        }
+
+                        return url;
+                    }
+                }
+            );
+        }
+
+        return ret_val;
+    }
+
 }
