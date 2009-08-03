@@ -41,7 +41,7 @@ import org.j3d.util.I18nManager;
  * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
- * @version $Revision: 1.10 $
+ * @version $Revision: 2.0 $
  */
 class STLASCIIParser extends STLParser
 {
@@ -67,8 +67,8 @@ class STLASCIIParser extends STLParser
     /** Reader for the main stream */
     private BufferedReader  itsReader;
 
-    /** Token manager for parsing the file */
-    private StreamTokenizer itsTokenizer;
+    /** The line number that we're at in the file */
+    private int lineCount;
 
     /**
      * Create a new default parser instance.
@@ -97,56 +97,149 @@ class STLASCIIParser extends STLParser
     public boolean getNextFacet(double[] normal, double[][] vertices)
         throws IOException
     {
-        int type = itsTokenizer.nextToken();
-        if(type  == StreamTokenizer.TT_EOF)
+        // format of a triangle is:
+        // 
+        // facet normal number number number
+        //   outer loop
+        //     vertex number number number
+        //     vertex number number number
+        //     vertex number number number
+        //   end loop
+        // endfacet
+
+        // First line with normals
+        String input_line = itsReader.readLine();
+
+        StringTokenizer strtok = new StringTokenizer(input_line);
+        String token = strtok.nextToken();
+
+        // are we the first line of the file? If so, skip it
+        if(token.equals("solid"))
+        {
+            input_line = itsReader.readLine();
+            strtok = new StringTokenizer(input_line);
+            token = strtok.nextToken();
+            lineCount = 1;
+        }
+
+        // Have we reached the end of file?
+        // We've encountered a lot of broken files where they use two words
+        // "end solid" rather than the spec-required "endsolid".
+        if(token.equals("endsolid") || token.equals("end solid"))
+            return false;
+
+        if(!token.equals("facet"))
         {
             close();
 
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(EOF_WTF_MSG_PROP);
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
+                                            lineCount;
             throw new InvalidFormatException(msg);
         }
-        else if(type == StreamTokenizer.TT_WORD)
-        {
-            // check if end of object is reached ('s' in "endsolid")
-            if(itsTokenizer.sval.indexOf("s") >= 0)
-            {
-                skipObjectName(itsTokenizer);
-                // skip "solid" keyword
-                type = itsTokenizer.nextToken();
-                if(type == StreamTokenizer.TT_EOF)
-                {
-                    // eof is reached, i. e. no more objects in file
-                    close();
-                }
-                else
-                    skipObjectName(itsTokenizer);
-            }
-            // push back x coordinate of facet normal
-            else
-            {
-                itsTokenizer.pushBack();
-            }
 
-            readVector(itsTokenizer, normal);
-
-            for(int i = 0; i < 3; i ++)
-                readVector(itsTokenizer, vertices[i]);
-        }
-        else
+        token = strtok.nextToken();
+        if(!token.equals("normal"))
         {
             close();
 
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(INVALID_DATA_MSG_PROP);
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
+                                            lineCount;
+            throw new InvalidFormatException(msg);
+        }
+
+        readVector(strtok, normal);
+
+        // Skip the outer loop line
+        input_line = itsReader.readLine();
+        strtok = new StringTokenizer(input_line);
+        token = strtok.nextToken();
+        lineCount++;
+
+        if(!token.equals("outer"))
+        {
+            close();
+
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
+                                            lineCount;
+            throw new InvalidFormatException(msg);
+        }
+
+        token = strtok.nextToken();
+        if(!token.equals("loop"))
+        {
+            close();
+
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
+                                            lineCount;
+            throw new InvalidFormatException(msg);
+        }
+
+        // Next 3x vertex reads
+        for(int i = 0; i < 3; i++) {
+            input_line = itsReader.readLine();
+            strtok = new StringTokenizer(input_line);
+            lineCount++;
+
+            token = strtok.nextToken();
+
+            if(!token.equals("vertex"))
+            {
+                close();
+
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
+                                                lineCount;
+                throw new InvalidFormatException(msg);
+            }
+
+            readVector(strtok, vertices[i]);
+        }
+
+        // Read and skip the endloop && endfacet lines
+
+        input_line = itsReader.readLine();
+        strtok = new StringTokenizer(input_line);
+        token = strtok.nextToken();
+        lineCount++;
+
+        if(!token.equals("endloop"))
+        {
+            close();
+
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
+                                            lineCount;
+            throw new InvalidFormatException(msg);
+        }
+
+        input_line = itsReader.readLine();
+        strtok = new StringTokenizer(input_line);
+        token = strtok.nextToken();
+        lineCount++;
+ 
+        if(!token.equals("endfacet"))
+        {
+            close();
+
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
+                                            lineCount;
             throw new InvalidFormatException(msg);
         }
 
         return true;
     }
-
 
     /**
      * @throws InvalidFormatException The file was structurally incorrect
@@ -162,9 +255,8 @@ class STLASCIIParser extends STLParser
         catch(IOException e)
         {
             if(stream != null)
-            {
                 stream.close();
-            }
+            
             throw e;
         }
 
@@ -185,36 +277,28 @@ class STLASCIIParser extends STLParser
             reader.close();
         }
 
-        if(isAscii)
+        if(!isAscii)
+            return false;
+        
+        try
         {
-            try
-            {
-                stream = url.openStream();
-            }
-            catch(IOException e)
-            {
-                stream.close();
-                throw e;
-            }
-            stream = new ProgressMonitorInputStream
-            (
-                parentComponent,
-                "parsing " + url.toString(),
-                stream
-           );
-            reader = new BufferedReader(new InputStreamReader(stream));
-            try
-            {
-                configureTokenizer(reader);
-            }
-            catch(IOException e)
-            {
-                reader.close();
-                throw e;
-            }
-            itsReader = reader;
+            stream = url.openStream();
         }
-        return isAscii;
+        catch(IOException e)
+        {
+            stream.close();
+            throw e;
+        }
+
+        stream = new ProgressMonitorInputStream (
+            parentComponent,
+            "parsing " + url.toString(),
+            stream);
+
+        reader = new BufferedReader(new InputStreamReader(stream));
+        itsReader = reader;
+        
+        return true;
     }
 
     /**
@@ -231,9 +315,8 @@ class STLASCIIParser extends STLParser
         catch(IOException e)
         {
             if(stream != null)
-            {
                 stream.close();
-            }
+
             throw e;
         }
 
@@ -254,30 +337,24 @@ class STLASCIIParser extends STLParser
         {
             reader.close();
         }
-        if(isAscii)
+
+        if(!isAscii)
+            return false;
+
+        try
         {
-            try
-            {
-                stream = url.openStream();
-            }
-            catch(IOException e)
-            {
-                stream.close();
-                throw e;
-            }
-            reader = new BufferedReader(new InputStreamReader(stream));
-            try
-            {
-                configureTokenizer(reader);
-            }
-            catch(IOException e)
-            {
-                reader.close();
-                throw e;
-            }
-            itsReader = reader;
+            stream = url.openStream();
         }
-        return isAscii;
+        catch(IOException e)
+        {
+            stream.close();
+            throw e;
+        }
+
+        reader = new BufferedReader(new InputStreamReader(stream));
+        itsReader = reader;
+        
+        return true;
     }
 
     /**
@@ -350,7 +427,7 @@ class STLASCIIParser extends STLParser
             {
                 facetsPerObject.add(new Integer(numOfFacets));
                 numOfFacets = 0;
-                numOfObjects ++;
+                numOfObjects++;
             }
             else if(line.indexOf("solid") >= 0)
             {
@@ -361,12 +438,15 @@ class STLASCIIParser extends STLParser
             }
             else
             {
-                I18nManager intl_mgr = I18nManager.getManager();
+                line = line.trim();
+                if(line.length() != 0) {
+                    I18nManager intl_mgr = I18nManager.getManager();
 
-                String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
-                             line;
+                    String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
+                                 lineCount;
 
-                throw new InvalidFormatException(msg);
+                    throw new InvalidFormatException(msg);
+                }
             }
 
             line = reader.readLine();
@@ -387,78 +467,29 @@ class STLASCIIParser extends STLParser
     }
 
     /**
-     * Set the <code>BufferedReader</code> object for reading the facet data.
+     * Read three numbers from the tokeniser and place them in the double value
+     * returned.
      */
-    private void configureTokenizer(BufferedReader reader)
+    private void readVector(StringTokenizer strtok, double[] vector)
         throws IOException
     {
-        reader.readLine();
-        itsTokenizer = new StreamTokenizer(reader);
-        itsTokenizer.resetSyntax();
-        //configure StreamTokenizer:
-        // only numbers shall be parsed
-        itsTokenizer.wordChars('0', '9');
-        // works only if 'e' is not used for exponent !
-        itsTokenizer.wordChars('E', 'E');
-        itsTokenizer.wordChars('+', '+');
-        itsTokenizer.wordChars('-', '-');
-        itsTokenizer.wordChars('.', '.');
-        // find solid and endsolid keywords
-        itsTokenizer.wordChars('s', 's');
-        // all other characters (only lower case allowed except for model
-        // name - model name will be treated in special case) shall be
-        //treated as whitespace
-        itsTokenizer.whitespaceChars(0, ' ');
-        itsTokenizer.whitespaceChars('a', 'r');
-        itsTokenizer.whitespaceChars('t', 'z');
-    }
-
-    private void readVector(StreamTokenizer tokenizer, double[] vector)
-        throws IOException
-    {
+        // Skip the first token on the line because it is one of 
+        // "normal" or "vertex"
         for(int i = 0; i < 3; i ++)
         {
-            int type = tokenizer.nextToken();
-            if(type == StreamTokenizer.TT_WORD)
-            {
-                try
-                {
-                    vector[i] = Double.parseDouble(tokenizer.sval);
-                }
-                catch(NumberFormatException e)
-                {
-                    I18nManager intl_mgr = I18nManager.getManager();
+            String num_str = strtok.nextToken();
 
-                    String msg = intl_mgr.getString(INVALID_DATA_MSG_PROP);
-                    throw new InvalidFormatException(msg);
-                }
+            try
+            {
+                vector[i] = Double.parseDouble(num_str);
             }
-            else if(type == StreamTokenizer.TT_EOF)
+            catch(NumberFormatException e)
             {
                 I18nManager intl_mgr = I18nManager.getManager();
 
-                String msg = intl_mgr.getString(EOF_WTF_MSG_PROP);
-                throw new InvalidFormatException(msg);
-            }
-            else
-            {
-                I18nManager intl_mgr = I18nManager.getManager();
-
-                String msg = intl_mgr.getString(INVALID_DATA_MSG_PROP);
+                String msg = intl_mgr.getString(INVALID_DATA_MSG_PROP) + num_str;
                 throw new InvalidFormatException(msg);
             }
         }
-    }
-
-    private void skipObjectName(StreamTokenizer tokenizer)
-        throws IOException
-    {
-        itsTokenizer.eolIsSignificant(true);
-        int type = 0;
-        while(type != StreamTokenizer.TT_EOL)
-        {
-            type = itsTokenizer.nextToken();
-        }
-        itsTokenizer.eolIsSignificant(false);
     }
 }
