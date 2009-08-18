@@ -15,11 +15,16 @@ package org.j3d.device.input.jinput;
 // External imports
 import net.java.games.input.*;
 
-import java.util.ArrayList;
-
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+
+import java.text.Format;
+import java.text.MessageFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+import java.util.ArrayList;
 
 // Local imports
 import org.j3d.device.input.InputDevice;
@@ -28,19 +33,68 @@ import org.j3d.device.input.DeviceListener;
 
 import org.j3d.util.ErrorReporter;
 import org.j3d.util.DefaultErrorReporter;
+import org.j3d.util.I18nManager;
 
 /**
  * A USB device.  This device is a navigation only device.
  * <p>
  *
- * TODO: Need to handle dynamic addition/removal of devices when Jinput
- * support it.
+ * <b>TODO:</b>
+ * <ul>
+ * <li>Each device string needs to be hardcoded. Should be pulled from a
+ *     config file of some sort.</li>
+ * <li>Need to handle dynamic addition/removal of devices when Jinput
+ *     supports it.</li>
+ * </ul>
+ * <p>
+ *
+ * <b>Internationalisation Resource Names</b>
+ * <ul>
+ * <li>detectIntroMsg: Informational message when we start looking for
+ *     devices.</li>
+ * <li>detectDeviceListMsg: Informational message writing out the device
+ *     details found</li>
+ * <li>deviceAxisListMsg: Informational message for a single axis of a
+ *     detected device</li>
+ * <li>missingDeviceNameMsg: Error message for a device that has no name</li>
+ * <li>unknownDeviceMsg: Error message for an unhandled device</li>
+ * <li>detectOSFailMsg: Error message when system permissions would not let
+ *     us work out which platform we're on</li>
+ * <li>unsupportedOSMsg: Error message when we detect a platform, but it is
+ *     not one of the supported platforms.</li>
+ * </ul>
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class USBManager implements DeviceManager
 {
+    /** Message when starting the device detection */
+    private static final String DETECT_INTRO_PROP =
+        "org.j3d.device.input.jinput.USBManager.detectIntroMsg";
+
+    /** Message when listing a single device */
+    private static final String DETECT_LIST_PROP =
+        "org.j3d.device.input.jinput.USBManager.detectDeviceListMsg";
+
+    /** Message when printing out a single axis of the device */
+    private static final String DEVICE_AXIS_DESC_PROP =
+        "org.j3d.device.input.jinput.USBManager.deviceAxisListMsg";
+
+    private static final String MISSING_DEVICE_NAME_PROP =
+        "org.j3d.device.input.jinput.USBManager.missingDeviceNameMsg";
+
+    private static final String UNKNOWN_DEVICE_PROP =
+        "org.j3d.device.input.jinput.USBManager.unknownDeviceMsg";
+
+    /** Message when we failed to be able to read the OS properties */
+    private static final String DETECT_OS_FAIL_PROP =
+        "org.j3d.device.input.jinput.USBManager.detectOSFailMsg";
+
+    /** Message when we didn't find a compatible OS */
+    private static final String MISSING_OS_PROP =
+        "org.j3d.device.input.jinput.USBManager.unsupportedOSMsg";
+
     /** The device list */
     private ArrayList<InputDevice> devices;
 
@@ -167,58 +221,83 @@ public class USBManager implements DeviceManager
         String name;
 
         int cnt = ca.length;
-        errorReporter.messageReport("Jinput USB devices detected: " + cnt);
+
+        I18nManager intl_mgr = I18nManager.getManager();
+        String msg_pattern = intl_mgr.getString(DETECT_INTRO_PROP);
+        Locale lcl = intl_mgr.getFoundLocale();
+
+        NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
+
+        Object[] msg_args = { new Float(cnt) };
+        Format[] fmts = { n_fmt };
+        MessageFormat msg_fmt = new MessageFormat(msg_pattern, lcl);
+        msg_fmt.setFormats(fmts);
+        String msg = msg_fmt.format(msg_args);
+
+        errorReporter.messageReport(msg);
+
+        String list_pattern = intl_mgr.getString(DETECT_LIST_PROP);
+        Format[] list_fmts = { null, n_fmt };
+        MessageFormat list_fmt = new MessageFormat(list_pattern, lcl);
+        list_fmt.setFormats(fmts);
 
         for(int i = 0; i < cnt; ++i )
         {
             Controller dev = ca[i];
 
-            errorReporter.messageReport("device: " + dev.getName() +
-                                       " rumblers: " +
-                                       dev.getRumblers().length);
+            Object[] list_args =
+            {
+                dev.getName(),
+                new Integer(dev.getRumblers().length)
+            };
+
+            String list_msg = list_fmt.format(list_args);
+            errorReporter.messageReport(list_msg);
+
             Controller.Type type = dev.getType();
 
             name = dev.getName();
 
-            if (name == null)
+            if(name == null)
             {
-                errorReporter.warningReport("No name for device, skipping", null);
+                msg = intl_mgr.getString(MISSING_DEVICE_NAME_PROP);
+                errorReporter.warningReport(msg, null);
             }
-            else if (name.indexOf("RumblePad") > -1 ||
-                       name.indexOf("WingMan Cordless Gamepad") > -1 ||
-                       name.indexOf("Logitech Dual Action") > -1)
+            else if(name.indexOf("RumblePad") > -1 ||
+                    name.indexOf("WingMan Cordless Gamepad") > -1 ||
+                    name.indexOf("Logitech Dual Action") > -1)
             {
                 devices.add(new Gamepad(dev, "Gamepad-" + gamepadCnt));
                 gamepadCnt++;
             }
-            else if (name.indexOf("Extreme Digital 3D") > -1 ||
+            else if(name.indexOf("Extreme Digital 3D") > -1 ||
                        name.indexOf("Freedom 2.4") > -1)
             {
                 devices.add(new Joystick(dev, "Joystick-" + joystickCnt));
                 joystickCnt++;
             }
-            else if ((name.indexOf("MOMO Racing") > -1) ||
-                      name.indexOf("Logitech Racing Wheel") > -1)
+            else if((name.indexOf("MOMO Racing") > -1) ||
+                     name.indexOf("Logitech Racing Wheel") > -1)
             {
                 devices.add(new Wheel(dev, "Wheel-" + wheelCnt));
                 wheelCnt++;
             }
-            else if (name.indexOf("SpaceBall 5000") > -1)
+            else if(name.indexOf("SpaceBall 5000") > -1)
             {
 /*
                 devices.add(new SixDOF(dev, "SixDOF-" + sixDOFCnt));
                 sixDOFCnt++;
 */
             }
-            else if (name.startsWith("Mouse") ||
-                     name.startsWith("Keyboard"))
+            else if(name.startsWith("Mouse") ||
+                    name.startsWith("Keyboard"))
             {
                 // ignore
             }
             else
             {
-                errorReporter.messageReport("Unhandled device. " +
-                                            "Printing properties: ");
+                msg = intl_mgr.getString(UNKNOWN_DEVICE_PROP);
+                errorReporter.messageReport(msg);
                 printDevice(dev);
             }
         }
@@ -244,7 +323,18 @@ public class USBManager implements DeviceManager
                              osName.startsWith("mac") ||
                              osName.startsWith("linux")))
                         {
-                            errorReporter.warningReport("No JInput plugin defined for: " + osName, null);
+                            I18nManager intl_mgr = I18nManager.getManager();
+                            String msg_pattern = intl_mgr.getString(MISSING_OS_PROP);
+
+                            Locale lcl = intl_mgr.getFoundLocale();
+                            Object[] msg_args = { osName };
+                            Format[] fmts = { null };
+                            MessageFormat msg_fmt =
+                                new MessageFormat(msg_pattern, lcl);
+                            String msg = msg_fmt.format(msg_args);
+                            msg_fmt.setFormats(fmts);
+
+                            errorReporter.warningReport(msg, null);
                         }
 
                         return null;
@@ -254,7 +344,10 @@ public class USBManager implements DeviceManager
         }
         catch (PrivilegedActionException pae)
         {
-            errorReporter.warningReport("Error setting Properties in USBManger", null);
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(DETECT_OS_FAIL_PROP);
+
+            errorReporter.warningReport(msg, null);
         }
     }
 
@@ -269,11 +362,26 @@ public class USBManager implements DeviceManager
 
         int len = axes.length;
 
+        I18nManager intl_mgr = I18nManager.getManager();
+        String msg_pattern = intl_mgr.getString(DEVICE_AXIS_DESC_PROP);
+        Locale lcl = intl_mgr.getFoundLocale();
+
+        NumberFormat n_fmt = NumberFormat.getNumberInstance(lcl);
+
+        Format[] fmts = { null, null };
+        MessageFormat msg_fmt = new MessageFormat(msg_pattern, lcl);
+        msg_fmt.setFormats(fmts);
+
         for(int j = 0; j < len; j++)
         {
-            errorReporter.messageReport("   axes: " + axes[j].getName() +
-                                        " type: " +
-                                        axes[j].getIdentifier().getName());
+            Object[] msg_args =
+            {
+                axes[j].getName(),
+                axes[j].getIdentifier().getName()
+            };
+
+            String msg = msg_fmt.format(msg_args);
+            errorReporter.messageReport(msg);
         }
     }
 }
