@@ -11,6 +11,8 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.util.device \
 	org.j3d.util.interpolator \
 	org.j3d.util.frustum \
+	org.j3d.device.input \
+	org.j3d.device.input.jinput \
 	org.j3d.device.input.vfx \
 	org.j3d.device.output.elumens \
 	org.j3d.geom \
@@ -34,24 +36,15 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.loaders.c3d \
 	org.j3d.loaders.ac3d \
 
-#	org.j3d.loaders.ac3d.util \
-#	org.j3d.loaders.ac3d.models \
-#	org.j3d.loaders.ac3d.parser.exceptions \
-#	org.j3d.loaders.ac3d.parser \
-#	org.j3d.loaders.ac3d.parser.handlers \
-#	org.j3d.loaders.ac3d \
-
-
 # Names of packages that we want included in the javadoc
 JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.io \
 	org.j3d.util.device \
 	org.j3d.util.interpolator \
 	org.j3d.util.frustum \
-	org.j3d.device.input.spaceball \
-	org.j3d.device.input.spaceball.transformation \
+	org.j3d.device.input \
+	org.j3d.device.input.jinput \
 	org.j3d.device.input.vfx \
-	org.j3d.device.input.polhemus \
 	org.j3d.geom \
 	org.j3d.geom.hanim \
 	org.j3d.geom.particle \
@@ -104,11 +97,6 @@ NATIVE_PACKAGES = org.j3d.device.input.vfx
 
 # 3rd party libraries that need including.
 JARS_3RDPARTY=
-
-# Definitions of setup information if we are making a self-executable JAR
-MAIN_CLASS     =
-MAIN_PACKAGE   =
-MAIN_JAR       = j3d-org.jar
 
 #*********************************************************************
 #
