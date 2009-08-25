@@ -58,7 +58,7 @@ config:
 class:
 	make -f $(JAVA_DIR)/Makefile buildall
 
-jar:
+jar: class config images
 	make -f $(JAVA_DIR)/Makefile jar
 
 jni:
