@@ -6,7 +6,7 @@
 # Package makefile for the org.j3d.util directory
 #
 # Author: Justin Couch
-# Version: $Revision: 1.15 $
+# Version: $Revision: 1.16 $
 #
 #*********************************************************************
 
@@ -30,6 +30,7 @@ SOURCE = \
     SAXEntityResolver.java	\
     ImageLoader.java \
     ColorUtils.java \
+    TriangleUtils.java \
     ImageGenerator.java \
     ImageUtils.java \
     UserSupplementData.java \
