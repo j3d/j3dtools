@@ -37,7 +37,7 @@ package org.j3d.util;
  * </ul>
  *
  * @author Justin Couch
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class TriangleUtils
 {
@@ -150,17 +150,17 @@ public class TriangleUtils
             float z2 = coords[indices[i * 3 + 2] * 3 + 2] -
                        coords[indices[i * 3] * 3 + 2];
 
-            float s1 = texCoords[indices[i * 2 + 1] * 2] -
-                       texCoords[indices[i * 2] * 2];
+            float s1 = texCoords[indices[i * 3 + 1] * 2] -
+                       texCoords[indices[i * 3] * 2];
 
-            float s2 = texCoords[indices[i * 2 + 2] * 2] -
-                       texCoords[indices[i * 2] * 2];
+            float s2 = texCoords[indices[i * 3 + 2] * 2] -
+                       texCoords[indices[i * 3] * 2];
 
-            float t1 = texCoords[indices[i * 2 + 1] * 2 + 1] -
-                       texCoords[indices[i * 2] * 2 + 1];
+            float t1 = texCoords[indices[i * 3 + 1] * 2 + 1] -
+                       texCoords[indices[i * 3] * 2 + 1];
 
-            float t2 = texCoords[indices[i * 2 + 2] * 2 + 1] -
-                       texCoords[indices[i * 2] * 2 + 1];
+            float t2 = texCoords[indices[i * 3 + 2] * 2 + 1] -
+                       texCoords[indices[i * 3] * 2 + 1];
 
             float r = 1.0f / (s1 * t2 - s2 * t1);
 
