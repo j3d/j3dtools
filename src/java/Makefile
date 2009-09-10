@@ -76,7 +76,9 @@ JARS = j3d-org-util.jar \
 	j3d-org-geom-hanim.jar \
 	j3d-org-geom-particle.jar \
 	j3d-org-geom-spline.jar \
+	j3d-org-geom-spring.jar \
 	j3d-org-geom-terrain.jar \
+	j3d-org-inputdevice.jar \
 	j3d-org-loader-core.jar \
 	j3d-org-loader-dem.jar \
 	j3d-org-loader-stl.jar \
