@@ -6,7 +6,7 @@
 # Package makefile producing j3d-org-util.jar
 #
 # Author: Justin Couch
-# Version: $Revision: 1.18 $
+# Version: $Revision: 1.19 $
 #
 #*********************************************************************
 
@@ -41,6 +41,7 @@ JAR_CONTENT= org/j3d/util \
     org/j3d/geom/particle \
     org/j3d/geom/spline \
     org/j3d/geom/spring \
+    org/j3d/geom/triangulation \
     org/j3d/terrain \
     org/j3d/terrain/roam \
     org/j3d/texture \
