@@ -6,7 +6,7 @@
 # Lowest level common makefile for both native and Java code
 # 
 # Author: Justin Couch
-# Version: $Revision: 1.19 $
+# Version: $Revision: 1.20 $
 #
 #*********************************************************************
 
@@ -194,7 +194,11 @@ buildall : $(PLIST_BUILD) $(OTHER_FILES)
 # Rule 5. Building a .class file from a .java file
 $(PACKAGE_DIR)/%.class : $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/%.java
 	$(PRINT) Compiling $*.java
-	@ $(JAVAC) $(JAVAC_OPTIONS) -sourcepath $(PACKAGE_LOC) $<
+	if [ -n "$(IGNORE_CYCLES)" ] ; then \
+	  $(JAVAC) $(JAVAC_OPTIONS) -sourcepath $(JAVA_SRC_DIR) $< ; \
+	else  \
+	  $(JAVAC) $(JAVAC_OPTIONS) -sourcepath $(PACKAGE_LOC) $< ; \
+	fi
 
 # Rule 6. Building a .class file from a .java file. Invokes rule 5.
 %.class : $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/%.java
