@@ -21,6 +21,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.geom.particle \
 	org.j3d.geom.spline \
 	org.j3d.geom.spring \
+	org.j3d.geom.triangulation \
 	org.j3d.ui \
 	org.j3d.ui.image \
 	org.j3d.ui.navigation \
@@ -51,6 +52,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.geom.spline \
 	org.j3d.geom.spring \
 	org.j3d.geom.terrain \
+	org.j3d.geom.triangulation \
 	org.j3d.ui \
 	org.j3d.ui.image \
 	org.j3d.ui.navigation \
