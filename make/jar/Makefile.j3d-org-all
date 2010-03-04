@@ -6,13 +6,9 @@
 # Package makefile producing j3d-org-util.jar
 #
 # Author: Justin Couch
-# Version: $Revision: 1.19 $
+# Version: $Revision: 1.18 $
 #
 #*********************************************************************
-
-# A version number we tack onto the JAR file name for eclipse versioning
-# purposes.
-JAR_VERSION=0.9.0
 
 # No need to put in subdirs here. We only do that if we want to explicitly
 # exclude some directory and then we name everything around it.
@@ -41,7 +37,6 @@ JAR_CONTENT= org/j3d/util \
     org/j3d/geom/particle \
     org/j3d/geom/spline \
     org/j3d/geom/spring \
-    org/j3d/geom/triangulation \
     org/j3d/terrain \
     org/j3d/terrain/roam \
     org/j3d/texture \
