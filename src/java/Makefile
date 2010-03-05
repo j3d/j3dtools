@@ -94,10 +94,13 @@ JARS = j3d-org-util.jar \
 	j3d-org-all.jar \
         org.j3d.core.jar
 
+# 3rd party libraries that need including for JAVADOC generation
+JARS_JAVADOC=\
+     vecmath.jar 
+
 # List of packages that have native code libraries in use and require
 # JNI header generation
 NATIVE_PACKAGES = org.j3d.device.input.vfx
-
 
 # 3rd party libraries that need including.
 JARS_3RDPARTY=
