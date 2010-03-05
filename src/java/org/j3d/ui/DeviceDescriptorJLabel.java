@@ -28,7 +28,7 @@ public class DeviceDescriptorJLabel extends JLabel
    * Construct an instance of the label based on the given device
    * description.
    *
-   * @param fld The file loader description to base the filter on
+   * @param dd The file loader description to base the filter on
    */
   public DeviceDescriptorJLabel(DeviceDescriptor dd)
   {

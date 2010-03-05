@@ -76,7 +76,7 @@ public class TexCoordInterpolator
      * Go find the appropriate set of texture coordinates now.
      *
      * @param key The key value to get the position for
-     * @return An array of the values at that position [x, y, z]
+     * @param outputCoords An array of the values at that position [x, y, z]
      */
     public void interpolate(float key, int offset, float[] outputCoords)
     {

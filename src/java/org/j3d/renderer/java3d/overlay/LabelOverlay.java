@@ -9,7 +9,7 @@
 
 package org.j3d.renderer.java3d.overlay;
 
-// Standard imports
+// External imports
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -21,7 +21,7 @@ import java.awt.font.LineMetrics;
 
 import javax.media.j3d.Canvas3D;
 
-// Application specific imports
+// Local imports
 // none
 
 /**
@@ -229,7 +229,10 @@ public class LabelOverlay extends OverlayBase
      * dirty condition. A derived class will need to override this method and
      * make any size recalculations and dirty bit handling if this is needed.
      *
-     * @param insets The new set of values to use for insets
+     * @param left The new left inset value to use
+     * @param right The new right inset value to use
+     * @param top The new left top value to use
+     * @param bottom The new bottom inset value to use
      */
     public void setInsets(int left, int top, int right, int bottom)
     {

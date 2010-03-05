@@ -269,8 +269,10 @@ public class I18nManager {
      * @throws IllegalArgument exception if the country or language codes are
      *   not correctly formated (length and case)
      * @see java.util.Locale
-     * @see http://www.loc.gov/standards/iso639-2/englangn.html
-     * @see http://www.davros.org/misc/iso3166.txt
+     * @see <a href="http://www.loc.gov/standards/iso639-2/englangn.html">
+     *   http://www.loc.gov/standards/iso639-2/englangn.html</a>
+     * @see <a href="http://www.davros.org/misc/iso3166.txt">
+     *   http://www.davros.org/misc/iso3166.txt</a>
      */
     public void changeLocale(String language, String country, String variant)
         throws IllegalArgumentException {

@@ -156,7 +156,7 @@ public class TextureOverlay implements Overlay, ComponentListener
      *
      * @param canvas The canvas the overlay is drawn on
      * @param size The size of the overlay in pixels
-     * @param The texture to be displayed. May be null
+     * @param texture The texture to be displayed. May be null
      * @throws IllegalArgumentException Both the canvas and bounds are null
      */
     public TextureOverlay(Canvas3D canvas,
@@ -177,7 +177,7 @@ public class TextureOverlay implements Overlay, ComponentListener
      * @param hasAlpha True if the texture has an alpha component
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
-     * @param The texture to be displayed. May be null
+     * @param texture The texture to be displayed. May be null
      * @throws IllegalArgumentException Both the canvas and bounds are null
      */
     public TextureOverlay(Canvas3D canvas,
@@ -376,7 +376,7 @@ public class TextureOverlay implements Overlay, ComponentListener
      * Returns the UpdateManager responsible for seeing that updates to the
      * Overlay only take place between frames.
      *
-     * @param The update manage instance for this overlay
+     * @return The update manage instance for this overlay
      */
     public UpdateManager getUpdateManager()
     {

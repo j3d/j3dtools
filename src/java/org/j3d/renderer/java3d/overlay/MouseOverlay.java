@@ -81,10 +81,6 @@ public abstract class MouseOverlay extends InteractiveOverlayBase
      * @param size The size of the overlay in pixels
      * @param clipAlpha Should the polygon clip where alpha is zero
      * @param blendAlpha Should we blend to background where alpha is < 1
-     * @param hasButtonEvents true to recieve mouse button events
-     * @param hasMotionEvents true to recieve mouse motion events
-     * @param processAll true to process all events from the behaviour, or
-     *    false to use just the last one
      */
     protected MouseOverlay(Canvas3D canvas3D,
                            Dimension size,

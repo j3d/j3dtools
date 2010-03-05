@@ -91,7 +91,6 @@ public class OverlayManager extends BranchGroup
      * overlay to fit the canvas and then track the size of the canvas.
      *
      * @param canvas The canvas the overlay is drawn on
-     * @param bounds The part of the canvas covered by the overlay
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      */
@@ -228,7 +227,7 @@ public class OverlayManager extends BranchGroup
      * Returns the UpdateManager responsible for seeing that updates to the
      * Overlay only take place between frames.
      *
-     * @param The update manage instance for this overlay
+     * @return The update manage instance for this overlay
      */
     public UpdateManager getUpdateManager()
     {
@@ -239,7 +238,7 @@ public class OverlayManager extends BranchGroup
      * Set the UpdateManager to the new value. If the reference is null, it
      * will clear the current manager.
      *
-     * @param updateManager A reference to the new manage instance to use
+     * @param manager A reference to the new manage instance to use
      */
     public void setUpdateManager(UpdateManager manager)
     {

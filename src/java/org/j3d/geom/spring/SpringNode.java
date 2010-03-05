@@ -75,7 +75,7 @@ public class SpringNode
     /**
      * Create a new node at the given position and normal. The array values
      * are kept as references, not copied. This is an internal version used by
-     * the {@link SpringSystem#createRectField()} method of SpringSystem.
+     * the {@link SpringSystem#addRectField} method of SpringSystem.
      *
      * @param pos The position array that contains the location
      * @param norm The normal array that contains our normal

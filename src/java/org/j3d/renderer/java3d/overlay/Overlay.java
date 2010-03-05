@@ -120,7 +120,7 @@ public interface Overlay extends UpdatableEntity
      * Returns the UpdateManager responsible for seeing that updates to the
      * Overlay only take place between frames.
      *
-     * @param The update manage instance for this overlay
+     * @return The update manage instance for this overlay
      */
     public UpdateManager getUpdateManager();
 

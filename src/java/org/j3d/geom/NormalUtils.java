@@ -220,7 +220,6 @@ public class NormalUtils
      *
      * @param coords The coordinate array to read values from
      * @param p The index of the point to calculate
-     * @return A temporary value containing the normal value
      * @param normals The array to leave the computed result in
      * @param offset The offset into the normal array to place the normal values
      */
@@ -257,7 +256,6 @@ public class NormalUtils
      *
      * @param coords The coordinate array to read values from
      * @param p The index of the point to calculate
-     * @return A temporary value containing the normal value
      * @param normals The array to leave the computed result in
      * @param offset The offset into the normal array to place the normal values
      */

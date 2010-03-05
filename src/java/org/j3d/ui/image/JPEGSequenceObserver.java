@@ -94,7 +94,7 @@ public class JPEGSequenceObserver implements CapturedImageObserver
      * Tell the observer to start or stop capturing the next frame it is told
      * about.
      *
-     * @param enabled true to start capturing images
+     * @param enable true to start capturing images
      */
     public void setEnabled(boolean enable)
     {

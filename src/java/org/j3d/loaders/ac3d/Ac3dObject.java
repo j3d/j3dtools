@@ -194,7 +194,7 @@ public class Ac3dObject
     /**
      * Set the number of verticies for the object.
      *
-     * @param The number of verticies to set for the object.
+     * @param num The number of verticies to set for the object.
      */
     public void setNumvert(int num)
     {
@@ -283,7 +283,6 @@ public class Ac3dObject
     /**
      * Adds a Ac3dSurface at the given index.
      *
-     * @param index The locationation at which to append the surface.
      * @param surface The surface to add.
      */
     public void addSurface(Ac3dSurface surface)
@@ -327,7 +326,7 @@ public class Ac3dObject
     /**
      * Get an individual vertex at a given index.
      *
-     * @return The vertex requested.
+     * @param index The index of the vertex to be fetched
      * @param vtx An array of length 3 to copy the vertex value to
      */
     public void getVertex(int index, float[] vtx)

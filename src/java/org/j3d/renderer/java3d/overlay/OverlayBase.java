@@ -233,7 +233,7 @@ public abstract class OverlayBase
      *
      * @param canvas The canvas the overlay is drawn on
      * @param size The size of the overlay in pixels
-     * @param updateManager Responsible for allowing the Overlay to update
+     * @param manager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      * @throws IllegalArgumentException Both the canvas and bounds are null
      */
@@ -538,7 +538,10 @@ public abstract class OverlayBase
      * dirty condition. A derived class will need to override this method and
      * make any size recalculations and dirty bit handling if this is needed.
      *
-     * @param insets The new set of values to use for insets
+     * @param left The new left inset value to use
+     * @param right The new right inset value to use
+     * @param top The new left top value to use
+     * @param bottom The new bottom inset value to use
      */
     public void setInsets(int left, int top, int right, int bottom)
     {
@@ -628,7 +631,7 @@ public abstract class OverlayBase
      * Returns the UpdateManager responsible for seeing that updates to the
      * Overlay only take place between frames.
      *
-     * @param The update manage instance for this overlay
+     * @return The update manage instance for this overlay
      */
     public UpdateManager getUpdateManager()
     {
