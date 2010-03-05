@@ -31,8 +31,8 @@ COPY_PATH = cp --parents
 CHMOD     = chmod
 CD        = cd
 
+JAVAC_FLAGS=-Xlint:unchecked -source 1.5 -target 1.5
 #JAVAC_FLAGS=-deprecation
 #JAVADOC_FLAGS=
 
 MAKEFLAGS=-s
-
