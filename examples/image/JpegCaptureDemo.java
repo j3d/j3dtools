@@ -17,11 +17,12 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 // Application Specific imports
-import org.j3d.geom.Torus;
 import org.j3d.ui.image.JPEGImageObserver;
 import org.j3d.ui.navigation.NavigationStateListener;
-import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationStateManager;
+
+import org.j3d.renderer.java3d.geom.Torus;
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
 
 /**
  * Demonstration of how to capture a single screenshot using the image
