@@ -17,6 +17,7 @@ import java.awt.GridLayout;
 import java.util.List;
 import java.util.Iterator;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -25,7 +26,6 @@ import javax.swing.border.TitledBorder;
 import org.j3d.device.input.DeviceManager;
 import org.j3d.device.input.InputDevice;
 import org.j3d.device.input.jinput.USBManager;
-import org.j3d.ui.DeviceDescriptorJLabel;
 
 /**
  * Demonstration of the device manager and the list of items it contains
@@ -78,7 +78,7 @@ public class DeviceListDemo extends JFrame
 
         for(int i = 0; i < size; i++)
         {
-            p.add(new DeviceDescriptorJLabel(l[i]));
+            p.add(new JLabel(l[i].getName()));
         }
 
         return p;
