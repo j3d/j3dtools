@@ -14,7 +14,6 @@
 # exclude some directory and then we name everything around it.
 JAR_CONTENT= org/j3d/util \
     org/j3d/io \
-    org/j3d/util/device \
     org/j3d/util/interpolator \
     org/j3d/util/frustum \
     org/j3d/device/input/vfx \

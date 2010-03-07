@@ -34,12 +34,13 @@ import com.sun.j3d.loaders.Loader;
 import com.sun.j3d.loaders.Scene;
 
 // Application Specific imports
+import org.j3d.device.input.DeviceManager;
 import org.j3d.ui.LoaderFileFilter;
-import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationState;
 import org.j3d.ui.navigation.NavigationStateManager;
 import org.j3d.util.device.FileLoaderDescriptor;
-import org.j3d.util.device.DeviceManager;
+
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
 
 /**
  * Demonstration of the using the device manager to list file loaders, place a

@@ -15,9 +15,10 @@ PACKAGE = org.j3d.ui
 # The source files to compile. These are declared in order that they must be
 # compiled in
 SOURCE = CapturedImageObserver.java \
-    LoaderFileFilter.java \
-    InputSelectionPanel.java \
-    DeviceDescriptorJLabel.java 
+
+#    LoaderFileFilter.java \
+#    InputSelectionPanel.java \
+#    DeviceDescriptorJLabel.java 
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

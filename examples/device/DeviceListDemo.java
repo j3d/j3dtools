@@ -22,8 +22,9 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 // Application Specific imports
-import org.j3d.util.device.DeviceDescriptor;
-import org.j3d.util.device.DeviceManager;
+import org.j3d.device.input.DeviceManager;
+import org.j3d.device.input.InputDevice;
+import org.j3d.device.input.jinput.USBManager;
 import org.j3d.ui.DeviceDescriptorJLabel;
 
 /**
@@ -44,20 +45,14 @@ public class DeviceListDemo extends JFrame
         setLocation(40, 40);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        DeviceManager mgr = DeviceManager.getDeviceManager();
-        List loaders = mgr.getAllFileLoaders();
-        List audio = mgr.getAllAudioDevices();
-        List inputs = mgr.getAllInputDevices();
+        DeviceManager mgr = new USBManager();
+        InputDevice[] inputs = mgr.getDevices();
 
-        int max_size = loaders. size();
-        max_size = (max_size > audio.size()) ? max_size : audio.size();
-        max_size = (max_size > inputs.size()) ? max_size : inputs.size();
+        int max_size = 	mgr.getNumDevices();
 
         JPanel p1 = new JPanel(new GridLayout(1, 3));
 
-        p1.add(createDevicePanel("File Loaders", loaders, max_size));
         p1.add(createDevicePanel("InputDevices", inputs, max_size));
-        p1.add(createDevicePanel("AudioDevices", audio, max_size));
 
         Container cont = getContentPane();
         cont.add(p1, BorderLayout.NORTH);
@@ -73,7 +68,7 @@ public class DeviceListDemo extends JFrame
      * @param size The max number of items to use
      * @return The panel they belong to
      */
-    private JPanel createDevicePanel(String title, List l, int size)
+    private JPanel createDevicePanel(String title, InputDevice[] l, int size)
     {
         JPanel p = new JPanel(new GridLayout(size, 1));
 
@@ -81,12 +76,9 @@ public class DeviceListDemo extends JFrame
         TitledBorder tb = new TitledBorder(eb, title);
         p.setBorder(tb);
 
-        Iterator itr = l.iterator();
-
-        while(itr.hasNext())
+        for(int i = 0; i < size; i++)
         {
-            DeviceDescriptor dd = (DeviceDescriptor)itr.next();
-            p.add(new DeviceDescriptorJLabel(dd));
+            p.add(new DeviceDescriptorJLabel(l[i]));
         }
 
         return p;
