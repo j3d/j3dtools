@@ -20,10 +20,12 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
 // Application Specific imports
-import org.j3d.geom.Axis;
-import org.j3d.geom.overlay.ImageOverlay;
-import org.j3d.geom.overlay.UpdateControlBehavior;
 import org.j3d.util.ImageUtils;
+
+import org.j3d.renderer.java3d.overlay.ImageOverlay;
+import org.j3d.renderer.java3d.overlay.UpdateControlBehavior;
+
+import org.j3d.renderer.java3d.geom.Axis;
 
 /**
  * Demonstration of the scribble overlay. Presents a box on screen and allows

@@ -19,10 +19,10 @@ import javax.vecmath.*;
 import java.util.HashMap;
 
 // Application Specific imports
-import org.j3d.geom.Axis;
-import org.j3d.geom.overlay.OverlayManager;
-import org.j3d.geom.overlay.LabelOverlay;
-import org.j3d.geom.overlay.UpdateControlBehavior;
+import org.j3d.renderer.java3d.geom.Axis;
+import org.j3d.renderer.java3d.overlay.OverlayManager;
+import org.j3d.renderer.java3d.overlay.LabelOverlay;
+import org.j3d.renderer.java3d.overlay.UpdateControlBehavior;
 
 /**
  * Demonstration of the scribble overlay. Presents a box on screen and allows

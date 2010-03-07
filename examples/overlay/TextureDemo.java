@@ -21,12 +21,12 @@ import java.io.IOException;
 import java.util.HashMap;
 
 // Application Specific imports
-import org.j3d.geom.Axis;
-import org.j3d.geom.overlay.TextureOverlay;
-import org.j3d.geom.overlay.ImageOverlay;
-import org.j3d.geom.overlay.UpdateControlBehavior;
-import org.j3d.texture.TextureCache;
-import org.j3d.texture.TextureCacheFactory;
+import org.j3d.renderer.java3d.geom.Axis;
+import org.j3d.renderer.java3d.overlay.TextureOverlay;
+import org.j3d.renderer.java3d.overlay.ImageOverlay;
+import org.j3d.renderer.java3d.overlay.UpdateControlBehavior;
+import org.j3d.renderer.java3d.texture.J3DTextureCache;
+import org.j3d.renderer.java3d.texture.J3DTextureCacheFactory;
 
 /**
  * Demonstration of the scribble overlay. Presents a box on screen and allows
@@ -101,7 +101,7 @@ public class TextureDemo extends DemoFrame
 
         // Load the test image, which should be in the same directory as
         // this demo. Texture 1 has transparency, texture 2 does not.
-        TextureCache cache = TextureCacheFactory.getCache();
+        J3DTextureCache cache = J3DTextureCacheFactory.getCache();
         Texture2D texture1 = null;
         Texture2D texture2 = null;
 
