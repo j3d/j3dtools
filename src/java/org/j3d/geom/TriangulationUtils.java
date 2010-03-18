@@ -9,10 +9,10 @@
 
 package org.j3d.geom;
 
-// Standard imports
+// External imports
 // none
 
-// Application specific imports
+// Local imports
 import org.j3d.util.HashSet;
 import org.j3d.util.ObjectArray;
 
@@ -37,7 +37,7 @@ import org.j3d.util.ObjectArray;
  * Seidel's algorithm is described here:
  * http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html
  *
- * @author Justin Couch
+ * @author Justin Couch, Eric Fickenscher
  * @version $Revision: 1.8 $
  */
 public class TriangulationUtils
@@ -156,7 +156,6 @@ public class TriangulationUtils
      * <p>
      * If an error occurs, the result will be negative number of triangles.
      *
-     * @author Eric Fickenscher
      * @param coords The coordinates of the face
      * @param coordOutput The array to copy the coord index values to
      * @param normal The normal to this face these vertices are a part of
@@ -301,7 +300,6 @@ public class TriangulationUtils
      * <p>
      * If an error occurs, the result will be negative number of triangles.
      *
-     * @author Eric Fickenscher
      * @param coords The coordinates of the face
      * @param coordOutput The array to copy the coord index values to
      * @param normal The normal to this face these vertices are a part of

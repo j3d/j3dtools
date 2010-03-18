@@ -17,10 +17,10 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 // Application Specific imports
-import org.j3d.geom.*;
-//import org.j3d.geom.Torus;
 import org.j3d.ui.navigation.NavigationStateListener;
-import org.j3d.ui.navigation.MouseViewHandler;
+
+import org.j3d.renderer.java3d.geom.Torus;
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
 
 /**
  * Demonstration of a mouse navigation in a world.

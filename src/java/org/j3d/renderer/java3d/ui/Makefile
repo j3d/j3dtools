@@ -22,6 +22,6 @@ SOURCE = ImageCaptureCanvas3D.java \
 
 # If the package requires extra classes outside the JDK, the JAR files that 
 # are required are listed here. These should be found in ${PROJECT_ROOT}/lib
-JARS_3RDPARTY =
+JARS_3RDPARTY =	vecmath.jar
 
 include ${PROJECT_ROOT}/make/Makefile.jav

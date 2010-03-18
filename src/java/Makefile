@@ -1,6 +1,6 @@
 #*********************************************************************
 #
-#  (C) 2001 J3d.org
+#  (C) 2001-2010 J3d.org
 #
 #*********************************************************************
 
@@ -8,7 +8,6 @@
 # they are to be compiled in. We create one at a time
 BUILD_ORDER = org.j3d.util \
 	org.j3d.io \
-	org.j3d.util.device \
 	org.j3d.util.interpolator \
 	org.j3d.util.frustum \
 	org.j3d.device.input \
@@ -40,7 +39,6 @@ BUILD_ORDER = org.j3d.util \
 # Names of packages that we want included in the javadoc
 JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.io \
-	org.j3d.util.device \
 	org.j3d.util.interpolator \
 	org.j3d.util.frustum \
 	org.j3d.device.input \
@@ -70,7 +68,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 
 # A version number we tack onto the JAR file name for eclipse versioning
 # purposes.
-JAR_VERSION=0.9.0
+JAR_VERSION=1.0.0
 
 # Names of JAR files we want to create
 JARS = j3d-org-util.jar \
@@ -94,10 +92,13 @@ JARS = j3d-org-util.jar \
 	j3d-org-all.jar \
         org.j3d.core.jar
 
+# 3rd party libraries that need including for JAVADOC generation
+JARS_JAVADOC=\
+     vecmath.jar 
+
 # List of packages that have native code libraries in use and require
 # JNI header generation
 NATIVE_PACKAGES = org.j3d.device.input.vfx
-
 
 # 3rd party libraries that need including.
 JARS_3RDPARTY=

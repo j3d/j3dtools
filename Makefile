@@ -58,16 +58,16 @@ config:
 class:
 	make -f $(JAVA_DIR)/Makefile buildall
 
+libs:
+	make -f $(JAVA_DIR)/Makefile nativeall
+	make -f $(NATIVE_DIR)/Makefile buildall
+    
 jar: class config images
 	make -f $(JAVA_DIR)/Makefile jar
 
 jni:
 	make -f $(JAVA_DIR)/Makefile jni
 
-libs:
-	make -f $(JAVA_DIR)/Makefile nativeall
-	make -f $(NATIVE_DIR)/Makefile buildall
-    
 javadoc:
 	make -f $(JAVA_DIR)/Makefile javadoc
 
@@ -84,5 +84,5 @@ j3d:
 j3d-javadoc:
 	make -f $(JAVA_DIR)/Makefile-java3d javadoc
 
-j3d-jar: j3d
+j3d-jar: j3d config images
 	make -f $(JAVA_DIR)/Makefile-java3d jar

@@ -169,7 +169,7 @@ public abstract class C3DParameter
      * Get the description used for this group. If none is set, this returns
      * null.
      *
-     * @param The current description string, or null if none
+     * @return The current description string, or null if none
      */
     public String getDescription()
     {

@@ -182,7 +182,7 @@ public class C3DParameterGroup
      * Get the description used for this group. If none is set, this returns
      * null.
      *
-     * @param The current description string, or null if none
+     * @return The current description string, or null if none
      */
     public String getDescription()
     {
@@ -211,7 +211,7 @@ public class C3DParameterGroup
      * Add a new parameter to the group. The id of the parameter must be the
      * positive value of this group's ID (which is negative).
      *
-     * @param desc The new description string to use
+     * @param param The new completely filled out parameter definition
      * @throws IllegalStateException The object is locked and cannot be
      *    changed
      * @throws IllegalArgumentException The parameter ID indicates that it is

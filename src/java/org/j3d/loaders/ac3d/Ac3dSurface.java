@@ -97,7 +97,7 @@ public class Ac3dSurface
     /**
      * <p>Mutator to set the current flag state.</p>
      *
-     * @param The value ot set the current flag state to.
+     * @param flags The value ot set the current flag state to.
      */
     public void setFlags(int flags)
     {

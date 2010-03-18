@@ -72,7 +72,7 @@ public class InteractiveTextureOverlay extends TextureOverlay
      *
      * @param canvas The canvas the overlay is drawn on
      * @param size The size of the overlay in pixels
-     * @param The texture to be displayed. May be null
+     * @param texture The texture to be displayed. May be null
      * @throws IllegalArgumentException Both the canvas and bounds are null
      */
     public InteractiveTextureOverlay(Canvas3D canvas,
@@ -95,7 +95,7 @@ public class InteractiveTextureOverlay extends TextureOverlay
      * @param hasAlpha True if the texture has an alpha component
      * @param updateManager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
-     * @param The texture to be displayed. May be null
+     * @param texture The texture to be displayed. May be null
      * @throws IllegalArgumentException Both the canvas and bounds are null
      */
     public InteractiveTextureOverlay(Canvas3D canvas,
@@ -167,8 +167,6 @@ public class InteractiveTextureOverlay extends TextureOverlay
 
     /**
      * Request that keyboard focus be sent to this listener object now.
-     *
-     * @param key The key of the object requesting focus now
      */
     public void requestFocus()
     {
@@ -181,7 +179,6 @@ public class InteractiveTextureOverlay extends TextureOverlay
      * listener instance is null, this request is ignored.
      *
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void addMouseListener(MouseListener l)
     {
@@ -196,7 +193,6 @@ public class InteractiveTextureOverlay extends TextureOverlay
      * listener instance is null, this request is ignored.
      *
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void removeMouseListener(MouseListener l)
     {
@@ -211,7 +207,6 @@ public class InteractiveTextureOverlay extends TextureOverlay
      * If the listener instance is null, this request is ignored.
      *
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void addMouseMotionListener(MouseMotionListener l)
     {
@@ -226,7 +221,6 @@ public class InteractiveTextureOverlay extends TextureOverlay
      * If the listener instance is null, this request is ignored.
      *
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void removeMouseMotionListener(MouseMotionListener l)
     {
@@ -241,7 +235,6 @@ public class InteractiveTextureOverlay extends TextureOverlay
      * If the listener instance is null, this request is ignored.
      *
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void addKeyListener(KeyListener l)
     {

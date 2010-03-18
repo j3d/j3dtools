@@ -23,10 +23,12 @@ import java.util.HashMap;
 import org.j3d.geom.*;
 import org.j3d.geom.spline.*;
 
-import org.j3d.texture.TextureCache;
-import org.j3d.texture.TextureCacheFactory;
-import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationState;
+
+import org.j3d.renderer.java3d.geom.Axis;
+import org.j3d.renderer.java3d.texture.J3DTextureCache;
+import org.j3d.renderer.java3d.texture.J3DTextureCacheFactory;
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
 
 /**
  * Demonstration of the various pieces of standard geometry provided by
@@ -505,7 +507,7 @@ public class Nurbs3DDemo extends DemoFrame
         blue_appearance.setPolygonAttributes(targetPolyAttr);
 
         try {
-            TextureCache t_cache = TextureCacheFactory.getCache();
+            J3DTextureCache t_cache = J3DTextureCacheFactory.getCache();
             texture = (Texture2D)t_cache.fetchTexture("grid32.gif");
             texture.setCapability(Texture.ALLOW_ENABLE_WRITE);
             blue_appearance.setTexture(texture);

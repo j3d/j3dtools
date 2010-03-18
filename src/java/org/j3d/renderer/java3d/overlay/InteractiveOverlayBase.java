@@ -59,7 +59,7 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      *
      * @param canvas The canvas the overlay is drawn on
      * @param size The size of the overlay in pixels
-     * @param updateManager Responsible for allowing the Overlay to update
+     * @param manager Responsible for allowing the Overlay to update
      *   between renders. If this is null a default manager is created
      */
     protected InteractiveOverlayBase(Canvas3D canvas,
@@ -162,8 +162,6 @@ public abstract class InteractiveOverlayBase extends OverlayBase
 
     /**
      * Request that keyboard focus be sent to this listener object now.
-     *
-     * @param key The key of the object requesting focus now
      */
     public void requestFocus()
     {
@@ -176,7 +174,6 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * listener instance is null, this request is ignored.
      *
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void addMouseListener(MouseListener l)
     {
@@ -189,7 +186,6 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * listener instance is null, this request is ignored.
      *
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void removeMouseListener(MouseListener l)
     {
@@ -202,7 +198,6 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * If the listener instance is null, this request is ignored.
      *
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void addMouseMotionListener(MouseMotionListener l)
     {
@@ -215,7 +210,6 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * If the listener instance is null, this request is ignored.
      *
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void removeMouseMotionListener(MouseMotionListener l)
     {
@@ -228,7 +222,6 @@ public abstract class InteractiveOverlayBase extends OverlayBase
      * If the listener instance is null, this request is ignored.
      *
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void addKeyListener(KeyListener l)
     {

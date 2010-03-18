@@ -21,12 +21,13 @@ import java.util.HashMap;
 // Application Specific imports
 import org.j3d.geom.terrain.*;
 
-import org.j3d.geom.Axis;
 import org.j3d.geom.GeometryGenerator;
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.UnsupportedTypeException;
-import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationState;
+
+import org.j3d.renderer.java3d.geom.Axis;
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
 
 /**
  * Demonstration of the various pieces of terrain geometry provided by

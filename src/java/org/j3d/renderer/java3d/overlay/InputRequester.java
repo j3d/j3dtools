@@ -79,7 +79,6 @@ public interface InputRequester
      *
      * @param key A key object used to determine focus requests
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void addKeyListener(KeyListener l, Object key);
 
@@ -89,7 +88,6 @@ public interface InputRequester
      *
      * @param key A key object used to determine focus requests
      * @param l The listener to manage events for
-     * @param ovl The overlay to base the mouse bounds handling on
      */
     public void removeKeyListener(KeyListener l, Object key);
 }

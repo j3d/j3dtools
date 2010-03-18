@@ -51,8 +51,6 @@ public class UpdateControlBehavior extends Behavior
 
     /**
      * Create a new behavior that manages the update of a single entity
-     *
-     * @param entity The entity to process update requests for
      */
     public UpdateControlBehavior()
     {

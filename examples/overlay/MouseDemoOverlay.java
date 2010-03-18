@@ -16,8 +16,8 @@ import java.awt.event.MouseEvent;
 import javax.media.j3d.Canvas3D;
 
 // Application specific imports
-import org.j3d.geom.overlay.MouseOverlay;
-import org.j3d.geom.overlay.InteractiveOverlayBase;
+import org.j3d.renderer.java3d.overlay.MouseOverlay;
+import org.j3d.renderer.java3d.overlay.InteractiveOverlayBase;
 
 /**
  * An demo mouse overlay to print out when the mouse goes over the overlay.

@@ -46,7 +46,7 @@ public interface Ac3dParseObserver
      * yet contain the children.
      *
      * @param parent The parent object that contains this surface
-     * @param object The object that was just read
+     * @param obj The object that was just read
      * @return true if to keep reading
      */
     public boolean objectComplete(Ac3dObject parent, Ac3dObject obj);

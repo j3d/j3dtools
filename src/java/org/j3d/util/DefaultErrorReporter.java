@@ -58,7 +58,7 @@ public class DefaultErrorReporter implements ErrorReporter
      * Notification of an informational message from the system. For example,
      * it may issue a message when a URL cannot be resolved.
      *
-     * @param e The exception that caused this warning. May be null
+     * @param msg The general message string to report. May be null
      */
     public void messageReport(String msg)
     {

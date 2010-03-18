@@ -19,7 +19,7 @@ package org.j3d.device.output.elumens;
  * An interface for receiving event notifications about an Elumens Dome.
  * <p>
  * @author Alan Hudson
- * @verion $Revision: 1.1 $
+ * @version $Revision: 1.1 $
  */
 public interface ElumensEventListener {
     /**

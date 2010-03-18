@@ -100,9 +100,9 @@ public class OverlayUtilities
      * @param max The maximum required size
      * @return A collection of the rectangles needed to construct the total size
      */
-    public static List subdivide(Dimension dimension, int threshhold, int max)
+    public static List subdivide(Dimension dimension, int threshold, int max)
     {
-        return subdivide(dimension.width, dimension.height, threshhold, max);
+        return subdivide(dimension.width, dimension.height, threshold, max);
     }
 
     /**
@@ -110,15 +110,14 @@ public class OverlayUtilities
      * powers of 2. All elements will be less than max and greater than the minimum
      * value by threshhold.
      *
-     * @param dimension The required total size
      * @param threshold The minimum required size
      * @param max The maximum required size
      * @return A collection of the rectangles needed to construct the total size
      */
-    public static List subdivide(int width, int height, int threshhold, int max)
+    public static List subdivide(int width, int height, int threshold, int max)
     {
-        List cols = components(width, threshhold, max);
-        List rows = components(height, threshhold, max);
+        List cols = components(width, threshold, max);
+        List rows = components(height, threshold, max);
         List parts = new ArrayList();
 
         int i = 0, j = 0;
@@ -152,12 +151,12 @@ public class OverlayUtilities
      * @param max The maximum required size
      * @return A list, in order of the component values
      */
-    public static List components(int value, int threshhold, int max)
+    public static List components(int value, int threshold, int max)
     {
         List components = new ArrayList();
         while (value > 0)
         {
-            int p = Math.min(optimalPower(value, threshhold, max), value);
+            int p = Math.min(optimalPower(value, threshold, max), value);
             components.add(new Integer(p));
             value -= p;
         }

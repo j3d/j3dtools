@@ -17,10 +17,12 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 // Application Specific imports
-import org.j3d.geom.*;
 
-import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationState;
+
+import org.j3d.renderer.java3d.geom.Axis;
+import org.j3d.renderer.java3d.geom.RasterTextLabel;
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
 
 /**
  * Demonstration of the various pieces of geometry objects based on
@@ -104,9 +106,11 @@ public class ShapeDemo extends DemoFrame
 
         // A couple of labels.
         Shape3D label1 = new RasterTextLabel("Label 1", null);
-        Shape3D label2 = new RasterTextLabel("Label 2", Color.red, 0, 0.5f, 0);
+        Shape3D label2 = new RasterTextLabel("Label 2", Color.red, true, true, 0, 0.5f, 0);
         Shape3D label3 = new RasterTextLabel("Label 3",
                                              Color.blue,
+											 true,
+											 true,
                                              0,
                                              1.0f,
                                              0,

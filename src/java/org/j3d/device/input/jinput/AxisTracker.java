@@ -105,7 +105,7 @@ public class AxisTracker extends Tracker
      * What action types does this sensor return.  This a combination
      * of ACTION masks.
      *
-     * @param The action mask.
+     * @return The currently set action mask.
      */
     public int getActionMask()
     {
@@ -115,6 +115,9 @@ public class AxisTracker extends Tracker
     /**
      * Get the current state of this tracker.
      *
+	 * @param layer The ID of the visual layer to get the state from
+	 * @param subLayer The ID of the contained internal layer from the
+	 *    main layer to get the state from
      * @param state The current state
      */
     public void getState(int layer, int subLayer, TrackerState state)

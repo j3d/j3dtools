@@ -17,7 +17,7 @@ import java.awt.event.*;
 import javax.media.j3d.GraphicsConfigTemplate3D;
 
 // Application Specific imports
-import org.j3d.ui.ImageCaptureCanvas3D;
+import org.j3d.renderer.java3d.ui.ImageCaptureCanvas3D;
 
 /**
  * Demonstration of a mouse navigation in a world.

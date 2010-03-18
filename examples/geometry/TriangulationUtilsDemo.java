@@ -10,9 +10,9 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 
-// Application Specific imports
+// Local imports
 import org.j3d.geom.*;
 
 

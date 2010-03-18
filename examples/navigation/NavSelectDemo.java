@@ -17,12 +17,13 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 // Application Specific imports
-import org.j3d.geom.Torus;
 import org.j3d.ui.navigation.NavigationState;
 import org.j3d.ui.navigation.NavigationStateListener;
-import org.j3d.ui.navigation.MouseViewHandler;
 import org.j3d.ui.navigation.NavigationStateManager;
 import org.j3d.ui.navigation.NavigationToolbar;
+
+import org.j3d.renderer.java3d.geom.Torus;
+import org.j3d.renderer.java3d.navigation.MouseViewHandler;
 
 /**
  * Demonstration of the navigation toolbar allowing selection of the user
