@@ -31,6 +31,10 @@ COPY_PATH = cp --parents
 CHMOD     = chmod
 CD        = cd
 
+# Pass these variables down between the environments
+export JAR_VERSION
+
+# General runtime flags for various commands
 JAVAC_FLAGS=-Xlint:unchecked -source 1.5 -target 1.5
 #JAVAC_FLAGS=-deprecation
 #JAVADOC_FLAGS=
