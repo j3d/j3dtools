@@ -137,11 +137,11 @@ class STLBinaryParser extends STLParser
             itsNames = new String[1];
             // if length of file is known, check if it matches with the content
             // binary file contains only on object
-            if(length != -1 && 
+            if(length != -1 &&
                length != itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE)
             {
-                String msg = "File size does not match the expected size for" + 
-                    "the given number of facets. Given " + 
+                String msg = "File size does not match the expected size for" +
+                    "the given number of facets. Given " +
                     itsNumOfFacets[0] + " facets for a total size of " +
                     (itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE) +
                     " but the file size is " + length;
@@ -166,14 +166,30 @@ class STLBinaryParser extends STLParser
     public boolean getNextFacet(double[] normal, double[][] vertices)
         throws IOException
     {
-        LittleEndianConverter.read(itsReadBuffer, 
+        LittleEndianConverter.read(itsReadBuffer,
                                    itsDataBuffer,
                                    0,
                                    12,
                                    itsStream);
+
+        boolean nan_found = false;;
+
         for(int i = 0; i < 3; i ++)
+        {
             normal[i] = Float.intBitsToFloat(itsDataBuffer[i]);
-        
+            if (Double.isNaN(normal[i]) || Double.isInfinite(normal[i])) {
+                nan_found = true;
+            }
+        }
+
+        if (nan_found)
+        {
+            // STL spec says use 0 0 0 for autocalc
+            normal[0] = 0;
+            normal[1] = 0;
+            normal[2] = 0;
+        }
+
         for(int i = 0; i < 3; i ++)
         {
             for(int j = 0; j < 3; j ++)

@@ -98,7 +98,7 @@ class STLASCIIParser extends STLParser
         throws IOException
     {
         // format of a triangle is:
-        // 
+        //
         // facet normal number number number
         //   outer loop
         //     vertex number number number
@@ -226,7 +226,7 @@ class STLASCIIParser extends STLParser
         strtok = new StringTokenizer(input_line);
         token = strtok.nextToken();
         lineCount++;
- 
+
         if(!token.equals("endfacet"))
         {
             close();
@@ -256,7 +256,7 @@ class STLASCIIParser extends STLParser
         {
             if(stream != null)
                 stream.close();
-            
+
             throw e;
         }
 
@@ -279,7 +279,7 @@ class STLASCIIParser extends STLParser
 
         if(!isAscii)
             return false;
-        
+
         try
         {
             stream = url.openStream();
@@ -297,7 +297,7 @@ class STLASCIIParser extends STLParser
 
         reader = new BufferedReader(new InputStreamReader(stream));
         itsReader = reader;
-        
+
         return true;
     }
 
@@ -353,7 +353,7 @@ class STLASCIIParser extends STLParser
 
         reader = new BufferedReader(new InputStreamReader(stream));
         itsReader = reader;
-        
+
         return true;
     }
 
@@ -473,11 +473,13 @@ class STLASCIIParser extends STLParser
     private void readVector(StringTokenizer strtok, double[] vector)
         throws IOException
     {
-        // Skip the first token on the line because it is one of 
+        // Skip the first token on the line because it is one of
         // "normal" or "vertex"
         for(int i = 0; i < 3; i ++)
         {
             String num_str = strtok.nextToken();
+
+            boolean nan_found = false;
 
             try
             {
@@ -485,10 +487,22 @@ class STLASCIIParser extends STLParser
             }
             catch(NumberFormatException e)
             {
+                if ((num_str.indexOf("nan") != -1) || (num_str.indexOf("NaN") != -1)) {
+                    nan_found = true;
+                    continue;
+                }
+
                 I18nManager intl_mgr = I18nManager.getManager();
 
                 String msg = intl_mgr.getString(INVALID_DATA_MSG_PROP) + num_str;
                 throw new InvalidFormatException(msg);
+            }
+
+            if (nan_found) {
+                // STL spec says use 0 0 0 for autocalc
+                vector[0] = 0;
+                vector[1] = 0;
+                vector[2] = 0;
             }
         }
     }
