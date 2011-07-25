@@ -376,6 +376,8 @@ class STLASCIIParser extends STLParser
         String line = reader.readLine();
         int line_count = 1;
 
+        line = line.trim();  // "Spec" says whitespace maybe anywhere except within numbers or words.  Great design!
+
         // check if ASCII format
         if(!line.startsWith("solid"))
         {
@@ -383,8 +385,6 @@ class STLASCIIParser extends STLParser
         }
         else
         {
-            line = line.trim();
-
             if(line.length() > 6)
                 names.add(line.substring(6));
             else
