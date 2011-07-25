@@ -34,8 +34,27 @@ abstract class STLParser
     protected int[]    itsNumOfFacets = null;
     protected String[] itsNames = null;
 
+    /** Do we strictly parse or try harder */
+    protected boolean strictParsing;
+
+    /** Recovered from parsing error */
+    protected boolean recoveredParsing;
+
     public STLParser()
     {
+        strictParsing = true;
+        recoveredParsing = false;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param strict Attempt to deal with crappy data or short downloads.
+     * Will try to return any useable geometry.
+     */
+    public STLParser(boolean strict)
+    {
+        strictParsing = strict;
     }
 
     /**
@@ -68,6 +87,15 @@ abstract class STLParser
     int getNumOfObjects()
     {
         return itsNumOfObjects;
+    }
+
+    /**
+     * Was this file recovered with error parsing.  Only can happen
+     * when strictParsing is false.
+     */
+    boolean getRecoveredParsing()
+    {
+        return recoveredParsing;
     }
 
     /**

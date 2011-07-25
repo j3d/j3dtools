@@ -77,6 +77,16 @@ class STLASCIIParser extends STLParser
     {
     }
 
+
+    /**
+     * Create a new default parser instance.
+     */
+    public STLASCIIParser(boolean strict)
+    {
+        super(strict);
+
+    }
+
     /**
      * Finish the parsing off now.
      */

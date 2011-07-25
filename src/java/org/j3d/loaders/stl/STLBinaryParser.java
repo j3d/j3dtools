@@ -55,6 +55,20 @@ class STLBinaryParser extends STLParser
         itsDataBuffer = new int[12];
     }
 
+    /**
+     * Constructor.
+     *
+     * @param strict Attempt to deal with crappy data or short downloads.
+     * Will try to return any useable geometry.
+     */
+    public STLBinaryParser(boolean strict)
+    {
+        super(strict);
+
+        itsReadBuffer = new byte[48];
+        itsDataBuffer = new int[12];
+    }
+
     public void close() throws IOException
     {
         if(itsStream != null)
@@ -137,17 +151,28 @@ class STLBinaryParser extends STLParser
             itsNames = new String[1];
             // if length of file is known, check if it matches with the content
             // binary file contains only on object
-            if(length != -1 &&
+            if(strictParsing && length != -1 &&
                length != itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE)
             {
                 String msg = "File size does not match the expected size for" +
-                    "the given number of facets. Given " +
+                    " the given number of facets. Given " +
                     itsNumOfFacets[0] + " facets for a total size of " +
                     (itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE) +
                     " but the file size is " + length;
                 close();
 
                 throw new InvalidFormatException(msg);
+            } else if (!strictParsing && length != -1 &&
+               length != itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE) {
+
+               String msg = "EXTMSG: File size does not match the expected size for" +
+                    " the given number of facets. Given " +
+                    itsNumOfFacets[0] + " facets for a total size of " +
+                    (itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE) +
+                    " but the file size is " + length;
+
+                recoveredParsing = true;
+                System.out.println(msg);
             }
         }
         catch(IOException e)

@@ -64,6 +64,20 @@ public class STLFileReader
     }
 
     /**
+     * Creates a <code>STLFileReader</code> object to read a STL file from a
+     * file. The data may be in ASCII or binary format.
+     * @param fileName Name of STL file to read.
+     * @param strict Attempt to deal with crappy data or short downloads.
+     * Will try to return any useable geometry.
+     * @throws InvalidFormatException The file was structurally incorrect
+     */
+    public STLFileReader(String fileName, boolean strict)
+        throws InvalidFormatException, IOException
+    {
+        this(new URL(fileName), strict);
+    }
+
+    /**
      * Creates a <code>STLFileReader</code> object to read a STL file from an
      * URL. The data may be in ASCII or binary format.
      * @param url URL of STL file to read.
@@ -84,6 +98,31 @@ public class STLFileReader
             itsParser = binParser;
         }
     }
+
+    /**
+     * Creates a <code>STLFileReader</code> object to read a STL file from an
+     * URL. The data may be in ASCII or binary format.
+     * @param url URL of STL file to read.
+     * @param strict Attempt to deal with crappy data or short downloads.
+     * Will try to return any useable geometry.
+     * @throws InvalidFormatException The file was structurally incorrect
+     */
+    public STLFileReader(URL url, boolean strict)
+        throws InvalidFormatException, IOException
+    {
+        final STLASCIIParser asciiParser = new STLASCIIParser(strict);
+        if(asciiParser.parse(url))
+        {
+            itsParser = asciiParser;
+        }
+        else
+        {
+            final STLBinaryParser binParser = new STLBinaryParser(strict);
+            binParser.parse(url);
+            itsParser = binParser;
+        }
+    }
+
 
     /**
      * Creates a <code>STLFileReader</code> object to read a STL file from an
@@ -111,6 +150,33 @@ public class STLFileReader
     }
 
     /**
+     * Creates a <code>STLFileReader</code> object to read a STL file from an
+     * URL. The data may be in ASCII or binary format. A progress monitor will
+     * show the progress during reading.
+     * @param url URL of STL file to read.
+     * @param parentComponent Parent <code>Component</code> of progress monitor.
+     *      Use <code>null</code> if there is no parent.
+     * @param strict Attempt to deal with crappy data or short downloads.
+     * Will try to return any useable geometry.
+     * @throws InvalidFormatException The file was structurally incorrect
+     */
+    public STLFileReader(URL url, Component parentComponent, boolean strict)
+        throws InvalidFormatException, IOException
+    {
+        final STLASCIIParser asciiParser = new STLASCIIParser(strict);
+        if(asciiParser.parse(url, parentComponent))
+        {
+            itsParser = asciiParser;
+        }
+        else
+        {
+            final STLBinaryParser binParser = new STLBinaryParser(strict);
+            binParser.parse(url, parentComponent);
+            itsParser = binParser;
+        }
+    }
+
+    /**
      * Creates a <code>STLFileReader</code> object to read a STL file from a
      * file. The data may be in ASCII or binary format. A progress monitor will
      * show the progress during reading.
@@ -129,6 +195,23 @@ public class STLFileReader
      * Creates a <code>STLFileReader</code> object to read a STL file from a
      * file. The data may be in ASCII or binary format. A progress monitor will
      * show the progress during reading.
+     * @param file <code>File</code> object of STL file to read.
+     * @param parentComponent Parent <code>Component</code> of progress monitor.
+     *      Use <code>null</code> if there is no parent.
+     * @param strict Attempt to deal with crappy data or short downloads.
+     * Will try to return any useable geometry.
+     * @throws InvalidFormatException The file was structurally incorrect
+     */
+    public STLFileReader(File file, Component parentComponent, boolean strict)
+        throws InvalidFormatException, IOException
+    {
+        this(file.toURL(), parentComponent, strict);
+    }
+
+    /**
+     * Creates a <code>STLFileReader</code> object to read a STL file from a
+     * file. The data may be in ASCII or binary format. A progress monitor will
+     * show the progress during reading.
      * @param fileName Name of STL file to read.
      * @param parentComponent Parent <code>Component</code> of progress monitor.
      *      Use <code>null</code> if there is no parent.
@@ -138,6 +221,23 @@ public class STLFileReader
         throws InvalidFormatException, IOException
     {
         this(new URL(fileName), parentComponent);
+    }
+
+    /**
+     * Creates a <code>STLFileReader</code> object to read a STL file from a
+     * file. The data may be in ASCII or binary format. A progress monitor will
+     * show the progress during reading.
+     * @param fileName Name of STL file to read.
+     * @param parentComponent Parent <code>Component</code> of progress monitor.
+     *      Use <code>null</code> if there is no parent.
+     * @param strict Attempt to deal with crappy data or short downloads.
+     * Will try to return any useable geometry.
+     * @throws InvalidFormatException The file was structurally incorrect
+     */
+    public STLFileReader (String fileName, Component parentComponent, boolean strict)
+        throws InvalidFormatException, IOException
+    {
+        this(new URL(fileName), parentComponent, strict);
     }
 
     /**
@@ -189,6 +289,16 @@ public class STLFileReader
     public int[] getNumOfFacets()
     {
         return itsParser.getNumOfFacets();
+    }
+
+    /**
+     * Was this file recovered with error parsing.  Only can happen
+     * when strictParsing is false.  Means things like getNumOfFacets might
+     * be larger then reality.
+     */
+    public boolean getRecoveredParsing()
+    {
+        return itsParser.getRecoveredParsing();
     }
 
     /**
