@@ -15,6 +15,7 @@ package org.j3d.loaders.stl;
 import java.net.URL;
 import java.awt.Component;
 import java.io.IOException;
+import java.util.List;
 
 // Local imports
 import org.j3d.loaders.InvalidFormatException;
@@ -37,13 +38,12 @@ abstract class STLParser
     /** Do we strictly parse or try harder */
     protected boolean strictParsing;
 
-    /** Recovered from parsing error */
-    protected boolean recoveredParsing;
+    /** Detailed parsing messages or null if none */
+    protected List<String> parsingMessages;
 
     public STLParser()
     {
-        strictParsing = true;
-        recoveredParsing = false;
+        this(false);
     }
 
     /**
@@ -90,12 +90,13 @@ abstract class STLParser
     }
 
     /**
-     * Was this file recovered with error parsing.  Only can happen
-     * when strictParsing is false.
+     * Get detailed messages on what was wrong when parsing.  Only can happen
+     * when strictParsing is false.  Means things like getNumOfFacets might
+     * be larger then reality.
      */
-    boolean getRecoveredParsing()
+    public List<String> getParsingMessages()
     {
-        return recoveredParsing;
+        return parsingMessages;
     }
 
     /**

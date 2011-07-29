@@ -57,8 +57,12 @@ class STLASCIIParser extends STLParser
         "org.j3d.loaders.stl.STLASCIIParser.emptyFileMsg";
 
     /** Unexpected data is encountered during parsing */
-    private static final String INVALID_DATA_MSG_PROP =
-        "org.j3d.loaders.stl.STLASCIIParser.invalidDataMsg";
+    private static final String INVALID_NORMAL_DATA_MSG_PROP =
+        "org.j3d.loaders.stl.STLASCIIParser.invalidNormalDataMsg";
+
+    /** Unexpected data is encountered during parsing */
+    private static final String INVALID_VERTEX_DATA_MSG_PROP =
+        "org.j3d.loaders.stl.STLASCIIParser.invalidVertexDataMsg";
 
     /** Unexpected EOF is encountered during parsing */
     private static final String EOF_WTF_MSG_PROP =
@@ -144,8 +148,8 @@ class STLASCIIParser extends STLParser
 
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
-                                            lineCount;
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
+                                            + lineCount;
             throw new InvalidFormatException(msg);
         }
 
@@ -156,12 +160,12 @@ class STLASCIIParser extends STLParser
 
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
-                                            lineCount;
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
+                                            + lineCount;
             throw new InvalidFormatException(msg);
         }
 
-        readVector(strtok, normal);
+        readNormal(strtok, normal);
 
         // Skip the outer loop line
         input_line = itsReader.readLine();
@@ -175,8 +179,8 @@ class STLASCIIParser extends STLParser
 
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
-                                            lineCount;
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
+                                            + lineCount;
             throw new InvalidFormatException(msg);
         }
 
@@ -187,8 +191,8 @@ class STLASCIIParser extends STLParser
 
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
-                                            lineCount;
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
+                                            + lineCount;
             throw new InvalidFormatException(msg);
         }
 
@@ -206,12 +210,12 @@ class STLASCIIParser extends STLParser
 
                 I18nManager intl_mgr = I18nManager.getManager();
 
-                String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
-                                                lineCount;
+                String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
+                                                + lineCount;
                 throw new InvalidFormatException(msg);
             }
 
-            readVector(strtok, vertices[i]);
+            readCoordinate(strtok, vertices[i]);
         }
 
         // Read and skip the endloop && endfacet lines
@@ -227,8 +231,8 @@ class STLASCIIParser extends STLParser
 
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
-                                            lineCount;
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
+                                            + lineCount;
             throw new InvalidFormatException(msg);
         }
 
@@ -243,8 +247,8 @@ class STLASCIIParser extends STLParser
 
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
-                                            lineCount;
+            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
+                                            + lineCount;
             throw new InvalidFormatException(msg);
         }
 
@@ -453,7 +457,7 @@ class STLASCIIParser extends STLParser
                     I18nManager intl_mgr = I18nManager.getManager();
 
                     String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
-                                 lineCount;
+                                 ": " + lineCount;
 
                     throw new InvalidFormatException(msg);
                 }
@@ -480,16 +484,14 @@ class STLASCIIParser extends STLParser
      * Read three numbers from the tokeniser and place them in the double value
      * returned.
      */
-    private void readVector(StringTokenizer strtok, double[] vector)
+    private void readNormal(StringTokenizer strtok, double[] vector)
         throws IOException
     {
-        // Skip the first token on the line because it is one of
-        // "normal" or "vertex"
+        boolean error_found = false;
+
         for(int i = 0; i < 3; i ++)
         {
             String num_str = strtok.nextToken();
-
-            boolean nan_found = false;
 
             try
             {
@@ -497,23 +499,75 @@ class STLASCIIParser extends STLParser
             }
             catch(NumberFormatException e)
             {
-                if ((num_str.indexOf("nan") != -1) || (num_str.indexOf("NaN") != -1)) {
-                    nan_found = true;
+                if (!strictParsing)
+                {
+                    error_found = true;
                     continue;
                 }
 
                 I18nManager intl_mgr = I18nManager.getManager();
 
-                String msg = intl_mgr.getString(INVALID_DATA_MSG_PROP) + num_str;
+                String msg = intl_mgr.getString(INVALID_NORMAL_DATA_MSG_PROP) +
+                    num_str;
                 throw new InvalidFormatException(msg);
             }
 
-            if (nan_found) {
-                // STL spec says use 0 0 0 for autocalc
-                vector[0] = 0;
-                vector[1] = 0;
-                vector[2] = 0;
+        }
+
+        if (error_found) {
+            // STL spec says use 0 0 0 for autocalc
+            vector[0] = 0;
+            vector[1] = 0;
+            vector[2] = 0;
+        }
+    }
+
+    /**
+     * Read three numbers from the tokeniser and place them in the double value
+     * returned.
+     */
+    private void readCoordinate(StringTokenizer strtok, double[] vector)
+        throws IOException
+    {
+        for(int i = 0; i < 3; i ++)
+        {
+            String num_str = strtok.nextToken();
+
+            boolean error_found = false;
+
+            try
+            {
+                vector[i] = Double.parseDouble(num_str);
+            }
+            catch(NumberFormatException e)
+            {
+                if (strictParsing)
+                {
+                    I18nManager intl_mgr = I18nManager.getManager();
+
+                    String msg = intl_mgr.getString(INVALID_VERTEX_DATA_MSG_PROP) +
+                       ": Cannot parse vertex: " + num_str;
+                    throw new InvalidFormatException(msg);
+                } else {
+                    // Common error is to use commas instead of . in Europe
+                    String new_str = num_str.replace(",",".");
+
+                    try
+                    {
+                        vector[i] = Double.parseDouble(new_str);
+                    }
+                    catch(NumberFormatException e2)
+                    {
+
+                        I18nManager intl_mgr = I18nManager.getManager();
+
+                        String msg = intl_mgr.getString(INVALID_VERTEX_DATA_MSG_PROP) +
+                           ": Cannot parse vertex: " + num_str;
+                        throw new InvalidFormatException(msg);
+                    }
+                }
             }
         }
     }
+
 }

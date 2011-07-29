@@ -17,6 +17,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.awt.Component;
 import javax.swing.ProgressMonitorInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 // Local imports
 import org.j3d.loaders.InvalidFormatException;
@@ -165,14 +167,16 @@ class STLBinaryParser extends STLParser
             } else if (!strictParsing && length != -1 &&
                length != itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE) {
 
-               String msg = "EXTMSG: File size does not match the expected size for" +
+               String msg = "File size does not match the expected size for" +
                     " the given number of facets. Given " +
                     itsNumOfFacets[0] + " facets for a total size of " +
                     (itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE) +
                     " but the file size is " + length;
 
-                recoveredParsing = true;
-                System.out.println(msg);
+                if (parsingMessages == null) {
+                    parsingMessages = new ArrayList<String>();
+                }
+                parsingMessages.add(msg);
             }
         }
         catch(IOException e)

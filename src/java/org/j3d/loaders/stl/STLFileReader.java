@@ -16,6 +16,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.awt.Component;
+import java.util.List;
 
 // Local imports
 import org.j3d.loaders.InvalidFormatException;
@@ -87,6 +88,7 @@ public class STLFileReader
         throws InvalidFormatException, IOException
     {
         final STLASCIIParser asciiParser = new STLASCIIParser();
+
         if(asciiParser.parse(url))
         {
             itsParser = asciiParser;
@@ -110,7 +112,9 @@ public class STLFileReader
     public STLFileReader(URL url, boolean strict)
         throws InvalidFormatException, IOException
     {
-        final STLASCIIParser asciiParser = new STLASCIIParser(strict);
+
+        final STLParser asciiParser = new STLASCIIParser(strict);
+
         if(asciiParser.parse(url))
         {
             itsParser = asciiParser;
@@ -292,13 +296,13 @@ public class STLFileReader
     }
 
     /**
-     * Was this file recovered with error parsing.  Only can happen
+     * Get detailed messages on what was wrong when parsing.  Only can happen
      * when strictParsing is false.  Means things like getNumOfFacets might
      * be larger then reality.
      */
-    public boolean getRecoveredParsing()
+    public List<String> getParsingMessages()
     {
-        return itsParser.getRecoveredParsing();
+        return itsParser.getParsingMessages();
     }
 
     /**
