@@ -35,6 +35,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.loaders.discreet \
 	org.j3d.loaders.c3d \
 	org.j3d.loaders.ac3d \
+	org.j3d.loaders.obj \
 
 # Names of packages that we want included in the javadoc
 JAVADOC_PACKAGES = org.j3d.util \
@@ -65,6 +66,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.loaders.dem \
 	org.j3d.loaders.c3d \
 	org.j3d.loaders.ac3d \
+	org.j3d.loaders.obj
 
 # A version number we tack onto the JAR file name for eclipse versioning
 # purposes.

@@ -203,6 +203,37 @@ class OBJASCIIParser extends OBJParser
                     }
 
                     obj_started = true;
+                } else if (token.equals("g")) {
+                    // Ignore Grouping command
+                } else if (token.equals("s")) {
+                    // Ignore State
+                } else if (token.equals("cstype")) {
+                    // Unsupported Geometry
+
+                    String msg = "Unsupported geometry: " + token;
+                    if (parsingMessages == null) {
+                        parsingMessages = new ArrayList<String>();
+                    }
+                    parsingMessages.add(msg);
+
+                } else if (token.equals("surf")) {
+                    // Ignore, caught by cstype
+                } else if (token.equals("ctech")) {
+                    // Ignore, caught by cstype
+                } else if (token.equals("curv")) {
+                    // Ignore, caught by cstype
+                } else if (token.equals("curv2")) {
+                    // Ignore, caught by cstype
+                } else if (token.equals("trim")) {
+                    // Ignore, caught by cstype
+                } else if (token.equals("scurv")) {
+                    // Ignore, caught by cstype
+                } else if (token.equals("end")) {
+                    // Ignore, caught by cstype
+                } else if (token.equals("deg")) {
+                    // Ignore, caught by cstype
+                } else if (token.equals("parm")) {
+                    // Ignore, caught by cstype
                 } else
                 {
                     // Unsupported
