@@ -95,5 +95,5 @@ abstract class OBJParser
      *
      * @return The object or null if EOF reached.
      */
-    abstract public GeometryData getNextObject() throws IOException;
+    abstract public GeometryData getNextObject() throws IOException, InvalidFormatException;
 }

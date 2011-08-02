@@ -126,7 +126,7 @@ class OBJASCIIParser extends OBJParser
      *
      * @return The object or null if EOF reached.
      */
-    public GeometryData getNextObject() throws IOException
+    public GeometryData getNextObject() throws IOException, InvalidFormatException
     {
         GeometryData ret_val = null;
         ArrayList<int[]> coord_indexes = new ArrayList<int[]>();
@@ -300,6 +300,9 @@ class OBJASCIIParser extends OBJParser
         for(int i=0; i < len; i++) {
             int[] face = coord_indexes.get(i);
             for(int j=0; j < face.length; j++) {
+                if (face[j] < 0 || face[j] >= coords.size()) {
+                    throw new InvalidFormatException("Coordinate index out of bounds");
+                }
                 ret_val.indexes[idx++] = face[j];
             }
 
@@ -317,17 +320,33 @@ class OBJASCIIParser extends OBJParser
 
         if (count > 0)
         {
+            boolean error_found = false;
+
             ret_val.texCoordIndexes = new int[count + len];  // for extra -1
             idx = 0;
-            for(int i=0; i < len; i++)
+            loop: for(int i=0; i < len; i++)
             {
                 int[] face = texCoord_indexes.get(i);
                 for(int j=0; j < face.length; j++)
                 {
+                    if (face[j] < 0 || face[j] >= texCoords.size()) {
+                        if (strictParsing) {
+                            throw new InvalidFormatException("TextureCoordinate index out of bounds");
+                        } else {
+                            error_found = true;
+                            break loop;
+                        }
+                    }
+
                     ret_val.texCoordIndexes[idx++] = face[j];
                 }
 
                 ret_val.texCoordIndexes[idx++] = -1;
+            }
+
+            if (error_found)
+            {
+                ret_val.texCoordIndexes = null;
             }
         }
 
@@ -343,15 +362,31 @@ class OBJASCIIParser extends OBJParser
 
         if (!normalCoordMissing && count > 0)
         {
+            boolean error_found = false;
+
             ret_val.normalIndexes = new int[count + len];  // for extra -1
             idx = 0;
-            for(int i=0; i < len; i++) {
+            loop: for(int i=0; i < len; i++) {
                 int[] face = normal_indexes.get(i);
                 for(int j=0; j < face.length; j++) {
+                    if (face[j] < 0 || face[j] >= normals.size()) {
+                        if (strictParsing) {
+                            throw new InvalidFormatException("Normal index out of bounds");
+                        } else {
+                            error_found = true;
+                            break loop;
+                        }
+                    }
+
                     ret_val.normalIndexes[idx++] = face[j];
                 }
 
                 ret_val.normalIndexes[idx++] = -1;
+            }
+
+            if (error_found)
+            {
+                ret_val.normalIndexes = null;
             }
         }
 
