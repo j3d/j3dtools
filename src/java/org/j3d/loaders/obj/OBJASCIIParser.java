@@ -44,6 +44,9 @@ import org.j3d.geom.GeometryData;
  */
 class OBJASCIIParser extends OBJParser
 {
+    /** Max number of unsupported messages before we go silent */
+    private static int UNSUPPORTED_MAX_MSGS = 10;
+
     /** Coordinate data */
     private ArrayList<double[]> coords;
 
@@ -53,8 +56,14 @@ class OBJASCIIParser extends OBJParser
     /** Texture Coordinate data */
     private ArrayList<double[]> texCoords;
 
-    private boolean texCoordMissing = false;
-    private boolean normalCoordMissing = false;
+    /** Tex coords are missing */
+    private boolean texCoordMissing;
+
+    /** Normals are missing */
+    private boolean normalCoordMissing;
+
+    /** The count of unsupported errors.  Stop at UNSUPPORTED_MAX_MSGS */
+    private int unsupportedCount;
 
     /** Error message of a keyword that we don't recognise */
     private static final String UNKNOWN_KEYWORD_MSG_PROP =
@@ -137,6 +146,7 @@ class OBJASCIIParser extends OBJParser
 
         texCoordMissing = false;
         normalCoordMissing = false;
+        unsupportedCount = 0;
         boolean obj_started = false;
 
         loop: while(input_line != null)
@@ -210,11 +220,15 @@ class OBJASCIIParser extends OBJParser
                 } else if (token.equals("cstype")) {
                     // Unsupported Geometry
 
-                    String msg = "Unsupported geometry: " + token;
-                    if (parsingMessages == null) {
-                        parsingMessages = new ArrayList<String>();
+                    if (unsupportedCount < UNSUPPORTED_MAX_MSGS) {
+                        String msg = "Unsupported geometry: " + token;
+                        if (parsingMessages == null) {
+                            parsingMessages = new ArrayList<String>();
+                        }
+                        parsingMessages.add(msg);
                     }
-                    parsingMessages.add(msg);
+
+                    unsupportedCount++;
 
                 } else if (token.equals("surf")) {
                     // Ignore, caught by cstype
@@ -237,7 +251,12 @@ class OBJASCIIParser extends OBJParser
                 } else
                 {
                     // Unsupported
-                    System.out.println("Unsupported: " + input_line);
+                    if (unsupportedCount < UNSUPPORTED_MAX_MSGS) {
+
+                        System.out.println("Unsupported: " + input_line);
+                    }
+
+                    unsupportedCount++;
                 }
             }
 
@@ -315,7 +334,9 @@ class OBJASCIIParser extends OBJParser
         // TODO: do this count during creation?
         for(int i=0; i < len; i++) {
             int[] face = texCoord_indexes.get(i);
-            count += face.length;
+
+            if (face != null)
+                count += face.length;
         }
 
         if (count > 0)
@@ -357,7 +378,9 @@ class OBJASCIIParser extends OBJParser
         for(int i=0; i < len; i++)
         {
             int[] face = normal_indexes.get(i);
-            count += face.length;
+
+            if (face != null)
+                count += face.length;
         }
 
         if (!normalCoordMissing && count > 0)
@@ -771,7 +794,7 @@ class OBJASCIIParser extends OBJParser
 
                 if (index < 0) {
                     // Need to resolve relative index
-                    index = coords.size() - index;
+                    index = coords.size() + index;
                 } else {
                     indices.add(index - 1); //  Account for weird 1 numbering
                 }
@@ -787,7 +810,7 @@ class OBJASCIIParser extends OBJParser
 
                             if (index < 0) {
                                 // Need to resolve relative index
-                                index = texCoords.size() - index;
+                                index = texCoords.size() + index;
                                 indices_tc.add(index);
                             } else {
                                 indices_tc.add(index - 1); //  Account for weird 1 numbering
@@ -808,7 +831,7 @@ class OBJASCIIParser extends OBJParser
                         if (num_str != null) {
                             if (index < 0) {
                                 // Need to resolve relative index
-                                index = normals.size() - index;
+                                index = normals.size() + index;
                                 indices_normals.add(index);
                             } else {
                                 indices_normals.add(index - 1); //  Account for weird 1 numbering
@@ -821,13 +844,16 @@ class OBJASCIIParser extends OBJParser
         }
 
         int len = indices.size();
-        int[][] ret_val = new int[num_comps][len];
+        int[][] ret_val = new int[num_comps][];
+        ret_val[0] = new int[len];
+
         for(int i=0; i < len; i++) {
             ret_val[0][i] = indices.get(i);
         }
 
         if (num_comps > 1 && !texCoordMissing) {
             len = indices_tc.size();
+            ret_val[1] = new int[len];
             for(int i=0; i < len; i++) {
                 ret_val[1][i] = indices_tc.get(i);
             }
@@ -835,6 +861,8 @@ class OBJASCIIParser extends OBJParser
 
         if (num_comps > 2 && !normalCoordMissing) {
             len = indices_normals.size();
+            ret_val[2] = new int[len];
+
             for(int i=0; i < len; i++) {
                 ret_val[2][i] = indices_normals.get(i);
             }
