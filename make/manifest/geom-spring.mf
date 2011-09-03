@@ -1,6 +1,6 @@
 Extension-Name: j3d-org
 Specification-Vendor: Justin Couch
-Specification-Version: 0.6.1
+Specification-Version: 1.1.0
 Implementation-Vendor-Id: org.j3d
-Implementation-Vendor: Yumetech, Inc
-Implementation-Version: 0.6.1
+Implementation-Vendor: j3d.org
+Implementation-Version: 1.1.0

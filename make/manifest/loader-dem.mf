@@ -8,7 +8,7 @@ java3d-Implementation-Title: Java3D Core Runtime Environment
 java3d-Implementation-URL: http://java.sun.com/products/autodl/java3d/prefer_ogl/java3d-$(os.name)$.jar
 Extension-Name: j3d-org
 Specification-Vendor: Justin Couch
-Specification-Version: 1.0.0
+Specification-Version: 1.1.0
 Implementation-Vendor-Id: org.j3d
-Implementation-Vendor: Yumetech, Inc
-Implementation-Version: 1.0.0
+Implementation-Vendor: j3d.org
+Implementation-Version: 1.1.0

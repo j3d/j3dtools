@@ -13,7 +13,7 @@ javacomm-Implementation-Title: JavaCOMM Serial API
 javacomm-Implementation-URL: http://java.sun.com/products/autodl/javacomm/javacomm-$(os.name)$.jar
 Extension-Name: j3d-org
 Specification-Vendor: Justin Couch
-Specification-Version: 1.0.0
+Specification-Version: 1.1.0
 Implementation-Vendor-Id: org.j3d
-Implementation-Vendor: Yumetech, Inc
-Implementation-Version: 1.0.0
+Implementation-Vendor: j3d.org
+Implementation-Version: 1.1.0
