@@ -36,6 +36,7 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.loaders.c3d \
 	org.j3d.loaders.ac3d \
 	org.j3d.loaders.obj \
+	org.j3d.loaders.ldraw \
 
 # Names of packages that we want included in the javadoc
 JAVADOC_PACKAGES = org.j3d.util \
@@ -70,7 +71,7 @@ JAVADOC_PACKAGES = org.j3d.util \
 
 # A version number we tack onto the JAR file name for eclipse versioning
 # purposes.
-JAR_VERSION=1.0.0
+JAR_VERSION=2.0.0
 
 # Names of JAR files we want to create
 JARS = j3d-org-util.jar \
