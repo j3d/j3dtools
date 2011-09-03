@@ -1,13 +1,13 @@
 Extension-Name: j3d-org-core
 Specification-Vendor: Justin Couch
-Specification-Version: 1.0.0
+Specification-Version: 2.0.0
 Implementation-Vendor-Id: org.j3d
-Implementation-Vendor: Yumetech, Inc
-Implementation-Version: 1.0.0
+Implementation-Vendor: j3d.org
+Implementation-Version: 2.0.0
 Bundle-ManifestVersion: 2
 Bundle-Name: j3d.org Core Runtime
 Bundle-SymbolicName: org.j3d.core; singleton:=true
-Bundle-Version: 0.9
+Bundle-Version: 1.0
 Bundle-Localization: plugin
 Bundle-Vendor: j3d.org
 Require-Bundle: javax.vecmath
