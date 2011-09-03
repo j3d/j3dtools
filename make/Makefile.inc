@@ -35,7 +35,7 @@ CD        = cd
 export JAR_VERSION
 
 # General runtime flags for various commands
-JAVAC_FLAGS=-Xlint:unchecked -source 1.5 -target 1.5
+JAVAC_FLAGS=-Xlint:unchecked -source 1.6 -target 1.6
 #JAVAC_FLAGS=-deprecation
 #JAVADOC_FLAGS=
 
