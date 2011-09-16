@@ -123,7 +123,6 @@ class STLASCIIParser extends STLParser
 
         // First line with normals
         String input_line = itsReader.readLine();
-
         StringTokenizer strtok = new StringTokenizer(input_line);
         String token = strtok.nextToken();
 
@@ -139,8 +138,15 @@ class STLASCIIParser extends STLParser
         // Have we reached the end of file?
         // We've encountered a lot of broken files where they use two words
         // "end solid" rather than the spec-required "endsolid".
-        if(token.equals("endsolid") || token.equals("end solid"))
-            return false;
+        if(token.equals("endsolid") || token.equals("end solid")) {
+            // Skip line and read next
+            try {
+                return getNextFacet(normal, vertices);
+            } catch(IOException ioe) {
+                // gone past end of file
+                return false;
+            }
+        }
 
         if(!token.equals("facet"))
         {
