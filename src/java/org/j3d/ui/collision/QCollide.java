@@ -28,17 +28,17 @@ public class QCollide
      *  Tables to index the Di_V cofactor table in Johnson's Algorithm. The s,i
      *  entry indicates where to store the cofactors computed with Is_C.
      */
-    private static int jo_2[2][2][2]  = { {{0,0}, {2,1}},
+    private static int jo_2[][][]  = { {{0,0}, {2,1}},
                                           {{2,0}, {0,0}}};
 
-    private static int jo_3[6][3][2]  = { {{0,0}, {3,1}, {4,2}},
+    private static int jo_3[][][]  = { {{0,0}, {3,1}, {4,2}},
                                           {{3,0}, {0,0}, {5,2}},
                                           {{4,0}, {5,1}, {0,0}},
                                           {{0,0}, {0,0}, {6,2}},
                                           {{0,0}, {6,1}, {0,0}},
                                           {{6,0}, {0,0}, {0,0}}};
 
-    private static int jo_4[14][4][2] ={ { {0,0}, {4,1}, {5,2}, {6,3}},
+    private static int jo_4[][][] ={ { {0,0}, {4,1}, {5,2}, {6,3}},
                                          { {4,0}, {0,0}, {7,2}, {8,3}},
                                          { {5,0}, {7,1}, {0,0}, {9,3}},
                                          { {6,0}, {8,1}, {9,2}, {0,0}},
@@ -58,13 +58,13 @@ public class QCollide
      *  These tables represent each Is.  The first column of each row indicates
      *  the size of the set.
      */
-    private static int Is_2[3][3] = { {1,0,0}, {1,1,0}, {2,0,1}};
+    private static int Is_2[][] = { {1,0,0}, {1,1,0}, {2,0,1}};
 
-    private static int Is_3[7][4] = { {1,0,0,0}, {1,1,0,0}, {1,2,0,0},
+    private static int Is_3[][] = { {1,0,0,0}, {1,1,0,0}, {1,2,0,0},
                                       {2,0,1,0}, {2,0,2,0}, {2,1,2,0},
                                       {3,0,1,2}};
 
-    private static int Is_4[15][5] = { {1,0,0,0,0}, {1,1,0,0,0}, {1,2,0,0,0},
+    private static int Is_4[][] = { {1,0,0,0,0}, {1,1,0,0,0}, {1,2,0,0,0},
                                        {1,3,0,0,0}, {2,0,1,0,0}, {2,0,2,0,0},
                                        {2,0,3,0,0}, {2,1,2,0,0}, {2,1,3,0,0},
                                        {2,2,3,0,0}, {3,0,1,2,0}, {3,0,1,3,0},
@@ -74,13 +74,13 @@ public class QCollide
      *  These tables represent each Is complement. The first column of each row
      *  indicates the size of the set.
      */
-    private static int IsC_2[3][2] = { {1,1}, {1,0}, {0,0}};
+    private static int IsC_2[][] = { {1,1}, {1,0}, {0,0}};
 
-    private static int IsC_3[7][3] = { {2,1,2}, {2,0,2}, {2,0,1},
+    private static int IsC_3[][] = { {2,1,2}, {2,0,2}, {2,0,1},
                                        {1,2,0}, {1,1,0}, {1,0,0},
                                        {0,0,0}};
 
-    private static int IsC_4[15][4] = { {3,1,2,3}, {3,0,2,3}, {3,0,1,3}, {3,0,1,2},
+    private static int IsC_4[][] = { {3,1,2,3}, {3,0,2,3}, {3,0,1,3}, {3,0,1,2},
                                         {2,2,3,0}, {2,1,3,0}, {2,1,2,0}, {2,0,3,0},
                                         {2,0,2,0}, {2,0,1,0}, {1,3,0,0}, {1,2,0,0},
                                         {1,1,0,0}, {1,0,0,0}, {0,0,0,0}};
@@ -129,7 +129,7 @@ public class QCollide
         previRp = new double[16];
         previRq = new double[16];
 
-        sVec = new float[3];
+        sVec = new double[3];
         currentTime = 0;
 
         D_V = new double[15];
@@ -205,8 +205,8 @@ public class QCollide
             pair.separationVector[1] = y;
             pair.separationVector[2] = z;
 
-            p =
-            q =
+//            p =
+//            q =
         }
         else
         {
@@ -257,25 +257,25 @@ public class QCollide
             prev_q = q;
 
             p = searchForSupportVertex(poly_p.vertices,
-                                       poly_p.neighbors,
-                                       poly_p.timestamps,
+                                       poly_p.neighbours,
+                                       poly_p.vertexTimestamps,
                                        p,
                                        sVec);
 
             q = searchForSupportVertex(poly_q.vertices,
-                                       poly_q.neighbors,
-                                       poly_q.timestamps,
+                                       poly_q.neighbours,
+                                       poly_q.vertexTimestamps,
                                        p,
                                        sVec);
 
             matrixLeftMult(q, rq, wkVec0);
             matrixLeftMult(p, rp, wkVec1);
 
-            float rk_x = wkVec[0] + tq[0] - wkVec1[0] - tp[0];
-            float rk_y = wkVec[1] + tq[1] - wkVec1[1] - tp[1];
-            float rk_z = wkVec[2] + tq[2] - wkVec1[2] - tp[2];
+            float rk_x = wkVec0[0] + tq[0] - wkVec1[0] - tp[0];
+            float rk_y = wkVec0[1] + tq[1] - wkVec1[1] - tp[1];
+            float rk_z = wkVec0[2] + tq[2] - wkVec1[2] - tp[2];
 
-            d = rk_x * rk_x + rk_y * rk_y + rk_z * rk_z;
+            float d = rk_x * rk_x + rk_y * rk_y + rk_z * rk_z;
             if(d != 0)
             {
                 d = (float)Math.sqrt(d);
@@ -284,7 +284,7 @@ public class QCollide
                 rk_z /= d;
             }
 
-            float dp = rk_x * sVec[0] + rk_y * sVec[1] + rk_z * sVec[2];
+            double dp = rk_x * sVec[0] + rk_y * sVec[1] + rk_z * sVec[2];
 
             if(dp >= 0 || (p == prev_p && q == prevq))
             {
@@ -501,18 +501,18 @@ public class QCollide
 
         // Project all points on the Z plane after rotation
         float[] ptr = setR[0];
-        ra_x = ptr[0] * m00 + ptr[1] * m01 + ptr[2]*m02;
-        ra_y = ptr[0] * m10 + ptr[1] * m11;
+        double ra_x = ptr[0] * m00 + ptr[1] * m01 + ptr[2]*m02;
+        double ra_y = ptr[0] * m10 + ptr[1] * m11;
 
         ptr = setR[1];
-        rb_x = ptr[0]*m00 + ptr[1]*m01 + ptr[2]*m02;
-        rb_y = ptr[0]*m10 + ptr[1]*m11;
+        double rb_x = ptr[0]*m00 + ptr[1]*m01 + ptr[2]*m02;
+        double rb_y = ptr[0]*m10 + ptr[1]*m11;
 
         // Make both vectors point in the same direction
         if((ra_x * rb_y - ra_y * rb_x) < 0)
         {
-            float x = ra_x;
-            float y = ra_y;
+            double x = ra_x;
+            double y = ra_y;
             ra_x = rb_x;
             ra_y = rb_y;
             rb_x = x;
@@ -558,9 +558,9 @@ public class QCollide
 
         t1 = (ra_x + ra_x);
         t2 = (rb_y + rb_y);
-        w[0] = (t1 * m00 + t2 * m10) / t1;
-        w[1] = (t1 * m01 + t2 * m11) / t1;
-        w[2] = m02;    // (t1 * m02) / t1
+        w[0] = (float)((t1 * m00 + t2 * m10) / t1);
+        w[1] = (float)((t1 * m01 + t2 * m11) / t1);
+        w[2] = (float)m02;    // (t1 * m02) / t1
 
         return false;
     }
@@ -588,10 +588,10 @@ public class QCollide
                                   float[][] vertexSetQ,
                                   int n,
                                   double[] lambda,
-                                  double[] Mp,
-                                  double[] Mq,
-                                  double[] invRp,
-                                  double[] invRq,
+                                  double[][] Mp,
+                                  double[][] Mq,
+                                  double[][] invRp,
+                                  double[][] invRq,
                                   double[] closestP,
                                   double[] closestQ)
     {
@@ -606,7 +606,7 @@ public class QCollide
             t1_y = Mp[1][0] * vertexSetP[i][0] + Mp[1][1] * vertexSetP[i][1] +
                    Mp[1][2] * vertexSetP[i][2] + Mp[1][3];
             t1_z = Mp[2][0] * vertexSetP[i][0] + Mp[2][1] * vertexSetP[i][1] +
-                   Mp[2][2] * vertexSetP[i][2] + Mp[2][3]
+                   Mp[2][2] * vertexSetP[i][2] + Mp[2][3];
 
             // 2. q[i] * Mq
             t2_x = Mq[0][0] * vertexSetQ[i][0] + Mq[0][1] * vertexSetQ[i][1] +
@@ -614,7 +614,7 @@ public class QCollide
             t2_y = Mq[1][0] * vertexSetQ[i][0] + Mq[1][1] * vertexSetQ[i][1] +
                    Mq[1][2] * vertexSetQ[i][2] + Mq[1][3];
             t2_z = Mq[2][0] * vertexSetQ[i][0] + Mq[2][1] * vertexSetQ[i][1] +
-                   Mq[2][2] * vertexSetQ[i][2] + Mq[2][3]
+                   Mq[2][2] * vertexSetQ[i][2] + Mq[2][3];
 
             // 2 - 1
             V[k][0] = t2_x - t1_x;
@@ -692,7 +692,7 @@ public class QCollide
                                        rq_cp);
 
             if(ploy_p.seenBefore[p] && ploy_q.seenBefore[q])
-                return;
+                return 0;
 
             ploy_p.seenBefore[p] = true;
             ploy_q.seenBefore[q] = true;
@@ -714,14 +714,14 @@ public class QCollide
     /**
      * left matrix multiply vec * matrix
      */
-    private matrixLeftMult(float[] vec, float[] mat, float[] res)
+    private void matrixLeftMult(float[] vec, float[] mat, float[] res)
     {
     }
 
     /**
      * left matrix multiply matrix * vec
      */
-    private matrixRightMult(float[] vec, float[] mat, float[] res)
+    private void matrixRightMult(float[] vec, float[] mat, float[] res)
     {
     }
 
@@ -742,7 +742,7 @@ public class QCollide
      * @param lambda - the lambda as in eq. (14)
      * @return The number of entries in nearIndx and lambda.
      */
-    private int computeJohson(float[][] V,
+    private int computeJohson(double[][] V,
                               int n,
                               double[] nearPnt,
                               int[] nearIndx,
@@ -838,7 +838,7 @@ public class QCollide
             // loop through all IsC
             for(j = 1; j <= IsC[s][0]; j++)
             {
-                Dj_P = 0;
+                int Dj_P = 0;
                 k = Is[s][1];
                 isp = IsC[s][j];
 
@@ -847,12 +847,12 @@ public class QCollide
                     is = Is[s][i];
 
                     // Wk - Wj  eq. (18)
-                    float x_0 = V[k][0] - V[isp][0];
-                    float x_1 = V[k][1] - V[isp][1];
-                    float x_2 = V[k][2] - V[isp][2];
+                    double x_0 = V[k][0] - V[isp][0];
+                    double x_1 = V[k][1] - V[isp][1];
+                    double x_2 = V[k][2] - V[isp][2];
 
                     // sum from eq. (18)
-                    float dot = V[is][0] * x_0 +
+                    double dot = V[is][0] * x_0 +
                                 V[is][1] * x_1 +
                                 V[is][2] * x_2;
 
@@ -1023,10 +1023,10 @@ public class QCollide
      *    supporting vertices of Q and P in the direction VP and -VP respectively.
      */
     private boolean computeClosestPoint(CollisionPair collidables,
-                                        double[] Mp,
-                                        double[] InvMp,
-                                        double[] Mq,
-                                        double[] InvMq,
+                                        double[][] Mp,
+                                        double[][] InvMp,
+                                        double[][] Mq,
+                                        double[][] InvMq,
                                         double[] closestP,
                                         double[] closestQ,
                                         int[] nearIndxP,
@@ -1035,15 +1035,18 @@ public class QCollide
                                         double[] VP,
                                         double[] lambda,
                                         int[] m3,
-                                        float[] distance,
-                                        int[] closestfeatures)
+                                        double[] distance,
+                                        int[] closestFeatures)
     {
-        int[] I[4];
+        int[] I = new int[4];
         int i, j;
         int loopcount = 0;
 
-        double Pk[4][3], Pk_subset[4][3], Cp[3], lda;
-        double neg_Vk[3];
+        double[][] Pk = new double[4][3]; 
+        double[][] Pk_subset = new double[4][3];
+        double[] Cp = new double[3];
+        double lda;
+        double[] neg_Vk = new double[3];
 
         int P1_i = 0;
         int P2_i = 0;
@@ -1055,7 +1058,7 @@ public class QCollide
         double t1_x, t1_y, t1_z;
         double t2_x, t2_y, t2_z;
 
-        double oldVP[3];
+        double[] oldVP = new double[3];
 
         CollisionPolytope poly_p = polytopeList[collidables.polytopes[0]];
         CollisionPolytope poly_q = polytopeList[collidables.polytopes[1]];
@@ -1070,7 +1073,7 @@ public class QCollide
             t1_y = Mp[1][0] * coords[0] + Mp[1][1] * coords[1] +
                    Mp[1][2] * coords[2] + Mp[1][3];
             t1_z = Mp[2][0] * coords[0] + Mp[2][1] * coords[1] +
-                   Mp[2][2] * coords[2] + Mp[2][3]
+                   Mp[2][2] * coords[2] + Mp[2][3];
 
             coords = poly_q.vertices[nearIndxQ[k]];
 
@@ -1079,7 +1082,7 @@ public class QCollide
             t2_y = Mq[1][0] * coords[0] + Mq[1][1] * coords[1] +
                    Mq[1][2] * coords[2] + Mq[1][3];
             t2_z = Mq[2][0] * coords[0] + Mq[2][1] * coords[1] +
-                   Mq[2][2] * coords[2] + Mq[2][3]
+                   Mq[2][2] * coords[2] + Mq[2][3];
 
             Pk[k][0] = t2_x - t1_x;
             Pk[k][1] = t2_y - t1_y;
@@ -1088,7 +1091,8 @@ public class QCollide
 
         P1_i = nearIndxQ[0];
         P2_i = nearIndxP[0];
-
+        int set_size = 0;
+        
         while(true)
         {
             if(set_size == 1)
@@ -1203,14 +1207,14 @@ public class QCollide
         t1_y = Mp[1][0] * closestP[0] + Mp[1][1] * closestP[1] +
                Mp[1][2] * closestP[2] + Mp[1][3];
         t1_z = Mp[2][0] * closestP[0] + Mp[2][1] * closestP[1] +
-               Mp[2][2] * closestP[2] + Mp[2][3]
+               Mp[2][2] * closestP[2] + Mp[2][3];
 
         t2_x = Mq[0][0] * closestQ[0] + Mq[0][1] * closestQ[1] +
                Mq[0][2] * closestQ[2] + Mq[0][3];
         t2_y = Mq[1][0] * closestQ[0] + Mq[1][1] * closestQ[1] +
                Mq[1][2] * closestQ[2] + Mq[1][3];
         t2_z = Mq[2][0] * closestQ[0] + Mq[2][1] * closestQ[1] +
-               Mq[2][2] * closestQ[2] + Mq[2][3]
+               Mq[2][2] * closestQ[2] + Mq[2][3];
 
         closestP[0] = t1_x;
         closestP[1] = t1_y;
@@ -1225,7 +1229,7 @@ public class QCollide
         m3[0] = setSize;
 
         double d = Math.sqrt(VP[0] * VP[0] + VP[1] * VP[1] + VP[2] * VP[2]);
-        distance[0] = d
+        distance[0] = d;
 
         boolean ret_val = true;
 
@@ -1248,7 +1252,7 @@ public class QCollide
      * @param Mp Transformation matrix of P
      * @param InvMp Inverse transformation matrix of P
      * @param Mq Transformation matrix of Q
-     * @param InvMq Inverse transformation matrix of Q
+     * @param invMq Inverse transformation matrix of Q
      * @param A Vector at which to evaluate support and contact functions.
      * @param negA Negation of vector A
      * @param Cs Empty array of size 3, returns with solution to eq
@@ -1259,20 +1263,21 @@ public class QCollide
      */
     private void computeHs(CollisionPolytope P,
                            CollisionPolytope Q,
-                           double[] Mp,
-                           double[] invMp,
-                           double[] Mq,
-                           double[] InvMq,
+                           double[][] Mp,
+                           double[][] invMp,
+                           double[][] Mq,
+                           double[][] invMq,
                            double[] A,
                            double[] negA,
                            double[] Cs,
                            int[] P1_i,
                            int[] P2_i)
     {
-       double Cp_1[3], Cp_2[3];
+       double[] Cp_1 = new double[3];
+       double[] Cp_2 = new double[3];
 
-       P1_i[0] = computeHp(P, Mq, InvMq, negA, Cp_1, P1_i[0]);
-       P2_i[0] = computeHp(Q, Mp, InvMp, A, Cp_2, P2_i[0]);
+       P1_i[0] = computeHp(P, Mq, invMq, negA, Cp_1, P1_i[0]);
+       P2_i[0] = computeHp(Q, Mp, invMp, A, Cp_2, P2_i[0]);
 
        Cs[0] = Cp_1[0] - Cp_2[0];
        Cs[1] = Cp_1[1] - Cp_2[1];
@@ -1292,8 +1297,8 @@ public class QCollide
      * @return index of the closest vertex
      */
     private int computeHp(CollisionPolytope poly,
-                          double[] M,
-                          double[] invM,
+                          double[][] M,
+                          double[][] invM,
                           double[] A,
                           double[] Cp,
                           int initVert)
@@ -1303,7 +1308,7 @@ public class QCollide
         double transA_y = invM[1][0] * A[0] + invM[1][1] * A[1] +
                           invM[1][2] * A[2] + invM[1][3];
         double transA_z = invM[2][0] * A[0] + invM[2][1] * A[1] +
-                          invM[2][2] * A[2] + invM[2][3]
+                          invM[2][2] * A[2] + invM[2][3];
 
         float[][] coords = poly.vertices;
 
@@ -1340,7 +1345,7 @@ public class QCollide
                 M[1][2] * coords[least_index][2] + M[1][3];
         Cp[2] = M[2][0] * coords[least_index][0] +
                 M[2][1] * coords[least_index][1] +
-                M[2][2] * coords[least_index][2] + M[2][3]
+                M[2][2] * coords[least_index][2] + M[2][3];
 
         return least_index;
     }

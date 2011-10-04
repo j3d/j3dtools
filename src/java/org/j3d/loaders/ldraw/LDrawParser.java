@@ -76,6 +76,12 @@ public class LDrawParser
     /** Handler for reading the contents of the stream */
     private StreamTokenizer strtok;
 
+    /** Observer, if set, for the stream of info coming from the file reading */
+    private LDrawParseObserver observer;
+
+    /** Error reporter used to send out messages */
+    private ErrorReporter errorReporter;
+
     /**
      * Global static init for setting up the meta commands.
      */
@@ -97,6 +103,7 @@ public class LDrawParser
     public LDrawParser()
     {
         dataReady = false;
+        errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 
     /**
@@ -131,6 +138,35 @@ public class LDrawParser
             inputReader = new BufferedReader(rdr);
 
         strtok = new StreamTokenizer(inputReader);
+    }
+
+    /**
+     * Register an error reporter with the engine so that any errors generated
+     * by the parsing internals can be reported in a nice, pretty fashion.
+     * Setting a value of null will clear the currently set reporter. If one
+     * is already set, the new value replaces the old.
+     *
+     * @param reporter The instance to use or null
+     */
+    public void setErrorReporter(ErrorReporter reporter)
+    {
+        if(reporter == null)
+            errorReporter = DefaultErrorReporter.getDefaultReporter();
+        else
+            errorReporter = reporter;
+    }
+
+    /**
+     * Set the observer for parsing events that can be used with this class.
+     * Only a single instance may be set at any time, so calling this will
+     * replace the currently registered instance. If called with a null value,
+     * it removes the currently set instance.
+     *
+     * @param obs The observer instance to use
+     */
+    public void setParseObserver(Ac3dParseObserver obs)
+    {
+        observer = obs;
     }
 
     /**

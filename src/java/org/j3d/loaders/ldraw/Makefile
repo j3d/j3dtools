@@ -21,6 +21,15 @@ SOURCE = \
   LDrawGlitterColor.java \
   LDrawSpeckleColor.java \
   LDrawMilkyColor.java \
+  LDrawFilePart.java \
+  LDrawFileReference.java \
+  LDrawFileType.java \
+  LDrawHeader.java \
+  LDrawRenderable.java \
+  LDrawLine.java \
+  LDrawTriangle.java \
+  LDrawQuad.java \
+  LDrawParseObserver.java \
   LDrawParser.java \
 
 # The list of other files we need to copy from this directory to the classes
@@ -29,7 +38,7 @@ EXTRA =
 
 # If the package requires extra classes outside the JDK, the JAR files that 
 # are required are listed here. These should be found in ${PROJECT_ROOT}/lib
-JARS_3RDPARTY =
+JARS_3RDPARTY = vecmath.jar
 
 
 include ${PROJECT_ROOT}/make/Makefile.jav

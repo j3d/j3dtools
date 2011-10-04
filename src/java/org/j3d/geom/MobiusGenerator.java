@@ -88,6 +88,21 @@ public class MobiusGenerator extends GeometryGenerator
         vertexCount = (strips + 1) * this.divisions * 4;
     }
 
+    @Override
+    public int getVertexCount(GeometryData data) throws UnsupportedTypeException
+    {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void generate(GeometryData data) throws UnsupportedTypeException,
+                    InvalidArraySizeException
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
     /**
      * Change the dimensions of the cone to be generated. Calling this will
      * make the points be re-calculated next time you as for geometry or
@@ -123,7 +138,7 @@ public class MobiusGenerator extends GeometryGenerator
      *
      * @return An array of points representing the geometry vertices
      */
-    public float[] generateUnindexedCoordinates()
+    private float[] generateUnindexedCoordinates()
     {
         if(!coordsDimensionsChanged)
             return coordinates;
@@ -213,4 +228,5 @@ public class MobiusGenerator extends GeometryGenerator
 
         return coordinates;
     }
+
 }
