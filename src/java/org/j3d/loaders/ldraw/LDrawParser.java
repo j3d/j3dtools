@@ -28,10 +28,15 @@ import org.j3d.util.I18nManager;
 /**
  * A low-level parser for the LDraw file format.
  * <p>
+ * <b>Header Processing</b>
+ * </p>
  *
- * The output of this parser is the records as per the file and the option
- * of a raw height array.
- * <p>
+ * All headers are processed, except the following list:
+ * <ul>
+ * <li>CMDLINE</li>
+ * <li>COLOUR</li>
+ * <li>HELP</li>
+ * </ul>
  *
  * The definition of the file format can be found at:
  * <a href="http://www.ldraw.org/Article218.html">
@@ -42,26 +47,56 @@ import org.j3d.util.I18nManager;
  */
 public class LDrawParser
 {
-    /** Set of the old-style meta commands */
-    private static final Set<String> OLD_META_COMMANDS;
-
     /** The step meta command string */
     private static final String STEP_META = "STEP";
 
-    /** The step meta command string */
+    /** The write meta command string */
     private static final String WRITE_META = "WRITE";
 
-    /** The step meta command string */
+    /** The print meta command string */
     private static final String PRINT_META = "PRINT";
 
-    /** The step meta command string */
+    /** The clear drawing meta command string */
     private static final String CLEAR_META = "CLEAR";
 
-    /** The step meta command string */
+    /** The pause (wait for keyboard input) meta command string */
     private static final String PAUSE_META = "PAUSE";
 
-    /** The step meta command string */
+    /** The save meta command string */
     private static final String SAVE_META = "SAVE";
+
+    /** Official header command for author name */
+    private static final String AUTHOR_HEADER = "Author";
+
+    /** Official header command for file name */
+    private static final String NAME_HEADER = "Name";
+
+    /** Official header command for indicating this is an official LDRAW file */
+    private static final String LDRAW_HEADER = "LDRAW_ORG";
+
+    /** Official header command for the back face culling extension */
+    private static final String BFC_HEADER = "BFC";
+
+    /** Official header command for license details */
+    private static final String LICENSE_HEADER = "LICENSE";
+
+    /** Official header command for the category and keywords language extension */
+    private static final String CATEGORY_HEADER = "CATEGORY";
+
+    /** Official header command for the category and keywords language extension */
+    private static final String KEYWORD_HEADER = "KEYWORDS";
+
+    /** Official header command for history details */
+    private static final String HISTORY_HEADER = "HISTORY";
+
+    /** Set of the old-style meta commands */
+    private static final Set<String> OLD_META_COMMANDS;
+
+    /** Set of ! Escaped oficial header keywords */
+    private static final Set<String> ESCAPED_OFFICIAL_HEADERS;
+
+    /** Set of the non-escaped oficial header keywords */
+    private static final Set<String> STD_OFFICIAL_HEADERS;
 
     /**
      * The reader used to fetch the data from. Must be set before calling
@@ -69,6 +104,12 @@ public class LDrawParser
      * be set, not bother.
      */
     private BufferedReader inputReader;
+
+    /**
+     * Flag indicating that the header has finished reading, so ignore any
+     * header meta commands that are only to be processed in the header
+     */
+    private boolean headerComplete;
 
     /** Flag to say we've already read the stream */
     private boolean dataReady;
@@ -81,6 +122,9 @@ public class LDrawParser
 
     /** Error reporter used to send out messages */
     private ErrorReporter errorReporter;
+
+    /** Header that has been read for this file */
+    private LDrawHeader header;
 
     /**
      * Global static init for setting up the meta commands.
@@ -95,6 +139,19 @@ public class LDrawParser
         OLD_META_COMMANDS.add(CLEAR_META);
         OLD_META_COMMANDS.add(PAUSE_META);
         OLD_META_COMMANDS.add(SAVE_META);
+
+        ESCAPED_OFFICIAL_HEADERS = new HashSet<String>();
+        ESCAPED_OFFICIAL_HEADERS.add(CATEGORY_HEADER);
+        ESCAPED_OFFICIAL_HEADERS.add(KEYWORD_HEADER);
+        ESCAPED_OFFICIAL_HEADERS.add(HISTORY_HEADER);
+        ESCAPED_OFFICIAL_HEADERS.add(LDRAW_HEADER);
+        ESCAPED_OFFICIAL_HEADERS.add(LICENSE_HEADER);
+
+        STD_OFFICIAL_HEADERS = new HashSet<String>();
+        STD_OFFICIAL_HEADERS.add(AUTHOR_HEADER);
+        STD_OFFICIAL_HEADERS.add(NAME_HEADER);
+        STD_OFFICIAL_HEADERS.add(BFC_HEADER);
+        STD_OFFICIAL_HEADERS.add(LDRAW_HEADER);
     }
 
     /**
@@ -103,6 +160,7 @@ public class LDrawParser
     public LDrawParser()
     {
         dataReady = false;
+        headerComplete = false;
         errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 
@@ -164,7 +222,7 @@ public class LDrawParser
      *
      * @param obs The observer instance to use
      */
-    public void setParseObserver(Ac3dParseObserver obs)
+    public void setParseObserver(LDrawParseObserver obs)
     {
         observer = obs;
     }
@@ -174,6 +232,7 @@ public class LDrawParser
      */
     public void clear()
     {
+        headerComplete = false;
         dataReady = false;
         inputReader = null;
         strtok = null;
@@ -193,6 +252,7 @@ public class LDrawParser
         strtok = new StreamTokenizer(inputReader);
 
         dataReady = false;
+        headerComplete = false;
     }
 
     /**
@@ -212,6 +272,7 @@ public class LDrawParser
 
         strtok = new StreamTokenizer(inputReader);
         dataReady = false;
+        headerComplete = false;
     }
 
     /**
@@ -227,6 +288,7 @@ public class LDrawParser
         if(dataReady)
             throw new IOException("Data has already been read from this stream");
 
+        header = new LDrawHeader();
 
         while(strtok.nextToken() != StreamTokenizer.TT_EOF)
         {
@@ -285,8 +347,18 @@ public class LDrawParser
             if(first_comment.startsWith("!"))
             {
                 has_meta = true;
+
+                first_comment = first_comment.substring(1);
+
+                if(ESCAPED_OFFICIAL_HEADERS.contains(first_comment))
+                {
+                }
             }
             else if(OLD_META_COMMANDS.contains(first_comment))
+            {
+                has_meta = true;
+            }
+            else if(STD_OFFICIAL_HEADERS.contains(first_comment))
             {
                 has_meta = true;
             }
@@ -307,6 +379,8 @@ public class LDrawParser
     private void parseReference()
         throws IOException
     {
+        headerComplete = true;
+
         int color_id = -1;
         double[] matrix = new double[16];
         String file_ref = null;
@@ -377,6 +451,8 @@ public class LDrawParser
     private void parseLine()
         throws IOException
     {
+        headerComplete = true;
+
         double[] p1 = new double[3];
         double[] p2 = new double[3];
 
@@ -420,6 +496,8 @@ public class LDrawParser
     private void parseTriangle()
         throws IOException
     {
+        headerComplete = true;
+
         double[] p1 = new double[3];
         double[] p2 = new double[3];
         double[] p3 = new double[3];
@@ -474,6 +552,8 @@ public class LDrawParser
     private void parseQuad()
         throws IOException
     {
+        headerComplete = true;
+
         double[] p1 = new double[3];
         double[] p2 = new double[3];
         double[] p3 = new double[3];
@@ -540,6 +620,8 @@ public class LDrawParser
     private void parseOptionalLine()
         throws IOException
     {
+        headerComplete = true;
+
         double[] p1 = new double[3];
         double[] p2 = new double[3];
         double[] c1 = new double[3];
