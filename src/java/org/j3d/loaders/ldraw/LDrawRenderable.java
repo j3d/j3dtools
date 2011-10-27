@@ -26,7 +26,7 @@ package org.j3d.loaders.ldraw;
  * @author  Justin Couch
  * @version $Revision: 1.3 $
  */
-public abstract class LDrawRenderable extends LDrawFilePart
+public abstract class LDrawRenderable extends LDrawColoredPart
 {
     /** First point in the line */
     private double[] start;

@@ -41,11 +41,7 @@ public class LDrawQuad extends LDrawRenderable
      *
      * @param col The colour to render in. Most not be null
      */
-    LDrawQuad(LDrawColor col,
-                        double[] start,
-                        double[] middle1,
-                        double[] middle2,
-                        double[] end)
+    LDrawQuad(LDrawColor col, double[] start, double[] middle1, double[] middle2, double[] end)
     {
         super(col, start, end);
 

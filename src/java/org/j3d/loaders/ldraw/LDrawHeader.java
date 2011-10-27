@@ -10,7 +10,9 @@
 package org.j3d.loaders.ldraw;
 
 // External imports
-// None
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 // Local parser
 // None
@@ -59,14 +61,26 @@ public class LDrawHeader
     /** The declared name of the file. If not declared, this will be null */
     private String fileName;
 
+    /** The category for this file. May be derived from the file name */
+    private String category;
+
     /**
      * Whether back face culling extension is declared and the winding
      * direction. Defaults to true, as per the spec.
      */
     private boolean ccw;
 
+    /** Flag for whether the file is BFC-certified */
+    private boolean bfcCertified;
+
     /** Set true when this is an official LDraw file */
     private boolean official;
+
+    /** Current collection of keywords associated with this file */
+    private Set<String> keywords;
+
+    /** Current collection of history entries in this file */
+    private Set<String> history;
 
     /**
      * Create a default header representation. BFC is not enabled, but defaults
@@ -74,8 +88,11 @@ public class LDrawHeader
      */
     public LDrawHeader()
     {
+        keywords = new HashSet<String>();
+        history = new HashSet<String>();
         ccw = true;
         official = false;
+        bfcCertified = false;
     }
 
     /**
@@ -97,6 +114,29 @@ public class LDrawHeader
     void setFileType(LDrawFileType type)
     {
         fileType = type;
+    }
+
+    /**
+     * The category of the file. If the category is not explicitly set, uses
+     * the first word from the file name.
+     *
+     * @return The category of this file
+     * @see http://ldraw.org/Article340.html
+     */
+    public String getCategory()
+    {
+        return category;
+    }
+
+    /**
+     * Update the category that is set. If the file name was previously set,
+     * replaces the default category.
+     *
+     * @param cat The new category string to use
+     */
+    void setCategory(String cat)
+    {
+        category = trim(cat);
     }
 
     /**
@@ -208,6 +248,29 @@ public class LDrawHeader
     }
 
     /**
+     * Check to see if this model has been certified as BFC compliant. If it
+     * has not, either implicitly or explicitly, then this will return false.
+     * Files must be explicitly declared as compliant, otherwise we assume
+     * they are not.
+     *
+     * @return true if explicitly declared compliant, false otherwise
+     */
+    public boolean isBFCCompliant()
+    {
+        return bfcCertified;
+    }
+
+    /**
+     * Set the state of the BFC compliance flag
+     *
+     * @param enable true if it is compliant, false otherwise
+     */
+    void setBFCCompliant(boolean enable)
+    {
+        bfcCertified = enable;
+    }
+
+    /**
      * Check to see if this is a model from the official LDraw repository.
      *
      * @return true if this is a model from the official repository
@@ -226,6 +289,48 @@ public class LDrawHeader
     void setOfficial(boolean state)
     {
         official = state;
+    }
+
+    /**
+     * Get the current set of keywords defined in the file. If none were
+     * defined, this will return an empty set. The set returned is read-only.
+     *
+     * @return A possibly empty set of keywords
+     */
+    public Set<String> getKeywords()
+    {
+        return Collections.unmodifiableSet(keywords);
+    }
+
+    /**
+     * Add another keyword to the list.
+     *
+     * @param word The keyword to add
+     */
+    void addKeyword(String word)
+    {
+        keywords.add(trim(word));
+    }
+
+    /**
+     * Get the current set of historys defined in the file. If none were
+     * defined, this will return an empty set. The set returned is read-only.
+     *
+     * @return A possibly empty set of historys
+     */
+    public Set<String> getHistory()
+    {
+        return Collections.unmodifiableSet(history);
+    }
+
+    /**
+     * Add another history to the list.
+     *
+     * @param word The history to add
+     */
+    void addHistory(String word)
+    {
+        history.add(trim(word));
     }
 
     /**

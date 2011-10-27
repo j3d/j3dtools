@@ -28,26 +28,4 @@ package org.j3d.loaders.ldraw;
  */
 public abstract class LDrawFilePart
 {
-    /** The colour that this part is to be rendered in */
-    private LDrawColor partColor;
-
-    /**
-     * Construct the base part that is rendered in the specific colour.
-     *
-     * @param col The colour to render in. Most not be null
-     */
-    protected LDrawFilePart(LDrawColor col)
-    {
-        assert col != null : "Null part colour not allowed";
-
-        partColor = col;
-    }
-
-    /**
-     * Get the colour that the part is rendered in.
-     */
-    public LDrawColor getColor()
-    {
-        return partColor;
-    }
 }

@@ -26,7 +26,7 @@ import javax.vecmath.Matrix4d;
  * @author  Justin Couch
  * @version $Revision: 1.3 $
  */
-public class LDrawFileReference extends LDrawFilePart
+public class LDrawFileReference extends LDrawColoredPart
 {
     /** The transformation matrix in row major form */
     private double[] matrix;

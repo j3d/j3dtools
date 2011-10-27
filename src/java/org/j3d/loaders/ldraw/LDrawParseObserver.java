@@ -41,24 +41,25 @@ public interface LDrawParseObserver
     public boolean header(LDrawHeader hdr);
 
     /**
-     * An object has been completed.Object calls are top donw -
-     * the parent is read and sent, but at the time it is sent does not
-     * yet contain the children.
+     * A BFC culling statement has been received and the following is the new state
      *
-     * @param parent The parent object that contains this surface
-     * @param obj The object that was just read
-     * @return true if to keep reading
+     * @param ccw true if the following polygons are wound counter clockwise
+     * @param cull true if back face culling is to be performed
      */
-    public boolean fileReference(LDrawFileReference ref);
+    public boolean bfcStatement(boolean ccw, boolean cull);
 
     /**
-     * A surface definition from the previously declared object
-     * has been read.
+     * An external file reference has been detected, and these are the details.
      *
-     * @param obj The parent object that contains this surface
-     * @param surf The surface object that has been read
-     * @return true if to keep reading
+     * @param ref The details of the file reference read
      */
-    public boolean renderable(LDrawRenderable rend);
+    public void fileReference(LDrawFileReference ref, boolean inverted);
+
+    /**
+     * A surface definition has been read.
+     *
+     * @param poly The polygon/line definition that is to be sent
+     */
+    public void renderable(LDrawRenderable rend, boolean inverted);
 }
 

@@ -11,11 +11,7 @@ package org.j3d.loaders.ldraw;
 
 // External imports
 import java.io.*;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 
 // Local parser
 import org.j3d.loaders.InvalidFormatException;
@@ -47,6 +43,22 @@ import org.j3d.util.I18nManager;
  */
 public class LDrawParser
 {
+    /** Property holding the error message when the header listener fails */
+    private static final String HEADER_LISTENER_PROP =
+        "org.j3d.loaders.ldraw.LDrawParser.observerHeaderExceptionMsg";
+
+    /** Property holding the error message when the header listener fails */
+    private static final String BFC_LISTENER_PROP =
+        "org.j3d.loaders.ldraw.LDrawParser.observerBFCExceptionMsg";
+
+    /** Property holding the error message when the listener for file references fails */
+    private static final String FILEREF_LISTENER_PROP =
+        "org.j3d.loaders.ldraw.LDrawParser.observerFileRefExceptionMsg";
+
+    /** Property holding the error message when the listener for renderable updates fails */
+    private static final String PRIMITIVE_LISTENER_PROP =
+        "org.j3d.loaders.ldraw.LDrawParser.observerPrimitiveExceptionMsg";
+
     /** The step meta command string */
     private static final String STEP_META = "STEP";
 
@@ -89,6 +101,30 @@ public class LDrawParser
     /** Official header command for history details */
     private static final String HISTORY_HEADER = "HISTORY";
 
+    // BFC extension keywords
+
+    /** BFC keyword indicating compliance with the spec */
+    private static final String BFC_CERTIFY = "CERTIFY";
+
+    /** BFC keyword indicating non-compliance with the spec */
+    private static final String BFC_NO_CERTIFY = "NOCERTIFY";
+
+    /** BFC keyword indicating clockwise ordering of following polygons */
+    private static final String BFC_CW = "CW";
+
+    /** BFC keyword indicating clockwise ordering of following polygons */
+    private static final String BFC_INVERT = "INVERTNEXT";
+
+
+    /** BFC keyword indicating counter clockwise ordering of following polygons */
+    private static final String BFC_CCW = "CCW";
+
+    /** BFC keyword indicating back face culling is on */
+    private static final String BFC_CLIP = "CLIP";
+
+    /** BFC keyword indicating back face culling is off */
+    private static final String BFC_NOCLIP = "NOCLIP";
+
     /** Set of the old-style meta commands */
     private static final Set<String> OLD_META_COMMANDS;
 
@@ -114,6 +150,33 @@ public class LDrawParser
     /** Flag to say we've already read the stream */
     private boolean dataReady;
 
+    /**
+     * Flag indicating if BFC processing during a file is permitted. According
+     * to the spec:
+     * "In order for a file to be processed with back face culling, there must
+     * be at least one 0 BFC meta-statement before the first operational
+     * command-line. If there is no such 0 BFC meta-statement in the file, BFC
+     * processing will be disabled for that file."
+     */
+    private boolean bfcEnabled;
+
+    /**
+     * Current BFC winding statement. Kept between lines as sometimes the parsing
+     * hits a cull statement only and no change of winding, but the listener
+     * needs to report winding anyway
+     */
+    private boolean bfcCcw;
+
+    /**
+     * Current BFC clip statement. Kept between lines as sometimes the parsing
+     * hits a ccw statement only and no change of winding, but the listener
+     * needs to report winding anyway
+     */
+    private boolean bfcCull;
+
+    /** Flag indicating next renderable or file will have the coords inverted */
+    private boolean bfcInvertNext;
+
     /** Handler for reading the contents of the stream */
     private StreamTokenizer strtok;
 
@@ -125,6 +188,10 @@ public class LDrawParser
 
     /** Header that has been read for this file */
     private LDrawHeader header;
+
+    /** The parsed contents of the file, in order read. Does not include the header */
+    private List<LDrawFilePart> contents;
+
 
     /**
      * Global static init for setting up the meta commands.
@@ -161,6 +228,11 @@ public class LDrawParser
     {
         dataReady = false;
         headerComplete = false;
+        bfcEnabled = false;
+        bfcCcw = true;
+        bfcCull = false;
+        bfcInvertNext = false;
+        contents = new ArrayList<LDrawFilePart>();
         errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 
@@ -234,7 +306,12 @@ public class LDrawParser
     {
         headerComplete = false;
         dataReady = false;
+        bfcEnabled = false;
+        bfcCcw = true;
+        bfcCull = false;
+        bfcInvertNext = false;
         inputReader = null;
+        contents = new ArrayList<LDrawFilePart>();
         strtok = null;
     }
 
@@ -248,11 +325,11 @@ public class LDrawParser
     {
         assert is != null : "Null input stream provided";
 
+        clear();
+
         inputReader = new BufferedReader(new InputStreamReader(is));
         strtok = new StreamTokenizer(inputReader);
-
-        dataReady = false;
-        headerComplete = false;
+        resetSyntax();
     }
 
     /**
@@ -265,14 +342,15 @@ public class LDrawParser
     {
         assert rdr != null : "Null reader provided";
 
+        clear();
+
         if(rdr instanceof BufferedReader)
             inputReader = (BufferedReader)rdr;
         else
             inputReader = new BufferedReader(rdr);
 
         strtok = new StreamTokenizer(inputReader);
-        dataReady = false;
-        headerComplete = false;
+        resetSyntax();
     }
 
     /**
@@ -326,6 +404,18 @@ public class LDrawParser
     }
 
     /**
+     * Get the contents of the file, as read. If the parser has been reset,
+     * returns an empty list. The list cannot be modified. It does not contain
+     * the header. That is fetched separately
+     *
+     * @return A list containing the file contents in the order read
+     */
+    public List<LDrawFilePart> getFileContents()
+    {
+        return Collections.unmodifiableList(contents);
+    }
+
+    /**
      * Process a line that starts with '0', which is treated as a comment or
      * metadata command. If it turns out to be a metadata command, then return
      * true so that the following line parsing can be properly handled.
@@ -337,6 +427,7 @@ public class LDrawParser
     {
         int type = strtok.nextToken();
         boolean has_meta = false;
+        boolean needs_clear = true;
 
         // Check to see if we have any form of meta command. Otherwise, treat
         // it all as a comment.
@@ -346,12 +437,69 @@ public class LDrawParser
 
             if(first_comment.startsWith("!"))
             {
-                has_meta = true;
-
                 first_comment = first_comment.substring(1);
 
+                // Look for the official headers, but if we see them after the
+                // header has been completed, then ignore them.
                 if(ESCAPED_OFFICIAL_HEADERS.contains(first_comment))
                 {
+                    if(!headerComplete)
+                    {
+                        if(CATEGORY_HEADER.equals(first_comment))
+                        {
+                            StringBuilder bldr = new StringBuilder();
+
+                            while(type != StreamTokenizer.TT_EOL && type != StreamTokenizer.TT_EOF)
+                            {
+                                if(type == StreamTokenizer.TT_WORD)
+                                    bldr.append(strtok.sval);
+                                else
+                                    bldr.append(strtok.nval);
+
+                                bldr.append(' ');
+                            }
+
+                            header.setCategory(bldr.toString());
+                            needs_clear = false;
+                        }
+                        else if(KEYWORD_HEADER.equals(first_comment))
+                        {
+                            strtok.whitespaceChars(',', ',');
+                            strtok.wordChars(' ', ' ');
+                            strtok.wordChars('\t', '\t');
+
+                            while(type != StreamTokenizer.TT_EOL && type != StreamTokenizer.TT_EOF)
+                            {
+                                header.addKeyword(strtok.sval);
+                            }
+
+                            resetSyntax();
+                            needs_clear = false;
+                        }
+                        else if(LDRAW_HEADER.equals(first_comment))
+                        {
+                            header.setOfficial(true);
+                            type = strtok.nextToken();
+                            if(type == StreamTokenizer.TT_WORD)
+                                header.setFileType(LDrawFileType.valueOf(strtok.sval));
+                            else if(type == StreamTokenizer.TT_EOL)
+                                needs_clear = false;
+                        }
+                        else if(LICENSE_HEADER.equals(first_comment))
+                        {
+                            header.setLicense(readToEOL());
+                            needs_clear = false;
+                        }
+                        else if(HISTORY_HEADER.equals(first_comment))
+                        {
+                            header.addHistory(readToEOL());
+                            needs_clear = false;
+                        }
+                    }
+                }
+                else
+                {
+                    has_meta = true;
                 }
             }
             else if(OLD_META_COMMANDS.contains(first_comment))
@@ -360,12 +508,149 @@ public class LDrawParser
             }
             else if(STD_OFFICIAL_HEADERS.contains(first_comment))
             {
-                has_meta = true;
+                if(AUTHOR_HEADER.equals(first_comment))
+                {
+                    header.setAuthor(readToEOL());
+                }
+                else if(NAME_HEADER.equals(first_comment))
+                {
+                    header.setName(readToEOL());
+                }
+                else if(BFC_HEADER.equals(first_comment))
+                {
+                    // If we haven't finished the header processing, then this
+                    // looks at whether to certify the file for it or not,
+                    // otherwise, only process the command if it was previously
+                    // enabled in the header
+                    if(!headerComplete)
+                    {
+                        checkNextToken(false);
+                        String t2 = strtok.sval;
+
+                        if(BFC_CERTIFY.equals(t2))
+                        {
+                            header.setBFCCompliant(true);
+                            if(hasNextToken())
+                            {
+                                t2 = strtok.sval;
+                                bfcCcw = !BFC_CW.equals(t2);
+                                header.setCCW(bfcCcw);
+                            }
+                            else
+                            {
+                                bfcCcw = true;
+                                header.setCCW(true);
+                            }
+
+                            bfcEnabled = true;
+                        }
+                        else if(BFC_NO_CERTIFY.equals(t2))
+                        {
+                            header.setBFCCompliant(false);
+                            bfcEnabled = false;
+                            bfcCcw = true;
+                            bfcCull = false;
+                        }
+                        else if(bfcEnabled)
+                        {
+                            if(BFC_CCW.equals(t2))
+                            {
+                                header.setCCW(true);
+                            }
+                            else if(BFC_CW.equals(t2))
+                            {
+                                header.setCCW(false);
+                            }
+                            else if(BFC_CLIP.equals(t2))
+                            {
+                                if(hasNextToken())
+                                {
+                                    t2 = strtok.sval;
+                                    if(BFC_CCW.equals(t2))
+                                    {
+                                        header.setCCW(true);
+                                    }
+                                    else if(BFC_CW.equals(t2))
+                                    {
+                                        header.setCCW(false);
+                                    }
+                                }
+                                else
+                                {
+                                    header.setCCW(true);
+                                }
+                            }
+                        }
+                    }
+                    else if(bfcEnabled)
+                    {
+                        // Only parse the rest of the line if BFC was enabled
+                        // earlier in the header. Otherwise, ignore.
+                        checkNextToken(false);
+                        String t2 = strtok.sval;
+
+                        needs_clear = true;
+                        if(BFC_CCW.equals(t2))
+                        {
+                            bfcCcw = true;
+                            fireBFCState();
+                        }
+                        else if(BFC_CW.equals(t2))
+                        {
+                            bfcCcw = false;
+                            fireBFCState();
+                        }
+                        else if(BFC_CLIP.equals(t2))
+                        {
+                            bfcCull = true;
+
+                            if(hasNextToken())
+                            {
+                                t2 = strtok.sval;
+                                if(BFC_CCW.equals(t2))
+                                {
+                                    bfcCcw = true;
+                                }
+                                else if(BFC_CW.equals(t2))
+                                {
+                                    bfcCcw = false;
+                                }
+                            }
+                            else
+                            {
+                                bfcCcw = true;
+                            }
+
+                            fireBFCState();
+                        }
+                        else if(BFC_NOCLIP.equals(t2))
+                        {
+                            bfcCull = false;
+                            fireBFCState();
+                        }
+                        else if(BFC_INVERT.equals(t2))
+                        {
+                            bfcInvertNext = true;
+                        }
+                    }
+                }
+                else if(LDRAW_HEADER.equals(first_comment))
+                {
+                    header.setOfficial(true);
+                    type = strtok.nextToken();
+                    if(type == StreamTokenizer.TT_WORD)
+                        header.setFileType(LDrawFileType.valueOf(strtok.sval));
+                    else if(type == StreamTokenizer.TT_EOL)
+                        needs_clear = false;
+
+
+                }
             }
         }
 
 
-        clearToEOL();
+        if(needs_clear)
+            clearToEOL();
 
         return false;
     }
@@ -379,7 +664,7 @@ public class LDrawParser
     private void parseReference()
         throws IOException
     {
-        headerComplete = true;
+        finishHeader();
 
         int color_id = -1;
         double[] matrix = new double[16];
@@ -438,6 +723,10 @@ public class LDrawParser
 
         file_ref = strtok.sval;
 
+        LDrawFileReference ref = new LDrawFileReference(colour, file_ref, matrix);
+
+        fireReferenceEvent(ref);
+
         clearToEOL();
     }
 
@@ -451,7 +740,7 @@ public class LDrawParser
     private void parseLine()
         throws IOException
     {
-        headerComplete = true;
+        finishHeader();
 
         double[] p1 = new double[3];
         double[] p2 = new double[3];
@@ -485,6 +774,9 @@ public class LDrawParser
         p2[2] = strtok.nval;
 
         clearToEOL();
+
+        LDrawLine line = new LDrawLine(colour, p1, p2);
+        firePrimitiveEvent(line);
     }
 
     /**
@@ -496,7 +788,7 @@ public class LDrawParser
     private void parseTriangle()
         throws IOException
     {
-        headerComplete = true;
+        finishHeader();
 
         double[] p1 = new double[3];
         double[] p2 = new double[3];
@@ -541,6 +833,9 @@ public class LDrawParser
         p3[2] = strtok.nval;
 
         clearToEOL();
+
+        LDrawTriangle tri = new LDrawTriangle(colour, p1, p2, p3);
+        firePrimitiveEvent(tri);
     }
 
     /**
@@ -552,7 +847,7 @@ public class LDrawParser
     private void parseQuad()
         throws IOException
     {
-        headerComplete = true;
+        finishHeader();
 
         double[] p1 = new double[3];
         double[] p2 = new double[3];
@@ -608,6 +903,9 @@ public class LDrawParser
         p4[2] = strtok.nval;
 
         clearToEOL();
+
+        LDrawQuad quad = new LDrawQuad(colour, p1, p2, p3, p4);
+        firePrimitiveEvent(quad);
     }
 
     /**
@@ -620,7 +918,7 @@ public class LDrawParser
     private void parseOptionalLine()
         throws IOException
     {
-        headerComplete = true;
+        finishHeader();
 
         double[] p1 = new double[3];
         double[] p2 = new double[3];
@@ -679,6 +977,23 @@ public class LDrawParser
     }
 
     /**
+     * See if there is another token of the requested type on the current line.
+     * Return value indicates presence of the required type. Unlike
+     * checkNextToken() this does not generate an exception and can be used when
+     * looking for optional additional keywords.
+     *
+     * @return true if there is another token available
+     * @throws IOException There was some other form of I/O error when reading
+     */
+    private boolean hasNextToken()
+        throws IOException
+    {
+        int type = strtok.nextToken();
+
+        return type != StreamTokenizer.TT_EOL || type != StreamTokenizer.TT_EOF;
+    }
+
+    /**
      * Read the next token and confirm that it is of the requested type. When
      * true, you want a number, otherwise it will be a string
      *
@@ -706,6 +1021,150 @@ public class LDrawParser
                 throw new InvalidFormatException();
             }
        }
+    }
+
+    /**
+     * Check to see if the header has just completed, and if so, then send
+     * out the notification to the observer.
+     */
+    private void finishHeader()
+    {
+        if(!headerComplete && observer != null)
+        {
+            try
+            {
+                observer.header(header);
+            }
+            catch(Exception e)
+            {
+                if(errorReporter != null)
+                {
+                    I18nManager intl_mgr = I18nManager.getManager();
+
+                    String msg = intl_mgr.getString(HEADER_LISTENER_PROP);
+                    errorReporter.errorReport(msg, e);
+                }
+            }
+        }
+
+        headerComplete = true;
+    }
+
+    /**
+     * Send to the observer the current primitive that has just bean read
+     *
+     * @param poly The polygon/line definition that is to be sent
+     */
+    private void firePrimitiveEvent(LDrawRenderable poly)
+    {
+        try
+        {
+            contents.add(poly);
+
+            if(observer != null)
+                observer.renderable(poly, bfcInvertNext);
+
+            bfcInvertNext = false;
+        }
+        catch(Exception e)
+        {
+            if(errorReporter != null)
+            {
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(PRIMITIVE_LISTENER_PROP);
+                errorReporter.errorReport(msg, e);
+            }
+        }
+    }
+
+    /**
+     * Send to the observer the details of an external file reference.
+     *
+     * @param ref The details of the file reference read
+     */
+    private void fireReferenceEvent(LDrawFileReference ref)
+    {
+        try
+        {
+            contents.add(ref);
+
+            if(observer != null)
+                observer.fileReference(ref, bfcInvertNext);
+
+            bfcInvertNext = false;
+        }
+        catch(Exception e)
+        {
+            if(errorReporter != null)
+            {
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(FILEREF_LISTENER_PROP);
+                errorReporter.errorReport(msg, e);
+            }
+        }
+    }
+
+    /**
+     * Resend the current BFC state to the observer, if registered.
+     */
+    private void fireBFCState()
+    {
+        try
+        {
+            if(observer != null)
+                observer.bfcStatement(bfcCcw, bfcCull);
+        }
+        catch(Exception e)
+        {
+            if(errorReporter != null)
+            {
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(BFC_LISTENER_PROP);
+                errorReporter.errorReport(msg, e);
+            }
+        }
+    }
+
+    /**
+     * Reset the tokenizer to the default setting after having something else
+     * tweaked.
+     */
+    private void resetSyntax()
+    {
+        strtok.resetSyntax();
+        strtok.parseNumbers();
+        strtok.eolIsSignificant(true);
+        strtok.whitespaceChars(' ', ' ');
+        strtok.whitespaceChars('\t', '\t');
+    }
+
+    /**
+     * Read the stream until the end of the line and return it as a single string
+     *
+     * @return A string for the rest of this line.
+     */
+    private String readToEOL()
+        throws IOException
+    {
+        int type;
+
+        strtok.wordChars(' ', ' ');
+        strtok.wordChars('\t', '\t');
+
+        do
+        {
+            type = strtok.nextToken();
+        }
+        while(type != StreamTokenizer.TT_EOL || type != StreamTokenizer.TT_EOF);
+
+
+        strtok.whitespaceChars(' ', ' ');
+        strtok.whitespaceChars('\t', '\t');
+
+        return strtok.sval;
     }
 
     /**

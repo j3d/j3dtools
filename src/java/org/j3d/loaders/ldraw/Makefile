@@ -22,6 +22,7 @@ SOURCE = \
   LDrawSpeckleColor.java \
   LDrawMilkyColor.java \
   LDrawFilePart.java \
+  LDrawColoredPart.java \
   LDrawFileReference.java \
   LDrawFileType.java \
   LDrawHeader.java \

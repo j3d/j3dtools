@@ -28,5 +28,5 @@ package org.j3d.loaders.ldraw;
  */
 public enum LDrawFileType
 {
-    MULTIPART, PART, SUB_PART;
+    MULTIPART, PART, SUB_PART, PRIMITIVE, PRIMITIVE_48, SHORTCUT;
 }
