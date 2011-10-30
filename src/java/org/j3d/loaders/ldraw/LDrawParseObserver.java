@@ -37,6 +37,7 @@ public interface LDrawParseObserver
      *
      * @param mat The material definition
      * @return true if to keep reading
+     * @return true if to keep reading
      */
     public boolean header(LDrawHeader hdr);
 
@@ -45,6 +46,7 @@ public interface LDrawParseObserver
      *
      * @param ccw true if the following polygons are wound counter clockwise
      * @param cull true if back face culling is to be performed
+     * @return true if to keep reading
      */
     public boolean bfcStatement(boolean ccw, boolean cull);
 
@@ -52,14 +54,15 @@ public interface LDrawParseObserver
      * An external file reference has been detected, and these are the details.
      *
      * @param ref The details of the file reference read
+     * @return true if to keep reading
      */
-    public void fileReference(LDrawFileReference ref, boolean inverted);
+    public boolean fileReference(LDrawFileReference ref);
 
     /**
      * A surface definition has been read.
      *
-     * @param poly The polygon/line definition that is to be sent
+     * @param boolean The polygon/line definition that is to be sent
+     * @return true if to keep reading
      */
-    public void renderable(LDrawRenderable rend, boolean inverted);
+    public boolean renderable(LDrawRenderable rend);
 }
-

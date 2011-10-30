@@ -356,11 +356,13 @@ public class LDrawParser
     /**
      * Do all the parsing work. Convenience method for all to call internally
      *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      * @throws IncorrectFormatException The file is not one our parser
      *    understands
      * @throws ParsingErrorException An error parsing the file
      */
-    public void parse()
+    public void parse(boolean retainData)
         throws IOException
     {
         if(dataReady)
@@ -374,27 +376,27 @@ public class LDrawParser
             switch((int)strtok.nval)
             {
                 case 0:
-                    parseComment();
+                    parseComment(retainData);
                     break;
 
                 case 1:
-                    parseReference();
+                    parseReference(retainData);
                     break;
 
                 case 2:
-                    parseLine();
+                    parseLine(retainData);
                     break;
 
                 case 3:
-                    parseTriangle();
+                    parseTriangle(retainData);
                     break;
 
                 case 4:
-                    parseQuad();
+                    parseQuad(retainData);
                     break;
 
                 case 5:
-                    parseOptionalLine();
+                    parseOptionalLine(retainData);
                     break;
 
             }
@@ -420,9 +422,11 @@ public class LDrawParser
      * metadata command. If it turns out to be a metadata command, then return
      * true so that the following line parsing can be properly handled.
      *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      * @return true if the comment is a metadata command
      */
-    private boolean parseComment()
+    private boolean parseComment(boolean retainData)
         throws IOException
     {
         int type = strtok.nextToken();
@@ -658,13 +662,17 @@ public class LDrawParser
     /**
      * Parse the line that starts with '1', which is treated as a sub-file reference.
      * The line is defined as:
-     *
+     * <pre>
      * 1 <colour> x y z a b c d e f g h i <file>
+     * </pre>
+     *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      */
-    private void parseReference()
+    private void parseReference(boolean retainData)
         throws IOException
     {
-        finishHeader();
+        finishHeader(retainData);
 
         int color_id = -1;
         double[] matrix = new double[16];
@@ -725,7 +733,7 @@ public class LDrawParser
 
         LDrawFileReference ref = new LDrawFileReference(colour, file_ref, matrix);
 
-        fireReferenceEvent(ref);
+        fireReferenceEvent(ref, retainData);
 
         clearToEOL();
     }
@@ -735,12 +743,15 @@ public class LDrawParser
      * The format of the line is:
      *
      * 2 <colour> x1 y1 z1 x2 y2 z2
+     * </pre>
      *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      */
-    private void parseLine()
+    private void parseLine(boolean retainData)
         throws IOException
     {
-        finishHeader();
+        finishHeader(retainData);
 
         double[] p1 = new double[3];
         double[] p2 = new double[3];
@@ -776,7 +787,7 @@ public class LDrawParser
         clearToEOL();
 
         LDrawLine line = new LDrawLine(colour, p1, p2);
-        firePrimitiveEvent(line);
+        firePrimitiveEvent(line, retainData);
     }
 
     /**
@@ -784,11 +795,15 @@ public class LDrawParser
      * The format of the line is:
      *
      * 3 <colour> x1 y1 z1 x2 y2 z2 x3 y3 z3
+     * </pre>
+     *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      */
-    private void parseTriangle()
+    private void parseTriangle(boolean retainData)
         throws IOException
     {
-        finishHeader();
+        finishHeader(retainData);
 
         double[] p1 = new double[3];
         double[] p2 = new double[3];
@@ -835,7 +850,7 @@ public class LDrawParser
         clearToEOL();
 
         LDrawTriangle tri = new LDrawTriangle(colour, p1, p2, p3);
-        firePrimitiveEvent(tri);
+        firePrimitiveEvent(tri, retainData);
     }
 
     /**
@@ -843,11 +858,15 @@ public class LDrawParser
      * The format of the line is:
      *
      * 4 <colour> x1 y1 z1 x2 y2 z2 x3 y3 z3 x4 y4 z4
+     * </pre>
+     *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      */
-    private void parseQuad()
+    private void parseQuad(boolean retainData)
         throws IOException
     {
-        finishHeader();
+        finishHeader(retainData);
 
         double[] p1 = new double[3];
         double[] p2 = new double[3];
@@ -905,7 +924,7 @@ public class LDrawParser
         clearToEOL();
 
         LDrawQuad quad = new LDrawQuad(colour, p1, p2, p3, p4);
-        firePrimitiveEvent(quad);
+        firePrimitiveEvent(quad, retainData);
     }
 
     /**
@@ -914,11 +933,15 @@ public class LDrawParser
      * The format of the line is:
      *
      * 5 <colour> x1 y1 z1 x2 y2 z2 x3 y3 z3 x4 y4 z4
+     * </pre>
+     *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      */
-    private void parseOptionalLine()
+    private void parseOptionalLine(boolean retainData)
         throws IOException
     {
-        finishHeader();
+        finishHeader(retainData);
 
         double[] p1 = new double[3];
         double[] p2 = new double[3];
@@ -1026,10 +1049,13 @@ public class LDrawParser
     /**
      * Check to see if the header has just completed, and if so, then send
      * out the notification to the observer.
+     *
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      */
-    private void finishHeader()
+    private void finishHeader(boolean retainData)
     {
-        if(!headerComplete && observer != null)
+        if(retainData && !headerComplete && observer != null)
         {
             try
             {
@@ -1054,15 +1080,20 @@ public class LDrawParser
      * Send to the observer the current primitive that has just bean read
      *
      * @param poly The polygon/line definition that is to be sent
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      */
-    private void firePrimitiveEvent(LDrawRenderable poly)
+    private void firePrimitiveEvent(LDrawRenderable poly, boolean retainData)
     {
         try
         {
-            contents.add(poly);
+            if(retainData)
+                contents.add(poly);
+
+            poly.setInvertedWinding(bfcInvertNext);
 
             if(observer != null)
-                observer.renderable(poly, bfcInvertNext);
+                observer.renderable(poly);
 
             bfcInvertNext = false;
         }
@@ -1082,15 +1113,20 @@ public class LDrawParser
      * Send to the observer the details of an external file reference.
      *
      * @param ref The details of the file reference read
+     * @param retainData true if the parser should maintain a copy of all the
+     *   data read locally after completing parsing
      */
-    private void fireReferenceEvent(LDrawFileReference ref)
+    private void fireReferenceEvent(LDrawFileReference ref, boolean retainData)
     {
         try
         {
-            contents.add(ref);
+            if(retainData)
+                contents.add(ref);
+
+            ref.setInvertedWinding(bfcInvertNext);
 
             if(observer != null)
-                observer.fileReference(ref, bfcInvertNext);
+                observer.fileReference(ref);
 
             bfcInvertNext = false;
         }
