@@ -78,10 +78,10 @@ public class LDrawParser
     private static final String SAVE_META = "SAVE";
 
     /** Official header command for author name */
-    private static final String AUTHOR_HEADER = "Author";
+    private static final String AUTHOR_HEADER = "Author:";
 
     /** Official header command for file name */
-    private static final String NAME_HEADER = "Name";
+    private static final String NAME_HEADER = "Name:";
 
     /** Official header command for indicating this is an official LDRAW file */
     private static final String LDRAW_HEADER = "LDRAW_ORG";
@@ -368,35 +368,41 @@ public class LDrawParser
         if(dataReady)
             throw new IOException("Data has already been read from this stream");
 
+        resetSyntax();
         header = new LDrawHeader();
+        boolean eof = false;
 
-        while(strtok.nextToken() != StreamTokenizer.TT_EOF)
+        while(!eof && strtok.nextToken() != StreamTokenizer.TT_EOF)
         {
             // Start of each line is an integer number, so force that here.
+            // If it isn't (eg blank line), go to the next line
+            if(strtok.ttype != StreamTokenizer.TT_NUMBER)
+                continue;
+
             switch((int)strtok.nval)
             {
                 case 0:
-                    parseComment(retainData);
+                    eof = parseComment(retainData);
                     break;
 
                 case 1:
-                    parseReference(retainData);
+                    eof = parseReference(retainData);
                     break;
 
                 case 2:
-                    parseLine(retainData);
+                    eof = parseLine(retainData);
                     break;
 
                 case 3:
-                    parseTriangle(retainData);
+                    eof = parseTriangle(retainData);
                     break;
 
                 case 4:
-                    parseQuad(retainData);
+                    eof = parseQuad(retainData);
                     break;
 
                 case 5:
-                    parseOptionalLine(retainData);
+                    eof = parseOptionalLine(retainData);
                     break;
 
             }
@@ -468,16 +474,11 @@ public class LDrawParser
                         }
                         else if(KEYWORD_HEADER.equals(first_comment))
                         {
-                            strtok.whitespaceChars(',', ',');
-                            strtok.wordChars(' ', ' ');
-                            strtok.wordChars('\t', '\t');
+                            StringTokenizer tok = new StringTokenizer(readToEOL(), ",");
 
-                            while(type != StreamTokenizer.TT_EOL && type != StreamTokenizer.TT_EOF)
-                            {
-                                header.addKeyword(strtok.sval);
-                            }
+                            while(tok.hasMoreTokens())
+                                header.addKeyword(tok.nextToken());
 
-                            resetSyntax();
                             needs_clear = false;
                         }
                         else if(LDRAW_HEADER.equals(first_comment))
@@ -485,7 +486,7 @@ public class LDrawParser
                             header.setOfficial(true);
                             type = strtok.nextToken();
                             if(type == StreamTokenizer.TT_WORD)
-                                header.setFileType(LDrawFileType.valueOf(strtok.sval));
+                                header.setFileType(LDrawFileType.valueOf(strtok.sval.toUpperCase()));
                             else if(type == StreamTokenizer.TT_EOL)
                                 needs_clear = false;
                         }
@@ -646,17 +647,24 @@ public class LDrawParser
                         header.setFileType(LDrawFileType.valueOf(strtok.sval));
                     else if(type == StreamTokenizer.TT_EOL)
                         needs_clear = false;
-
-
                 }
+            }
+            else
+            {
+                String other = readToEOL();
+                needs_clear = false;
+
+                if(strtok.lineno() == 2)
+                    header.setPreamble(first_comment + " " + other);
             }
         }
 
+        boolean eof = false;
 
         if(needs_clear)
-            clearToEOL();
+            eof = clearToEOL();
 
-        return false;
+        return eof;
     }
 
     /**
@@ -669,7 +677,7 @@ public class LDrawParser
      * @param retainData true if the parser should maintain a copy of all the
      *   data read locally after completing parsing
      */
-    private void parseReference(boolean retainData)
+    private boolean parseReference(boolean retainData)
         throws IOException
     {
         finishHeader(retainData);
@@ -735,7 +743,7 @@ public class LDrawParser
 
         fireReferenceEvent(ref, retainData);
 
-        clearToEOL();
+        return clearToEOL();
     }
 
     /**
@@ -748,7 +756,7 @@ public class LDrawParser
      * @param retainData true if the parser should maintain a copy of all the
      *   data read locally after completing parsing
      */
-    private void parseLine(boolean retainData)
+    private boolean parseLine(boolean retainData)
         throws IOException
     {
         finishHeader(retainData);
@@ -784,10 +792,12 @@ public class LDrawParser
         checkNextToken(true);
         p2[2] = strtok.nval;
 
-        clearToEOL();
+        boolean eof = clearToEOL();
 
         LDrawLine line = new LDrawLine(colour, p1, p2);
         firePrimitiveEvent(line, retainData);
+
+        return eof;
     }
 
     /**
@@ -800,7 +810,7 @@ public class LDrawParser
      * @param retainData true if the parser should maintain a copy of all the
      *   data read locally after completing parsing
      */
-    private void parseTriangle(boolean retainData)
+    private boolean parseTriangle(boolean retainData)
         throws IOException
     {
         finishHeader(retainData);
@@ -847,10 +857,12 @@ public class LDrawParser
         checkNextToken(true);
         p3[2] = strtok.nval;
 
-        clearToEOL();
+        boolean eof = clearToEOL();
 
         LDrawTriangle tri = new LDrawTriangle(colour, p1, p2, p3);
         firePrimitiveEvent(tri, retainData);
+
+        return eof;
     }
 
     /**
@@ -863,7 +875,7 @@ public class LDrawParser
      * @param retainData true if the parser should maintain a copy of all the
      *   data read locally after completing parsing
      */
-    private void parseQuad(boolean retainData)
+    private boolean parseQuad(boolean retainData)
         throws IOException
     {
         finishHeader(retainData);
@@ -921,10 +933,12 @@ public class LDrawParser
         checkNextToken(true);
         p4[2] = strtok.nval;
 
-        clearToEOL();
+        boolean eof = clearToEOL();
 
         LDrawQuad quad = new LDrawQuad(colour, p1, p2, p3, p4);
         firePrimitiveEvent(quad, retainData);
+
+        return eof;
     }
 
     /**
@@ -938,7 +952,7 @@ public class LDrawParser
      * @param retainData true if the parser should maintain a copy of all the
      *   data read locally after completing parsing
      */
-    private void parseOptionalLine(boolean retainData)
+    private boolean parseOptionalLine(boolean retainData)
         throws IOException
     {
         finishHeader(retainData);
@@ -996,7 +1010,12 @@ public class LDrawParser
         checkNextToken(true);
         c2[2] = strtok.nval;
 
-        clearToEOL();
+        boolean eof = clearToEOL();
+
+//        LDrawQuad quad = new LDrawQuad(colour, p1, p2, p3, p4);
+//        firePrimitiveEvent(quad, retainData);
+
+        return eof;
     }
 
     /**
@@ -1041,7 +1060,7 @@ public class LDrawParser
        {
             if(type != StreamTokenizer.TT_WORD)
             {
-                throw new InvalidFormatException();
+                throw new InvalidFormatException("Type is "  + strtok.toString());
             }
        }
     }
@@ -1171,10 +1190,13 @@ public class LDrawParser
     private void resetSyntax()
     {
         strtok.resetSyntax();
-        strtok.parseNumbers();
         strtok.eolIsSignificant(true);
-        strtok.whitespaceChars(' ', ' ');
+        strtok.wordChars(33, 127);
         strtok.whitespaceChars('\t', '\t');
+        strtok.whitespaceChars(' ', ' ');
+        strtok.whitespaceChars('\r', '\r');
+        strtok.parseNumbers();
+
     }
 
     /**
@@ -1187,26 +1209,32 @@ public class LDrawParser
     {
         int type;
 
-        strtok.wordChars(' ', ' ');
-        strtok.wordChars('\t', '\t');
+        strtok.resetSyntax();
+        strtok.wordChars(1, 127);
+        strtok.eolIsSignificant(true);
+        strtok.whitespaceChars('\r', '\r');
+
+        String last_word = null;
 
         do
         {
+            last_word = strtok.sval;
+
             type = strtok.nextToken();
         }
-        while(type != StreamTokenizer.TT_EOL || type != StreamTokenizer.TT_EOF);
+        while(type != StreamTokenizer.TT_EOL && type != StreamTokenizer.TT_EOF);
 
+        resetSyntax();
 
-        strtok.whitespaceChars(' ', ' ');
-        strtok.whitespaceChars('\t', '\t');
-
-        return strtok.sval;
+        return last_word;
     }
 
     /**
      * Clear the stream until the end of the line.
+     *
+     * @return true if the EOF is found, false for EOL
      */
-    private void clearToEOL()
+    private boolean clearToEOL()
         throws IOException
     {
         int type;
@@ -1215,6 +1243,8 @@ public class LDrawParser
         {
             type = strtok.nextToken();
         }
-        while(type != StreamTokenizer.TT_EOL || type != StreamTokenizer.TT_EOF);
+        while(type != StreamTokenizer.TT_EOL && type != StreamTokenizer.TT_EOF);
+
+        return strtok.ttype == StreamTokenizer.TT_EOF;
     }
 }

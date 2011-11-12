@@ -49,6 +49,9 @@ public class LDrawHeader
     /** The type of file definition this represents */
     private LDrawFileType fileType;
 
+    /** The contents of the first line of the file, typically used as a description */
+    private String preamble;
+
     /** Who authored the file, if known */
     private String author;
 
@@ -95,6 +98,45 @@ public class LDrawHeader
         bfcCertified = false;
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder bldr = new StringBuilder("LDraw Header [\n");
+        bldr.append("Preamble: ");
+        bldr.append(preamble);
+        bldr.append("\nFilename: ");
+        bldr.append(fileName);
+        bldr.append("\nAuthor: ");
+        bldr.append(author);
+        bldr.append("\nLicense: ");
+        bldr.append(license != null ? license : "None");
+        bldr.append("\nOfficial? ");
+        bldr.append(official);
+        bldr.append("\nVersion: ");
+        bldr.append(version);
+        bldr.append("\nCategory: ");
+        bldr.append(category);
+        bldr.append("\nBFC Certified? ");
+        bldr.append(bfcCertified);
+        bldr.append("\nPolygon Winding Direction: ");
+        bldr.append(ccw ? "CCW" : "CW");
+        bldr.append("\nKeywords: ");
+        bldr.append(keywords);
+
+        bldr.append("\nHistory: ");
+
+        for(String s: history)
+        {
+            bldr.append("\n   ");
+            bldr.append(s);
+        }
+
+        bldr.append("\n]\n");
+
+        return bldr.toString();
+
+    }
+
     /**
      * Get the type of file that this header represents
      *
@@ -114,6 +156,28 @@ public class LDrawHeader
     void setFileType(LDrawFileType type)
     {
         fileType = type;
+    }
+
+    /**
+     * The contents of the first line of the file if it does not match and
+     * of the standard header keywords. Most official files have this
+     * and use it as a generic description or preamble to the contents
+     *
+     * @return A possibly null string, otherwise the contents of the first line
+     */
+    public String getPreamble()
+    {
+        return preamble;
+    }
+
+    /**
+     * Set the preamble that was read from the file.
+     *
+     * @param str The string to use
+     */
+    void setPreamble(String str)
+    {
+        preamble = trim(str);
     }
 
     /**
