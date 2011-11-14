@@ -659,9 +659,9 @@ public class LDrawParser
             }
         }
 
-        boolean eof = false;
+        boolean eof = strtok.ttype == StreamTokenizer.TT_EOF;
 
-        if(needs_clear)
+        if(!eof && needs_clear && strtok.ttype != StreamTokenizer.TT_EOL)
             eof = clearToEOL();
 
         return eof;
@@ -735,9 +735,7 @@ public class LDrawParser
         // Last row is 0, 0, 0, 1
         matrix[15] = 1.0;
 
-        checkNextToken(false);
-
-        file_ref = strtok.sval;
+        file_ref = readToEOL();
 
         LDrawFileReference ref = new LDrawFileReference(colour, file_ref, matrix);
 
@@ -1239,6 +1237,10 @@ public class LDrawParser
     {
         int type;
 
+        if(strtok.ttype == StreamTokenizer.TT_EOL)
+            return false;
+        else if(strtok.ttype == StreamTokenizer.TT_EOF)
+            return true;
         do
         {
             type = strtok.nextToken();
