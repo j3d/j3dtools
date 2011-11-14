@@ -50,6 +50,26 @@ public class LDrawBFCStatement extends LDrawFilePart
         this.cull = cull;
     }
 
+    //------------------------------------------------------------------------
+    // Methods defined by Object
+    //------------------------------------------------------------------------
+
+    @Override
+    public String toString()
+    {
+        StringBuilder bldr = new StringBuilder("LDraw BFC Statement ");
+        bldr.append(" Culling? ");
+        bldr.append(cull ? 'Y' : 'N');
+        bldr.append(" CCW ");
+        bldr.append(ccw ? 'Y' : 'N');
+
+        return bldr.toString();
+    }
+
+    //------------------------------------------------------------------------
+    // Local Methods
+    //------------------------------------------------------------------------
+
     /**
      * Get the winding direction flag.
      *

@@ -102,32 +102,32 @@ public class LDrawHeader
     public String toString()
     {
         StringBuilder bldr = new StringBuilder("LDraw Header [\n");
-        bldr.append("Preamble: ");
+        bldr.append("  Preamble: ");
         bldr.append(preamble);
-        bldr.append("\nFilename: ");
+        bldr.append("\n  Filename: ");
         bldr.append(fileName);
-        bldr.append("\nAuthor: ");
+        bldr.append("\n  Author: ");
         bldr.append(author);
-        bldr.append("\nLicense: ");
+        bldr.append("\n  License: ");
         bldr.append(license != null ? license : "None");
-        bldr.append("\nOfficial? ");
+        bldr.append("\n  Official? ");
         bldr.append(official);
-        bldr.append("\nVersion: ");
+        bldr.append("\n  Version: ");
         bldr.append(version);
-        bldr.append("\nCategory: ");
+        bldr.append("\n  Category: ");
         bldr.append(category);
-        bldr.append("\nBFC Certified? ");
+        bldr.append("\n  BFC Certified? ");
         bldr.append(bfcCertified);
-        bldr.append("\nPolygon Winding Direction: ");
+        bldr.append("\n  Polygon Winding Direction: ");
         bldr.append(ccw ? "CCW" : "CW");
-        bldr.append("\nKeywords: ");
+        bldr.append("\n  Keywords: ");
         bldr.append(keywords);
 
-        bldr.append("\nHistory: ");
+        bldr.append("\n  History: ");
 
         for(String s: history)
         {
-            bldr.append("\n   ");
+            bldr.append("\n     ");
             bldr.append(s);
         }
 

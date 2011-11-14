@@ -59,6 +59,37 @@ public class LDrawFileReference extends LDrawColoredPart
         fileReference = ref;
     }
 
+    //------------------------------------------------------------------------
+    // Methods defined by Object
+    //------------------------------------------------------------------------
+
+    @Override
+    public String toString()
+    {
+        StringBuilder bldr = new StringBuilder("LDraw File Reference ");
+        bldr.append("Colour ID ");
+        bldr.append(getColor());
+        bldr.append(" Inverted? ");
+        bldr.append(isInvertedWinding() ? 'Y' : 'N');
+        bldr.append(" matrix [ ");
+
+        for(int i = 0; i < matrix.length; i++)
+        {
+            bldr.append(matrix[i]);
+            bldr.append(' ');
+        }
+
+        bldr.append("] file: \"");
+        bldr.append(fileReference);
+        bldr.append("\"");
+
+        return bldr.toString();
+    }
+
+    //------------------------------------------------------------------------
+    // Local Methods
+    //------------------------------------------------------------------------
+
     /**
      * Get the matrix that is used to manipulate the referenced part.
      * Returns the internal reference, not a copy. The matrix is

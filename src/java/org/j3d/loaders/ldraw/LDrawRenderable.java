@@ -29,10 +29,10 @@ package org.j3d.loaders.ldraw;
 public abstract class LDrawRenderable extends LDrawColoredPart
 {
     /** First point in the line */
-    private double[] start;
+    protected double[] start;
 
     /** Second point in the line */
-    private double[] end;
+    protected double[] end;
 
     /**
      * Construct the line information from the two points and colour.

@@ -37,4 +37,29 @@ public class LDrawLine extends LDrawRenderable
     {
         super(col, start, end);
     }
+
+    //------------------------------------------------------------------------
+    // Methods defined by Object
+    //------------------------------------------------------------------------
+
+    @Override
+    public String toString()
+    {
+        StringBuilder bldr = new StringBuilder("LDraw Triangle ");
+        bldr.append("Colour ID ");
+        bldr.append(getColor());
+        bldr.append(" Inverted? ");
+        bldr.append(isInvertedWinding() ? 'Y' : 'N');
+        bldr.append(" from ( ");
+        bldr.append(start[0]);
+        bldr.append(",");
+        bldr.append(start[1]);
+        bldr.append(") to (");
+        bldr.append(end[0]);
+        bldr.append(",");
+        bldr.append(end[1]);
+        bldr.append(")");
+
+        return bldr.toString();
+    }
 }
