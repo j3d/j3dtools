@@ -12,8 +12,13 @@
 
 package org.j3d.util;
 
+// External imports
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Arrays;
+
+// Local imports
+// None
 
 /**
  * A hash map that uses primitive doubles for the key rather than objects.
@@ -22,10 +27,10 @@ import java.util.Arrays;
  * @author <a href="mailto:georg.rehfeld@gmx.de">Georg Rehfeld</a>
  * @version $Revision: 1.1 $
  */
-public class DoubleHashMap
+public class DoubleHashMap<V>
 {
     /** The hash table data. */
-    private transient Entry[] table;
+    private transient Entry<V>[] table;
 
     /** The total number of entries in the hash table. */
     private transient int count = 0;
@@ -50,16 +55,26 @@ public class DoubleHashMap
      */
     private transient int modCount = 0;
 
+    /** Cache of the entry instances to prevent excessive object creation */
+    private ArrayList<Entry<V>> entryCache;
+
     /**
      * Innerclass that acts as a datastructure to create a new entry in the
      * table.
      */
-    private static class Entry
+    private static class Entry<V>
     {
         int hash;
         double key;
-        Object value;
-        Entry next;
+        V value;
+        Entry<V> next;
+
+        /**
+         * Create a new default entry with nothing set.
+         */
+        protected Entry()
+        {
+        }
 
         /**
          * Create a new entry with the given values.
@@ -69,7 +84,23 @@ public class DoubleHashMap
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
-        protected Entry(int hash, double key, Object value, Entry next)
+        protected Entry(int hash, double key, V value, Entry next)
+        {
+            this.hash = hash;
+            this.key = key;
+            this.value = value;
+            this.next = next;
+        }
+    
+        /**
+         * Convenience method to set the entry with the given values.
+         *
+         * @param hash The code used to hash the object with
+         * @param key The key used to enter this in the table
+         * @param value The value for this key
+         * @param next A reference to the next entry in the table
+         */
+        protected void set(int hash, double key, V value, Entry<V> next)
         {
             this.hash = hash;
             this.key = key;
@@ -123,6 +154,8 @@ public class DoubleHashMap
         this.loadFactor = loadFactor;
         table = new Entry[initialCapacity];
         threshold = (int)(initialCapacity * loadFactor);
+
+        entryCache = new ArrayList<Entry<V>>(initialCapacity);
     }
 
     /**
@@ -164,17 +197,17 @@ public class DoubleHashMap
      * @see        #containsValue(Object)
      * @see        java.util.Map
      */
-    public boolean contains(Object value)
+    public boolean contains(V value)
     {
         if (value == null)
         {
             throw new NullPointerException("value object may not be null!");
         }
 
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         for (int i = tab.length ; i-- > 0 ;)
         {
-            for (Entry e = tab[i] ; e != null ; e = e.next)
+            for (Entry<V> e = tab[i] ; e != null ; e = e.next)
             {
                 if (e.value.equals(value))
                 {
@@ -195,7 +228,7 @@ public class DoubleHashMap
      * @see    java.util.Map
      * @since JDK1.2
      */
-    public boolean containsValue(Object value)
+    public boolean containsValue(V value)
     {
         return contains(value);
     }
@@ -211,11 +244,11 @@ public class DoubleHashMap
      */
     public boolean containsKey(double key)
     {
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         long bits = Double.doubleToLongBits(key);
         int hash = (int)(bits ^ (bits >>> 32));
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next)
+        for (Entry<V> e = tab[index] ; e != null ; e = e.next)
         {
             if (e.hash == hash && e.key == key)
             {
@@ -234,13 +267,13 @@ public class DoubleHashMap
      *          this hashtable.
      * @see     #put(double, Object)
      */
-    public Object get(double key)
+    public V get(double key)
     {
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         long bits = Double.doubleToLongBits(key);
         int hash = (int)(bits ^ (bits >>> 32));
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next)
+        for (Entry<V> e = tab[index] ; e != null ; e = e.next)
         {
             if (e.hash == hash && e.key == key)
             {
@@ -264,18 +297,18 @@ public class DoubleHashMap
      *         or <code>null</code> if it did not have one.
      * @see     #get(double)
      */
-    public Object put(double key, Object value)
+    public V put(double key, V value)
     {
         // Makes sure the key is not already in the hashtable.
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         long bits = Double.doubleToLongBits(key);
         int hash = (int)(bits ^ (bits >>> 32));
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next)
+        for (Entry<V> e = tab[index] ; e != null ; e = e.next)
         {
             if (e.hash == hash && e.key == key)
             {
-                Object old = e.value;
+                V old = e.value;
                 e.value = value;
                 return old;
             }
@@ -292,7 +325,9 @@ public class DoubleHashMap
         }
 
         // Creates the new entry.
-        Entry e = new Entry(hash, key, value, tab[index]);
+        Entry<V> e = getNewEntry();
+        e.set(hash, key, value, tab[index]);
+
         tab[index] = e;
         count++;
         return null;
@@ -306,13 +341,13 @@ public class DoubleHashMap
      * @return  the value to which the key had been mapped in this hashtable,
      *          or <code>null</code> if the key did not have a mapping.
      */
-    public Object remove(double key)
+    public V remove(double key)
     {
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         long bits = Double.doubleToLongBits(key);
         int hash = (int)(bits ^ (bits >>> 32));
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index], prev = null ; e != null ; prev = e, e = e.next)
+        for (Entry<V> e = tab[index], prev = null ; e != null ; prev = e, e = e.next)
         {
             if (e.hash == hash && e.key == key)
             {
@@ -325,7 +360,7 @@ public class DoubleHashMap
                     tab[index] = e.next;
                 }
                 count--;
-                Object oldValue = e.value;
+                V oldValue = e.value;
                 e.value = null;
                 return oldValue;
             }
@@ -338,10 +373,29 @@ public class DoubleHashMap
      */
     public synchronized void clear()
     {
-        Entry tab[] = table;
-        modCount++;
-        for (int index = tab.length; --index >= 0; )
+        if(count == 0)
+            return;
+
+        Entry<V>[] tab = table;
+        for(int index = tab.length; --index >= 0; )
+        {
+            Entry<V> e = tab[index];
+
+            if(e == null)
+                continue;
+
+            while(e.next != null)
+            {
+                e.value = null;
+                releaseEntry(e);
+
+                Entry<V> n = e.next;
+                e.next = null;
+                e = n;
+            }
+
             tab[index] = null;
+        }
         count = 0;
     }
 
@@ -355,10 +409,10 @@ public class DoubleHashMap
         double result[] = new double[count];
         int i = 0;
 
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         for (int index = tab.length ; index-- > 0 ;)
         {
-            for (Entry e = tab[index] ; e != null ; e = e.next)
+            for (Entry<V> e = tab[index] ; e != null ; e = e.next)
             {
                 result[i++] = e.key;
             }
@@ -390,10 +444,10 @@ public class DoubleHashMap
     private void rehash()
     {
         int oldCapacity = table.length;
-        Entry oldMap[] = table;
+        Entry<V>[] oldMap = table;
 
         int newCapacity = oldCapacity * 2 + 1;
-        Entry newMap[] = new Entry[newCapacity];
+        Entry<V>[] newMap = new Entry[newCapacity];
 
         modCount++;
         threshold = (int)(newCapacity * loadFactor);
@@ -401,9 +455,9 @@ public class DoubleHashMap
 
         for (int i = oldCapacity ; i-- > 0 ;)
         {
-            for (Entry old = oldMap[i] ; old != null ; )
+            for (Entry<V> old = oldMap[i] ; old != null ; )
             {
-                Entry e = old;
+                Entry<V> e = old;
                 old = old.next;
 
                 int index = (e.hash & 0x7FFFFFFF) % newCapacity;
@@ -411,5 +465,34 @@ public class DoubleHashMap
                 newMap[index] = e;
             }
         }
+    }
+
+    /**
+     * Grab a new entry. Check the cache first to see if one is available. If
+     * not, create a new instance.
+     *
+     * @return An instance of the Entry
+     */
+    private Entry<V> getNewEntry()
+    {
+        Entry<V> ret_val;
+
+        int size = entryCache.size();
+        if(size == 0)
+            ret_val = new Entry<V>();
+        else
+            ret_val = (Entry<V>)entryCache.remove(size - 1);
+
+        return ret_val;
+    }
+
+    /**
+     * Release an entry back into the cache.
+     *
+     * @param e The entry to put into the cache
+     */
+    private void releaseEntry(Entry<V> e)
+    {
+        entryCache.add(e);
     }
 }

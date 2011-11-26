@@ -21,7 +21,7 @@ import java.util.ArrayList;
 // None
 
 /**
- * A hash map that uses primitive ints for the key rather than objects.
+ * A hash map that uses primitive longs for the key rather than objects.
  * <p>
  *
  * This implementation is not thread-safe, so caution must be exercised about how
@@ -38,11 +38,11 @@ import java.util.ArrayList;
  * @version $Revision: 1.4 $
  * @see java.util.HashMap
  */
-public class IntHashMap<V>
+public class LongHashMap<V>
 {
     /** Error message when containsValue(null) was called */
     private static final String NO_VALUE_ERR_PROP =
-        "org.j3d.util.IntHashMap.noCompareValueMsg";
+        "org.j3d.util.LongHashMap.noCompareValueMsg";
 
     /** The hash table data. */
     private transient Entry<V>[] table;
@@ -69,7 +69,7 @@ public class IntHashMap<V>
     private static class Entry<V>
     {
         int hash;
-        int key;
+        long key;
         V value;
         Entry<V> next;
 
@@ -88,7 +88,7 @@ public class IntHashMap<V>
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
-        protected Entry(int hash, int key, V value, Entry<V> next)
+        protected Entry(int hash, long key, V value, Entry<V> next)
         {
             this.hash = hash;
             this.key = key;
@@ -104,7 +104,7 @@ public class IntHashMap<V>
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
-        protected void set(int hash, int key, V value, Entry<V> next)
+        protected void set(int hash, long key, V value, Entry<V> next)
         {
             this.hash = hash;
             this.key = key;
@@ -117,7 +117,7 @@ public class IntHashMap<V>
      * Constructs a new, empty hashtable with a default capacity and load
      * factor, which is <tt>20</tt> and <tt>0.75</tt> respectively.
      */
-    public IntHashMap()
+    public LongHashMap()
     {
         this(20, 0.75f);
     }
@@ -130,7 +130,7 @@ public class IntHashMap<V>
      * @throws IllegalArgumentException if the initial capacity is less
      *   than zero.
      */
-    public IntHashMap(int initialCapacity)
+    public LongHashMap(int initialCapacity)
     {
         this(initialCapacity, 0.75f);
     }
@@ -144,7 +144,7 @@ public class IntHashMap<V>
      * @throws IllegalArgumentException  if the initial capacity is less
      *             than zero, or if the load factor is nonpositive.
      */
-    public IntHashMap(int initialCapacity, float loadFactor)
+    public LongHashMap(int initialCapacity, float loadFactor)
     {
         if (initialCapacity < 0)
             throw new IllegalArgumentException("Illegal Capacity: "+
@@ -210,10 +210,10 @@ public class IntHashMap<V>
             throw new NullPointerException(msg);
         }
 
-        Entry[] tab = table;
+        Entry<V>[] tab = table;
         for(int i = tab.length ; i-- > 0 ; )
         {
-            for(Entry e = tab[i] ; e != null ; e = e.next)
+            for(Entry<V> e = tab[i] ; e != null ; e = e.next)
             {
                 if(e.value.equals(value))
                     return true;
@@ -246,11 +246,11 @@ public class IntHashMap<V>
      *    method; <code>false</code> otherwise.
      * @see #contains(Object)
      */
-    public boolean containsKey(int key)
+    public boolean containsKey(long key)
     {
         Entry tab[] = table;
-        int hash = key;
-        int index = (hash & 0x7FFFFFFF) % tab.length;
+        long hash = key;
+        int index = (int)((hash & 0x7FFFFFFF) % tab.length);
         for(Entry e = tab[index] ; e != null ; e = e.next)
         {
             if(e.hash == hash)
@@ -268,11 +268,11 @@ public class IntHashMap<V>
      *          this hashtable.
      * @see     #put(int, Object)
      */
-    public V get(int key)
+    public V get(long key)
     {
         Entry<V>[] tab = table;
-        int hash = key;
-        int index = (hash & 0x7FFFFFFF) % tab.length;
+        int hash = (int)(key ^ (key >>> 32));
+        int index = (int)((hash & 0x7FFFFFFF) % tab.length);
         for(Entry<V> e = tab[index] ; e != null ; e = e.next)
         {
             if(e.hash == hash)
@@ -287,9 +287,9 @@ public class IntHashMap<V>
      *
      * @return The array with the keys
      */
-    public int[] keySet()
+    public long[] keySet()
     {
-        int[] result = new int[count];
+        long[] result = new long[count];
         int i = 0;
 
         Entry<V>[] tab = table;
@@ -314,12 +314,12 @@ public class IntHashMap<V>
      * @param values An array to copy the values to
      * @return The array with the keys
      */
-    public int[] keySet(int[] values)
+    public long[] keySet(long[] values)
     {
-        int[] result;
+        long[] result;
 
         if((values == null) || values.length < count)
-            result = new int[count];
+            result = new long[count];
         else
             result = values;
 
@@ -343,9 +343,9 @@ public class IntHashMap<V>
      *
      * @return The sorted array with the keys
      */
-    public int[] keySetSorted()
+    public long[] keySetSorted()
     {
-        int[] result = keySet();
+        long[] result = keySet();
         Arrays.sort(result);
 
         return result;
@@ -361,9 +361,9 @@ public class IntHashMap<V>
      * @param values An array to copy the values to
      * @return The sorted array with the keys
      */
-    public int[] keySetSorted(int[] values)
+    public long[] keySetSorted(long[] values)
     {
-        int[] result = keySet(values);
+        long[] result = keySet(values);
         Arrays.sort(result);
 
         return result;
@@ -389,9 +389,9 @@ public class IntHashMap<V>
 
         for (int i = oldCapacity ; i-- > 0 ;)
         {
-            for (Entry old = oldMap[i] ; old != null ; )
+            for (Entry<V> old = oldMap[i] ; old != null ; )
             {
-                Entry e = old;
+                Entry<V> e = old;
                 old = old.next;
 
                 int index = (e.hash & 0x7FFFFFFF) % newCapacity;
@@ -416,12 +416,12 @@ public class IntHashMap<V>
      * @throws  NullPointerException  if the key is <code>null</code>.
      * @see     #get(int)
      */
-    public V put(int key, V value)
+    public V put(long key, V value)
     {
         // Makes sure the key is not already in the hashtable.
         Entry<V>[] tab = table;
-        int hash = key;
-        int index = (hash & 0x7FFFFFFF) % tab.length;
+        int hash = (int)(key ^ (key >>> 32));
+        int index = (int)((hash & 0x7FFFFFFF) % tab.length);
         for(Entry<V> e = tab[index] ; e != null ; e = e.next)
         {
             if (e.hash == hash)
@@ -438,7 +438,7 @@ public class IntHashMap<V>
             rehash();
 
             tab = table;
-            index = (hash & 0x7FFFFFFF) % tab.length;
+            index = (int)((hash & 0x7FFFFFFF) % tab.length);
         }
 
         // Creates the new entry.

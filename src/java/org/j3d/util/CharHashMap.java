@@ -21,12 +21,12 @@ package org.j3d.util;
  * @version $Revision: 1.1 $
  * @see java.util.HashMap
  */
-public class CharHashMap
+public class CharHashMap<V>
 {
     /**
      * The hash table data.
      */
-    private transient Entry table[];
+    private transient Entry<V>[] table;
 
     /**
      * The total number of entries in the hash table.
@@ -52,11 +52,11 @@ public class CharHashMap
      * Innerclass that acts as a datastructure to create a new entry in the
      * table.
      */
-    private static class Entry
+    private static class Entry<T>
     {
         int hash;
         char key;
-        Object value;
+        T value;
         Entry next;
 
         /**
@@ -67,7 +67,7 @@ public class CharHashMap
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
-        protected Entry(int hash, char key, Object value, Entry next)
+        protected Entry(int hash, char key, T value, Entry next)
         {
             this.hash = hash;
             this.key = key;
@@ -162,7 +162,7 @@ public class CharHashMap
      * @see        #containsValue(Object)
      * @see        java.util.Map
      */
-    public boolean contains(Object value)
+    public boolean contains(V value)
     {
         if (value == null)
         {
@@ -193,7 +193,7 @@ public class CharHashMap
      * @see    java.util.Map
      * @since JDK1.2
      */
-    public boolean containsValue(Object value)
+    public boolean containsValue(V value)
     {
         return contains(value);
     }
@@ -231,12 +231,12 @@ public class CharHashMap
      *          this hashtable.
      * @see     #put(char, Object)
      */
-    public Object get(char key)
+    public V get(char key)
     {
-        Entry tab[] = table;
+        Entry<V> tab[] = table;
         int hash = key;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next)
+        for (Entry<V> e = tab[index] ; e != null ; e = e.next)
         {
             if (e.hash == hash)
             {
@@ -256,10 +256,10 @@ public class CharHashMap
     protected void rehash()
     {
         int oldCapacity = table.length;
-        Entry oldMap[] = table;
+        Entry<V>[] oldMap = table;
 
         int newCapacity = oldCapacity * 2 + 1;
-        Entry newMap[] = new Entry[newCapacity];
+        Entry<V>[] newMap = new Entry[newCapacity];
 
         threshold = (int)(newCapacity * loadFactor);
         table = newMap;
@@ -293,7 +293,7 @@ public class CharHashMap
      * @throws  NullPointerException  if the key is <code>null</code>.
      * @see     #get(char)
      */
-    public Object put(char key, Object value)
+    public Object put(char key, V value)
     {
         // Makes sure the key is not already in the hashtable.
         Entry tab[] = table;

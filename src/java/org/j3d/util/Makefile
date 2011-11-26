@@ -21,6 +21,7 @@ SOURCE = \
     HashSet.java \
     CharHashMap.java \
     IntHashMap.java \
+    LongHashMap.java \
     FloatHashMap.java \
     DoubleHashMap.java \
     ObjectArray.java \
