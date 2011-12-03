@@ -1,6 +1,6 @@
 #*********************************************************************
 #
-#  (C) 2001 J3d.org
+#  (C) 2001 - 2011 J3d.org
 #    http://code.j3d.org/
 # 
 # Package makefile for the org.j3d.util directory
@@ -36,7 +36,8 @@ SOURCE = \
     ImageUtils.java \
     UserSupplementData.java \
     DynamicClassLoader.java \
-    MatrixUtils.java
+    MatrixUtils.java \
+    DeathTimer.java 
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.
