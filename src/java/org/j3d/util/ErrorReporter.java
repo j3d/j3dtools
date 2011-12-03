@@ -26,7 +26,17 @@ package org.j3d.util;
  * @author Justin Couch
  * @version $Revision: 1.1 $
  */
-public interface ErrorReporter {
+public interface ErrorReporter
+{
+    /**
+     * Notification of an partial message from the system.  When being written
+     * out to a display device, a partial message does not have a line
+     * termination character appended to it, allowing for further text to
+     * appended on that same line.
+     *
+     * @param msg The text of the message to be displayed
+     */
+    public void partialReport(String msg);
 
     /**
      * Notification of an informational message from the system. For example,

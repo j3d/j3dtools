@@ -54,12 +54,31 @@ public class DefaultErrorReporter implements ErrorReporter
         return instance;
     }
 
+    //-----------------------------------------------------------------------
+    // Methods defined by ErrorReporter
+    //-----------------------------------------------------------------------
+    
+    /**
+     * Notification of an partial message from the system.  When being written
+     * out to a display device, a partial message does not have a line
+     * termination character appended to it, allowing for further text to
+     * appended on that same line.
+     *
+     * @param msg The text of the message to be displayed
+     */
+    @Override
+    public void partialReport(String msg)
+    {
+        System.out.print(msg);        
+    }
+
     /**
      * Notification of an informational message from the system. For example,
      * it may issue a message when a URL cannot be resolved.
      *
      * @param msg The general message string to report. May be null
      */
+    @Override
     public void messageReport(String msg)
     {
         System.out.print("Message: ");
@@ -74,6 +93,7 @@ public class DefaultErrorReporter implements ErrorReporter
      * @param msg The text of the message to be displayed
      * @param e The exception that caused this warning. May be null
      */
+    @Override
     public void warningReport(String msg, Exception e)
     {
         System.out.print("Warning: ");
@@ -94,6 +114,7 @@ public class DefaultErrorReporter implements ErrorReporter
      * @param msg The text of the message to be displayed
      * @param e The exception that caused this warning. May be null
      */
+    @Override
     public void errorReport(String msg, Exception e)
     {
         System.out.print("Error: ");
@@ -109,13 +130,14 @@ public class DefaultErrorReporter implements ErrorReporter
 
     /**
      * Notification of a non-recoverable error that halts the entire system.
-     * After you recieve this report the runtime system will no longer
+     * After you receive this report the runtime system will no longer
      * function - for example a non-recoverable parsing error. The best way
      * out is to reload the file or restart the application internals.
      *
      * @param msg The text of the message to be displayed
      * @param e The exception that caused this warning. May be null
      */
+    @Override
     public void fatalErrorReport(String msg, Exception e)
     {
         System.out.print("Fatal Error: ");
