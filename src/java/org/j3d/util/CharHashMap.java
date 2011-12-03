@@ -57,7 +57,7 @@ public class CharHashMap<V>
         int hash;
         char key;
         T value;
-        Entry next;
+        Entry<T> next;
 
         /**
          * Create a new entry with the given values.
@@ -67,7 +67,7 @@ public class CharHashMap<V>
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
-        protected Entry(int hash, char key, T value, Entry next)
+        protected Entry(int hash, char key, T value, Entry<T> next)
         {
             this.hash = hash;
             this.key = key;
@@ -266,9 +266,9 @@ public class CharHashMap<V>
 
         for (int i = oldCapacity ; i-- > 0 ;)
         {
-            for (Entry old = oldMap[i] ; old != null ; )
+            for (Entry<V> old = oldMap[i] ; old != null ; )
             {
-                Entry e = old;
+                Entry<V> e = old;
                 old = old.next;
 
                 int index = (e.hash & 0x7FFFFFFF) % newCapacity;
@@ -296,10 +296,10 @@ public class CharHashMap<V>
     public Object put(char key, V value)
     {
         // Makes sure the key is not already in the hashtable.
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         int hash = key;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next)
+        for (Entry<V> e = tab[index] ; e != null ; e = e.next)
         {
             if (e.hash == hash)
             {
@@ -319,7 +319,7 @@ public class CharHashMap<V>
         }
 
         // Creates the new entry.
-        Entry e = new Entry(hash, key, value, tab[index]);
+        Entry<V> e = new Entry<V>(hash, key, value, tab[index]);
         tab[index] = e;
         count++;
         return null;
@@ -335,10 +335,10 @@ public class CharHashMap<V>
      */
     public Object remove(char key)
     {
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         int hash = key;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index], prev = null ; e != null ; prev = e, e = e.next)
+        for (Entry<V> e = tab[index], prev = null ; e != null ; prev = e, e = e.next)
         {
             if (e.hash == hash)
             {

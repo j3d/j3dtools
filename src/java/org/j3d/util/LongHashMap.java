@@ -295,7 +295,7 @@ public class LongHashMap<V>
         Entry<V>[] tab = table;
         for (int index = tab.length ; index-- > 0 ;)
         {
-            for (Entry e = tab[index] ; e != null ; e = e.next)
+            for (Entry<V> e = tab[index] ; e != null ; e = e.next)
             {
                 result[i++] = e.key;
             }
@@ -328,7 +328,7 @@ public class LongHashMap<V>
         Entry<V>[] tab = table;
         for (int index = tab.length ; index-- > 0 ;)
         {
-            for (Entry e = tab[index] ; e != null ; e = e.next)
+            for (Entry<V> e = tab[index] ; e != null ; e = e.next)
             {
                 result[i++] = e.key;
             }

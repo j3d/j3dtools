@@ -210,10 +210,10 @@ public class IntHashMap<V>
             throw new NullPointerException(msg);
         }
 
-        Entry[] tab = table;
+        Entry<V>[] tab = table;
         for(int i = tab.length ; i-- > 0 ; )
         {
-            for(Entry e = tab[i] ; e != null ; e = e.next)
+            for(Entry<V> e = tab[i] ; e != null ; e = e.next)
             {
                 if(e.value.equals(value))
                     return true;
@@ -389,9 +389,9 @@ public class IntHashMap<V>
 
         for (int i = oldCapacity ; i-- > 0 ;)
         {
-            for (Entry old = oldMap[i] ; old != null ; )
+            for (Entry<V> old = oldMap[i] ; old != null ; )
             {
-                Entry e = old;
+                Entry<V> e = old;
                 old = old.next;
 
                 int index = (e.hash & 0x7FFFFFFF) % newCapacity;
