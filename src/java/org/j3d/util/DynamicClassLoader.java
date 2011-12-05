@@ -179,6 +179,7 @@ public class DynamicClassLoader
     /**
      * Load the class that has the given class as a super class. This will
      * check for both the interface and derived class being of the given type.
+     * @param <T>
      *
      * @param name The fully qualified name of the class to be loaded
      * @param base The fully qualified name of the base class to be checked
@@ -190,7 +191,7 @@ public class DynamicClassLoader
      * @throws InvalidClassException The class could not be instantiated either
      *     due to internal errors or no default constructor
      */
-    public static Object loadCheckedClass(String name, Class base)
+    public static <T> T loadCheckedClass(String name, Class<T> base)
         throws ClassNotFoundException, InvalidClassException
     {
         if((name == null) || (name.trim().length() == 0))
@@ -209,12 +210,12 @@ public class DynamicClassLoader
             throw new NullPointerException(msg);
         }
 
-        Object ret_val = null;
+        T ret_val = null;
         boolean check_ok = true;
 
         try
         {
-            Class new_class = Class.forName(name);
+            Class<T> new_class = (Class<T>)Class.forName(name);
 
             if(check_ok = backgroundChecks(new_class, base))
                 ret_val = new_class.newInstance();
