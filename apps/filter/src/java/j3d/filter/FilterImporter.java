@@ -49,7 +49,7 @@ public interface FilterImporter
      * @param db The database instance to write to
      * @return A success or failure error code from FilterExitCodes
      */
-    public int initialize(GeometryImportDatabase db);
+    public FilterExitCode initialize(GeometryImportDatabase db);
     
     /**
      * Process the contents of the input stream now.
@@ -59,6 +59,6 @@ public interface FilterImporter
      * @throws IOException some sort of low level IO error happened during parsing
      *    that is outside the normal exit codes.
      */
-    public int parse(InputStream is)
+    public FilterExitCode parse(InputStream is)
         throws IOException;
 }

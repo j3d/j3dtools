@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-package j3d.filter.db;
+package j3d.filter.db.inmem;
 
 // External imports
 // None
@@ -30,13 +30,15 @@ import j3d.filter.SceneGraphObjectType;
  */
 class InMemoryNodeFactory
 {
-
+    /** The internal object ID counter */
+    private int nodeCounter;
+    
     /** 
      * Construct a default instance of this class.
      */
     InMemoryNodeFactory()
     {
-        
+        nodeCounter = 1;
     }
     
     //------------------------------------------------------------------------
@@ -56,31 +58,54 @@ class InMemoryNodeFactory
         
         switch(type)
         {
-            case APPEARANCE:
+            case VISUAL_PROPERTIES:
+                ret_val = new MemVisualProperties(nodeCounter++);
+                break;
+
+            case PHYSICAL_PROPERTIES:
+                ret_val = new MemPhysicalProperties(nodeCounter++);
                 break;
                 
             case EXTERNAL_REFERENCE:
                 break;
                 
-            case GEOMETRY:
+            case LINES:
+                ret_val = new MemLineGeometry(nodeCounter++);
+                break;
+                
+            case TRIANGLES:
+                ret_val = new MemTriangleGeometry(nodeCounter++);
+                break;
+                
+            case QUADS:
+                ret_val = new MemQuadGeometry(nodeCounter++);
                 break;
                 
             case GROUP:
+                ret_val = new MemGroup(nodeCounter++);
                 break;
                 
-            case MATERIAL:
+            case BASE_COLOR:
                 break;
                 
             case METADATA:
                 break;
                 
-            case SHAPE:
+            case MESH:
+                ret_val = new MemMesh(nodeCounter++);
                 break;
                 
             case TEXTURE:
                 break;
                 
+            case VOLUME:
+                break;
+                
+            case LIGHT:
+                break;
+                
             case TRANSFORM:
+                ret_val = new MemTransformGroup(nodeCounter++);
                 break;
         }
         

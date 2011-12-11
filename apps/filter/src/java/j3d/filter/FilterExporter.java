@@ -14,6 +14,7 @@ package j3d.filter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.j3d.util.ErrorReporter;
 
@@ -46,10 +47,20 @@ public interface FilterExporter
     public void setErrorReporter(ErrorReporter eh);
 
     /**
-     * Initialise the importer with the given database and configuration options
+     * Initialise the exporter with the given database and configuration options
      * 
-     * @param db The database instance to write to
-     * @return A success or failure error code from FilterExitCodes
+     * @param db The database instance to read from
+     * @return A success or failure error code from FilterExitCode
      */
-    public int initialize(GeometryImportDatabase db);
+    public FilterExitCode initialize(GeometryExportDatabase db);
+    
+    /**
+     * Begin the export now to a generic output stream. It this needs to
+     * support unicode, then the implementation must wrap the stream with an
+     * appropriate reader.
+     * 
+     * @param os The stream to export to
+     * @return A success or failure error code from FilterExitCode
+     */
+    public FilterExitCode export(OutputStream os);
 }

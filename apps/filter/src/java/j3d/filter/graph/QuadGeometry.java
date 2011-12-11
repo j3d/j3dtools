@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-package j3d.filter;
+package j3d.filter.graph;
 
 // External imports
 // None
@@ -19,16 +19,22 @@ package j3d.filter;
 // None
 
 /**
- * Filter exporter that specifically sends the content to the given 
- * file reference.
+ * Represents a series of points used for quads. 
  * <p/>
- * Long definition
+ * Each set of 4 points is a single, non-connected quad.
  *
  * @author Justin
  * @version $Revision$
  */
-public interface FileFilterExporter
-    extends FilterExporter
+public interface QuadGeometry
+    extends VertexGeometry
 {
-
+    /** 
+     * Get the count of how many total quads are provided. Only full 
+     * quads are represented - effectively this is 
+     * <code>floor(getVertexCount() / 4);</code>
+     * 
+     * @return a number >= 0
+     */
+    public int getQuadCount();
 }

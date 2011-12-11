@@ -3,7 +3,7 @@
 #  (C) 2001 - 2011 J3d.org
 #    http://code.j3d.org/
 # 
-# Package makefile for the org.j3d.filter directory
+# Package makefile for the j3d.filter directory
 #
 # Author: Justin Couch
 # Version: $Revision: 1.17 $
@@ -15,13 +15,18 @@ PACKAGE = j3d.filter
 # The source files to compile. These are declared in order that they must be
 # compiled in
 SOURCE =  \
-  FilterExitCodes.java \
+  FilterExitCode.java \
   FilterProcessingException.java \
   FilterErrorReporter.java \
   SceneGraphObjectType.java \
   SceneGraphObject.java \
   GeometryDatabase.java \
-  GeometryFilter.java 
+  GeometryImportDatabase.java \
+  GeometryExportDatabase.java \
+  GeometryFilter.java \
+  FilterImporter.java \
+  FilterExporter.java \
+  Filter.java 
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

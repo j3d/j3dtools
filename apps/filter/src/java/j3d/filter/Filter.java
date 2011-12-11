@@ -16,10 +16,9 @@ package j3d.filter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.io.File;
-import java.io.InvalidClassException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -50,7 +49,7 @@ public class Filter
     /** The usage error message */
     private static final String USAGE_MESSAGE =
         "CDFFilter - usage:  filter [filters] input output [-loglevel type]\n" +
-        "   [-maxRunTime n] [filter_args] \n" +
+        "   [-maxRunTime n] [-databaseType t] [-exporter t] [-importer t] [filter_args] \n" +
         "\n" +
         "  -loglevel type [ALL|WARNINGS|ERRORS|FATAL|NONE]\n" +
         "                 The minimum level that logs should be written at\n" +
@@ -65,6 +64,14 @@ public class Filter
         "                 be found, an attempt will be made to load as a fully qualified\n" +
         "                 class name from the classpath. If it is not provided, defaults\n" +
         "                 to " + DEFAULT_DB_NAME + "\n" +
+        "  -exporter type\n" +
+        "                 Defines the exporter to use, regardless of the file name extension.\n" +
+        "                 The type may be one of the built-in types, or a fully qualified\n" +
+        "                 class name to load" +
+        "  -importer type\n" +
+        "                 Defines the importer to use, regardless of the file name extension.\n" +
+        "                 The type may be one of the built-in types, or a fully qualified\n" +
+        "                 class name to load\n" +
         "\n";
 
     /** List of known filter class names, mapped from a short name */
@@ -72,6 +79,18 @@ public class Filter
 
     /** List of known database class names, mapped from a short name */
     private static final HashMap<String, String> KNOWN_DATABASES;
+
+    /** List of known importer class names, mapped from a short name */
+    private static final HashMap<String, String> KNOWN_IMPORTERS_FROM_MIME;
+
+    /** List of known importer class names, mapped from a short name */
+    private static final HashMap<String, String> KNOWN_EXPORTERS_FROM_MIME;
+
+    /** List of known importer class names, mapped from a short name */
+    private static final HashMap<String, String> KNOWN_IMPORTERS_FROM_TYPE;
+
+    /** List of known importer class names, mapped from a short name */
+    private static final HashMap<String, String> KNOWN_EXPORTERS_FROM_TYPE;
 
     /** Set of valid filters to run */
     private List<GeometryFilter> filters;
@@ -89,6 +108,12 @@ public class Filter
     /** DB implementation, chosen by the command line interface */
     private GeometryImportDatabase geometryDatabase;
     
+    /** The exporter that has been determined for this run */
+    private FilterExporter exporter;
+    
+    /** The importer that has been determined for this run */
+    private FilterImporter importer;
+    
     /**
      * Initialisation of global constants
      */
@@ -98,38 +123,143 @@ public class Filter
         
         KNOWN_DATABASES = new HashMap<String, String>();
         KNOWN_DATABASES.put("mem", "j3d.filter.db.InMemoryDatabase");
+        
+        KNOWN_IMPORTERS_FROM_MIME = new HashMap<String, String>();
+        KNOWN_IMPORTERS_FROM_MIME.put("model/x-ldraw", "j3d.filter.importer.LDrawImporter");
+        
+        KNOWN_EXPORTERS_FROM_MIME = new HashMap<String, String>();
+        KNOWN_EXPORTERS_FROM_MIME.put("model/x-collada", "j3d.filter.exporter.Collada14Exporter");
+        KNOWN_EXPORTERS_FROM_MIME.put("application/xml", "j3d.filter.exporter.Collada14Exporter");
+        
+        KNOWN_IMPORTERS_FROM_TYPE = new HashMap<String, String>();
+        KNOWN_IMPORTERS_FROM_TYPE.put("LDraw", "j3d.filter.importer.LDrawImporter");
+
+        KNOWN_EXPORTERS_FROM_TYPE = new HashMap<String, String>();
+        KNOWN_EXPORTERS_FROM_TYPE.put("COLLADA_14", "j3d.filter.exporter.Collada14Exporter");
     }
     
+    /**
+     * Construct a default filter implementation. If called directly from code,
+     * you will need to make sure you call one of the appropriate filter() 
+     * methods
+     */
     public Filter() 
     {
         I18nManager intl_mgr = I18nManager.getManager();
-        intl_mgr.setApplication(APP_NAME, "config.i18n.xj3dResources");
+        intl_mgr.setApplication(APP_NAME, "config.i18n.j3dResources");
 
         ParserNameMap content_map = new ParserNameMap();
         content_map.registerType("stl", "model/x-stl");
         content_map.registerType("obj", "model/x-obj");
         content_map.registerType("dae", "application/xml");
         content_map.registerType("ac", "application/x-ac3d");
+        content_map.registerType("ldr", "model/x-ldraw");
 
         //URL.setFileNameMap(content_map);
         URLConnection.setFileNameMap(content_map);
         
         filters = new ArrayList<GeometryFilter>();
     }
+
+    //------------------------------------------------------------------------
+    // Local Methods
+    //------------------------------------------------------------------------
     
     /**
      * Go to the named URL location. No checking is done other than to make
      * sure it is a valid URL.
      *
      * @param filters The identifier of the filter type.
-     * @param url The URL to open.
-     * @param out The output filename.
+     * @param inUrl The URL to open.
+     * @param outFileName The output filename.
      * @param fargs The argument array to pass into the filter class.
      * @return The status code indicating success or failure.
      */
-    public int filter(String[] filters, URL url, String out, String[] fargs) 
+    public FilterExitCode filter(String[] filters, URL inUrl, String outFileName, String[] fargs) 
     {
-        return load(filters, url, null, out, null, null, fargs);
+        InputStream in_stream = null;
+        OutputStream out_stream = null;
+        String in_encoding = null;
+        String out_encoding = null;
+        
+        try
+        {
+            URLConnection conn = inUrl.openConnection();            
+            in_encoding = conn.getContentType();
+            in_stream = conn.getInputStream();
+        }
+        catch(IOException ioe)
+        {
+            return FilterExitCode.FILE_NOT_FOUND;
+        }
+        
+        File f = new File(outFileName);
+        if(f.exists())
+        {
+            if(!f.canWrite())
+                return FilterExitCode.CANNOT_WRITE_OUTPUT_FILE;            
+        }
+        else
+        {
+            if(!f.mkdirs())
+                return FilterExitCode.CANNOT_WRITE_OUTPUT_FILE;
+        }
+
+        try
+        {
+            // try to guess the output encoding from the file name map
+            out_encoding = guessContentType(outFileName);
+            out_stream = new FileOutputStream(f);
+        }
+        catch(IOException ioe)
+        {
+            return FilterExitCode.FILE_NOT_FOUND;
+        }
+
+        return load(filters, in_stream, out_stream, in_encoding, out_encoding, fargs);
+    }
+
+    /**
+     * Load the named file. The file is checked to make sure that it exists
+     * before calling this method.
+     *
+     * @param filters The identifier of the filter type.
+     * @param inFile The file to load.
+     * @param outFileName The output filename.
+     * @param fargs The argument array to pass into the filter class.
+     * @return The status code indicating success or failure.
+     */
+    public FilterExitCode filter(String[] filters, File inFile, String outFileName, String[] fargs)
+    {
+        InputStream in_stream = null;
+        OutputStream out_stream = null;
+        String in_encoding = null;
+        String out_encoding = null;
+        
+        File f = new File(outFileName);
+        if(f.exists())
+        {
+            if(!f.canWrite())
+                return FilterExitCode.CANNOT_WRITE_OUTPUT_FILE;            
+        }
+        else
+        {
+            if(!f.mkdirs())
+                return FilterExitCode.CANNOT_WRITE_OUTPUT_FILE;
+        }
+
+        try
+        {
+            // try to guess the output encoding from the file name map
+            out_encoding = guessContentType(outFileName);
+            out_stream = new FileOutputStream(f);
+        }
+        catch(IOException ioe)
+        {
+            return FilterExitCode.FILE_NOT_FOUND;
+        }
+
+        return load(filters, in_stream, out_stream, in_encoding, out_encoding, fargs);
     }
 
     /**
@@ -138,29 +268,43 @@ public class Filter
      *
      * @param filters The identifier of the filter type.
      * @param file The file to load.
-     * @param out The output filename.
+     * @param outStream The output stream
+     * @param outEncoding The encoding to write
      * @param fargs The argument array to pass into the filter class.
      * @return The status code indicating success or failure.
      */
-    public int filter(String[] filters, File file, String out, String[] fargs)
+    public FilterExitCode filter(String[] filters, 
+                                 File file, 
+                                 OutputStream outStream, 
+                                 String outEncoding, 
+                                 String[] fargs) 
     {
-        return load(filters, null, file, out, null, null, fargs);
-    }
+        InputStream in_stream = null;
+        String in_encoding = null;
+        
+        if(file.exists())
+        {
+            if(!file.canWrite())
+                return FilterExitCode.FILE_NOT_FOUND;            
+        }
+        else
+        {
+            if(!file.mkdirs())
+                return FilterExitCode.FILE_NOT_FOUND;
+        }
 
-    /**
-     * Load the named file. The file is checked to make sure that it exists
-     * before calling this method.
-     *
-     * @param filters The identifier of the filter type.
-     * @param file The file to load.
-     * @param out The output stream
-     * @param enc The encoding to write
-     * @param fargs The argument array to pass into the filter class.
-     * @return The status code indicating success or failure.
-     */
-    public int filter(String[] filters, File file, OutputStream out, String enc, String[] fargs) 
-    {
-        return load(filters, null, file, null, out, enc, fargs);
+        try
+        {
+            // try to guess the output encoding from the file name map
+            in_encoding = guessContentType(file);
+            in_stream = new FileInputStream(file);
+        }
+        catch(IOException ioe)
+        {
+            return FilterExitCode.FILE_NOT_FOUND;
+        }
+
+        return load(filters, in_stream, outStream, in_encoding, outEncoding, fargs);
     }
 
     /**
@@ -169,11 +313,11 @@ public class Filter
      *
      * @param args The list of arguments for this application.
      * @param exit Should we use system exit
-     * @param ostream If present output to this stream instead of a file
-     * @param enc If ostream is used this specifies the encoding otherwise its ignored.
+     * @param ostream Send the output to this stream
+     * @param enc Specifies the encoding to use for the output stream
      * @return The exit code
      */
-    public int executeFilters(String[] args, boolean exit, OutputStream ostream, String enc)
+    public FilterExitCode executeFilters(String[] args, boolean exit)
     {
         String filename = null;
         String outfile = null;
@@ -188,9 +332,9 @@ public class Filter
             printUsage();
 
             if (exit)
-                System.exit(FilterExitCodes.INVALID_ARGUMENTS);
+                System.exit(FilterExitCode.INVALID_ARGUMENTS.getCodeValue());
             else
-                return FilterExitCodes.INVALID_ARGUMENTS;
+                return FilterExitCode.INVALID_ARGUMENTS;
         }
         else
         {
@@ -224,7 +368,6 @@ public class Filter
                                  filter_args,
                                  0,
                                  num_filter_args);
-
             }
             else
             {
@@ -239,7 +382,7 @@ public class Filter
             }
         }
 
-        int status;
+        FilterExitCode status;
         File fil = new File(filename);
 
         //
@@ -252,14 +395,14 @@ public class Filter
                 if(fil.length() == 0) 
                 {
                     System.out.println("Empty File: " + filename);
-                    status = FilterExitCodes.INVALID_INPUT_FILE;
+                    status = FilterExitCode.INVALID_INPUT_FILE;
                 } 
                 else
                 {
                     if(outfile != null)
                         status = filter(filters, fil, outfile, filter_args);
                     else
-                        status = filter(filters, fil, ostream, enc, filter_args);
+                        status = FilterExitCode.FILE_NOT_FOUND;
                 }
             } 
             else 
@@ -272,7 +415,7 @@ public class Filter
                 catch(MalformedURLException mfe) 
                 {
                     System.out.println("Malformed URL: " + filename);
-                    status = FilterExitCodes.FILE_NOT_FOUND;
+                    status = FilterExitCode.FILE_NOT_FOUND;
                 }
             }
         } 
@@ -280,24 +423,24 @@ public class Filter
         {
             System.out.println("EXTMSG: " + ife.getMessage());
 
-            return FilterExitCodes.INVALID_INPUT_FILE;
+            return FilterExitCode.INVALID_INPUT_FILE;
         }
         catch (Exception e) 
         {
             System.out.println("Unhandled exception.");
             e.printStackTrace();
-            status = FilterExitCodes.ABNORMAL_CRASH;
+            status = FilterExitCode.ABNORMAL_CRASH;
         }
         catch (OutOfMemoryError oom) 
         {
             System.out.println("Out of memory error.");
-            status = FilterExitCodes.OUT_OF_MEMORY;
+            status = FilterExitCode.OUT_OF_MEMORY;
         }
         catch (Error e) 
         {
             System.out.println("Unhandled error.");
             e.printStackTrace();
-            status = FilterExitCodes.EXCEPTIONAL_ERROR;
+            status = FilterExitCode.EXCEPTIONAL_ERROR;
             // Check for thread death to avoid doing the cleanup
             if (e instanceof ThreadDeath)
                 throw e;
@@ -314,7 +457,7 @@ public class Filter
         }
 
         if (exit)
-            System.exit(status);
+            System.exit(status.getCodeValue());
 
         return status;
     }
@@ -322,25 +465,59 @@ public class Filter
     /**
      * Run the actual code now to do the processing. Assumes that prior to
      * calling this method all if the setup has been done.
-     * @param filter The identifier of the filter type.
-     * @param url The URL to open, or null if the input is specified by the file argument.
-     * @param inFile The file to load, or null if the input is specified by the url argument.
-     * @param out The output filename.
-     * @param filter_args The argument array to pass into the filter class.
+     * @param filterNames The identifiers of the filters to use
+     * @param inStream The stream to read the data from
+     * @param outStream The stream to write the converted content to
+     * @param inEncoding The MIME type of the incoming stream
+     * @param outEncoding The MIME type of the outgoing stream
+     * @param filterArgs The argument array to pass into the filter class.
      * @return The status code indicating success or failure.
      */
-    private int load(String[] filterNames,
-                     URL url,
-                     File inFile,
-                     String out,
-                     OutputStream outStream,
-                     String outEncoding,
-                     String[] filterArgs) 
+    private FilterExitCode load(String[] filterNames,
+                                InputStream inStream,
+                                OutputStream outStream,
+                                String outEncoding,
+                                String inEncoding,
+                                String[] filterArgs) 
     {
         setupLogging(filterArgs);
-        setupDatabase(filterArgs);
+
+        FilterExitCode status = setupDatabase(filterArgs);
         
-        return FilterExitCodes.SUCCESS;        
+        if(status != FilterExitCode.SUCCESS)
+            return status;
+        
+        if((status = setupImporter(filterArgs, inEncoding)) != FilterExitCode.SUCCESS)
+            return status;
+        
+        if((status = setupExporter(filterArgs, outEncoding)) != FilterExitCode.SUCCESS)
+            return status;
+        
+        if((status = setupFilters(filterNames, filterArgs)) != FilterExitCode.SUCCESS)
+            return status;
+        
+        // Now everything is initialised, run the processing
+        
+        try
+        {
+            if((status = importer.parse(inStream)) != FilterExitCode.SUCCESS)
+                return status;
+            
+            for(GeometryFilter f: filters)
+            {
+                if((status = f.process()) != FilterExitCode.SUCCESS)
+                    return status;        
+            }
+            
+            status = exporter.export(outStream);
+        }
+        catch(IOException ioe)
+        {
+ioe.printStackTrace();            
+System.out.println("IO Exception " + ioe);            
+        }
+        
+        return status;        
     }
     
     /**
@@ -404,7 +581,7 @@ public class Filter
      *  
      * @param args The command line arguments to extract the db info from
      */
-    private void setupDatabase(String[] args)
+    private FilterExitCode setupDatabase(String[] args)
     {
         String db_name = DEFAULT_DB_NAME;
         
@@ -428,23 +605,194 @@ public class Filter
         try
         {
             geometryDatabase = 
-                            DynamicClassLoader.loadCheckedClass(db_name, 
-                                                                GeometryImportDatabase.class);
+                DynamicClassLoader.loadCheckedClass(db_name, GeometryImportDatabase.class);
         }
         catch(ClassNotFoundException csfe)
         {
-            
+            return FilterExitCode.INVALID_DATABASE_SPECIFIED;
         }
         catch(InvalidClassException ice)
         {
-            
+            return FilterExitCode.DATABASE_STARTUP_ERROR;
         }
+        
+        return FilterExitCode.SUCCESS;
     }
     
-    //------------------------------------------------------------------------
-    // Local Methods
-    //------------------------------------------------------------------------
+    /**
+     * Convenience method to set up the importer that will be used by
+     * this instance of the filter.
+     *  
+     * @param args The command line arguments to extract the db info from
+     * @param encoding Default encoding if we can't work it out from the args
+     */
+    private FilterExitCode setupImporter(String[] args, String encoding)
+    {
+        String importer_name = null;
+        
+        for(int i = 0; i < args.length; i++)
+        {
+            String currentArg = args[i];
 
+            if(currentArg.equals("-importer"))
+            {
+                String type = args[++i];
+                
+                importer_name = KNOWN_IMPORTERS_FROM_TYPE.get(type);
+                
+                if(importer_name == null)
+                    importer_name = type;
+                
+                break;
+            }
+        }
+        
+        if(importer_name == null)
+        {
+            // Try to determine it from the encoding type
+        }
+
+        try
+        {
+            importer = 
+                DynamicClassLoader.loadCheckedClass(importer_name, FilterImporter.class);
+        }
+        catch(ClassNotFoundException csfe)
+        {
+            return FilterExitCode.INVALID_IMPORTER_SPECIFIED;
+        }
+        catch(InvalidClassException ice)
+        {
+            return FilterExitCode.IMPORTER_STARTUP_ERROR;
+        }
+        
+        return FilterExitCode.SUCCESS;
+    }
+
+    /**
+     * Convenience method to set up the importer that will be used by
+     * this instance of the filter.
+     *  
+     * @param args The command line arguments to extract the db info from
+     * @param encoding Default encoding if we can't work it out from the args
+     */
+    private FilterExitCode setupExporter(String[] args, String encoding)
+    {
+        String exporter_name = null;
+        
+        for(int i = 0; i < args.length; i++)
+        {
+            String currentArg = args[i];
+
+            if(currentArg.equals("-importer"))
+            {
+                String type = args[++i];
+                
+                exporter_name = KNOWN_EXPORTERS_FROM_TYPE.get(type);
+                
+                if(exporter_name == null)
+                    exporter_name = type;
+                
+                break;
+            }
+        }
+        
+        if(exporter_name == null)
+        {
+            // Try to determine it from the content type
+        }
+
+        try
+        {
+            exporter = 
+                DynamicClassLoader.loadCheckedClass(exporter_name, FilterExporter.class);
+        }
+        catch(ClassNotFoundException csfe)
+        {
+            return FilterExitCode.INVALID_EXPORTER_SPECIFIED;
+        }
+        catch(InvalidClassException ice)
+        {
+            return FilterExitCode.EXPORTER_STARTUP_ERROR;
+        }
+        
+        return FilterExitCode.SUCCESS;
+    }
+
+    /**
+     * Convenience method to set up the all of the filters that will be used by
+     * this instance of the filter.
+     *  
+     * @param filterNames The names of each filter to apply, in order
+     * @param args The command line arguments to extract the db info from
+     * @return SUCCESS if they all loaded, otherwise the error code for the 
+     *     first one that failed.
+     */
+    private FilterExitCode setupFilters(String[] filterNames, String[] args)
+    {
+        for(int i = 0; i < filterNames.length; i++)
+        {
+            String filter_name = filterNames[i];
+
+            String filter_class_name = KNOWN_FILTERS.get(filter_name);
+                
+            if(filter_class_name == null)
+            {
+                filter_class_name = filter_name;
+            }                
+
+            try
+            {
+                GeometryFilter filter = 
+                    DynamicClassLoader.loadCheckedClass(filter_class_name, GeometryFilter.class);
+                
+                FilterExitCode status = filter.initialise(args, geometryDatabase);
+                
+                if(status != FilterExitCode.SUCCESS)
+                    return status;
+                
+                filters.add(filter);
+            }
+            catch(ClassNotFoundException csfe)
+            {
+                return FilterExitCode.INVALID_IMPORTER_SPECIFIED;
+            }
+            catch(InvalidClassException ice)
+            {
+                return FilterExitCode.IMPORTER_STARTUP_ERROR;
+            }
+        }
+                
+        return FilterExitCode.SUCCESS;
+    }
+
+    /** 
+     * From the given file name string, guess the content type.
+     * 
+     * @param name The file name string to parse
+     * @return The guessed content type or null if it can't be
+     */
+    private String guessContentType(String name)
+    {
+        File f = new File(name);
+        URI uri = f.toURI();
+        
+        return URLConnection.guessContentTypeFromName(uri.toString());
+    }
+    
+    /** 
+     * From the given file object, guess the content type.
+     * 
+     * @param file The file to parse
+     * @return The guessed content type or null if it can't be
+     */
+    private String guessContentType(File file)
+    {
+        URI uri = file.toURI();
+        
+        return URLConnection.guessContentTypeFromName(uri.toString());
+    }
+    
     /**
      * @param args
      */

@@ -13,18 +13,20 @@
 package j3d.filter.graph;
 
 // External imports
+// None
+
+// Local Imports
 import j3d.filter.SceneGraphObject;
 import j3d.filter.SceneGraphObjectType;
 
-// Local Imports
-// None
 
 /**
- * Class summary comment
+ * Common base type that can be used for any scenegraph object. 
  * <p/>
- * Long definition
+ * Provides the
+ * raw necessities for a scene graph object class representation.
  *
- * @author Justin
+ * @author Justin Couch
  * @version $Revision$
  */
 public abstract class AbstractSceneGraphObject implements SceneGraphObject

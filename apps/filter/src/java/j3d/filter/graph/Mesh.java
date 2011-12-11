@@ -14,7 +14,7 @@ package j3d.filter.graph;
 
 
 // External imports
-import j3d.filter.SceneGraphObject;
+// None
 
 // Local Imports
 // None
@@ -31,9 +31,56 @@ import j3d.filter.SceneGraphObject;
  * @version $Revision$
  */
 public interface Mesh
-    extends SceneGraphObject
+    extends Leaf
 {
-    public void addGeometry(Geometry geom);
+    /**
+     * Add a new geometry element to this mesh. Duplicates and nulls are ignored.
+     * 
+     * @param geom The geometry instance to add
+     */
+    public void addGeometry(VertexGeometry geom);
     
-    public Geometry[] getGeometry();
+    /**
+     * Get the geometry that has been added to this mesh, in declaration order.
+     * If no geometry has been added this will return null.
+     * 
+     * @return An array of geometry objects, or null if none
+     */
+    public VertexGeometry[] getGeometry();
+    
+    /**
+     * Set the visual properties of this mesh. These are used for rendering 
+     * purposes only. Setting this will replace the existing value. Setting
+     * a value of null will clear the currently set value.
+     * 
+     * @param props The new properties to set
+     */
+    public void setVisualProperties(VisualProperties props);
+
+    /**
+     * Get the currently set visual properties. If none have been set, this
+     * will return null.
+     * 
+     * @return The properties that have been currently set
+     */
+    public VisualProperties getVisualProperties();
+    
+    /**
+     * Set the physical properties of this mesh. These are used for manufacturing 
+     * purposes but may also be used to influence the rendering. Setting this 
+     * will replace the existing value. Setting a value of null will clear the
+     * currently set value.
+     * 
+     * @param props The new properties to set
+     */
+    public void setPhysicalProperties(PhysicalProperties props);
+
+    /**
+     * Get the currently set visual properties. If none have been set, this
+     * will return null.
+     * 
+     * @return The properties that have been currently set
+     */
+    public PhysicalProperties getPhysicalProperties();
+    
 }

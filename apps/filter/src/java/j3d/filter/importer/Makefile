@@ -3,18 +3,18 @@
 #  (C) 2001 - 2011 J3d.org
 #    http://code.j3d.org/
 # 
-# Package makefile for the j3d.filter.db directory
+# Package makefile for the org.j3d.filter.importer directory
 #
 # Author: Justin Couch
 # Version: $Revision: 1.17 $
 #
 #*********************************************************************
 
-PACKAGE = j3d.filter.db
+PACKAGE = j3d.filter.graph.importer
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-SOURCE = 
+SOURCE = LDrawImporter.java
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

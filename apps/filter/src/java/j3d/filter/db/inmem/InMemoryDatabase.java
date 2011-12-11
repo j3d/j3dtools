@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-package j3d.filter.db;
+package j3d.filter.db.inmem;
 
 // External imports
 import java.util.*;
@@ -19,6 +19,7 @@ import java.util.*;
 import j3d.filter.GeometryDatabase;
 import j3d.filter.SceneGraphObject;
 import j3d.filter.SceneGraphObjectType;
+
 import org.j3d.util.IntHashMap;
 
 

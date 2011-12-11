@@ -32,58 +32,101 @@ package j3d.filter;
  * @author Eric Fickenscher
  * @version $Revision: 1.0 $
  */
-public class FilterExitCodes
+public enum FilterExitCode
 {
 
     /** Exit code used when no exceptions or errors have occurred */
-    public static final int SUCCESS = 0;
+    SUCCESS(0),
 
     /** Input file not found.  Used when we can't read input file. */
-    public static final int FILE_NOT_FOUND = 1;
+    FILE_NOT_FOUND(1),
 
     /** Invalid input file format. <br> Example: structural problem with
      * the geometry format, meaning the X3D is incorrectly defined, such as
      * geometry without a shape node. <br> Example: field is out of range. */
-    public static final int INVALID_INPUT_FILE = 2;
+    INVALID_INPUT_FILE(2),
 
     /** Unable to write output file.  <br> Example: Output file type
      * unknown, or there is a write permission error or similar problem. */
-    public static final int CANNOT_WRITE_OUTPUT_FILE = 5;
+    CANNOT_WRITE_OUTPUT_FILE(5),
 
     /** Invalid filter arguments provided other than file name.<br>
      * Example: arguments are out-of-bounds, or formatted incorrectly. */
-    public static final int INVALID_ARGUMENTS = 6;
+    INVALID_ARGUMENTS(6),
 
     /** Invalid filter specified.<br>
      * For debugging purposes only on initial deployment. */
-    public static final int INVALID_FILTER_SPECIFIED = 7;
+    INVALID_FILTER_SPECIFIED(7),
 
-    /** The file contained some content that cannot be converted
-     * to useable geometry. <br> Example: X3D Switch nodes or LODs. */
-    public static final int NOT_ALL_GEOMETRY_IS_CONVERTABLE = 10;
+    /** The importer requested cannot be mapped to a running class */
+    INVALID_IMPORTER_SPECIFIED(20),
+
+    /** The importer requested cannot be mapped to a running class */
+    INVALID_EXPORTER_SPECIFIED(21),
+
+    /** The database requested cannot be mapped to a running class */
+    INVALID_DATABASE_SPECIFIED(22),
+
+    /** The importer requested crashed on creation. */
+    IMPORTER_STARTUP_ERROR(23),
+
+    /** The exporter requested crashed on creation. */
+    EXPORTER_STARTUP_ERROR(24),
+
+    /** The database requested crashed on creation. */
+    DATABASE_STARTUP_ERROR(25),
+
+    /** 
+     * The file contained some content that cannot be converted
+     * to useable geometry. <br> Example: X3D Switch nodes or LODs. 
+     */
+    NOT_ALL_GEOMETRY_IS_CONVERTABLE(10),
 
     /** Exit code when a model is an supported file format.  Usually happens
      with mislabled files or combo formats like VRML 1/2 */
-    public static final int UNSUPPORTED_FORMAT = 13;
+    UNSUPPORTED_FORMAT(13),
 
     /** Recovered a useable file from a incorrect file.  Look at the
      * model closely. */
-    public static final int RECOVERED_PARSING = 41;
+    RECOVERED_PARSING(41),
 
     /** Exit code to use when application has timed out, exceeding the
      * runtime specified by a -maxRunTime parameter */
-     public static final int MAX_RUN_TIME_EXCEEDED = 99;
+    MAX_RUN_TIME_EXCEEDED(99),
 
     /** Unhandled exception.  The software crashed abnormally.
      * Probably error is due to a programming issue */
-    public static final int ABNORMAL_CRASH = 101;
+    ABNORMAL_CRASH(101),
 
     /** The software failed due to lack of memory. */
-    public static final int OUT_OF_MEMORY = 102;
+    OUT_OF_MEMORY(102),
 
     /** The software failed due to an exceptional error condition
      * that is outside ordinary failure modes.<br> Example:
      * failure to find native libraries or other configuration error. */
-    public static final int EXCEPTIONAL_ERROR = 103;
+    EXCEPTIONAL_ERROR(103);
 
+    /** The internal error code type for this exit code */
+    private final int exitCode;
+    
+    /**
+     * Construct the enumerated type with the predefined value
+     * 
+     * @param t The value to associate with this type
+     */
+    FilterExitCode(int t)
+    {
+        exitCode = t;
+    }
+    
+    /**
+     * Get the integer exit value that this represents. The value will be what
+     * is sent to System.exit();
+     * 
+     * @return an exit code between 0 and 255
+     */
+    public int getCodeValue()
+    {
+        return exitCode;
+    }
 }

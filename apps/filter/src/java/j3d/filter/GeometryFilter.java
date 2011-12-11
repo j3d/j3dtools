@@ -30,14 +30,22 @@ public interface GeometryFilter
      * Initialise the filter for the given database now. Processing has not yet
      * started for the filter at this time.
      * 
+     * @param args The set of arguments that came from the command line used
+     *     to provide additional configuration
      * @param db The database instance to use as the source for geometry
+     * @return SUCCESS if the filter initialised properly, otherwise the error 
+     *    code for the failure type.
      */
-    public void initialise(GeometryDatabase db);
+    public FilterExitCode initialise(String[] args, GeometryDatabase db);
 
-    public void startStructure(int id, SceneGraphObjectType type);
-
-    public void endStructure(int id, SceneGraphObjectType type);
-
+    /**
+     * Process the contents of the database now.
+     * 
+     * @return Success if the operation completed successfully, otherwise
+     *    the error code and the processing terminates
+     */
+    public FilterExitCode process();
+    
     /**
      * Filter processing has completed, so close down anything that this filter
      * may still have open.
