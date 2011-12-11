@@ -10,7 +10,6 @@
 package org.j3d.loaders.ldraw;
 
 // External imports
-import javax.vecmath.Matrix4d;
 
 // Local parser
 // None
@@ -44,8 +43,6 @@ public class LDrawBFCStatement extends LDrawFilePart
      */
     public LDrawBFCStatement(boolean ccw, boolean cull)
     {
-        super(null);
-
         this.ccw = ccw;
         this.cull = cull;
     }

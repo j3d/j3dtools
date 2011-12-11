@@ -84,7 +84,7 @@ public class FloatHashMap<V>
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
-        protected Entry(int hash, float key, V value, Entry next)
+        protected Entry(int hash, float key, V value, Entry<V> next)
         {
             this.hash = hash;
             this.key = key;
@@ -454,7 +454,7 @@ public class FloatHashMap<V>
         {
             for (Entry<V> old = oldMap[i] ; old != null ; )
             {
-                Entry e = old;
+                Entry<V> e = old;
                 old = old.next;
 
                 int index = (e.hash & 0x7FFFFFFF) % newCapacity;

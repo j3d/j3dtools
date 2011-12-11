@@ -70,7 +70,7 @@ public abstract class ParticleSystem implements ParticleFactory
     protected long timeNow;
 
     /** * List of ParticleFunctions to be applied to each Particle. */
-    private ArrayList particleFunctions;
+    private ArrayList<ParticleFunction> particleFunctions;
 
     /** The cache of currently dead particles */
     private Particle[] deadParticles;
@@ -132,7 +132,7 @@ public abstract class ParticleSystem implements ParticleFactory
         }
 
         systemName = name;
-        particleFunctions = new ArrayList(NUM_INIT_FUNCTIONS);
+        particleFunctions = new ArrayList<ParticleFunction>(NUM_INIT_FUNCTIONS);
         particleList = new ParticleList();
         deadParticles = new Particle[maxParticleCount];
 

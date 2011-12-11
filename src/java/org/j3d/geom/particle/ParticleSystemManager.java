@@ -30,10 +30,10 @@ import org.j3d.util.ErrorReporter;
 public class ParticleSystemManager
 {
     /** Listing of the currently registered and active particle systems */
-    private ArrayList particleSystems = new ArrayList();
+    private ArrayList<ParticleSystem> particleSystems;
 
     /** Listing of the recently added systems */
-    private ArrayList newSystems = new ArrayList();
+    private ArrayList<ParticleSystem> newSystems;
 
     /** Local reporter to put errors in */
     protected ErrorReporter errorReporter;
@@ -43,8 +43,8 @@ public class ParticleSystemManager
      */
     public ParticleSystemManager()
     {
-        particleSystems = new ArrayList();
-        newSystems = new ArrayList();
+        particleSystems = new ArrayList<ParticleSystem>();
+        newSystems = new ArrayList<ParticleSystem>();
         errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 
@@ -67,7 +67,7 @@ public class ParticleSystemManager
         int size = particleSystems.size();
         for(int n = 0; n < size; n++)
         {
-            ParticleSystem system = (ParticleSystem)particleSystems.get(n);
+            ParticleSystem system = particleSystems.get(n);
             system.setErrorReporter(reporter);
         }
     }
@@ -83,7 +83,7 @@ public class ParticleSystemManager
 
         for(int n = newSystems.size() - 1; n >= 0; n--)
         {
-            system = (ParticleSystem)newSystems.get(n);
+            system = newSystems.get(n);
             system.initialize(time);
         }
 
@@ -91,7 +91,7 @@ public class ParticleSystemManager
 
         for(int n = particleSystems.size() - 1; n >= 0; n--)
         {
-            system = (ParticleSystem)particleSystems.get(n);
+            system = particleSystems.get(n);
 
             if((system != null) && !system.update(time))
             {

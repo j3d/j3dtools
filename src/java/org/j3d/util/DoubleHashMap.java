@@ -84,7 +84,7 @@ public class DoubleHashMap<V>
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
-        protected Entry(int hash, double key, V value, Entry next)
+        protected Entry(int hash, double key, V value, Entry<V> next)
         {
             this.hash = hash;
             this.key = key;

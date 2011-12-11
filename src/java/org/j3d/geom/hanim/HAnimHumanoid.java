@@ -157,7 +157,7 @@ public abstract class HAnimHumanoid extends HAnimObject
      * Collection of all the other children than the root that need to be
      * updated.
      */
-    private ArrayList updatedChildren;
+    private ArrayList<HAnimObject> updatedChildren;
 
     /**
      * Flag indicating that the skeleton (rootJoint) has had one or more
@@ -188,7 +188,7 @@ public abstract class HAnimHumanoid extends HAnimObject
         localMatrix = new Matrix4f();
         localMatrix.setIdentity();
 
-        updatedChildren = new ArrayList();
+        updatedChildren = new ArrayList<HAnimObject>();
 
         hasChildUpdates = false;
         matrixChanged = false;

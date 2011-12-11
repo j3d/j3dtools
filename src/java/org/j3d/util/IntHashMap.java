@@ -248,10 +248,10 @@ public class IntHashMap<V>
      */
     public boolean containsKey(int key)
     {
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         int hash = key;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for(Entry e = tab[index] ; e != null ; e = e.next)
+        for(Entry<V> e = tab[index] ; e != null ; e = e.next)
         {
             if(e.hash == hash)
                 return true;
@@ -295,7 +295,7 @@ public class IntHashMap<V>
         Entry<V>[] tab = table;
         for (int index = tab.length ; index-- > 0 ;)
         {
-            for (Entry e = tab[index] ; e != null ; e = e.next)
+            for (Entry<V> e = tab[index] ; e != null ; e = e.next)
             {
                 result[i++] = e.key;
             }
@@ -328,7 +328,7 @@ public class IntHashMap<V>
         Entry<V>[] tab = table;
         for (int index = tab.length ; index-- > 0 ;)
         {
-            for (Entry e = tab[index] ; e != null ; e = e.next)
+            for (Entry<V> e = tab[index] ; e != null ; e = e.next)
             {
                 result[i++] = e.key;
             }

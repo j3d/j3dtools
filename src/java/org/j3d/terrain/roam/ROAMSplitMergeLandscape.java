@@ -89,7 +89,7 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
     private final float accuracy;
 
     /** The collection of all patches in this landscape */
-    private ArrayList patches = new ArrayList();
+    private ArrayList<ROAMPatch> patches = new ArrayList<ROAMPatch>();
 
     /** Queue manager for the pathces needing splits or merges each frame */
     private TreeQueueManager queueManager = new TreeQueueManager();
@@ -117,10 +117,10 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
      * patch is still part of the scene graph and can't be shared between
      * multiples of them.
      */
-    private LinkedList freePatchList;
+    private LinkedList<ROAMPatch> freePatchList;
 
     /** Working var for the patches just removed/or added */
-    private ArrayList tempPatchList;
+    private ArrayList<ROAMPatch> tempPatchList;
 
     /** The grid that holds the current patches for the viewable grid. */
     private PatchGrid patchGrid;
@@ -211,8 +211,8 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
                 maxViewBound = new Point3d();
                 reqdBounds = new Rectangle();
                 oldTileBounds = new Rectangle();
-                freePatchList = new LinkedList();
-                tempPatchList = new ArrayList();
+                freePatchList = new LinkedList<ROAMPatch>();
+                tempPatchList = new ArrayList<ROAMPatch>();
 
                 createTiledPatches(position, direction);
                 break;
@@ -787,7 +787,7 @@ System.out.println("Free-form terrain not implemented yet");
                     }
                     else
                     {
-                        p = (ROAMPatch)freePatchList.remove(0);
+                        p = freePatchList.remove(0);
                         updatePatch(p, east, north);
                     }
 
@@ -837,7 +837,7 @@ System.out.println("Free-form terrain not implemented yet");
                     }
                     else
                     {
-                        p = (ROAMPatch)freePatchList.remove(0);
+                        p = freePatchList.remove(0);
                         updatePatch(p, east, north);
                     }
 
@@ -859,7 +859,7 @@ System.out.println("Free-form terrain not implemented yet");
 
         for(i = 0; i < size; i++)
         {
-            p = (ROAMPatch)tempPatchList.get(i);
+            p = tempPatchList.get(i);
             p.updateEdges(position, queueManager);
         }
 

@@ -38,11 +38,11 @@ import java.util.Iterator;
  * @author Rob Nielsen
  * @version $Revision: 1.6 $
  */
-public class HashSet
+public class HashSet<T>
 {
 
     /** The hash table data.*/
-    private Entry[] table;
+    private Entry<T>[] table;
 
     /** The total number of entries in the hash table. */
     private int count;
@@ -57,17 +57,17 @@ public class HashSet
     private float loadFactor;
 
     /** Cache of the entry instances to prevent excessive object creation */
-    private ArrayList entryCache;
+    private ArrayList<Entry<T>> entryCache;
 
     /**
      * Innerclass that acts as a datastructure to create a new entry in the
      * table.
      */
-    private static class Entry
+    private static class Entry<T>
     {
         int hash;
-        Object value;
-        Entry next;
+        T value;
+        Entry<T> next;
 
         /**
          * Create a new default entry with nothing set.
@@ -83,7 +83,7 @@ public class HashSet
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
-        protected Entry(int hash, Object value, Entry next)
+        protected Entry(int hash, T value, Entry<T> next)
         {
             this.hash = hash;
             this.value = value;
@@ -97,7 +97,7 @@ public class HashSet
          * @param value The value for this key
          * @param next A reference to the next entry in the table
          */
-        protected void set(int hash, Object value, Entry next)
+        protected void set(int hash, T value, Entry<T> next)
         {
             this.hash = hash;
             this.value = value;
@@ -137,7 +137,7 @@ public class HashSet
         this.loadFactor = loadFactor;
         table = new Entry[initialCapacity];
         threshold = (int)(initialCapacity * loadFactor);
-        entryCache = new ArrayList(initialCapacity);
+        entryCache = new ArrayList<Entry<T>>(initialCapacity);
     }
 
     /**
@@ -181,16 +181,16 @@ public class HashSet
      * @param o element whose presence in this set is to be tested.
      * @return true if this set contains the specified element.
      */
-    public boolean contains(Object o)
+    public boolean contains(T o)
     {
         if(o == null)
             return false;
         else
         {
             int hash=o.hashCode();
-            Entry[] tab = table;
+            Entry<T>[] tab = table;
             int index = (hash & 0x7FFFFFFF) % tab.length;
-            for(Entry e = tab[index]; e != null; e = e.next)
+            for(Entry<T> e = tab[index]; e != null; e = e.next)
             {
                 if(e.hash == hash && (o == e.value || o.equals(e.value)))
                     return true;
@@ -205,17 +205,17 @@ public class HashSet
      *
      * @param set The set to compare against
      */
-    public void retainAll(HashSet set)
+    public void retainAll(HashSet<T> set)
     {
         if(set == null)
             return;
 
         for(int i = 0; i < table.length; i++)
         {
-            Entry e = table[i];
+            Entry<T> e = table[i];
             while (e != null)
             {
-                Entry next = e.next;
+                Entry<T> next = e.next;
                 if(!set.contains(e.value))
                     remove(e.value);
                 e = next;
@@ -230,7 +230,7 @@ public class HashSet
      * @param set The set to compare against
      * @param diff The set to place the non-equal values into
      */
-    public void retainAll(HashSet set, HashSet diff)
+    public void retainAll(HashSet<T> set, HashSet<T> diff)
     {
         if(set == null)
             return;
@@ -241,11 +241,11 @@ public class HashSet
         {
             for(int i = 0; i < table.length; i++)
             {
-                Entry e = table[i];
+                Entry<T> e = table[i];
 
                 while (e != null)
                 {
-                    Entry next = e.next;
+                    Entry<T> next = e.next;
 
                     if(!set.contains(e.value))
                     {
@@ -266,16 +266,16 @@ public class HashSet
      * @return true if the set did not already contain the specified
      * element.
      */
-    public boolean add(Object o)
+    public boolean add(T o)
     {
         // Makes sure the key is not already in the hashtable.
         if(o == null)
             return false;
 
         int hash = o.hashCode();
-        Entry[] tab = table;
+        Entry<T>[] tab = table;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for(Entry e = tab[index]; e != null; e = e.next)
+        for(Entry<T> e = tab[index]; e != null; e = e.next)
         {
             if(e.hash == hash && (o == e.value || o.equals(e.value)))
                 return false;
@@ -290,7 +290,7 @@ public class HashSet
         }
 
         // Creates the new entry.
-        Entry e = getNewEntry();
+        Entry<T> e = getNewEntry();
         e.set(hash, o, tab[index]);
         tab[index] = e;
         count++;
@@ -304,15 +304,15 @@ public class HashSet
      * @param o object to be removed from this set, if present.
      * @return true if the set contained the specified element.
      */
-    public boolean remove(Object o)
+    public boolean remove(T o)
     {
         if(o == null)
             return false;
 
-        Entry[] tab = table;
+        Entry<T>[] tab = table;
         int hash = o.hashCode();
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index], prev = null ; e != null ; prev = e, e = e.next)
+        for (Entry<T> e = tab[index], prev = null ; e != null ; prev = e, e = e.next)
         {
             if(e.hash == hash && (o==e.value||o.equals(e.value)))
             {
@@ -341,10 +341,10 @@ public class HashSet
         if(count == 0)
             return;
 
-        Entry tab[] = table;
+        Entry<T>[] tab = table;
         for(int index = tab.length; --index >= 0; )
         {
-            Entry e = tab[index];
+            Entry<T> e = tab[index];
             if(e == null)
                 continue;
 
@@ -353,7 +353,7 @@ public class HashSet
                 e.value = null;
                 releaseEntry(e);
 
-                Entry n = e.next;
+                Entry<T> n = e.next;
                 e.next = null;
                 e = n;
             }
@@ -381,10 +381,10 @@ public class HashSet
      *         support the <tt>addAll</tt> method.
      * @throws NullPointerException if the specified collection is null.
      */
-    public boolean addAll(Collection c)
+    public boolean addAll(Collection<T> c)
     {
         boolean modified = false;
-        Iterator e = c.iterator();
+        Iterator<T> e = c.iterator();
 
         while (e.hasNext())
         {
@@ -406,14 +406,14 @@ public class HashSet
      *         support the <tt>addAll</tt> method
      * @throws NullPointerException if the specified collection is null
      */
-    public boolean addAll(HashSet hs)
+    public boolean addAll(HashSet<T> hs)
     {
         boolean modified = false;
 
-        Entry[] table=hs.table;
+        Entry<T>[] table = hs.table;
         for(int i = 0; i < table.length; i++)
         {
-            Entry e = table[i];
+            Entry<T> e = table[i];
             while(e != null)
             {
                 if(add(e.value))
@@ -442,17 +442,17 @@ public class HashSet
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    public boolean removeAll(Collection c)
+    public boolean removeAll(Collection<T> c)
     {
         if(c.size() == 0)
             return false;
 
         boolean modified = false;
-        Iterator e = c.iterator();
+        Iterator<T> e = c.iterator();
 
         while(e.hasNext())
         {
-            Object obj = e.next();
+            T obj = e.next();
             if(remove(obj))
                 modified = true;
         }
@@ -475,13 +475,13 @@ public class HashSet
      *         is not supported by this collection.
      * @throws NullPointerException if the specified collection is null.
      */
-    public boolean removeAll(HashSet hs)
+    public boolean removeAll(HashSet<T> hs)
     {
         boolean modified = false;
-        Entry[] table = hs.table;
+        Entry<T>[] table = hs.table;
         for(int i=0;i<table.length;i++)
         {
-            Entry e = table[i];
+            Entry<T> e = table[i];
             while(e != null)
             {
                 if(remove(e.value))
@@ -514,11 +514,11 @@ public class HashSet
         int cnt = 0;
         for(int i = 0; i < table.length; i++)
         {
-            Entry e=table[i];
-            while (e!=null)
+            Entry<T> e = table[i];
+            while (e != null)
             {
                 ret_val[cnt++]=e.value;
-                e=e.next;
+                e = e.next;
             }
         }
 
@@ -560,24 +560,25 @@ public class HashSet
      *     is not a supertype of the runtime type of every element in this
      *     collection.
      */
-    public Object[] toArray(Object array[])
+    public T[] toArray(T array[])
     {
         int size = count;
 
-        if(array.length < size) {
+        if(array.length < size) 
+        {
             Class cls = array.getClass();
-            array = (Object[])Array.newInstance(cls.getComponentType(),
+            array = (T[])Array.newInstance(cls.getComponentType(),
                                                 size);
         }
 
-        int cnt=0;
+        int cnt = 0;
         for(int i = 0; i < table.length; i++)
         {
-            Entry e=table[i];
-            while (e!=null)
+            Entry<T> e = table[i];
+            while (e != null)
             {
-                array[cnt++]=e.value;
-                e=e.next;
+                array[cnt++] = e.value;
+                e = e.next;
             }
         }
         return array;
@@ -606,7 +607,7 @@ public class HashSet
         if(!(o instanceof HashSet))
             return false;
 
-        HashSet hs = (HashSet)o;
+        HashSet<T> hs = (HashSet<T>)o;
 
         if(hs.size() != size())
             return false;
@@ -615,15 +616,16 @@ public class HashSet
 
         for(int i=0;i<table.length;i++)
         {
-            Entry e=table[i];
-            while (e!=null)
+            Entry<T> e = table[i];
+            while (e != null)
             {
                 if (!hs.contains(e.value))
                 {
-                    ret_val=false;
+                    ret_val = false;
                     break;
                 }
-                e=e.next;
+                
+                e = e.next;
             }
         }
 
@@ -650,7 +652,7 @@ public class HashSet
 
         for(int i=0;i<table.length;i++)
         {
-            Entry e = table[i];
+            Entry<T> e = table[i];
             while(e != null)
             {
                 h += e.value.hashCode();
@@ -679,13 +681,13 @@ public class HashSet
      */
     public String toString()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("[");
-        int cnt=0;
-        for(int i=0;i<table.length;i++)
+        int cnt = 0;
+        for(int i = 0; i < table.length; i++)
         {
-            Entry e=table[i];
-            while (e!=null)
+            Entry<T> e = table[i];
+            while (e != null)
             {
                 buf.append(e.value);
 
@@ -710,19 +712,19 @@ public class HashSet
     private void rehash()
     {
         int oldCapacity = table.length;
-        Entry oldMap[] = table;
+        Entry<T>[] oldMap = table;
 
         int newCapacity = oldCapacity * 2 + 1;
-        Entry newMap[] = new Entry[newCapacity];
+        Entry<T>[] newMap = new Entry[newCapacity];
 
         threshold = (int)(newCapacity * loadFactor);
         table = newMap;
 
         for (int i = oldCapacity ; i-- > 0 ;)
         {
-            for (Entry old = oldMap[i] ; old != null ; )
+            for (Entry<T> old = oldMap[i] ; old != null ; )
             {
-                Entry e = old;
+                Entry<T> e = old;
                 old = old.next;
 
                 int index = (e.hash & 0x7FFFFFFF) % newCapacity;
@@ -738,15 +740,15 @@ public class HashSet
      *
      * @return An instance of the Entry
      */
-    private Entry getNewEntry()
+    private Entry<T> getNewEntry()
     {
-        Entry ret_val;
+        Entry<T> ret_val;
 
         int size = entryCache.size();
         if(size == 0)
-            ret_val = new Entry();
+            ret_val = new Entry<T>();
         else
-            ret_val = (Entry)entryCache.remove(size - 1);
+            ret_val = (Entry<T>)entryCache.remove(size - 1);
 
         return ret_val;
     }
@@ -756,7 +758,7 @@ public class HashSet
      *
      * @param e The entry to put into the cache
      */
-    private void releaseEntry(Entry e)
+    private void releaseEntry(Entry<T> e)
     {
         entryCache.add(e);
     }

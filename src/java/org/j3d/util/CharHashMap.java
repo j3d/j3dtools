@@ -169,10 +169,10 @@ public class CharHashMap<V>
             throw new NullPointerException();
         }
 
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         for (int i = tab.length ; i-- > 0 ;)
         {
-            for (Entry e = tab[i] ; e != null ; e = e.next)
+            for (Entry<V> e = tab[i] ; e != null ; e = e.next)
             {
                 if (e.value.equals(value))
                 {
@@ -209,10 +209,10 @@ public class CharHashMap<V>
      */
     public boolean containsKey(char key)
     {
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         int hash = key;
         int index = (hash & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next)
+        for (Entry<V> e = tab[index] ; e != null ; e = e.next)
         {
             if (e.hash == hash)
             {
@@ -363,7 +363,7 @@ public class CharHashMap<V>
      */
     public synchronized void clear()
     {
-        Entry tab[] = table;
+        Entry<V>[] tab = table;
         for (int index = tab.length; --index >= 0; )
             tab[index] = null;
         count = 0;

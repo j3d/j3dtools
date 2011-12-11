@@ -63,10 +63,10 @@ public class C3DParameterGroup
     private String description;
 
     /** Collection of all parameters added to this group */
-    private ArrayList parameters;
+    private ArrayList<C3DParameter> parameters;
 
     /** Alternate mapping of parameter name strings to parameter object */
-    private HashMap parameterMap;
+    private HashMap<String, C3DParameter> parameterMap;
 
     /**
      * Construct a new group that represents the given name
@@ -83,8 +83,8 @@ public class C3DParameterGroup
         this.id = id;
         this.description = desc;
 
-        parameters = new ArrayList();
-        parameterMap = new HashMap();
+        parameters = new ArrayList<C3DParameter>();
+        parameterMap = new HashMap<String, C3DParameter>();
     }
 
     //----------------------------------------------------------
@@ -98,7 +98,7 @@ public class C3DParameterGroup
      */
     public String toString()
     {
-        StringBuffer buf = new StringBuffer("C3DParameterGroup: ");
+        StringBuilder buf = new StringBuilder("C3DParameterGroup: ");
         buf.append(name);
         buf.append(" ID: ");
         buf.append(id);
@@ -229,10 +229,8 @@ public class C3DParameterGroup
 
         String name = param.getName();
 
-        for(int i = 0; i < parameters.size(); i++)
+        for(C3DParameter p: parameters)
         {
-            C3DParameter p = (C3DParameter)parameters.get(i);
-
             if(name.equals(p.getName()))
                 throw new IllegalArgumentException(HAS_SAME_NAME_MSG);
         }
@@ -261,10 +259,8 @@ public class C3DParameterGroup
 
         String name = param.getName();
 
-        for(int i = 0; i < parameters.size(); i++)
+        for(C3DParameter p: parameters)
         {
-            C3DParameter p = (C3DParameter)parameters.get(i);
-
             if(name.equals(p.getName()))
                 throw new IllegalArgumentException(HAS_SAME_NAME_MSG);
         }
@@ -304,7 +300,7 @@ public class C3DParameterGroup
      */
     public C3DParameter getParameter(String name)
     {
-        return (C3DParameter)parameterMap.get(name);
+        return parameterMap.get(name);
     }
 
     /**

@@ -41,13 +41,13 @@ import org.j3d.util.CharHashMap;
 public class DEMParser implements HeightMapSource
 {
     /** Map of the process code character to the value */
-    private static CharHashMap processCodes;
+    private static CharHashMap<Integer> processCodes;
 
     /** The map of ground reference planes codes */
-    private static HashMap groundRefCodes;
+    private static HashMap<String, Integer> groundRefCodes;
 
     /** Map of the unit of measure code character to the value */
-    private static CharHashMap unitCodes;
+    private static CharHashMap<Integer> unitCodes;
 
     /** Buffer while reading bytes from the stream */
     private byte[] buffer;
@@ -88,35 +88,34 @@ public class DEMParser implements HeightMapSource
     private boolean hasTypeC;
 
     /** Working buffer to stave needing ot reallocate all the time */
-    private StringBuffer stringBuffer;
+    private StringBuilder stringBuffer;
 
     /**
      * Static constructor to build the lookup maps.
      */
     static
     {
-        processCodes = new CharHashMap(7);
-        processCodes.put('1', new Integer(DEMTypeARecord.PROCESS_RESAMPLE));
-        processCodes.put('2', new Integer(DEMTypeARecord.PROCESS_GRIDEM));
-        processCodes.put('3', new Integer(DEMTypeARecord.PROCESS_CTOG));
-        processCodes.put('4', new Integer(DEMTypeARecord.PROCESS_DCASS));
-        processCodes.put('5',
-                         new Integer(DEMTypeARecord.PROCESS_DLG_LINETRACE));
-        processCodes.put('6', new Integer(DEMTypeARecord.PROCESS_DLG_CPS3));
-        processCodes.put('7', new Integer(DEMTypeARecord.PROCESS_ELECTRONIC));
+        processCodes = new CharHashMap<Integer>(7);
+        processCodes.put('1', DEMTypeARecord.PROCESS_RESAMPLE);
+        processCodes.put('2', DEMTypeARecord.PROCESS_GRIDEM);
+        processCodes.put('3', DEMTypeARecord.PROCESS_CTOG);
+        processCodes.put('4', DEMTypeARecord.PROCESS_DCASS);
+        processCodes.put('5', DEMTypeARecord.PROCESS_DLG_LINETRACE);
+        processCodes.put('6', DEMTypeARecord.PROCESS_DLG_CPS3);
+        processCodes.put('7', DEMTypeARecord.PROCESS_ELECTRONIC);
 
-        groundRefCodes = new HashMap(20);
-        groundRefCodes.put("0", new Integer(DEMTypeARecord.G_REF_GEOGRAPHIC));
-        groundRefCodes.put("1", new Integer(DEMTypeARecord.G_REF_UTM));
-        groundRefCodes.put("2", new Integer(DEMTypeARecord.G_REF_STATEPLANE));
+        groundRefCodes = new HashMap<String, Integer>(20);
+        groundRefCodes.put("0", DEMTypeARecord.G_REF_GEOGRAPHIC);
+        groundRefCodes.put("1", DEMTypeARecord.G_REF_UTM);
+        groundRefCodes.put("2", DEMTypeARecord.G_REF_STATEPLANE);
 
         // Need to finish the rest of this off
 
-        unitCodes = new CharHashMap(4);
-        unitCodes.put('1', new Integer(DEMTypeARecord.INTERVAL_UNIT_RADIANS));
-        unitCodes.put('2', new Integer(DEMTypeARecord.INTERVAL_UNIT_METERS));
-        unitCodes.put('3', new Integer(DEMTypeARecord.INTERVAL_UNIT_FEET));
-        unitCodes.put('3', new Integer(DEMTypeARecord.INTERVAL_UNIT_ARCSEC));
+        unitCodes = new CharHashMap<Integer>(4);
+        unitCodes.put('1', DEMTypeARecord.INTERVAL_UNIT_RADIANS);
+        unitCodes.put('2', DEMTypeARecord.INTERVAL_UNIT_METERS);
+        unitCodes.put('3', DEMTypeARecord.INTERVAL_UNIT_FEET);
+        unitCodes.put('3', DEMTypeARecord.INTERVAL_UNIT_ARCSEC);
     }
 
     /**
@@ -127,7 +126,7 @@ public class DEMParser implements HeightMapSource
         buffer = new byte[1024];
         gridStepData = new float[2];
         dataReady = false;
-        stringBuffer = new StringBuffer();
+        stringBuffer = new StringBuilder();
     }
 
     /**

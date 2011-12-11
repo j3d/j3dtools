@@ -35,13 +35,13 @@ import java.util.Iterator;
  * @author Rob Nielsen
  * @version $Revision: 1.1 $
  */
-public class CircularList
+public class CircularList<T>
 {
     /** a shared cache of Entry instances */
     private static ObjectArray entryCache = new ObjectArray();
 
     /** The current item that we are pointing to */
-    private Entry current;
+    private Entry<T> current;
 
     /** The total number of entries in the list. */
     private int count;
@@ -50,16 +50,16 @@ public class CircularList
      * Innerclass that acts as a datastructure to create a new entry in the
      * list.
      */
-    private static class Entry
+    private static class Entry<T>
     {
         /** The value stored in the list */
-        Object value;
+        T value;
 
         /** The next item in the list */
-        Entry next;
+        Entry<T> next;
 
         /** The previous item in the list */
-        Entry prev;
+        Entry<T> prev;
     }
 
     /**
@@ -95,7 +95,7 @@ public class CircularList
      *
      * @return The next item in the list.
      */
-    public Object next()
+    public T next()
     {
         if(count == 0)
             return null;
@@ -110,7 +110,7 @@ public class CircularList
      *
      * @return The previous item in the list.
      */
-    public Object previous()
+    public T previous()
     {
         if(count == 0)
             return null;
@@ -125,7 +125,7 @@ public class CircularList
      *
      * @return The current item
      */
-    public Object current()
+    public T current()
     {
         if(count == 0)
             return null;
@@ -139,14 +139,14 @@ public class CircularList
      * @param o element whose presence in this set is to be tested.
      * @return true if this set contains the specified element.
      */
-    public boolean contains(Object o)
+    public boolean contains(T o)
     {
         boolean ret_val = false;
 
         if((o != null) && (count != 0))
         {
 
-            Entry checker = current.next;
+            Entry<T> checker = current.next;
             while((checker != current) && !ret_val)
             {
                 ret_val = (checker == o) || checker.equals(o);
@@ -164,12 +164,12 @@ public class CircularList
      * @param o element to be added to this set
      * @throws NullPointerException The passed object was null
      */
-    public void add(Object o)
+    public void add(T o)
     {
         if(o == null)
             throw new NullPointerException("Attempting to add null object");
 
-        Entry e = newEntry();
+        Entry<T> e = newEntry();
         e.value = o;
 
         if(current == null)
@@ -198,20 +198,20 @@ public class CircularList
      * @param o object to be removed from this set, if present.
      * @return true if the set contained the specified element.
      */
-    public boolean remove(Object o)
+    public boolean remove(T o)
     {
         if((o == null) || (count == 0))
             return false;
 
         // find the object
         boolean ret_val = false;
-        Entry checker = current.next;
+        Entry<T> checker = current.next;
         while((checker != current) && !ret_val)
             ret_val = (checker == o) || checker.equals(o);
 
         if(ret_val)
         {
-            Entry tmp = checker.next;
+            Entry<T> tmp = checker.next;
             checker.prev.next = checker.next;
             tmp.next.prev = checker;
             checker.next = null;
@@ -237,7 +237,7 @@ public class CircularList
         if(count == 0)
             return;
 
-        Entry next = current;
+        Entry<T> next = current;
 
         do
         {
@@ -272,14 +272,14 @@ public class CircularList
      *         support the <tt>addAll</tt> method.
      * @throws NullPointerException if the specified collection is null.
      */
-    public boolean addAll(Collection c)
+    public boolean addAll(Collection<T> c)
     {
         boolean modified = false;
-        Iterator e = c.iterator();
+        Iterator<T> e = c.iterator();
 
         while (e.hasNext())
         {
-            Object obj = e.next();
+            T obj = e.next();
 
             if(!contains(obj))
             {
@@ -309,17 +309,17 @@ public class CircularList
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    public boolean removeAll(Collection c)
+    public boolean removeAll(Collection<T> c)
     {
         if((c.size() == 0) || (count == 0))
             return false;
 
         boolean modified = false;
-        Iterator e = c.iterator();
+        Iterator<T> e = c.iterator();
 
         while(e.hasNext())
         {
-            Object obj = e.next();
+            T obj = e.next();
             if(remove(obj))
                 modified = true;
         }
@@ -345,7 +345,7 @@ public class CircularList
     public Object[] toArray()
     {
         Object[] ret_val = new Object[count];
-        Entry e = current;
+        Entry<T> e = current;
 
         for(int i = 0; i < count; i++)
         {
@@ -391,21 +391,21 @@ public class CircularList
      *     is not a supertype of the runtime type of every element in this
      *     collection.
      */
-    public Object[] toArray(Object[] array)
+    public T[] toArray(T[] array)
     {
         int size = count;
 
-        if(array.length < size) {
+        if(array.length < size)
+        {
             Class cls = array.getClass();
-            array = (Object[])Array.newInstance(cls.getComponentType(),
-                                                size);
+            array = (T[])Array.newInstance(cls.getComponentType(), size);
         }
 
-        Entry e = current;
+        Entry<T> e = current;
 
         for(int i = 0; i < count; i++)
         {
-            array[i] = e;
+            array[i] = e.value;
             e = e.next;
         }
 
@@ -435,20 +435,20 @@ public class CircularList
         if(!(o instanceof CircularList))
             return false;
 
-        CircularList list = (CircularList)o;
+        CircularList<T> list = (CircularList<T>)o;
 
         // check that the list contains the start pointer
-        if((list.count != count) && !list.contains(current))
+        if((list.count != count) && !list.contains(current.value))
             return false;
 
         // So let's go find the start pointer in the other list
-        Entry remote = list.current;
+        Entry<T> remote = list.current;
         while(remote != current)
             remote = remote.next;
 
         boolean ret_val = true;
 
-        Entry local = current;
+        Entry<T> local = current;
 
         for(int i = 0; i < count && ret_val;i++)
             ret_val = (local == remote) && local.equals(remote);
@@ -474,7 +474,7 @@ public class CircularList
     {
         int h = 0;
 
-        Entry e = current;
+        Entry<T> e = current;
         for(int i = 0; i < count; i++)
         {
             h += e.value.hashCode();
@@ -506,7 +506,7 @@ public class CircularList
         StringBuffer buf = new StringBuffer();
         buf.append("[");
 
-        Entry e = current;
+        Entry<T> e = current;
         for(int i = 0; i < count; i++)
         {
             buf.append(e.value);

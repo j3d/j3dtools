@@ -13,7 +13,6 @@ BUILD_ORDER = org.j3d.util \
 	org.j3d.device.input \
 	org.j3d.device.input.jinput \
 	org.j3d.device.input.vfx \
-	org.j3d.device.output.elumens \
 	org.j3d.geom \
 	org.j3d.geom.terrain \
 	org.j3d.geom.hanim \
@@ -67,7 +66,8 @@ JAVADOC_PACKAGES = org.j3d.util \
 	org.j3d.loaders.dem \
 	org.j3d.loaders.c3d \
 	org.j3d.loaders.ac3d \
-	org.j3d.loaders.obj
+	org.j3d.loaders.obj \
+	org.j3d.loaders.ldraw \
 
 # A version number we tack onto the JAR file name for eclipse versioning
 # purposes.

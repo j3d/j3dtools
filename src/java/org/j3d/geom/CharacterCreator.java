@@ -77,7 +77,7 @@ public class CharacterCreator
     private FontRenderContext fontContext;
 
     /** Stored collection of characters we already have */
-    private CharHashMap charDataMap;
+    private CharHashMap<CharacterData> charDataMap;
 
     /** Convenience array used to fetch coordinates from the PathIterator */
     private float[] newCoords;
@@ -108,7 +108,7 @@ public class CharacterCreator
 
         // Set it up using default transform, antialiased and metrics
         fontContext = new FontRenderContext(null, true, true);
-        charDataMap = new CharHashMap();
+        charDataMap = new CharHashMap<CharacterData>();
         newCoords = new float[6];
         charCoords = new float[1024];
         charIndex = new int[512];
@@ -156,7 +156,7 @@ public class CharacterCreator
      */
     public synchronized void createCharacterTriangles(char[] characters,
                                                      int numChars,
-                                                     ArrayList output)
+                                                     ArrayList<CharacterData> output)
     {
         // first find out what we don't have characters for:
         int needed_char_cnt = 0;

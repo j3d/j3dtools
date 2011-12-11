@@ -31,7 +31,7 @@ import org.j3d.util.ErrorReporter;
 public class HumanoidManager
 {
     /** Our collection of humanoids */
-    private ArrayList humanoids;
+    private ArrayList<HAnimHumanoid> humanoids;
 
     /** Local reporter to put errors in */
     private ErrorReporter errorReporter;
@@ -41,7 +41,7 @@ public class HumanoidManager
      */
     public HumanoidManager()
     {
-        humanoids = new ArrayList();
+        humanoids = new ArrayList<HAnimHumanoid>();
         errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 

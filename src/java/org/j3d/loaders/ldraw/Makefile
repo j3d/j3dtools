@@ -30,6 +30,7 @@ SOURCE = \
   LDrawLine.java \
   LDrawTriangle.java \
   LDrawQuad.java \
+  LDrawBFCStatement.java \
   LDrawParseObserver.java \
   LDrawParser.java \
 
