@@ -24,6 +24,7 @@ SOURCE = \
   MemTransformGroup.java \
   MemPhysicalProperties.java \
   MemVisualProperties.java \
+  MemMesh.java \
   InMemoryNodeFactory.java \
   InMemoryDatabase.java
 

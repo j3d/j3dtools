@@ -15,7 +15,7 @@ PACKAGE = j3d.filter.graph
 # The source files to compile. These are declared in order that they must be
 # compiled in
 SOURCE = Vertex.java \
-  SceneGraphObject.java \
+  AbstractSceneGraphObject.java \
   SceneGraphStructureObject.java \
   SceneGraphDecoratorObject.java \
   BoundedObject.java \

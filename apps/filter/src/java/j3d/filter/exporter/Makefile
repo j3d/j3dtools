@@ -10,7 +10,7 @@
 #
 #*********************************************************************
 
-PACKAGE = j3d.filter.graph.exporter
+PACKAGE = j3d.filter.exporter
 
 # The source files to compile. These are declared in order that they must be
 # compiled in

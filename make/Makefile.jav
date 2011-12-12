@@ -1,10 +1,10 @@
 #*********************************************************************
 #
-#                         (C) 2001-06 j3d.org
-#                         http://code.j3d.org/
+#                    (C) 2001-06 j3d.org
+#		       http://code.j3d.org/
 #
 # Lowest level common makefile for both native and Java code
-# 
+#
 # Author: Justin Couch
 # Version: $Revision: 1.20 $
 #
@@ -17,39 +17,54 @@ include $(PROJECT_ROOT)/make/Makefile.inc
 
 JAVA_DEV_ROOT = $(JAVA_DIR)
 
-CLASS_DIR     = classes
-JAVADOC_DIR   = $(DOCS_DIR)/javadoc
-LIB_DIR       = lib
-JAR_DIR	      = jars
-JAR_MAKE_DIR  = $(MAKE_DIR)/jar
-JAVA_SRC_DIR  = src/java
-DESTINATION   = classes
-JAR_TMP_DIR   = .jar_tmp
-MANIFEST_DIR  = $(MAKE_DIR)/manifest
+ifdef APP_ROOT
+  CLASS_DIR  = classes
+  JAVADOC_DIR   = $(DOCS_DIR)/javadoc
+  LIB_DIR	= ../../lib
+  JAR_DIR	= jars
+  JAR_MAKE_DIR  = $(MAKE_DIR)/jar
+  JAVA_SRC_DIR  = src/java
+  DESTINATION   = classes
+  JAR_TMP_DIR   = .jar_tmp
+  MANIFEST_DIR  = $(MAKE_DIR)/manifest
+  APP_JAR_DIR   = $(APP_ROOT)/lib
+else
+  CLASS_DIR  = classes
+  JAVADOC_DIR   = $(DOCS_DIR)/javadoc
+  LIB_DIR	= lib
+  JAR_DIR	  = jars
+  JAR_MAKE_DIR  = $(MAKE_DIR)/jar
+  JAVA_SRC_DIR  = src/java
+  DESTINATION   = classes
+  JAR_TMP_DIR   = .jar_tmp
+  MANIFEST_DIR  = $(MAKE_DIR)/manifest
+  APP_JAR_DIR   = $(APP_ROOT)/lib
+endif
 
 #
 # Built up tool information
 #
 ifdef JAVA_HOME
-  JAVAC    = $(JAVA_HOME)/bin/javac
-  JAR      = $(JAVA_HOME)/bin/jar
+  JAVAC = $(JAVA_HOME)/bin/javac
+  JAR   = $(JAVA_HOME)/bin/jar
   JAVADOC  = $(JAVA_HOME)/bin/javadoc
-  JAVAH    = $(JAVA_HOME)/bin/javah
+  JAVAH = $(JAVA_HOME)/bin/javah
 else
-  JAVAC    = javac
-  JAR      = jar
+  JAVAC = javac
+  JAR   = jar
   JAVADOC  = javadoc
-  JAVAH	   = javah
+  JAVAH = javah
 endif
 
-EMPTY      =
-SPACE      = $(EMPTY) $(EMPTY)
+EMPTY   =
+SPACE   = $(EMPTY) $(EMPTY)
 
 OS_NAME=$(shell uname)
 ifeq (, $(strip $(findstring CYGWIN, $(OS_NAME))))
-  PATH_SEP=':'
+  PATH_SEP:=":"
 else
-  PATH_SEP=';'
+  IS_WIN32=t
+  PATH_SEP:=";"
 endif
 
 ifdef JARS
@@ -67,6 +82,14 @@ ifdef JARS_JAVADOC
   JAVADOC_JARLIST = $(subst $(SPACE),$(PATH_SEP),$(JAVADOC_JARTMP))
 endif
 
+# if we have an app root, also append to the JAR list a variant using the
+# APP_ROOT as base
+ifdef APP_ROOT
+  ifdef JARS_3RDPARTY
+	APP_JARTMP  = $(patsubst %,$(APP_JAR_DIR)/%,$(JARS_3RDPARTY))
+  endif
+endif
+
 CP = $(CLASS_DIR)
 
 ifdef LOCAL_JARLIST
@@ -75,9 +98,9 @@ endif
 
 ifdef OTHER_JARLIST
   ifdef CLASSPATH
-    CP1:="$(CP)$(PATH_SEP)$(OTHER_JARLIST)"
+	CP1:="$(CP)$(PATH_SEP)$(OTHER_JARLIST)"
   else
-    CP1:="$(OTHER_JARLIST)"
+	CP1:="$(OTHER_JARLIST)"
   endif
 endif
 
@@ -89,33 +112,46 @@ endif
 
 JAVADOC_CLASSPATH=$(CLASS_DIR)$(PATH_SEP)$(JAVADOC_JARLIST)
 
+ifdef APP_ROOT
+  ifdef APP_JARLIST
+	CLASSPATH:=$(CLASSPATH)$(PATH_SEP)$(APP_JARLIST)
+  endif
+  CLASSPATH:=$(CLASSPATH)$(PATH_SEP)$(PROJECT_ROOT)/classes
+  JAVADOC_CLASSPATH:=$(JAVADOC_CLASSPATH)$(PATH_SEP)$(PROJECT_ROOT)/classes
+endif
+
 # has the user defined an external classpath to use here? If so, append
 # it to the ordinary classpath.
 ifdef PROJECT_CLASSPATH
-    CLASSPATH := $(CLASSPATH)$(PATH_SEP)"$(PROJECT_CLASSPATH)"
-    JAVADOC_CLASSPATH := $(JAVADOC_CLASSPATH)$(PATH_SEP)"$(PROJECT_CLASSPATH)"
+	CLASSPATH := $(CLASSPATH)$(PATH_SEP)"$(PROJECT_CLASSPATH)"
+	JAVADOC_CLASSPATH := $(JAVADOC_CLASSPATH)$(PATH_SEP)"$(PROJECT_CLASSPATH)"
+
+  ifndef IS_WIN32
+	CLASSPATH := $(subst ",,$(CLASSPATH))
+	JAVADOC_CLASSPATH := $(subst ",,$(JAVADOC_CLASSPATH))
+  endif
 endif
 
 #
 # Build rules.
 #
-PACKAGE_LOC     = $(subst .,/,$(PACKAGE))
-PACKAGE_DIR     = $(DESTINATION)/$(PACKAGE_LOC)
-JAVA_FILES      = $(filter  %.java,$(SOURCE))
+PACKAGE_LOC  = $(subst .,/,$(PACKAGE))
+PACKAGE_DIR  = $(DESTINATION)/$(PACKAGE_LOC)
+JAVA_FILES  = $(filter  %.java,$(SOURCE))
 NONJAVA_FILES   = $(patsubst %.java,,$(SOURCE))
-CLASS_FILES     = $(JAVA_FILES:%.java=$(PACKAGE_DIR)/%.class)
-OTHER_FILES     = $(EXTRA:%=$(PACKAGE_DIR)/%)
+CLASS_FILES  = $(JAVA_FILES:%.java=$(PACKAGE_DIR)/%.class)
+OTHER_FILES  = $(EXTRA:%=$(PACKAGE_DIR)/%)
 
 JNI_CLASS_FILES = $(JNI_SOURCE:%.java=$(PACKAGE_DIR)/%.class)
 JNI_PKG_PREFIX  = $(subst .,_,$(PACKAGE))
-JNI_HEADERS     = $(JNI_SOURCE:%.java=%.h)
+JNI_HEADERS  = $(JNI_SOURCE:%.java=%.h)
 
 JAR_CLASS_FILES = $(patsubst %, %/*.*, $(JAR_CONTENT))
 
 #JAR_EXTRA_FILES = $(EXTRA_FILES:%=$(JAVA_SRC_DIR)/%)
 
 JAR_CONTENT_CMD = -C $(JAR_TMP_DIR) . $(patsubst %, -C $(JAVA_SRC_DIR) %, $(EXTRA_FILES))
-LINK_FILES      = $(patsubst %, -link %,$(LINK_URLS))
+LINK_FILES  = $(patsubst %, -link %,$(LINK_URLS))
 
 # Make a list of all packages involved
 ifdef PACKAGE
@@ -126,8 +162,8 @@ else
   NATIVE_LIST  = $(subst .,/,$(NATIVE_PACKAGES))
 endif
 
-PLIST_CLEAN     = $(patsubst %,$(JAVA_SRC_DIR)/%/.clean,$(PACKAGE_LIST))
-PLIST_BUILD     = $(patsubst %,$(JAVA_SRC_DIR)/%/.build,$(PACKAGE_LIST))
+PLIST_CLEAN  = $(patsubst %,$(JAVA_SRC_DIR)/%/.clean,$(PACKAGE_LIST))
+PLIST_BUILD  = $(patsubst %,$(JAVA_SRC_DIR)/%/.build,$(PACKAGE_LIST))
 JNI_LIST_BUILD = $(patsubst %,$(JAVA_SRC_DIR)/%/.native,$(NATIVE_LIST))
 
 #
@@ -144,19 +180,20 @@ else
 endif
 
 JAVADOC_OPTIONS  = \
-     -d $(JAVADOC_DIR) \
-     -sourcepath $(JAVA_SRC_DIR) \
-     -classpath $(JAVADOC_CLASSPATH) \
-     -author \
-     -use \
-     -version \
-     -quiet \
-     -windowtitle $(WINDOWTITLE) \
-     -doctitle $(DOCTITLE) \
-     -header $(HEADER) \
-     -bottom $(BOTTOM) \
+	 -d $(JAVADOC_DIR) \
+	 -sourcepath $(JAVA_SRC_DIR) \
+	 -classpath $(JAVADOC_CLASSPATH) \
+	 -author \
+	 -use \
+	 -version \
+	 -quiet \
+	 -J-Xmx128m \
+	 -windowtitle $(WINDOWTITLE) \
+	 -doctitle $(DOCTITLE) \
+	 -header $(HEADER) \
+	 -bottom $(BOTTOM) \
 	 $(LINK_FILES)
-	 
+
 ifdef OVERVIEW
   JAVADOC_OPTIONS += -overview $(JAVA_SRC_DIR)/$(OVERVIEW)
 endif
@@ -177,13 +214,13 @@ $(DESTINATION) :
 	$(PRINT) Creating $(DESTINATION)
 	@ $(MAKEDIR) $(DESTINATION)
 
-# Rule 3. Change ".build" tag to "Makefile", thus call the package makefile
+# Rule 2. Change ".build" tag to "Makefile", thus call the package makefile
 # which in turn recalls this makefile with target all (rule 0).
 %.build :
 	$(PRINT) Building directory $(subst .build,' ',$@)
 	@ $(MAKE) -k -f $(subst .build,Makefile,$@) all
 
-# Rule 4. Call rule 3 for every package
+# Rule 3. Call rule 3 for every package
 buildall : $(PLIST_BUILD) $(OTHER_FILES)
 	$(PRINT) Done build.
 
@@ -191,7 +228,7 @@ buildall : $(PLIST_BUILD) $(OTHER_FILES)
 # Specific dependency build rules
 #
 
-# Rule 5. Building a .class file from a .java file
+# Rule 4. Building a .class file from a .java file
 $(PACKAGE_DIR)/%.class : $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/%.java
 	$(PRINT) Compiling $*.java
 	if [ -n "$(IGNORE_CYCLES)" ] ; then \
@@ -200,39 +237,40 @@ $(PACKAGE_DIR)/%.class : $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/%.java
 	  $(JAVAC) $(JAVAC_OPTIONS) -sourcepath $(PACKAGE_LOC) $< ; \
 	fi
 
-# Rule 6. Building a .class file from a .java file. Invokes rule 5.
+# Rule 5. Building a .class file from a .java file. Invokes rule 5.
 %.class : $(JAVA_SRC_DIR)/$(PACKAGE_LOC)/%.java
 	@ $(MAKE) -k $(PACKAGE_DIR)/$@
 
-# Rule 9. Default behaviour within a package: Simply copy the object from src
+# Rule 6. Default behaviour within a package: Simply copy the object from src
 # to classes. Note that the location of this rule is important. It must be after
 # the package specifics.
 $(PACKAGE_DIR)/% : $(SRC_DIR)/$(PACKAGE_LOC)/%
 	$(MAKEDIR)  $(PACKAGE_DIR)
+	$(PRINT) Copying $*
 	$(COPY) $< $@
 	$(CHMOD) u+rw $<
 
-# Rule 3. Change ".build" tag to "Makefile", thus call the package makefile
+# Rule 7. Change ".build" tag to "Makefile", thus call the package makefile
 # which in turn recalls this makefile with target all (rule 10).
 %.native :
 	$(PRINT) Building native $(subst .build,' ',$@)
 	@ $(MAKE) -k -f $(subst .native,Makefile,$@) jni
 
-# Rule 5. Call rule 2 for every package
+# Rule 8. Call rule 2 for every package
 nativeall : $(DESTINATION) $(INCLUDE_DIR) $(LIB_DIR) $(JNI_LIST_BUILD)
 	$(PRINT) Done native headers
 
-# Rule 6. If the destination dir is missing then create it
+# Rule 9. If the destination dir is missing then create it
 $(INCLUDE_DIR) :
 	$(PRINT) Missing include dir. Creating $(INCLUDE_DIR)
 	@ $(MAKEDIR) $(INCLUDE_DIR)
 
-# Rule 7. If the destination dir is missing then create it
+# Rule 10. If the destination dir is missing then create it
 $(LIB_DIR) :
 	$(PRINT) Missing library dir. Creating $(LIB_DIR)
 	@ $(MAKEDIR) $(LIB_DIR)
 
-# Rule 2 Build JNI .h files. Invokes rule 7.
+# Rule 11 Build JNI .h files. Invokes rule 7.
 jni : $(DESTINATION) $(JNI_CLASS_FILES) $(JNI_HEADERS)
 
 # Rule 7. Building a JNI .h stub file from a .class file
@@ -264,10 +302,10 @@ clean : $(PLIST_CLEAN)
 #
 
 # Rule 13. Build a jar file. $* strips the last phony .JAR extension.
-# Copy all the required directories to a temp dir and then build the 
+# Copy all the required directories to a temp dir and then build the
 # JAR from that. The -C option on the jar command recurses all the
-# directories, which we don't want because we want to control the 
-# packaging structure. 
+# directories, which we don't want because we want to control the
+# packaging structure.
 %.JAR :
 	@ $(MAKEDIR) $(JAR_DIR) $(JAR_TMP_DIR)
 	$(PRINT) Deleting the old JAR file
@@ -276,8 +314,8 @@ clean : $(PLIST_CLEAN)
 	@ $(RMDIR) $(JAR_TMP_DIR)/*
 	if [ -n "$(JAR_CLASS_FILES)" ] ; then \
 	  for X in $(JAR_CONTENT) ; do \
-	    $(MAKEDIR) $(JAR_TMP_DIR)/"$$X" ; \
-	    $(COPY) $(CLASS_DIR)/"$$X"/*.* $(JAR_TMP_DIR)/"$$X" ; \
+		$(MAKEDIR) $(JAR_TMP_DIR)/"$$X" ; \
+		$(COPY) $(CLASS_DIR)/"$$X"/*.* $(JAR_TMP_DIR)/"$$X" ; \
 	  done ; \
 	fi
 	if [ -x $(ECLIPSE_DIR)/plugins/$(subst _$(JAR_VERSION).jar,$(EMPTY),$*) ] ; then \
@@ -285,12 +323,12 @@ clean : $(PLIST_CLEAN)
 	fi
 	if [ -n "$(INCLUDE_JARS)" ] ; then \
 	  for X in $(INCLUDE_JARS) ; do \
-	    $(COPY) $(JAR_DIR)/"$$X" $(JAR_TMP_DIR) ; \
+		$(COPY) $(JAR_DIR)/"$$X" $(JAR_TMP_DIR) ; \
 	  done ; \
 	fi
 	if [ -n "$(INCLUDE_LIBS)" ] ; then \
 	  for X in $(INCLUDE_LIBS) ; do \
-	    $(COPY) $(LIB_DIR)/"$$X" $(JAR_TMP_DIR) ; \
+		$(COPY) $(LIB_DIR)/"$$X" $(JAR_TMP_DIR) ; \
 	  done ; \
 	fi
 	$(JAR) $(JAR_OPTIONS) $(JAR_MANIFEST) $(JAR_DIR)/$* $(JAR_CONTENT_CMD)

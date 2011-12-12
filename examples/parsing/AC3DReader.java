@@ -1,3 +1,11 @@
+/*******************************************************************************
+ *               J3D.org Copyright (c) 2000 - 2011
+ *                             Java Source
+ *  
+ *  This source is licensed under the GNU LGPL v2.1
+ *  Please read http://www.gnu.org/copyleft/lgpl.html for more information
+ *  
+ ******************************************************************************/
 
 // External imports
 import java.io.File;

@@ -50,7 +50,7 @@ class FilterErrorReporter
     public static final int PRINT_NONE = 1000000;
 
     /** The set of exceptions to ignore the stack trace for */
-    private HashSet<Class> ignoredExceptionTypes;
+    private HashSet<Class<? extends Exception>> ignoredExceptionTypes;
 
     /**
      * The current log level of the reporter. Higher number means only the more
@@ -76,7 +76,7 @@ class FilterErrorReporter
     {
         logLevel = level;
 
-        ignoredExceptionTypes = new HashSet<Class>();
+        ignoredExceptionTypes = new HashSet<Class<? extends Exception>>();
         ignoredExceptionTypes.add(FileNotFoundException.class);
         ignoredExceptionTypes.add(IOException.class);
         ignoredExceptionTypes.add(UnknownHostException.class);

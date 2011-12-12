@@ -10,6 +10,12 @@
 #
 #*********************************************************************
 
+ifndef APP_ROOT
+  BUILD_ROOT_DIR=$(PROJECT_ROOT)
+else
+  BUILD_ROOT_DIR=$(APP_ROOT)
+endif
+
 SRC_DIR=src
 DOCS_DIR=docs
 MAKE_DIR=make
