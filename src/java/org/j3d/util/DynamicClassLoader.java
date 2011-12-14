@@ -11,6 +11,7 @@ package org.j3d.util;
 
 // External imports
 import java.io.InvalidClassException;
+import java.text.MessageFormat;
 
 // Local imports
 // none
@@ -62,6 +63,26 @@ public class DynamicClassLoader
     private static final String INIT_MSG_PROP =
         "org.j3d.util.DynamicClassLoader.badClassInitMsg";
 
+    /** Message in the exceptions when a base class fails to load correctly */
+    private static final String INIT_BASE_MSG_PROP =
+        "org.j3d.util.DynamicClassLoader.badBaseClassInitMsg";
+
+    /** Message when we can't locate the requested class that needs to be loaded */
+    private static final String MISSING_CLASS_MSG_PROP =
+        "org.j3d.util.DynamicClassLoader.missingClassMsg";
+
+    /** Message when we can't locate the requested base class that needs to be loaded */
+    private static final String MISSING_BASE_CLASS_MSG_PROP =
+        "org.j3d.util.DynamicClassLoader.missingBaseClassMsg";
+
+    /** Message when the classes this depend on have a problem */
+    private static final String DEPENDENT_CLASS_MSG_PROP = 
+        "org.j3d.util.DynamicClassLoader.classDependencyInitMsg";
+
+    /** Message when the classes this base class depends on have a problem */
+    private static final String DEPENDENT_BASE_CLASS_MSG_PROP = 
+        "org.j3d.util.DynamicClassLoader.baseClassDependencyInitMsg";
+
     /**
      * Private constructor to prevent instantiation of this static only class.
      */
@@ -110,15 +131,27 @@ public class DynamicClassLoader
         catch(Exception e)
         {
             I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(INIT_MSG_PROP);
 
-            String msg = intl_mgr.getString(INIT_MSG_PROP);
-            throw new InvalidClassException(msg);
+            Object[] msg_args = { name };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern,
+                                                      intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
+            InvalidClassException ex = new InvalidClassException(msg);
+            ex.initCause(e);
+            throw ex;
         }
         catch(LinkageError le)
         {
             I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(DEPENDENT_CLASS_MSG_PROP);
 
-            String msg = intl_mgr.getString(INIT_MSG_PROP);
+            Object[] msg_args = { name };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern,
+                                                      intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
             throw new InvalidClassException(msg);
         }
 
@@ -165,11 +198,43 @@ public class DynamicClassLoader
             Class base_class = Class.forName(base);
             ret_val = loadCheckedClass(name, base_class);
         }
+        catch(ClassNotFoundException cnfe)
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(MISSING_BASE_CLASS_MSG_PROP);
+
+            Object[] msg_args = { base };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern,
+                                                      intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+            
+            throw new InvalidClassException(msg);
+        }
+        catch(ExceptionInInitializerError eiie)
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+
+            String msg_pattern = intl_mgr.getString(INIT_BASE_MSG_PROP);
+
+            Object[] msg_args = { base };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern,
+                                                      intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
+            InvalidClassException ex = new InvalidClassException(msg);
+            ex.initCause(eiie);
+            throw ex;
+        }
         catch(LinkageError le)
         {
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(INIT_MSG_PROP);
+            String msg_pattern = intl_mgr.getString(DEPENDENT_BASE_CLASS_MSG_PROP);
+
+            Object[] msg_args = { base };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern,
+                                                      intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
             throw new InvalidClassException(msg);
         }
 
@@ -220,19 +285,45 @@ public class DynamicClassLoader
             if(check_ok = backgroundChecks(new_class, base))
                 ret_val = new_class.newInstance();
         }
+        catch(ClassNotFoundException cnfe)
+        {
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(MISSING_CLASS_MSG_PROP);
+
+            Object[] msg_args = { name };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern,
+                                                      intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+            
+            throw new InvalidClassException(msg);
+        }
         catch(Exception e)
         {
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(INIT_MSG_PROP);
-            throw new InvalidClassException(msg);
+            String msg_pattern = intl_mgr.getString(INIT_MSG_PROP);
+
+            Object[] msg_args = { name };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern,
+                                                      intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
+            InvalidClassException ex = new InvalidClassException(msg);
+            ex.initCause(e);
+            throw ex;
         }
 
         if(!check_ok)
         {
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(BACKGROUND_MSG_PROP);
+            String msg_pattern = intl_mgr.getString(BACKGROUND_MSG_PROP);
+
+            Object[] msg_args = { name, base.getName() };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern,
+                                                      intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
             throw new InvalidClassException(msg);
         }
 
