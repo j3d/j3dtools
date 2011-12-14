@@ -12,16 +12,12 @@
 
 package j3d.filter;
 
+// External imports
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.j3d.util.ErrorReporter;
-
-// External imports
-// None
-
 // Local Imports
-// None
+import org.j3d.util.ErrorReporter;
 
 /**
  * Representation of a file importer for the filter chain
@@ -49,10 +45,11 @@ public interface FilterImporter
      * @param db The database instance to write to
      * @return A success or failure error code from FilterExitCodes
      */
-    public FilterExitCode initialize(GeometryImportDatabase db);
+    public FilterExitCode initialize(GeometryDatabase db);
     
     /**
-     * Process the contents of the input stream now.
+     * Process the contents of the input stream now. Treat this as the top-level 
+     * of the document description.
      * 
      * @param is The input stream to use
      * @return A success or failure error code from FilterExitCodes
@@ -60,5 +57,18 @@ public interface FilterImporter
      *    that is outside the normal exit codes.
      */
     public FilterExitCode parse(InputStream is)
-        throws IOException;
+        throws IOException;  
+    
+    /**
+     * Process the contents of the input stream now. Used when loading nested files.
+     * 
+     * @param is The input stream to use
+     * @param rootObjectId The ID of the scene graph object that is the root for
+     *    the new scene chunk to be placed in to
+     * @return A success or failure error code from FilterExitCodes
+     * @throws IOException some sort of low level IO error happened during parsing
+     *    that is outside the normal exit codes.
+     */
+    public FilterExitCode parse(InputStream is, int rootObjectId)
+        throws IOException;    
 }

@@ -28,7 +28,7 @@ import org.j3d.util.ErrorReporter;
 
 import j3d.filter.FilterExitCode;
 import j3d.filter.FilterImporter;
-import j3d.filter.GeometryImportDatabase;
+import j3d.filter.GeometryDatabase;
 import j3d.filter.SceneGraphObjectType;
 
 /**
@@ -48,7 +48,7 @@ public class LDrawImporter
     private ErrorReporter reporter;
     
     /** The database instance that we add geometry to */
-    private GeometryImportDatabase database;
+    private GeometryDatabase database;
     
     /** Current cull state. Starts with the LDraw default of false */
     private boolean currentCull;
@@ -56,6 +56,12 @@ public class LDrawImporter
     /** Current CCW state. Starts with the LDraw default of true */
     private boolean currentCCW;
 
+    /** 
+     * When run in nested mode, this is the ID of the root scene graph
+     * object that we place the root nodes in.
+     */
+    private int rootObjectId;
+    
     /** Mapping from colour ID to the holding mesh ID */
     private Map<Integer, Integer> colourToGeomIDMap;
     
@@ -270,7 +276,7 @@ public class LDrawImporter
     }
 
     @Override
-    public FilterExitCode initialize(GeometryImportDatabase db)
+    public FilterExitCode initialize(GeometryDatabase db)
     {
         database = db;
         
@@ -294,7 +300,30 @@ public class LDrawImporter
         
         return FilterExitCode.SUCCESS;
     }
-
+    
+    /**
+     * Process the contents of the input stream now. Used when loading nested files.
+     * 
+     * @param is The input stream to use
+     * @param rootId The ID of the scene graph object that is the root for
+     *    the new scene chunk to be placed in to
+     * @return A success or failure error code from FilterExitCodes
+     * @throws IOException some sort of low level IO error happened during parsing
+     *    that is outside the normal exit codes.
+     */
+    public FilterExitCode parse(InputStream is, int rootId)
+        throws IOException
+    {
+        rootObjectId = rootId;
+        
+        FilterExitCode ret_val = parse(is);
+        
+        rootObjectId = 0;
+        
+        return ret_val;
+    }
+        
+    
     //------------------------------------------------------------------------
     // Local Methods
     //------------------------------------------------------------------------

@@ -22,7 +22,7 @@ SOURCE =  \
   SceneGraphObject.java \
   GeometryDatabase.java \
   GeometryImportDatabase.java \
-  GeometryExportDatabase.java \
+  GeometryDatabaseManager.java \
   GeometryFilter.java \
   FilterImporter.java \
   FilterExporter.java \

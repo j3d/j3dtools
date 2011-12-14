@@ -112,8 +112,9 @@ public interface GeometryDatabase
      * Each will be tried in turn until one is successfully loaded. Once it
      * has been loaded, no further URLs are processed in this array.
      * 
+     * @param id The ID of the destination object that this should be sent to
      * @param uri The URL, which may or may not be fully qualified. The array
      *    presents the load order
      */
-    public void queueURIToLoad(String[] uri);
+    public void queueURIToLoad(int id, String[] uri);
 }

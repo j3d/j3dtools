@@ -52,7 +52,7 @@ public interface FilterExporter
      * @param db The database instance to read from
      * @return A success or failure error code from FilterExitCode
      */
-    public FilterExitCode initialize(GeometryExportDatabase db);
+    public FilterExitCode initialize(GeometryDatabase db);
     
     /**
      * Begin the export now to a generic output stream. It this needs to

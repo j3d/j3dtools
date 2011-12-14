@@ -27,17 +27,33 @@ package j3d.filter;
  * @author Justin
  * @version $Revision$
  */
-public interface GeometryExportDatabase
-    extends GeometryDatabase
+public interface GeometryDatabaseManager
 {
-
+    /**
+     * Fetch the database interface that will sent to the various filters etc
+     * Multiple calls to this class should return the same instance each time.
+     * 
+     * @return a non-null filter instance
+     */
+    public GeometryDatabase getDatabase();
+    
     /**
      * Notification that the import has started.
+     */
+    public void importBegins();
+    
+    /**
+     * Notification that the import has finished. 
+     */
+    public void importCompleted();
+    
+    /**
+     * Notification that the export has started.
      */
     public void exportBegins();
     
     /**
-     * Notification that the import has finished. 
+     * Notification that the export has finished. 
      */
     public void exportCompleted();
 }

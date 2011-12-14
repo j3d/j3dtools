@@ -12,6 +12,8 @@
 
 package j3d.filter;
 
+import org.j3d.util.ErrorReporter;
+
 // External imports
 // None
 
@@ -26,6 +28,15 @@ package j3d.filter;
  */
 public interface GeometryFilter
 {
+    /**
+     * Set the error handler to the given instance. If the value is null it
+     * will clear the currently set instance and default back to the default
+     * handler provided by this library.
+     *
+     * @param eh The error handler instance to use
+     */
+    public void setErrorReporter(ErrorReporter eh);
+
     /**
      * Initialise the filter for the given database now. Processing has not yet
      * started for the filter at this time.

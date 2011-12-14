@@ -14,7 +14,8 @@ PACKAGE = j3d.filter.filters
 
 # The source files to compile. These are declared in order that they must be
 # compiled in
-SOURCE =
+SOURCE = \
+  IdentityFilter.java
 
 # The list of other files we need to copy from this directory to the classes
 # directory when we are making JAR files.

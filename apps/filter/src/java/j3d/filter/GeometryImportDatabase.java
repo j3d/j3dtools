@@ -30,17 +30,6 @@ package j3d.filter;
 public interface GeometryImportDatabase
     extends GeometryDatabase
 {
-
-    /**
-     * Notification that the import has started.
-     */
-    public void importBegins();
-    
-    /**
-     * Notification that the import has finished. 
-     */
-    public void importCompleted();
-    
     /**
      * Get the next URL list to be processed. If there are no more to process,
      * then return null. 

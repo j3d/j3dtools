@@ -67,7 +67,7 @@ public class Filter
         "  -exporter type\n" +
         "                 Defines the exporter to use, regardless of the file name extension.\n" +
         "                 The type may be one of the built-in types, or a fully qualified\n" +
-        "                 class name to load" +
+        "                 class name to load\n" +
         "  -importer type\n" +
         "                 Defines the importer to use, regardless of the file name extension.\n" +
         "                 The type may be one of the built-in types, or a fully qualified\n" +
@@ -106,7 +106,7 @@ public class Filter
     private ErrorReporter errorReporter;
 
     /** DB implementation, chosen by the command line interface */
-    private GeometryImportDatabase geometryDatabase;
+    private GeometryDatabaseManager geometryDatabase;
     
     /** The exporter that has been determined for this run */
     private FilterExporter exporter;
@@ -118,19 +118,25 @@ public class Filter
      * Initialisation of global constants
      */
     static
-    {
+    {   
         KNOWN_FILTERS = new HashMap<String, String>();
+        KNOWN_FILTERS.put("Identity", "j3d.filter.filters.IdentityFilter");
         
         KNOWN_DATABASES = new HashMap<String, String>();
-        KNOWN_DATABASES.put("mem", "j3d.filter.db.InMemoryDatabase");
+        KNOWN_DATABASES.put("mem", "j3d.filter.db.inmem.InMemoryDatabase");
         
         KNOWN_IMPORTERS_FROM_MIME = new HashMap<String, String>();
-        KNOWN_IMPORTERS_FROM_MIME.put("model/x-ldraw", "j3d.filter.importer.LDrawImporter");
+        KNOWN_IMPORTERS_FROM_MIME.put("application/x-ldraw", "j3d.filter.importer.LDrawImporter");
+        KNOWN_IMPORTERS_FROM_MIME.put("application/x-multi-part-ldraw", 
+                                      "j3d.filter.importer.LDrawImporter");
+        KNOWN_IMPORTERS_FROM_MIME.put("application/x-ldlite", "j3d.filter.importer.LDrawImporter");
         
         KNOWN_EXPORTERS_FROM_MIME = new HashMap<String, String>();
         KNOWN_EXPORTERS_FROM_MIME.put("model/x-collada", "j3d.filter.exporter.Collada14Exporter");
         KNOWN_EXPORTERS_FROM_MIME.put("application/xml", "j3d.filter.exporter.Collada14Exporter");
-        
+        KNOWN_EXPORTERS_FROM_MIME.put("model/vnd.collada+xml", 
+                                      "j3d.filter.exporter.Collada14Exporter");
+
         KNOWN_IMPORTERS_FROM_TYPE = new HashMap<String, String>();
         KNOWN_IMPORTERS_FROM_TYPE.put("LDraw", "j3d.filter.importer.LDrawImporter");
 
@@ -146,14 +152,17 @@ public class Filter
     public Filter() 
     {
         I18nManager intl_mgr = I18nManager.getManager();
-        intl_mgr.setApplication(APP_NAME, "config.i18n.j3dResources");
+        intl_mgr.setApplication(APP_NAME, "config.i18n.j3dorgResources");
 
         ParserNameMap content_map = new ParserNameMap();
         content_map.registerType("stl", "model/x-stl");
         content_map.registerType("obj", "model/x-obj");
-        content_map.registerType("dae", "application/xml");
+        content_map.registerType("dae", "model/vnd.collada+xml");
         content_map.registerType("ac", "application/x-ac3d");
-        content_map.registerType("ldr", "model/x-ldraw");
+        content_map.registerType("dat", "application/x-ldraw");
+        content_map.registerType("ldr", "application/x-ldraw");
+        content_map.registerType("mpd", "application/x-multi-part-ldraw");
+        content_map.registerType("ldlite", "application/x-ldlite");
 
         //URL.setFileNameMap(content_map);
         URLConnection.setFileNameMap(content_map);
@@ -167,7 +176,7 @@ public class Filter
     
     /**
      * Go to the named URL location. No checking is done other than to make
-     * sure it is a valid URL.
+     * sure it is a valid URL. 
      *
      * @param filters The identifier of the filter type.
      * @param inUrl The URL to open.
@@ -201,7 +210,11 @@ public class Filter
         }
         else
         {
-            if(!f.mkdirs())
+            // Doesn't exist, this will be the file, so find the parent directory 
+            // above the file and make sure the parent directory(s) exist.
+            File parent = f.getParentFile();
+            
+            if(parent != null && !parent.exists() && !parent.mkdirs())
                 return FilterExitCode.CANNOT_WRITE_OUTPUT_FILE;
         }
 
@@ -244,8 +257,23 @@ public class Filter
         }
         else
         {
-            if(!f.mkdirs())
+            // Doesn't exist, this will be the file, so find the parent directory 
+            // above the file and make sure the parent directory(s) exist.
+            File parent = f.getParentFile();
+            
+            if(parent != null && !parent.exists() && !parent.mkdirs())
                 return FilterExitCode.CANNOT_WRITE_OUTPUT_FILE;
+        }
+
+        try
+        {
+            // try to guess the output encoding from the file name map
+            in_encoding = guessContentType(inFile);
+            in_stream = new FileInputStream(inFile);
+        }
+        catch(IOException ioe)
+        {
+            return FilterExitCode.FILE_NOT_FOUND;
         }
 
         try
@@ -394,7 +422,7 @@ public class Filter
             {
                 if(fil.length() == 0) 
                 {
-                    System.out.println("Empty File: " + filename);
+                    errorReporter.errorReport("Empty File: " + filename, null);
                     status = FilterExitCode.INVALID_INPUT_FILE;
                 } 
                 else
@@ -476,8 +504,8 @@ public class Filter
     private FilterExitCode load(String[] filterNames,
                                 InputStream inStream,
                                 OutputStream outStream,
-                                String outEncoding,
                                 String inEncoding,
+                                String outEncoding,
                                 String[] filterArgs) 
     {
         setupLogging(filterArgs);
@@ -500,16 +528,27 @@ public class Filter
         
         try
         {
-            if((status = importer.parse(inStream)) != FilterExitCode.SUCCESS)
-                return status;
+            geometryDatabase.importBegins();
             
+            if((status = importer.parse(inStream)) != FilterExitCode.SUCCESS)
+            {
+                geometryDatabase.importCompleted();
+                return status;
+            }
+            
+            geometryDatabase.importCompleted();
+
             for(GeometryFilter f: filters)
             {
                 if((status = f.process()) != FilterExitCode.SUCCESS)
                     return status;        
             }
-            
+          
+            geometryDatabase.exportBegins();
             status = exporter.export(outStream);
+            geometryDatabase.exportCompleted();
+            
+            outStream.flush();
         }
         catch(IOException ioe)
         {
@@ -583,7 +622,7 @@ System.out.println("IO Exception " + ioe);
      */
     private FilterExitCode setupDatabase(String[] args)
     {
-        String db_name = DEFAULT_DB_NAME;
+        String db_name = KNOWN_DATABASES.get(DEFAULT_DB_NAME);
         
         for(int i = 0; i < args.length; i++)
         {
@@ -605,7 +644,7 @@ System.out.println("IO Exception " + ioe);
         try
         {
             geometryDatabase = 
-                DynamicClassLoader.loadCheckedClass(db_name, GeometryImportDatabase.class);
+                DynamicClassLoader.loadCheckedClass(db_name, GeometryDatabaseManager.class);
         }
         catch(ClassNotFoundException csfe)
         {
@@ -613,6 +652,7 @@ System.out.println("IO Exception " + ioe);
         }
         catch(InvalidClassException ice)
         {
+            errorReporter.fatalErrorReport(null, ice);
             return FilterExitCode.DATABASE_STARTUP_ERROR;
         }
         
@@ -649,13 +689,15 @@ System.out.println("IO Exception " + ioe);
         
         if(importer_name == null)
         {
-            // Try to determine it from the encoding type
+            importer_name = KNOWN_IMPORTERS_FROM_MIME.get(encoding);
         }
 
         try
         {
             importer = 
                 DynamicClassLoader.loadCheckedClass(importer_name, FilterImporter.class);
+            importer.setErrorReporter(errorReporter);
+            
         }
         catch(ClassNotFoundException csfe)
         {
@@ -666,7 +708,7 @@ System.out.println("IO Exception " + ioe);
             return FilterExitCode.IMPORTER_STARTUP_ERROR;
         }
         
-        return FilterExitCode.SUCCESS;
+        return importer.initialize(geometryDatabase.getDatabase());
     }
 
     /**
@@ -699,13 +741,14 @@ System.out.println("IO Exception " + ioe);
         
         if(exporter_name == null)
         {
-            // Try to determine it from the content type
+            exporter_name = KNOWN_EXPORTERS_FROM_MIME.get(encoding);
         }
 
         try
         {
             exporter = 
                 DynamicClassLoader.loadCheckedClass(exporter_name, FilterExporter.class);
+            exporter.setErrorReporter(errorReporter);
         }
         catch(ClassNotFoundException csfe)
         {
@@ -716,7 +759,7 @@ System.out.println("IO Exception " + ioe);
             return FilterExitCode.EXPORTER_STARTUP_ERROR;
         }
         
-        return FilterExitCode.SUCCESS;
+        return exporter.initialize(geometryDatabase.getDatabase());
     }
 
     /**
@@ -745,8 +788,9 @@ System.out.println("IO Exception " + ioe);
             {
                 GeometryFilter filter = 
                     DynamicClassLoader.loadCheckedClass(filter_class_name, GeometryFilter.class);
+                filter.setErrorReporter(errorReporter);
                 
-                FilterExitCode status = filter.initialise(args, geometryDatabase);
+                FilterExitCode status = filter.initialise(args, geometryDatabase.getDatabase());
                 
                 if(status != FilterExitCode.SUCCESS)
                     return status;
@@ -789,7 +833,7 @@ System.out.println("IO Exception " + ioe);
     private String guessContentType(File file)
     {
         URI uri = file.toURI();
-        
+
         return URLConnection.guessContentTypeFromName(uri.toString());
     }
     
@@ -798,6 +842,7 @@ System.out.println("IO Exception " + ioe);
      */
     public static void main(String[] args)
     {
-        
+        Filter f = new Filter();
+        f.executeFilters(args, true);
     }
 }

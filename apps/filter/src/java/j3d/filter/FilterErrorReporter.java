@@ -82,6 +82,7 @@ class FilterErrorReporter
         ignoredExceptionTypes.add(UnknownHostException.class);
         ignoredExceptionTypes.add(IllegalArgumentException.class);
         ignoredExceptionTypes.add(ClassNotFoundException.class);
+        ignoredExceptionTypes.add(InvalidClassException.class);
     }
 
     //-----------------------------------------------------------------------
@@ -130,36 +131,21 @@ class FilterErrorReporter
     @Override
     public void warningReport(String msg, Exception e)
     {
-        if(logLevel < PRINT_ERRORS) 
-        {
-            StringBuilder buf = new StringBuilder("Warning: ");
+        handleWarningReport(msg, e);
+    }
 
-            if(msg != null) 
-            {
-                buf.append(msg);
-                buf.append('\n');
-            }
-
-            if(e != null) 
-            {
-                String txt = e.getMessage();
-                if(txt == null)
-                    txt = e.getClass().getName();
-
-                buf.append(txt);
-                buf.append('\n');
-
-                if(!ignoredExceptionTypes.contains(e.getClass())) 
-                {
-                    StringWriter sw = new StringWriter();
-                    PrintWriter pw = new PrintWriter(sw);
-                    e.printStackTrace(pw);
-                    buf.append(sw.toString());
-                }
-            }
-
-            System.err.println(buf.toString());
-        }
+    /**
+     * Notification of a warning in the way the system is currently operating.
+     * This is a non-fatal, non-serious error. For example you will get an
+     * warning when a value has been set that is out of range.
+     *
+     * @param msg The text of the message to be displayed
+     * @param th The throwable that caused this warning. May be null
+     */
+    @Override
+    public void warningReport(String msg, Throwable th)
+    {
+        handleWarningReport(msg, th);
     }
 
     /**
@@ -173,36 +159,20 @@ class FilterErrorReporter
     @Override
     public void errorReport(String msg, Exception e) 
     {
-        if(logLevel < PRINT_FATAL_ERRORS) 
-        {
-            StringBuilder buf = new StringBuilder("Error: ");
+        handleErrorReport(msg, e);
+    }
 
-            if(msg != null) 
-            {
-                buf.append(msg);
-                buf.append('\n');
-            }
-
-            if(e != null) 
-            {
-                String txt = e.getMessage();
-                if(txt == null)
-                    txt = e.getClass().getName();
-
-                buf.append(txt);
-                buf.append('\n');
-
-                if(!ignoredExceptionTypes.contains(e.getClass()))
-                {
-                    StringWriter sw = new StringWriter();
-                    PrintWriter pw = new PrintWriter(sw);
-                    e.printStackTrace(pw);
-                    buf.append(sw.toString());
-                }
-            }
-
-            System.err.println(buf.toString());
-        }
+    /**
+     * Notification of a recoverable error. This is a serious, but non-fatal
+     * error, for example trying to locate a needed file or system property.
+     *
+     * @param msg The text of the message to be displayed
+     * @param th The throwable that caused this warning. May be null
+     */
+    @Override
+    public void errorReport(String msg, Throwable th) 
+    {
+        handleErrorReport(msg, th);
     }
 
     /**
@@ -217,38 +187,24 @@ class FilterErrorReporter
     @Override
     public void fatalErrorReport(String msg, Exception e)
     {
-        if(logLevel < PRINT_NONE) 
-        {
-            StringBuilder buf = new StringBuilder("Fatal Error: ");
-
-            if(msg != null) 
-            {
-                buf.append(msg);
-                buf.append('\n');
-            }
-
-            if(e != null) 
-            {
-                String txt = e.getMessage();
-                if(txt == null)
-                    txt = e.getClass().getName();
-
-                buf.append(txt);
-                buf.append('\n');
-
-                if(!ignoredExceptionTypes.contains(e.getClass()))
-                {
-                    StringWriter sw = new StringWriter();
-                    PrintWriter pw = new PrintWriter(sw);
-                    e.printStackTrace(pw);
-                    buf.append(sw.toString());
-                }
-            }
-
-            System.err.println(buf.toString());
-        }
+        handleFatalErrorReport(msg, e);
     }
 
+    /**
+     * Notification of a non-recoverable error that halts the entire system.
+     * After you recieve this report the runtime system will no longer
+     * function - for example a non-recoverable parsing error. The best way
+     * out is to reload the file or restart the application internals.
+     *
+     * @param msg The text of the message to be displayed
+     * @param th The throwable that caused this warning. May be null
+     */
+    @Override
+    public void fatalErrorReport(String msg, Throwable th)
+    {
+        handleFatalErrorReport(msg, th);
+    }
+    
     //-----------------------------------------------------------------------
     // Local Methods
     //-----------------------------------------------------------------------
@@ -273,4 +229,111 @@ class FilterErrorReporter
         return logLevel;
     }
 
+    /**
+     * Internal processing of the warning report printing.
+     * 
+     * @param msg The message to be printed
+     * @param th Optional throwable to have the trace printed for
+     */
+    private void handleWarningReport(String msg, Throwable th)
+    {
+        if(logLevel < PRINT_ERRORS) 
+        {
+            StringBuilder buf = new StringBuilder("Warning: ");
+
+            if(msg != null) 
+            {
+                buf.append(msg);
+                buf.append('\n');
+            }
+
+            if(th != null) 
+                printNestedTrace(th, buf);
+
+            System.err.println(buf.toString());
+        }
+    }
+
+    /**
+     * Internal processing of the error report printing.
+     * 
+     * @param msg The message to be printed
+     * @param th Optional throwable to have the trace printed for
+     */
+    private void handleErrorReport(String msg, Throwable th) 
+    {
+        if(logLevel < PRINT_FATAL_ERRORS) 
+        {
+            StringBuilder buf = new StringBuilder("Error: ");
+
+            if(msg != null) 
+            {
+                buf.append(msg);
+                buf.append('\n');
+            }
+
+            if(th != null) 
+                printNestedTrace(th, buf);
+
+            System.err.println(buf.toString());
+        }
+    }
+
+    /**
+     * Internal processing of the fatal error report printing.
+     * 
+     * @param msg The message to be printed
+     * @param th Optional throwable to have the trace printed for
+     */
+    private void handleFatalErrorReport(String msg, Throwable th)
+    {
+        if(logLevel < PRINT_NONE) 
+        {
+            StringBuilder buf = new StringBuilder("Fatal Error: ");
+
+            if(msg != null) 
+            {
+                buf.append(msg);
+                buf.append('\n');
+            }
+
+            if(th != null) 
+                printNestedTrace(th, buf);
+
+            System.err.println(buf.toString());
+        }
+    }
+    
+    /**
+     * Handled nested cause printing. Prints the stack trace for this throwable
+     * and if a nested cause is given, that is not in the ignore list, it will
+     * recurse in to the next one and print that too.
+     * 
+     * @param th The throwable instance to print out
+     * @param buffer The string buffer to append the stack trace to
+     */
+    private void printNestedTrace(Throwable th, StringBuilder buffer)
+    {
+        String txt = th.getMessage();
+        if(txt == null)
+            txt = th.getClass().getName();
+
+        buffer.append(txt);
+        buffer.append('\n');
+
+        if(!ignoredExceptionTypes.contains(th.getClass()))
+        {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            th.printStackTrace(pw);
+            buffer.append(sw.toString());
+        }
+        
+        Throwable cause = th.getCause();
+        if(cause != null)
+        {
+            buffer.append("\n Nested Exception is:\n");
+            printNestedTrace(cause, buffer);
+        }
+    }
 }

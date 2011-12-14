@@ -17,6 +17,8 @@ import java.util.*;
 
 // Local Imports
 import j3d.filter.GeometryDatabase;
+import j3d.filter.GeometryDatabaseManager;
+import j3d.filter.GeometryImportDatabase;
 import j3d.filter.SceneGraphObject;
 import j3d.filter.SceneGraphObjectType;
 
@@ -24,15 +26,16 @@ import org.j3d.util.IntHashMap;
 
 
 /**
- * Class summary comment
+ * Implementation of the geometry database manager and database combined in to a single
+ * class, where the database is implemented entirely in memory.
  * <p/>
- * Long definition
+ * 
  *
  * @author Justin
  * @version $Revision$
  */
 public class InMemoryDatabase
-    implements GeometryDatabase
+    implements GeometryDatabase, GeometryDatabaseManager
 {
     /** Unsorted database of objects */
     private IntHashMap<SceneGraphObject> objectMap;
@@ -62,6 +65,62 @@ public class InMemoryDatabase
          nodeFactory = new InMemoryNodeFactory();
     }
   
+    //------------------------------------------------------------------------
+    // Methods defined by GeometryDatabaseManager
+    //------------------------------------------------------------------------
+
+    /**
+     * Fetch the database interface that will sent to the various filters etc
+     * Multiple calls to this class should return the same instance each time.
+     * 
+     * @return a non-null filter instance
+     */
+    public GeometryDatabase getDatabase()
+    {
+        return this;
+    }
+    
+    @Override
+    public void importBegins()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void importCompleted()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /**
+     * Notification that the import has started.
+     */
+    public void exportBegins()
+    {
+        
+    }
+    
+    /**
+     * Notification that the import has finished. 
+     */
+    public void exportCompleted()
+    {
+        
+    }
+
+    //------------------------------------------------------------------------
+    // Methods defined by GeometryImportDatabase
+    //------------------------------------------------------------------------
+
+//    @Override
+    public String[] getNextURI()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     //------------------------------------------------------------------------
     // Methods defined by GeometryDatabase
     //------------------------------------------------------------------------
@@ -152,7 +211,7 @@ public class InMemoryDatabase
     }
 
     @Override
-    public void queueURIToLoad(String[] uri)
+    public void queueURIToLoad(int id, String[] uri)
     {
         // TODO: Very simple test for now. Doesn't really deal with alternate URLs
         // or partial versus fully qualified URLs.
