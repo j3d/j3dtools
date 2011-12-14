@@ -108,6 +108,28 @@ public class DefaultErrorReporter implements ErrorReporter
     }
 
     /**
+     * Notification of a warning in the way the system is currently operating.
+     * This is a non-fatal, non-serious error. For example you will get an
+     * warning when a value has been set that is out of range.
+     *
+     * @param msg The text of the message to be displayed
+     * @param e The exception that caused this warning. May be null
+     */
+    @Override
+    public void warningReport(String msg, Throwable th)
+    {
+        System.out.print("Warning: ");
+        System.out.println(msg);
+
+        if(th != null)
+        {
+            System.out.println("Contained message: ");
+            System.out.println(th.getMessage());
+            th.printStackTrace();
+        }
+    }
+
+    /**
      * Notification of a recoverable error. This is a serious, but non-fatal
      * error, for example trying to locate a needed file or system property.
      *
@@ -125,6 +147,27 @@ public class DefaultErrorReporter implements ErrorReporter
             System.out.println("Contained message: ");
             System.out.println(e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Notification of a recoverable error. This is a serious, but non-fatal
+     * error, for example trying to locate a needed file or system property.
+     *
+     * @param msg The text of the message to be displayed
+     * @param e The exception that caused this warning. May be null
+     */
+    @Override
+    public void errorReport(String msg, Throwable th)
+    {
+        System.out.print("Error: ");
+        System.out.println(msg);
+
+        if(th != null)
+        {
+            System.out.println("Contained message: ");
+            System.out.println(th.getMessage());
+            th.printStackTrace();
         }
     }
 
@@ -148,6 +191,29 @@ public class DefaultErrorReporter implements ErrorReporter
             System.out.println("Contained message: ");
             System.out.println(e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Notification of a non-recoverable error that halts the entire system.
+     * After you receive this report the runtime system will no longer
+     * function - for example a non-recoverable parsing error. The best way
+     * out is to reload the file or restart the application internals.
+     *
+     * @param msg The text of the message to be displayed
+     * @param e The exception that caused this warning. May be null
+     */
+    @Override
+    public void fatalErrorReport(String msg, Throwable th)
+    {
+        System.out.print("Fatal Error: ");
+        System.out.println(msg);
+
+        if(th != null)
+        {
+            System.out.println("Contained message: ");
+            System.out.println(th.getMessage());
+            th.printStackTrace();
         }
     }
 }
