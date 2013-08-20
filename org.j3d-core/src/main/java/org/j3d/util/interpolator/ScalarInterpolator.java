@@ -86,8 +86,6 @@ public class ScalarInterpolator extends Interpolator
 
         realloc();
 
-        float[] new_val;
-
         if(loc >= currentSize)
         {
             // append to the end
@@ -150,13 +148,6 @@ public class ScalarInterpolator extends Interpolator
                     if(found_key != prev_key)
                         fraction = (key - prev_key) / (found_key - prev_key);
 
-/*
-System.out.println("Prev key " + prev_key);
-System.out.println("Next key " + found_key);
-System.out.println("Reqd key " + key);
-System.out.println("Fraction is " + fraction);
-System.out.println("x " + p0 + " dist " + dist);
-*/
                     ret_val = p0 + fraction * dist;
                     break;
 
@@ -212,7 +203,7 @@ System.out.println("x " + p0 + " dist " + dist);
      */
     public String toString()
     {
-        StringBuffer buf = new StringBuffer("<scalar interpolator>\n");
+        StringBuilder buf = new StringBuilder("<scalar interpolator>\n");
 
         for(int i = 0; i < currentSize; i++)
         {

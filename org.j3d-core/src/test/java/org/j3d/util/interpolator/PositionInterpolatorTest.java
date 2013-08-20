@@ -9,12 +9,13 @@
 
 package org.j3d.util.interpolator;
 
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
 import javax.vecmath.Point3f;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * A test case to check the functionality of the PositionInterpolator
@@ -27,7 +28,7 @@ import junit.textui.TestRunner;
  * @author Justin Couc
  * @version $Revision: 1.3 $
  */
-public class TestPositionInterpolator extends TestCase
+public class PositionInterpolatorTest
 {
     /** Keys to be used for testing */
     private static float[] keys = { 0.1f, 0.4f, 5f };
@@ -39,61 +40,28 @@ public class TestPositionInterpolator extends TestCase
         {1, 5, 2}
     };
 
-    /** The interpolator we are testing */
-    private PositionInterpolator interpolator;
-
-    /**
-     * Create an instance of the test case for this particular test
-     * name.
-     *
-     * @param name The name of the test method to be run
-     */
-    public TestPositionInterpolator(String name)
-    {
-        super(name);
-    }
-
-    /**
-     * Fetch the suite of tests for this test class to perform.
-     *
-     * @return A collection of all the tests to be run
-     */
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new TestPositionInterpolator("testCreateFloat"));
-        suite.addTest(new TestPositionInterpolator("testCreatePoint"));
-        suite.addTest(new TestPositionInterpolator("testValueInsertFloat"));
-        suite.addTest(new TestPositionInterpolator("testValueInsertPoint"));
-        suite.addTest(new TestPositionInterpolator("testKeyGenFloat"));
-        suite.addTest(new TestPositionInterpolator("testKeyGenPoint"));
-        suite.addTest(new TestPositionInterpolator("testClamping"));
-
-        return suite;
-    }
-
     /**
      * Pre-test instance setup code. We check here to make sure that the key
      * and value arrays are the same length just in case someone has stuffed
      * it up when playing with this code.
      */
+    @BeforeTest(groups = "unit")
     public void setUp()
     {
-        assertEquals("Keys and values arrays are not the same size",
-                     keys.length,
-                     values.length);
-
-        interpolator = new PositionInterpolator();
+        assertEquals(keys.length, values.length, "Keys and values arrays are not the same size");
     }
 
     /**
      * Test that we can create a basic array of values using float arrays
      * inserted linearly without generating exceptions.
      */
+    @Test(groups = "unit")
     public void testCreateFloat()
     {
         int i;
         int num_keys = keys.length;
+
+        PositionInterpolator interpolator = new PositionInterpolator();
 
         for(i = 0; i < num_keys; i++)
             interpolator.addKeyFrame(keys[i],
@@ -106,9 +74,9 @@ public class TestPositionInterpolator extends TestCase
         {
             float[] vals = interpolator.floatValue(keys[i]);
 
-            assertEquals(i + " X coord not same", values[i][0], vals[0], 0);
-            assertEquals(i + " Y coord not same", values[i][1], vals[1], 0);
-            assertEquals(i + " Z coord not same", values[i][2], vals[2], 0);
+            assertEquals(values[i][0], vals[0], i + " X coord not same");
+            assertEquals(values[i][1], vals[1],i + " Y coord not same");
+            assertEquals(values[i][2], vals[2],i + " Z coord not same");
         }
     }
 
@@ -116,11 +84,14 @@ public class TestPositionInterpolator extends TestCase
      * Test that we can create a basic array of values using Point3f
      * inserted linearly without generating exceptions.
      */
+    @Test(groups = "unit")
     public void testCreatePoint()
     {
         int i;
         int num_keys = keys.length;
         Point3f point;
+
+        PositionInterpolator interpolator = new PositionInterpolator();
 
         for(i = 0; i < num_keys; i++)
         {
@@ -133,9 +104,9 @@ public class TestPositionInterpolator extends TestCase
         {
             Point3f vals = interpolator.pointValue(keys[i]);
 
-            assertEquals(i + " X coord not same", values[i][0], vals.x, 0);
-            assertEquals(i + " Y coord not same", values[i][1], vals.y, 0);
-            assertEquals(i + " Z coord not same", values[i][2], vals.z, 0);
+            assertEquals(vals.x, values[i][0], i + " X coord not same");
+            assertEquals(vals.y, values[i][1], i + " Y coord not same");
+            assertEquals(vals.z, values[i][2], i + " Z coord not same");
         }
     }
 
@@ -143,17 +114,20 @@ public class TestPositionInterpolator extends TestCase
      * Test that we can create an array of values with values being inserted
      * between other values.
      */
+    @Test(groups = "unit")
     public void testValueInsertFloat()
     {
         int i;
         int num_keys = keys.length;
 
-        assertTrue("Not enough keys ( < 3) to do this test", num_keys > 2);
+        assertTrue(num_keys > 2, "Not enough keys ( < 3) to do this test");
+
+        PositionInterpolator interpolator = new PositionInterpolator();
 
         interpolator.addKeyFrame(keys[0],
-                                 values[0][0],
-                                 values[0][1],
-                                 values[0][2]);
+                values[0][0],
+                values[0][1],
+                values[0][2]);
 
         interpolator.addKeyFrame(keys[2],
                                  values[2][0],
@@ -170,9 +144,9 @@ public class TestPositionInterpolator extends TestCase
         {
             float[] vals = interpolator.floatValue(keys[i]);
 
-            assertEquals(i + " X coord not same", values[i][0], vals[0], 0);
-            assertEquals(i + " Y coord not same", values[i][1], vals[1], 0);
-            assertEquals(i + " Z coord not same", values[i][2], vals[2], 0);
+            assertEquals(vals[0], values[i][0], i + " X coord not same");
+            assertEquals(vals[1], values[i][1], i + " Y coord not same");
+            assertEquals(vals[2], values[i][2], i + " Z coord not same");
         }
     }
 
@@ -180,13 +154,16 @@ public class TestPositionInterpolator extends TestCase
      * Test that we can create an array of values with values being inserted
      * between other values.
      */
+    @Test(groups = "unit")
     public void testValueInsertPoint()
     {
         int i;
         int num_keys = keys.length;
         Point3f point;
 
-        assertTrue("Not enough keys ( < 3) to do this test", num_keys > 2);
+        assertTrue(num_keys > 2, "Not enough keys ( < 3) to do this test");
+
+        PositionInterpolator interpolator = new PositionInterpolator();
 
         point = new Point3f(values[0]);
         interpolator.addKeyFrame(keys[0], point);
@@ -202,9 +179,9 @@ public class TestPositionInterpolator extends TestCase
         {
             Point3f vals = interpolator.pointValue(keys[i]);
 
-            assertEquals(i + " X coord not same", values[i][0], vals.x, 0);
-            assertEquals(i + " Y coord not same", values[i][1], vals.y, 0);
-            assertEquals(i + " Z coord not same", values[i][2], vals.z, 0);
+            assertEquals(vals.x, values[i][0], i + " X coord not same");
+            assertEquals(vals.y, values[i][1], i + " Y coord not same");
+            assertEquals(vals.z, values[i][2], i + " Z coord not same");
         }
     }
 
@@ -214,10 +191,13 @@ public class TestPositionInterpolator extends TestCase
      * right values when the key is exactly equal to one of the end values.
      * Now we are looking at a couple of coordinated points long each axis.
      */
+    @Test(groups = "unit")
     public void testKeyGenFloat()
     {
         int i;
         int num_keys = keys.length;
+
+        PositionInterpolator interpolator = new PositionInterpolator();
 
         for(i = 0; i < num_keys; i++)
             interpolator.addKeyFrame(keys[i],
@@ -232,9 +212,9 @@ public class TestPositionInterpolator extends TestCase
 
         float[] vals = interpolator.floatValue(mid_key);
 
-        assertEquals("1st X coord not same", x_val, vals[0], 0);
-        assertEquals("1st Y coord not same", y_val, vals[1], 0);
-        assertEquals("1st Z coord not same", z_val, vals[2], 0);
+        assertEquals(x_val, vals[0], "1st X coord not same");
+        assertEquals(y_val, vals[1], "1st Y coord not same");
+        assertEquals(z_val, vals[2], "1st Z coord not same");
 
         mid_key = keys[1] + ((keys[2] - keys[1]) / 2);
         x_val = values[1][0] + ((values[2][0] - values[1][0]) / 2);
@@ -243,9 +223,9 @@ public class TestPositionInterpolator extends TestCase
 
         vals = interpolator.floatValue(mid_key);
 
-        assertEquals("2nd X coord not same", x_val, vals[0], 0);
-        assertEquals("2nd Y coord not same", y_val, vals[1], 0);
-        assertEquals("2nd Z coord not same", z_val, vals[2], 0);
+        assertEquals(x_val, vals[0], "2nd X coord not same");
+        assertEquals(y_val, vals[1], "2nd Y coord not same");
+        assertEquals(z_val, vals[2], "2nd Z coord not same");
     }
 
     /**
@@ -254,11 +234,14 @@ public class TestPositionInterpolator extends TestCase
      * right values when the key is exactly equal to one of the end values.
      * Now we are looking at a couple of coordinated points long each axis.
      */
+    @Test(groups = "unit")
     public void testKeyGenPoint()
     {
         int i;
         int num_keys = keys.length;
         Point3f point;
+
+        PositionInterpolator interpolator = new PositionInterpolator();
 
         for(i = 0; i < num_keys; i++)
         {
@@ -273,9 +256,9 @@ public class TestPositionInterpolator extends TestCase
 
         Point3f vals = interpolator.pointValue(mid_key);
 
-        assertEquals("1st X coord not same", x_val, vals.x, 0);
-        assertEquals("1st Y coord not same", y_val, vals.y, 0);
-        assertEquals("1st Z coord not same", z_val, vals.z, 0);
+        assertEquals(vals.x, x_val, "1st X coord not same");
+        assertEquals(vals.y, y_val, "1st Y coord not same");
+        assertEquals(vals.z, z_val, "1st Z coord not same");
 
         mid_key = keys[1] + ((keys[2] - keys[1]) / 2);
         x_val = values[1][0] + ((values[2][0] - values[1][0]) / 2);
@@ -284,19 +267,22 @@ public class TestPositionInterpolator extends TestCase
 
         vals = interpolator.pointValue(mid_key);
 
-        assertEquals("2nd X coord not same", x_val, vals.x, 0);
-        assertEquals("2nd Y coord not same", y_val, vals.y, 0);
-        assertEquals("2nd Z coord not same", z_val, vals.z, 0);
+        assertEquals(vals.x, x_val, "2nd X coord not same");
+        assertEquals(vals.y, y_val, "2nd Y coord not same");
+        assertEquals(vals.z, z_val, "2nd Z coord not same");
     }
 
     /**
      * Test that we can generate values that are clamped to the extent values
      * of the interpolator for keys that are out of range to those inserted.
      */
+    @Test(groups = "unit")
     public void testClamping()
     {
         int i;
         int num_keys = keys.length;
+
+        PositionInterpolator interpolator = new PositionInterpolator();
 
         for(i = 0; i < num_keys; i++)
             interpolator.addKeyFrame(keys[i],
@@ -309,9 +295,9 @@ public class TestPositionInterpolator extends TestCase
 
         float[] vals = interpolator.floatValue(key);
 
-        assertEquals("Min X coord not same", values[0][0], vals[0], 0);
-        assertEquals("Min Y coord not same", values[0][1], vals[1], 0);
-        assertEquals("Min Z coord not same", values[0][2], vals[2], 0);
+        assertEquals(vals[0], values[0][0], "Min X coord not same");
+        assertEquals(vals[1], values[0][1], "Min Y coord not same");
+        assertEquals(vals[2], values[0][2], "Min Z coord not same");
 
         // A key value larger than the largest key
         num_keys--;
@@ -319,17 +305,9 @@ public class TestPositionInterpolator extends TestCase
 
         vals = interpolator.floatValue(key);
 
-        assertEquals("Max X coord not same", values[num_keys][0], vals[0], 0);
-        assertEquals("Max Y coord not same", values[num_keys][1], vals[1], 0);
-        assertEquals("Max Z coord not same", values[num_keys][2], vals[2], 0);
-    }
-
-    /**
-     * Main method to kick everything off with.
-     */
-    public static void main(String[] argv)
-    {
-        TestRunner.run(suite());
+        assertEquals(vals[0], values[num_keys][0], "Max X coord not same");
+        assertEquals(vals[1], values[num_keys][1], "Max Y coord not same");
+        assertEquals(vals[2], values[num_keys][2], "Max Z coord not same");
     }
 }
 
