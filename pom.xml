@@ -45,6 +45,7 @@
         <module>org.j3d-loaders</module>
         <module>org.j3d-terrain</module>
         <module>org.j3d-texture</module>
+        <module>org.j3d-device</module>
     </modules>
 
     <properties>
