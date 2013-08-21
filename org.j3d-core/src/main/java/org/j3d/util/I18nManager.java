@@ -120,7 +120,7 @@ public class I18nManager {
     /** The current application node for fetching preferences from */
     private String applicationName;
 
-    /** Resource bundle name to load, if overriden by the end user */
+    /** Resource bundle name to load, if overridden by the end user */
     private String resourceFileName;
 
     /** The currently set country code */
@@ -129,7 +129,7 @@ public class I18nManager {
     /** The currently set language code */
     private String languageCode;
 
-    /** Variange code of the language, if needed */
+    /** Variant code of the language, if needed */
     private String variantCode;
 
     /** The resource bundle with all our internationalised strings */
@@ -245,7 +245,7 @@ public class I18nManager {
 
     /**
      * Manually change the locale to the given country and language settings
-     * to overrided the current settings. This will be stored in user
+     * to override the current settings. This will be stored in user
      * preferences and used for any subsequent accesses to this manager, and
      * any time after this that the application is started, if and only if
      * an application name has been set. If no application name is set, this
@@ -266,8 +266,8 @@ public class I18nManager {
      * @param language The language identifier to load
      * @param country The optional country code to load
      * @param variant The optional language variant to load
-     * @throws IllegalArgument exception if the country or language codes are
-     *   not correctly formated (length and case)
+     * @throws IllegalArgumentException if the country or language codes are
+     *   not correctly formatted (length and case)
      * @see java.util.Locale
      * @see <a href="http://www.loc.gov/standards/iso639-2/englangn.html">
      *   http://www.loc.gov/standards/iso639-2/englangn.html</a>
