@@ -53,7 +53,7 @@ public interface ErrorReporter
      *
      * @param msg The text of the message to be displayed
      * @param e The exception that caused this warning. May be null
-     * @Deprecated Use the warningReport(String, Throwable) version of this method
+     * @deprecated Use the warningReport(String, Throwable) version of this method
      */
     @Deprecated
     public void warningReport(String msg, Exception e);
@@ -74,7 +74,7 @@ public interface ErrorReporter
      *
      * @param msg The text of the message to be displayed
      * @param e The exception that caused this warning. May be null
-     * @Deprecated Use the fatalErrorReport(String, Throwable) version of this method
+     * @deprecated Use the errorReport(String, Throwable) version of this method
      */
     @Deprecated
     public void errorReport(String msg, Exception e);
@@ -96,7 +96,7 @@ public interface ErrorReporter
      *
      * @param msg The text of the message to be displayed
      * @param e The exception that caused this warning. May be null
-     * @Deprecated Use the fatalErrorReport(String, Throwable) version of this method
+     * @deprecated Use the fatalErrorReport(String, Throwable) version of this method
      */
     @Deprecated
     public void fatalErrorReport(String msg, Exception e);

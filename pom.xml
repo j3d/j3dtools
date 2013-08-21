@@ -42,6 +42,9 @@
     <modules>
         <module>org.j3d-core</module>
         <module>org.j3d-geom</module>
+        <module>org.j3d-loaders</module>
+        <module>org.j3d-terrain</module>
+        <module>org.j3d-texture</module>
     </modules>
 
     <properties>
