@@ -41,6 +41,7 @@
 
     <modules>
         <module>org.j3d-core</module>
+        <module>org.j3d-geom</module>
     </modules>
 
     <properties>
