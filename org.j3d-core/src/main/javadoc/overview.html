@@ -1,0 +1,75 @@
+<HTML>
+<BODY>
+<p>
+OpenSource code collected by the j3d.org site for use in various applications
+that need 3D graphics utilities but without being renderer-specific.
+</p>
+
+<p>
+The licensing here is using the <A HREF="http://www.gnu.org/">GNU</A>
+<A HREF="http://www.gnu.org/copyleft/lgpl.html">LGPL</A> v2.1. We wish you to use
+this code and contribute back any changes you made to the community. This site
+is, after all, driven by the community of Java3D hackers. Everything here is
+volunteered, either through posts to the Java3D interest list or directly to
+the site.
+</p>
+
+<p>
+The code collection consists of a number of fundamental areas:
+</p>
+<ul>
+<li>Geometry</li>
+<li>Device Implementations</li>
+<li>User Interface components</li>
+<li>Various file format loaders</li>
+</ul>
+
+<p>
+In general the code tries to have two versions of each piece of functionality.
+A low-level implementation provides the basic abstraction and functionality and
+is not dependent on Java3D to function. A second, higher-level implementation
+then takes the basic code and provides Java3D-specific functionality. By doing
+this, it allows the majority of the codebase to be useful for more than just 
+Java3D work. Standalone users or other rendering technologies can make use of
+most of the fundamental capabilities without needing to be dependent on Java3D.
+</p>
+
+<H3>Contributors</H3>
+
+<p>
+j3d.org would like to thank the following contributors for the code they've
+add to the repository.
+</p>
+
+<UL>
+<LI>Ryan Wilhm (ryan@entropica.com) for donating the AC3D loader implementation.
+</LI>
+<P>
+<LI><A HREF="http://www.external.hrp.no/vr/">Institutt for energiteknikk</A>
+    For the core of the navigation code.
+</LI>
+<P>
+<LI><A HREF="http://www.billday.com/">Bill Day</A> For keeping some of the
+    original code from the Java 3D loader archive that started much of this
+    effort off.
+</LI>
+<P>
+<LI><A HREF="http://www.cosm-game.com/">Dave Yazel</A> and Will Holcomb for the
+    core of the overlay code.
+</LI>
+<P>
+<LI>Paul Szawlowski of University Of Vienna,
+    <A HREF="http://www.akh-wien.ac.at/imc/">Department of Medical Computer
+    Sciences</A> for the Spaceball 3003/4000 input device implementation and
+    STL loader.
+</LI>
+<LI>Daniel Selman of <A HREF="http://www.tornadolabs.com/">Tornado Labs</A>.
+    Particle system code.
+</LI>
+<LI>Satoshi Konno's 
+<a href="http://www.cybergarage.org/vr/device/polhemus/java/">Polhemuse For Java</a>
+</LI>
+</UL>
+
+</BODY>
+</HTML>

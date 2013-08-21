@@ -28,43 +28,42 @@ public class QCollide
      *  Tables to index the Di_V cofactor table in Johnson's Algorithm. The s,i
      *  entry indicates where to store the cofactors computed with Is_C.
      */
-    private static int jo_2[][][]  = { {{0,0}, {2,1}},
-                                          {{2,0}, {0,0}}};
+    private static int[][][] jo_2  = { { {0,0}, {2,1} }, { {2, 0}, {0, 0} } };
 
-    private static int jo_3[][][]  = { {{0,0}, {3,1}, {4,2}},
-                                          {{3,0}, {0,0}, {5,2}},
-                                          {{4,0}, {5,1}, {0,0}},
-                                          {{0,0}, {0,0}, {6,2}},
-                                          {{0,0}, {6,1}, {0,0}},
-                                          {{6,0}, {0,0}, {0,0}}};
+    private static int[][][] jo_3  = { {{0,0}, {3,1}, {4,2}},
+                                       {{3,0}, {0,0}, {5,2}},
+                                       {{4,0}, {5,1}, {0,0}},
+                                       {{0,0}, {0,0}, {6,2}},
+                                       {{0,0}, {6,1}, {0,0}},
+                                       {{6,0}, {0,0}, {0,0}}};
 
-    private static int jo_4[][][] ={ { {0,0}, {4,1}, {5,2}, {6,3}},
-                                         { {4,0}, {0,0}, {7,2}, {8,3}},
-                                         { {5,0}, {7,1}, {0,0}, {9,3}},
-                                         { {6,0}, {8,1}, {9,2}, {0,0}},
-                                         { {0,0}, {0,0},{10,2},{11,3}},
-                                         { {0,0},{10,1}, {0,0},{12,3}},
-                                         { {0,0},{11,1},{12,2}, {0,0}},
-                                         {{10,0}, {0,0}, {0,0},{13,3}},
-                                         {{11,0}, {0,0},{13,2}, {0,0}},
-                                         {{12,0},{13,1}, {0,0}, {0,0}},
-                                         { {0,0}, {0,0}, {0,0},{14,3}},
-                                         { {0,0}, {0,0},{14,2}, {0,0}},
-                                         { {0,0},{14,1}, {0,0}, {0,0}},
-                                         {{14,0}, {0,0}, {0,0}, {0,0}}};
+    private static int[][][] jo_4 = { { {0,0}, {4,1}, {5,2}, {6,3}},
+                                        { {4,0}, {0,0}, {7,2}, {8,3}},
+                                        { {5,0}, {7,1}, {0,0}, {9,3}},
+                                        { {6,0}, {8,1}, {9,2}, {0,0}},
+                                        { {0,0}, {0,0},{10,2},{11,3}},
+                                        { {0,0},{10,1}, {0,0},{12,3}},
+                                        { {0,0},{11,1},{12,2}, {0,0}},
+                                        {{10,0}, {0,0}, {0,0},{13,3}},
+                                        {{11,0}, {0,0},{13,2}, {0,0}},
+                                        {{12,0},{13,1}, {0,0}, {0,0}},
+                                        { {0,0}, {0,0}, {0,0},{14,3}},
+                                        { {0,0}, {0,0},{14,2}, {0,0}},
+                                        { {0,0},{14,1}, {0,0}, {0,0}},
+                                        {{14,0}, {0,0}, {0,0}, {0,0}}};
 
 
     /**
      *  These tables represent each Is.  The first column of each row indicates
      *  the size of the set.
      */
-    private static int Is_2[][] = { {1,0,0}, {1,1,0}, {2,0,1}};
+    private static int[][] Is_2 = { {1,0,0}, {1,1,0}, {2,0,1}};
 
-    private static int Is_3[][] = { {1,0,0,0}, {1,1,0,0}, {1,2,0,0},
-                                      {2,0,1,0}, {2,0,2,0}, {2,1,2,0},
-                                      {3,0,1,2}};
+    private static int[][] Is_3 = { {1,0,0,0}, {1,1,0,0}, {1,2,0,0},
+                                    {2,0,1,0}, {2,0,2,0}, {2,1,2,0},
+                                    {3,0,1,2}};
 
-    private static int Is_4[][] = { {1,0,0,0,0}, {1,1,0,0,0}, {1,2,0,0,0},
+    private static int[][] Is_4 = { {1,0,0,0,0}, {1,1,0,0,0}, {1,2,0,0,0},
                                        {1,3,0,0,0}, {2,0,1,0,0}, {2,0,2,0,0},
                                        {2,0,3,0,0}, {2,1,2,0,0}, {2,1,3,0,0},
                                        {2,2,3,0,0}, {3,0,1,2,0}, {3,0,1,3,0},
@@ -74,16 +73,16 @@ public class QCollide
      *  These tables represent each Is complement. The first column of each row
      *  indicates the size of the set.
      */
-    private static int IsC_2[][] = { {1,1}, {1,0}, {0,0}};
+    private static int[][] IsC_2 = { {1,1}, {1,0}, {0,0}};
 
-    private static int IsC_3[][] = { {2,1,2}, {2,0,2}, {2,0,1},
+    private static int[][] IsC_3 = { {2,1,2}, {2,0,2}, {2,0,1},
                                        {1,2,0}, {1,1,0}, {1,0,0},
                                        {0,0,0}};
 
-    private static int IsC_4[][] = { {3,1,2,3}, {3,0,2,3}, {3,0,1,3}, {3,0,1,2},
-                                        {2,2,3,0}, {2,1,3,0}, {2,1,2,0}, {2,0,3,0},
-                                        {2,0,2,0}, {2,0,1,0}, {1,3,0,0}, {1,2,0,0},
-                                        {1,1,0,0}, {1,0,0,0}, {0,0,0,0}};
+    private static int[][] IsC_4 = { {3,1,2,3}, {3,0,2,3}, {3,0,1,3}, {3,0,1,2},
+                                     {2,2,3,0}, {2,1,3,0}, {2,1,2,0}, {2,0,3,0},
+                                     {2,0,2,0}, {2,0,1,0}, {1,3,0,0}, {1,2,0,0},
+                                     {1,1,0,0}, {1,0,0,0}, {0,0,0,0}};
 
     /** Number of combinatorial values to check */
     private static int[] COMBINATIONS = {0, 0, 3, 7, 15};
@@ -138,6 +137,8 @@ public class QCollide
         P2_ia = new int[1];
         Cp = new double[3];
         V = new double[4];
+
+        currentCollisions = new CollisionPair[2];
     }
 
     /**
@@ -146,13 +147,13 @@ public class QCollide
      */
     public boolean checkCollisions()
     {
+        return false;
     }
 
     /**
      * Check a pair of objects for collision. Return true if there has been
      *
-     * @param pIdx The index of the polytope P in the array
-     * @param qIdx The index of the polytope Q in the array
+     * @param pair The polytope that is being checked - P and Q
      * @param rq The rotational matrix of P
      * @param rq The rotational matrix of Q
      * @param irq The inverese rotational matrix of P
@@ -286,11 +287,11 @@ public class QCollide
 
             double dp = rk_x * sVec[0] + rk_y * sVec[1] + rk_z * sVec[2];
 
-            if(dp >= 0 || (p == prev_p && q == prevq))
+            if(dp >= 0 || (p == prev_p && q == prev_q))
             {
                 // Save to cache
-                pair.closestFeature[0] = p;
-                pair.closestFeature[1] = q;
+                pair.closestFeatures[0] = p;
+                pair.closestFeatures[1] = q;
                 pair.separationVector[0] = sVec[0];
                 pair.separationVector[1] = sVec[1];
                 pair.separationVector[2] = sVec[2];
@@ -305,8 +306,8 @@ public class QCollide
                 if(repeat)
                 {
                     // Save to cache
-                    pair.closestFeature[0] = p;
-                    pair.closestFeature[1] = q;
+                    pair.closestFeatures[0] = p;
+                    pair.closestFeatures[1] = q;
                     pair.separationVector[0] = sVec[0];
                     pair.separationVector[1] = sVec[1];
                     pair.separationVector[2] = sVec[2];
@@ -348,16 +349,16 @@ public class QCollide
                             n = 2;
                         }
 
-                        calcGilbertPoint(vertexSetP,
-                                         vertexSetQ,
-                                         n,
-                                         lambda,
-                                         prev_Mp,
-                                         prev_Mq,
-                                         prev_irp,
-                                         prev_irq,
-                                         wkVec0,
-                                         wkVec1);
+                        calcGilbertPoints(vertexSetP,
+                            vertexSetQ,
+                            n,
+                            lambda,
+                            prev_Mp,
+                            prev_Mq,
+                            prev_irp,
+                            prev_irq,
+                            wkVec0,
+                            wkVec1);
                         sVec[0] = wkVec1[0] - wkVec0[0];
                         sVec[1] = wkVec1[1] - wkVec0[1];
                         sVec[2] = wkVec1[2] - wkVec0[2];
@@ -366,8 +367,8 @@ public class QCollide
                         q = vertexSetQ[0];
 
                         // Save items in cache
-                        pair.closestFeature[0] = p;
-                        pair.closestFeature[1] = q;
+                        pair.closestFeatures[0] = p;
+                        pair.closestFeatures[1] = q;
                         pair.separationVector[0] = sVec[0];
                         pair.separationVector[1] = sVec[1];
                         pair.separationVector[2] = sVec[2];
@@ -380,8 +381,8 @@ public class QCollide
                 }
 
                 // Save vertices p & q in cache
-                pair.closestFeature[0] = p;
-                pair.closestFeature[1] = q;
+                pair.closestFeatures[0] = p;
+                pair.closestFeatures[1] = q;
 
                 sVec[0] -= 2 * dp * rk_x;
                 sVec[1] -= 2 * dp * rk_y;
@@ -400,7 +401,7 @@ public class QCollide
      */
     private int searchForSupportVertex(float[][] shape,
                                        int[][] neighbours,
-                                       long[] timestamps;
+                                       long[] timestamps,
                                        int p,
                                        float[] s)
     {
@@ -447,6 +448,8 @@ public class QCollide
             }
         }
         while(new_p != p);
+
+        return p;
     }
 
     /**
@@ -583,7 +586,7 @@ public class QCollide
      * @param invRq Inverse rotation matrix of Q
      * @return the real size of the set needed to comput closestP, Q.
      */
-    private int calcGilbertPoints(CollisionPair collsion,
+    private int calcGilbertPoints(CollisionPair collision,
                                   float[][] vertexSetP,
                                   float[][] vertexSetQ,
                                   int n,
@@ -629,8 +632,8 @@ public class QCollide
         float[] rq_cp = wkVec1;
 
         // Reset the seenBefore flags of both polytopes.
-        CollisionPolytope ploy_p = polytopeList[collision.polytopes[0]];
-        CollisionPolytope ploy_q = polytopeList[collision.polytopes[1]];
+        CollisionPolytope poly_p = polytopeList[collision.polytopes[0]];
+        CollisionPolytope poly_q = polytopeList[collision.polytopes[1]];
 
         for(int i = poly_p.seenBefore.length; --i >= 0; )
             poly_p.seenBefore[i] = false;
@@ -670,32 +673,32 @@ public class QCollide
             rp_cp[1] = invRp[1][0] * Cp[0] + invRp[1][1] * Cp[1] +
                        invRp[1][2] * Cp[2] + invRp[1][3];
             rp_cp[2] = invRp[2][0] * Cp[0] + invRp[2][1] * Cp[1] +
-                       invRp[2][2] * Cp[2] + invRp[2][3]
+                       invRp[2][2] * Cp[2] + invRp[2][3];
 
             rq_cp[0] = -invRq[0][0] * Cp[0] + -invRq[0][1] * Cp[1] +
                        -invRq[0][2] * Cp[2] + -invRq[0][3];
             rq_cp[0] = -invRq[1][0] * Cp[0] + -invRq[1][1] * Cp[1] +
                        -invRq[1][2] * Cp[2] + -invRq[1][3];
             rq_cp[0] = -invRq[2][0] * Cp[0] + -invRq[2][1] * Cp[1] +
-                       -invRq[2][2] * Cp[2] + -invRq[2][3]
+                       -invRq[2][2] * Cp[2] + -invRq[2][3];
 
             // Find supporting vertex of P/Q in the direction of Cp
             p = searchForSupportVertex(poly_p.vertices,
-                                       poly_p.neighbors,
-                                       poly_p.timestamps,
+                                       poly_p.neighbours,
+                                       poly_p.vertexTimestamps,
                                        p,
                                        rp_cp);
             q = searchForSupportVertex(poly_q.vertices,
-                                       poly_q.neighbors,
-                                       poly_q.timestamps,
+                                       poly_q.neighbours,
+                                       poly_q.vertexTimestamps,
                                        q,
                                        rq_cp);
 
-            if(ploy_p.seenBefore[p] && ploy_q.seenBefore[q])
+            if(poly_p.seenBefore[p] && poly_q.seenBefore[q])
                 return 0;
 
-            ploy_p.seenBefore[p] = true;
-            ploy_q.seenBefore[q] = true;
+            poly_p.seenBefore[p] = true;
+            poly_q.seenBefore[q] = true;
 
             vertexSetP[n][0] = poly_p.vertices[p][0];
             vertexSetP[n][1] = poly_p.vertices[p][1];
@@ -729,30 +732,25 @@ public class QCollide
      * Function to compute the point in a polytope closest to the origin in
      * 3-space.  The polytope size m is restricted to 1 < m <= 4.
      *
-     * @param P Table of 3-element points containing polytope's vertices
-     * @param m Number of points in P
-     * @param nearPnt An empty array of size 3
-     * @param nearIndx An empty array of size 4
-     * @param lambda An empty array of size 4
-     *
-     *   On Exit:
-     * @param near_pnt - the point in P closest to the origin.
-     * @param near_indx - indices for a subset of P which is affinely independent
-     *              See eq. (14).
-     * @param lambda - the lambda as in eq. (14)
+     * @param V Table of 3-element points containing polytope's vertices
+     * @param n Number of points in P
+     * @param nearPnt An empty array of size 3 - contains the point in P closest to the origin on exit
+     * @param nearIndx An empty array of size 4  - indices for a subset of P which is affinely independent
+     *  on exit. See eq. (14)
+     * @param lambda An empty array of size 4 - the lambda as in eq. (14) on exit
      * @return The number of entries in nearIndx and lambda.
      */
-    private int computeJohson(double[][] V,
-                              int n,
-                              double[] nearPnt,
-                              int[] nearIndx,
-                              double[] lambda,
-                              int[] Is)
+    private int computeJohnson(double[][] V,
+                               int n,
+                               double[] nearPnt,
+                               int[] nearIndx,
+                               double[] lambda,
+                               int[] Is)
     {
-        int size;
+        int size = 0;
 
         // Call computeSubDist with appropriate tables according to size of P
-        switch(m)
+        switch(n)
         {
             case 2:
                 size = computeSubDist(V, n, jo_2, Is_2, IsC_2, nearPnt,
@@ -776,7 +774,7 @@ public class QCollide
      * Function to compute the point in a polytope closest to the origin in
      * 3-space. The polytope size m is restricted to 1 < m <= 4.
      *
-     * @param P Table of 3-element points containing polytope's vertices
+     * @param V Table of 3-element points containing polytope's vertices
      * @param m Number of points in P
      * @param jo Table of indices for storing Dj_P cofactors in Di_V
      * @param Is Indices into P for all sets of subsets of P
@@ -892,6 +890,7 @@ public class QCollide
         j = 0;
 
         // loop through all Is
+        int num_combos = Is[s][0];
         for(i = 1; i <= num_combos; i++)
         {
             is = Is[s][i];
@@ -917,7 +916,6 @@ public class QCollide
      * @param D_V Array of determinants for each set.
      * @param Di_V Cofactors for each set.
      * @param Is Indices for each set.
-     * @param c2 Row size offset.
      * @return The index of the set that is numerically closest to eq. (14).
      */
     private int alternateSubDist(double[][] V,
@@ -938,7 +936,7 @@ public class QCollide
             if(D_V[s] > 0.0)
             {
                 int num_combos = Is[s][0];
-                for(i = 1; i <= num_combos; i++)
+                for(int i = 1; i <= num_combos; i++)
                 {
                     is = Is[s][i];
                     if(Di_V[s][is] <= 0)
@@ -953,6 +951,7 @@ public class QCollide
                 // Compute equation (33) in Gilbert
                 int k = Is[s][1];
                 double sum = 0;
+                int num_combos = Is[s][0];
                 for(int i = 1; i <= num_combos; i++)
                 {
                     is = Is[s][i];
@@ -1019,7 +1018,7 @@ public class QCollide
      *    for P and Q in nearIndxP, nearIndxP
      * @param distance An array of size 1 for to the closest distance
      *    between P and Q i.e. |closestq - closestp|
-     * @param closestfeatures Array of size 2 to continat the index of the
+     * @param closestFeatures Array of size 2 to continat the index of the
      *    supporting vertices of Q and P in the direction VP and -VP respectively.
      */
     private boolean computeClosestPoint(CollisionPair collidables,
@@ -1187,7 +1186,7 @@ public class QCollide
 
         for (i = 1; i < set_size; i++)
         {
-            lastP2 = nearIndxp[i];
+            lastP2 = nearIndxP[i];
             lda = lambda[i];
             coords = poly_p.vertices[lastP2];
 
@@ -1195,7 +1194,7 @@ public class QCollide
             closestP[1] += coords[1] * lda;
             closestP[2] += coords[2] * lda;
 
-            lastP1 = nearIndxq[i];
+            lastP1 = nearIndxQ[i];
             coords = poly_q.vertices[lastP1];
             closestQ[0] += coords[0] * lda;
             closestQ[1] += coords[1] * lda;
@@ -1250,7 +1249,7 @@ public class QCollide
      * set difference of two polytopes. See equations (8) & (9).
      *
      * @param Mp Transformation matrix of P
-     * @param InvMp Inverse transformation matrix of P
+     * @param invMp Inverse transformation matrix of P
      * @param Mq Transformation matrix of Q
      * @param invMq Inverse transformation matrix of Q
      * @param A Vector at which to evaluate support and contact functions.
@@ -1290,10 +1289,10 @@ public class QCollide
      *
      * @param poly The polytope to start looking in for the contact function
      * @param M transformation matrix
-     * @param InvM Inverse transformation matrix
+     * @param invM Inverse transformation matrix
      * @param A Vector at which support and contact functions will be evaluated
      * @param Cp  Empty 3-element array to copy contact point of P w.r.t. A
-     * @param initVer Initial vertex for local searching
+     * @param initVert Initial vertex for local searching
      * @return index of the closest vertex
      */
     private int computeHp(CollisionPolytope poly,

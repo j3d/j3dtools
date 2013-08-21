@@ -46,11 +46,14 @@
         <module>org.j3d-terrain</module>
         <module>org.j3d-texture</module>
         <module>org.j3d-device</module>
+        <module>org.j3d-ui</module>
     </modules>
 
     <properties>
         <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
+        <maven.javadoc.plugin.version>2.9.1</maven.javadoc.plugin.version>
         <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
+        <javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
     </properties>
 
     <pluginRepositories>
@@ -76,7 +79,9 @@
             <id>project.local</id>
             <name>project</name>
             <url>file:${project.basedir}/repo</url>
-        </repository>    </repositories>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
@@ -95,6 +100,38 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>2.6</version>
+                <configuration>
+                    <supportMultiLineFiltering>true</supportMultiLineFiltering>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.plugin.version}</version>
+                <configuration>
+                    <outputDirectory>${project.basedir}/docs/javadoc</outputDirectory>
+                    <docfilessubdirs>true</docfilessubdirs>
+                    <windowtitle>j3d.org Code Library ${project.version}</windowtitle>
+                    <doctitle>j3d.org Code Repository API ${project.version}</doctitle>
+                    <header>j3d.org Code</header>
+                    <bottom><![CDATA[
+                        <center>
+                        Latest Info from <a href="http://code.j3d.org">http://code.j3d.org/</a> <br>
+                            <font size=2>Copyright &copy; 2001 - 2013<a href="http://www.j3d.org">j3d.org</a></font>
+                        </center>
+                        ]]>
+                    </bottom>
+                    <overview>org.j3d-core/src/main/javadoc/overview.html</overview>
+                    <quiet>true</quiet>
+                    <excludePackageNames>
+                        org.j3d.ui.collision
+                    </excludePackageNames>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -165,11 +202,6 @@
                 <artifactId>findbugs-maven-plugin</artifactId>
                 <version>2.4.0</version>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
-            </plugin>
         </plugins>
     </reporting>
 
@@ -196,6 +228,7 @@
                                 </goals>
                             </execution>
                         </executions>
+
                     </plugin>
                 </plugins>
             </build>

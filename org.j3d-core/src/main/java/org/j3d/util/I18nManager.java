@@ -112,7 +112,7 @@ public class I18nManager {
 
     /** The name of the default resource bundle to load */
     private static final String DEFAULT_RESOURCES_FILE =
-        "config.i18n.j3dorgResources";
+        "config.i18n.org-j3d-core-messages";
 
     /** The global manager instance shared by everyone */
     private static I18nManager instance;
