@@ -9,13 +9,10 @@ Each directory is given relative to the root of the tree as checked out
 from CVS.
 
 GNU LGPL (LGPL.txt):
-  All code under the various modules 
+  All code under the various main modules
 
 BSD (BSD.txt):
   All code under the module org.j3d-examples
 
 Documents under /docs are not currently assigned a license, thus
 redistributable under standard copyright terms.
-
-Files in /contrib each have their own license. Please consult the source
-to find out in each specific case.
