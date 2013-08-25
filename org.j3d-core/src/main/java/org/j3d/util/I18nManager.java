@@ -13,6 +13,7 @@
 package org.j3d.util;
 
 // External imports
+
 import java.util.prefs.*;
 
 import java.util.Locale;
@@ -24,12 +25,12 @@ import java.util.ResourceBundle;
 /**
  * Manager of all internationalisation in the toolkit.
  * <p>
- *
+ * <p/>
  * This class acts as a singleton manager for internationalisation within
  * j3d.org Code and all applications built on it. It may be used for any string
  * resource that may require internationalisation - not just text on buttons
  * but also error messages, log messages etc.
- *
+ * <p/>
  * <p>
  * <b>External Application Usage</b>
  * <p>
@@ -46,7 +47,7 @@ import java.util.ResourceBundle;
  * create separate sets of settings on a per-application basis rather than
  * relying on global settings for the user's computer.
  * <p>
- *
+ * <p/>
  * The second direct customisation point is to provide a base name for the
  * resource bundle to be loaded. If no name is provided, it will load the
  * resource bundle named <code>config.i18n.j3dorgResources</code> from
@@ -57,13 +58,13 @@ import java.util.ResourceBundle;
  * to do so will result in blank areas on the user interface and most
  * probably an unusable application.
  * <p>
- *
+ * <p/>
  * If an application wishes to also internationalise other settings, such
  * as numerical representations, then you can query this class for the
  * Locale it actually loaded, rather than the one you requested (fairly
  * typical issue).
  * <p>
- *
+ * <p/>
  * <b>Note:</b>
  * <p>
  * Because this class just stores string values, it is entirely possible
@@ -71,11 +72,11 @@ import java.util.ResourceBundle;
  * internationalisation system. For example, storing the names of icon
  * files could be a valid use of this class, allowing localisation for
  * more than just text, but also graphical resources.
- *
+ * <p/>
  * <p>
  * <b>Resource Bundle Property Naming Conventions</b>
  * </p>
- *
+ * <p/>
  * With a property file containing all the internationalisation of a
  * probably very large application, naming conventions are a necessity.
  * Properties that are internal to any j3d.org-specific user interface
@@ -85,7 +86,8 @@ import java.util.ResourceBundle;
  * @author Justin Couch
  * @version $Revision: 1.1 $
  */
-public class I18nManager {
+public class I18nManager
+{
 
     /**
      * Error message when the language code identifier provided is not 2
@@ -112,7 +114,7 @@ public class I18nManager {
 
     /** The name of the default resource bundle to load */
     private static final String DEFAULT_RESOURCES_FILE =
-        "config.i18n.org-j3d-core-messages";
+        "config.i18n.org-j3d-core-resources";
 
     /** The global manager instance shared by everyone */
     private static I18nManager instance;
@@ -138,7 +140,8 @@ public class I18nManager {
     /**
      * Private constructor to prevent direct instantiation.
      */
-    private I18nManager() {
+    private I18nManager()
+    {
         Preferences prefs = Preferences.userNodeForPackage(I18nManager.class);
 
         countryCode = prefs.get(COUNTRY_PREF, null);
@@ -156,7 +159,8 @@ public class I18nManager {
      * Get the global instance of the internationalisation manager for the
      * given root class.
      */
-    public static I18nManager getManager() {
+    public static I18nManager getManager()
+    {
 
         if(instance == null)
             instance = new I18nManager();
@@ -178,31 +182,38 @@ public class I18nManager {
      * defaults for all users of this library that don't explicitly set an
      * application name.
      *
-     * @param appName A name string describing the end user application
+     * @param appName      A name string describing the end user application
      * @param resourceFile If not null, use this as the resource bundle
-     *    base name to be fetched, rather than the default file name
+     *                     base name to be fetched, rather than the default file name
      */
-    public void setApplication(String appName, String resourceFile) {
+    public void setApplication(String appName, String resourceFile)
+    {
 
         Preferences main_prefs =
             Preferences.userNodeForPackage(I18nManager.class);
 
         boolean node_check_ok = false;
 
-        try {
+        try
+        {
             node_check_ok = main_prefs.nodeExists(appName);
-        } catch(BackingStoreException bse) {
+        }
+        catch(BackingStoreException bse)
+        {
             // ignore this exception and treat it like we couldn't find
             // it.
         }
 
-        if(node_check_ok) {
+        if(node_check_ok)
+        {
             Preferences prefs = main_prefs.node(appName);
 
             countryCode = prefs.get(COUNTRY_PREF, null);
             languageCode = prefs.get(LANGUAGE_PREF, null);
             variantCode = prefs.get(VARIANT_PREF, null);
-        } else {
+        }
+        else
+        {
             // It doesn't exist, so force the creation but use the
             // default platform locale settings
             Preferences prefs = main_prefs.node(appName);
@@ -215,8 +226,8 @@ public class I18nManager {
         applicationName = appName;
 
         resourceFileName = resourceFile == null ?
-                           DEFAULT_RESOURCES_FILE :
-                           resourceFile;
+            DEFAULT_RESOURCES_FILE :
+            resourceFile;
 
         Locale locale = findLocale();
         stringResources = ResourceBundle.getBundle(resourceFileName,
@@ -229,7 +240,8 @@ public class I18nManager {
      *
      * @return The current application name or null if not set
      */
-    public String getApplication() {
+    public String getApplication()
+    {
         return applicationName;
     }
 
@@ -239,7 +251,8 @@ public class I18nManager {
      *
      * @return The name of the base resource file used for text strings
      */
-    public String getResourceName() {
+    public String getResourceName()
+    {
         return resourceFileName;
     }
 
@@ -251,12 +264,12 @@ public class I18nManager {
      * an application name has been set. If no application name is set, this
      * will persist for the lifetime of this application instance, but be lost
      * on restart.
-     * <p>
+     * <p/>
      * Setting the language value to null will reset the system back to the
      * default platform setting. The other arguments may be null or specified.
      * If null, the defaults for those are used from the local platform
      * settings.
-     * <p>
+     * <p/>
      * Language and country strings are required to be the 2 letter identifiers
      * used in the ISO specifications. See the documentation of
      * {@link java.util.Locale} for more information about valid codes. The
@@ -264,18 +277,19 @@ public class I18nManager {
      * if they are not two characters.
      *
      * @param language The language identifier to load
-     * @param country The optional country code to load
-     * @param variant The optional language variant to load
+     * @param country  The optional country code to load
+     * @param variant  The optional language variant to load
      * @throws IllegalArgumentException if the country or language codes are
-     *   not correctly formatted (length and case)
+     *                                  not correctly formatted (length and case)
      * @see java.util.Locale
      * @see <a href="http://www.loc.gov/standards/iso639-2/englangn.html">
-     *   http://www.loc.gov/standards/iso639-2/englangn.html</a>
+     *      http://www.loc.gov/standards/iso639-2/englangn.html</a>
      * @see <a href="http://www.davros.org/misc/iso3166.txt">
-     *   http://www.davros.org/misc/iso3166.txt</a>
+     *      http://www.davros.org/misc/iso3166.txt</a>
      */
     public void changeLocale(String language, String country, String variant)
-        throws IllegalArgumentException {
+        throws IllegalArgumentException
+    {
 
         if(language != null && language.length() != 2)
             throw new IllegalArgumentException(INVALID_LANG_LENGTH + language);
@@ -287,7 +301,8 @@ public class I18nManager {
 
         // If we have an application name set, store these preferences
         // for that application. Otherwise, ignore the requests
-        if(applicationName != null) {
+        if(applicationName != null)
+        {
             Preferences main_prefs =
                 Preferences.userNodeForPackage(I18nManager.class);
 
@@ -326,7 +341,8 @@ public class I18nManager {
      *
      * @return The locale corresponding to the loaded resource files
      */
-    public Locale getFoundLocale() {
+    public Locale getFoundLocale()
+    {
         return stringResources.getLocale();
     }
 
@@ -335,7 +351,8 @@ public class I18nManager {
      *
      * @return The current language code or null if not set
      */
-    public String getRequestedLanguage() {
+    public String getRequestedLanguage()
+    {
         return languageCode;
     }
 
@@ -344,7 +361,8 @@ public class I18nManager {
      *
      * @return The current country code or null if not set
      */
-    public String getRequestedCountry() {
+    public String getRequestedCountry()
+    {
         return countryCode;
     }
 
@@ -353,14 +371,16 @@ public class I18nManager {
      *
      * @return The current language variant code or null if not set
      */
-    public String getRequestedLanguageVariant() {
+    public String getRequestedLanguageVariant()
+    {
         return variantCode;
     }
 
     /**
      * Get the localised string for the given property name.
      */
-    public String getString(String property) {
+    public String getString(String property)
+    {
         return stringResources.getString(property);
     }
 
@@ -370,17 +390,25 @@ public class I18nManager {
      *
      * @return The new locale for the current settings
      */
-    private Locale findLocale() {
+    private Locale findLocale()
+    {
 
         Locale locale;
 
-        if(languageCode == null) {
+        if(languageCode == null)
+        {
             locale = Locale.getDefault();
-        } else if(countryCode == null) {
+        }
+        else if(countryCode == null)
+        {
             locale = new Locale(languageCode);
-        } else if(variantCode == null) {
+        }
+        else if(variantCode == null)
+        {
             locale = new Locale(languageCode, countryCode);
-        } else {
+        }
+        else
+        {
             locale = new Locale(languageCode, countryCode, variantCode);
         }
 
