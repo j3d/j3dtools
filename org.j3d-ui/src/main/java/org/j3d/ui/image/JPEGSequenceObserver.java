@@ -12,15 +12,12 @@ package org.j3d.ui.image;
 // Standard imports
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
+import javax.imageio.IIOImage;
+import javax.imageio.stream.FileImageOutputStream;
 
 // Application specific imports
-import org.j3d.ui.CapturedImageObserver;
 
 /**
  * An image observer that turns each call into an separate JPEG image as a
@@ -38,10 +35,10 @@ import org.j3d.ui.CapturedImageObserver;
  * @author Justin Couch
  * @version $Revision $
  */
-public class JPEGSequenceObserver implements CapturedImageObserver
+public class JPEGSequenceObserver extends BaseJPEGImageObserver
 {
     /** A flag to indicate if we should be capturing the image */
-    private boolean enabled = false;
+    private boolean enabled;
 
     /** The currently set filename base */
     private String filename;
@@ -58,6 +55,7 @@ public class JPEGSequenceObserver implements CapturedImageObserver
      */
     public JPEGSequenceObserver()
     {
+        enabled = false;
     }
 
     /**
@@ -119,17 +117,15 @@ public class JPEGSequenceObserver implements CapturedImageObserver
 
         try
         {
-            File current =
-                new File(directory, filename + sequenceNumber + ".jpg");
+            File file = new File(directory, filename + sequenceNumber + ".jpg");
+            FileImageOutputStream out = new FileImageOutputStream(file);
 
-            FileOutputStream out = new FileOutputStream(current);
-            JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
-            JPEGEncodeParam param = encoder.getDefaultJPEGEncodeParam(img);
+            IIOImage jimg = new IIOImage(img, null, null);
 
-            param.setQuality(0.9f, false); // 90% quality JPEG
-            encoder.setJPEGEncodeParam(param);
-            encoder.encode(img);
+            targetWriter.setOutput(out);
+            targetWriter.write(null, jimg, writeParams);
 
+            out.flush();
             out.close();
         }
         catch(IOException e)

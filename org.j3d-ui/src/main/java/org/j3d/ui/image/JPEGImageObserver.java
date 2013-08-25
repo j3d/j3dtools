@@ -12,15 +12,12 @@ package org.j3d.ui.image;
 // Standard imports
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
 
 // Application specific imports
-import org.j3d.ui.CapturedImageObserver;
+import javax.imageio.IIOImage;
+import javax.imageio.stream.FileImageOutputStream;
 
 /**
  * A one-shot image observer that turns the image into a JPEG image.
@@ -30,23 +27,20 @@ import org.j3d.ui.CapturedImageObserver;
  * <P>
  *
  * If the filename already exists, it will automatically overwrite the existing
- * image. If the filename contains non-existant intermediate directories, these
+ * image. If the filename contains non-existent intermediate directories, these
  * will be automatically created.
  * <P>
- *
- * This uses the Sun codec classes to save the image to disk. Don't know how
- * this will react on non-sun JVMs.
  *
  * @author Justin Couch
  * @version $Revision $
  */
-public class JPEGImageObserver implements CapturedImageObserver
+public class JPEGImageObserver extends BaseJPEGImageObserver
 {
     /** A flag to indicate if we have written the image */
-    private boolean hasFired = false;
+    private boolean hasFired;
 
     /** A flag to indicate we should capture the next frame */
-    private boolean captureNextFrame = false;
+    private boolean captureNextFrame;
 
     /** The currently set filename. */
     private String filename;
@@ -57,6 +51,8 @@ public class JPEGImageObserver implements CapturedImageObserver
      */
     public JPEGImageObserver()
     {
+        hasFired = false;
+        captureNextFrame = false;
     }
 
     /**
@@ -98,6 +94,7 @@ public class JPEGImageObserver implements CapturedImageObserver
      * @param img The image that was captured
      * @throws IllegalStateException The filename has not been set
      */
+    @Override
     public void canvasImageCaptured(BufferedImage img)
     {
         if(hasFired || !captureNextFrame)
@@ -113,14 +110,14 @@ public class JPEGImageObserver implements CapturedImageObserver
             File dirs = file.getParentFile();
             dirs.mkdirs();
 
-            FileOutputStream out = new FileOutputStream(file);
-            JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
-            JPEGEncodeParam param = encoder.getDefaultJPEGEncodeParam(img);
+            FileImageOutputStream out = new FileImageOutputStream(file);
 
-            param.setQuality(0.9f, false); // 90% quality JPEG
-            encoder.setJPEGEncodeParam(param);
-            encoder.encode(img);
+            IIOImage jimg = new IIOImage(img, null, null);
 
+            targetWriter.setOutput(out);
+            targetWriter.write(null, jimg, writeParams);
+
+            out.flush();
             out.close();
         }
         catch(IOException e)
