@@ -47,6 +47,7 @@
         <module>org.j3d-texture</module>
         <module>org.j3d-device</module>
         <module>org.j3d-ui</module>
+        <module>org.j3d-filter</module>
     </modules>
 
     <properties>
