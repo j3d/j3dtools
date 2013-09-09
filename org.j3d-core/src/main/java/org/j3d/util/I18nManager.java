@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                        Copyright j3d.org (c) 2009
+ *                        Copyright j3d.org (c) 2009 - 2013
  *                               Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -14,6 +14,8 @@ package org.j3d.util;
 
 // External imports
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.*;
 
 import java.util.Locale;
@@ -135,7 +137,13 @@ public class I18nManager
     private String variantCode;
 
     /** The resource bundle with all our internationalised strings */
-    private ResourceBundle stringResources;
+    private List<ResourceBundle> stringResources;
+
+    /**
+     * The locale that we've looked up matching as close as possible to the
+     * user's requested setup.
+     */
+    private Locale usedLocale;
 
     /**
      * Private constructor to prevent direct instantiation.
@@ -148,11 +156,12 @@ public class I18nManager
         languageCode = prefs.get(LANGUAGE_PREF, null);
         variantCode = prefs.get(VARIANT_PREF, null);
 
-        Locale locale = findLocale();
+        usedLocale = findLocale();
 
         resourceFileName = DEFAULT_RESOURCES_FILE;
-        stringResources = ResourceBundle.getBundle(resourceFileName,
-                                                   locale);
+        stringResources = new ArrayList<ResourceBundle>();
+
+        stringResources.add(ResourceBundle.getBundle(resourceFileName, usedLocale));
     }
 
     /**
@@ -229,9 +238,10 @@ public class I18nManager
             DEFAULT_RESOURCES_FILE :
             resourceFile;
 
-        Locale locale = findLocale();
-        stringResources = ResourceBundle.getBundle(resourceFileName,
-                                                   locale);
+        usedLocale = findLocale();
+        stringResources.clear();
+
+        stringResources.add(ResourceBundle.getBundle(resourceFileName, usedLocale));
     }
 
     /**
@@ -328,10 +338,10 @@ public class I18nManager
         countryCode = country;
         variantCode = variant;
 
-        Locale locale = findLocale();
+        usedLocale = findLocale();
 
-        stringResources = ResourceBundle.getBundle(resourceFileName,
-                                                   locale);
+        stringResources.clear();
+        stringResources.add(ResourceBundle.getBundle(resourceFileName, usedLocale));
     }
 
     /**
@@ -343,7 +353,7 @@ public class I18nManager
      */
     public Locale getFoundLocale()
     {
-        return stringResources.getLocale();
+        return usedLocale;
     }
 
     /**
@@ -381,7 +391,16 @@ public class I18nManager
      */
     public String getString(String property)
     {
-        return stringResources.getString(property);
+        String retval = null;
+
+        for(ResourceBundle bundle: stringResources) {
+            retval = bundle.getString(property);
+            if(retval != null) {
+                break;
+            }
+        }
+
+        return retval;
     }
 
     /**
