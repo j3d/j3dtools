@@ -15,7 +15,7 @@ import javax.vecmath.Vector3d;
 import javax.vecmath.Matrix4d;
 
 // Application specific imports
-import org.j3d.util.UserSupplementData;
+// none
 
 /**
  * A collection of utility methods to do geometry intersection tests.

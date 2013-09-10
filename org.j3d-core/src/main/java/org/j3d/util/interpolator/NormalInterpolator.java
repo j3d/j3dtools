@@ -10,7 +10,7 @@
 package org.j3d.util.interpolator;
 
 // Standard imports
-import javax.vecmath.Vector3f;
+// None
 
 // Application specific imports
 // none

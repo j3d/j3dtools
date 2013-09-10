@@ -11,7 +11,6 @@ package org.j3d.loaders;
 
 // Standard imports
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 
 import javax.vecmath.Point2d;
 
