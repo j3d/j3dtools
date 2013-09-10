@@ -14,12 +14,8 @@ package org.j3d.util;
 
 // External imports
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.prefs.*;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 // Internal imports
 // None
@@ -125,7 +121,7 @@ public class I18nManager
     private String applicationName;
 
     /** Resource bundle name to load, if overridden by the end user */
-    private String resourceFileName;
+    private List<String> resourceFileNames;
 
     /** The currently set country code */
     private String countryCode;
@@ -158,10 +154,12 @@ public class I18nManager
 
         usedLocale = findLocale();
 
-        resourceFileName = DEFAULT_RESOURCES_FILE;
+        resourceFileNames = new ArrayList<String>();
+        resourceFileNames.add(DEFAULT_RESOURCES_FILE);
+
         stringResources = new ArrayList<ResourceBundle>();
 
-        stringResources.add(ResourceBundle.getBundle(resourceFileName, usedLocale));
+        stringResources.add(ResourceBundle.getBundle(DEFAULT_RESOURCES_FILE, usedLocale));
     }
 
     /**
@@ -197,7 +195,6 @@ public class I18nManager
      */
     public void setApplication(String appName, String resourceFile)
     {
-
         Preferences main_prefs =
             Preferences.userNodeForPackage(I18nManager.class);
 
@@ -234,14 +231,31 @@ public class I18nManager
 
         applicationName = appName;
 
-        resourceFileName = resourceFile == null ?
-            DEFAULT_RESOURCES_FILE :
-            resourceFile;
-
         usedLocale = findLocale();
-        stringResources.clear();
 
-        stringResources.add(ResourceBundle.getBundle(resourceFileName, usedLocale));
+        resourceFileNames.clear();
+        resourceFileNames.add(resourceFile == null ? DEFAULT_RESOURCES_FILE : resourceFile);
+
+        reloadResources();
+    }
+
+    /**
+     * Add another resource file for possible properties to load. This comes later in
+     * the preference list than those registered previously to this file.
+     * @param resourceFile
+     */
+    public void addResource(String resourceFile)
+    {
+        if(applicationName == null)
+        {
+            throw new IllegalStateException("Can't add a resource until an application name has been set");
+        }
+
+        if(resourceFile == null || resourceFile.trim().isEmpty())
+            return;
+
+        resourceFileNames.add(resourceFile);
+        stringResources.add(ResourceBundle.getBundle(resourceFile, usedLocale));
     }
 
     /**
@@ -256,14 +270,14 @@ public class I18nManager
     }
 
     /**
-     * Get the name of the resource file that is being loaded. If none is
+     * Get the name of the resource file(s) that are being loaded. If none are
      * set, it will return the default file name used by this library.
      *
-     * @return The name of the base resource file used for text strings
+     * @return The names of the base resource files used for text strings
      */
-    public String getResourceName()
+    public List<String> getResourceNames()
     {
-        return resourceFileName;
+        return Collections.unmodifiableList(resourceFileNames);
     }
 
     /**
@@ -340,8 +354,7 @@ public class I18nManager
 
         usedLocale = findLocale();
 
-        stringResources.clear();
-        stringResources.add(ResourceBundle.getBundle(resourceFileName, usedLocale));
+        reloadResources();
     }
 
     /**
@@ -354,6 +367,32 @@ public class I18nManager
     public Locale getFoundLocale()
     {
         return usedLocale;
+    }
+
+    /**
+     * Clear the current settings for locale and return it back to the platform
+     * default settings.
+     */
+    public void clearLocale()
+    {
+        Preferences main_prefs =
+            Preferences.userNodeForPackage(I18nManager.class);
+
+        if(applicationName != null)
+        {
+            Preferences prefs = main_prefs.node(applicationName);
+            prefs.remove(COUNTRY_PREF);
+            prefs.remove(LANGUAGE_PREF);
+            prefs.remove(VARIANT_PREF);
+        }
+
+        countryCode = null;
+        languageCode = null;
+        variantCode = null;
+
+        usedLocale = findLocale();
+
+        reloadResources();
     }
 
     /**
@@ -393,9 +432,11 @@ public class I18nManager
     {
         String retval = null;
 
-        for(ResourceBundle bundle: stringResources) {
-            retval = bundle.getString(property);
-            if(retval != null) {
+        for(ResourceBundle bundle: stringResources)
+        {
+            if(bundle.containsKey(property))
+            {
+                retval = bundle.getString(property);
                 break;
             }
         }
@@ -432,5 +473,26 @@ public class I18nManager
         }
 
         return locale;
+    }
+
+    /**
+     * Internal convenience method to reload the resources from the given set
+     * of file names.
+     */
+    private void reloadResources()
+    {
+        stringResources.clear();
+
+        for(String name: resourceFileNames)
+        {
+            try
+            {
+                stringResources.add(ResourceBundle.getBundle(name, usedLocale));
+            }
+            catch(Exception e)
+            {
+                System.err.println("Unable to locate resource file " + name);
+            }
+        }
     }
 }
