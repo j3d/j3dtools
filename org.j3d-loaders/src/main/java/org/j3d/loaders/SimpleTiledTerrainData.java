@@ -12,8 +12,6 @@ package org.j3d.loaders;
 // Standard imports
 import java.awt.Rectangle;
 
-import javax.vecmath.Point2d;
-
 // Application specific imports
 import org.j3d.terrain.AbstractTiledTerrainData;
 import org.j3d.util.interpolator.ColorInterpolator;
@@ -106,7 +104,7 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
      */
     public SimpleTiledTerrainData(float[][] data,
                                 boolean mustCopy,
-                                Point2d stepDetails)
+                                float[] stepDetails)
     {
         if(mustCopy)
         {
@@ -129,8 +127,8 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
             gridWidth = heightMap[0].length;
         }
 
-        gridStepX = stepDetails.x;
-        gridStepY = stepDetails.y;
+        gridStepX = stepDetails[0];
+        gridStepY = stepDetails[1];
 
         calcTileSize();
     }

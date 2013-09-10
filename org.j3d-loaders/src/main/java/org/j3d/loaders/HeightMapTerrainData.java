@@ -12,8 +12,6 @@ package org.j3d.loaders;
 // Standard imports
 import java.awt.image.BufferedImage;
 
-import javax.vecmath.Point2d;
-
 // Application specific imports
 import org.j3d.terrain.AbstractStaticTerrainData;
 import org.j3d.util.interpolator.ColorInterpolator;
@@ -106,7 +104,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      */
     public HeightMapTerrainData(float[][] data,
                                 boolean mustCopy,
-                                Point2d stepDetails)
+                                double[] stepDetails)
     {
         if(mustCopy)
         {
@@ -129,8 +127,8 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
             gridWidth = heightMap[0].length;
         }
 
-        gridStepX = stepDetails.x;
-        gridStepY = stepDetails.y;
+        gridStepX = stepDetails[0];
+        gridStepY = stepDetails[1];
     }
 
     //----------------------------------------------------------
