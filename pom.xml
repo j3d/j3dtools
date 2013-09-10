@@ -9,8 +9,8 @@
     <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>org.j3d Tools</name>
-    <description>Top-level maven project for j3d.org tools software</description>
+    <name>j3d.org Tools</name>
+    <description>A set of Java-based software libraries for 3D graphics rendering</description>
     <url>http://code.j3d.org</url>
     <licenses>
         <license>
@@ -37,6 +37,26 @@
         <contributor>
             <name>Terry Nordbraten</name>
         </contributor>
+        <contributor>
+            <name>Institutt for energiteknikk</name>
+            <url>http://www.external.hrp.no/vr/</url>
+        </contributor>
+        <contributor>
+            <name>Bill Day</name>
+            <url>http://www.billday.com/</url>
+        </contributor>
+        <contributor>
+            <name>Paul Szawlowski</name>
+            <url>http://www.akh-wien.ac.at/imc/</url>
+        </contributor>
+        <contributor>
+            <name>Daniel Selman</name>
+            <url>http://www.tornadolabs.com/</url>
+        </contributor>
+        <contributor>
+            <name>Ryan Wilhm</name>
+            <email>ryan@entropica.com</email>
+        </contributor>
     </contributors>
 
     <modules>
@@ -56,6 +76,12 @@
         <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
         <javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
     </properties>
+
+    <scm>
+        <connection>scm:git:git://github.com/j3d/j3dtools.git</connection>
+        <developerConnection>scm:git:git@github.com:j3d/j3dtools.git</developerConnection>
+        <url>https://github.com/j3d/j3dtools</url>
+    </scm>
 
     <pluginRepositories>
         <pluginRepository>
