@@ -163,14 +163,14 @@ public class Coordinate2DInterpolator extends Interpolator
                     if(next_key != prev_key)
                         fraction = (key - prev_key) / (next_key - prev_key);
 
-                    for(int j = valueLength; --j > 1; )
+                    for(int j = valueLength; --j > 0; )
                     {
                         diff = p1[j] - p0[j];
                         sharedVector[j] = p0[j] + fraction * diff;
                         j--;
                         diff = p1[j] - p0[j];
                         sharedVector[j] = p0[j] + fraction * diff;
-                   }
+                    }
 
                     break;
 
@@ -188,7 +188,7 @@ public class Coordinate2DInterpolator extends Interpolator
      * as final in order to encourage the compiler to inline the code for
      * faster execution.
      */
-    private final void realloc()
+    private void realloc()
     {
         if(currentSize == allocatedSize)
         {

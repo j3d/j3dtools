@@ -9,10 +9,9 @@
 
 package org.j3d.util.interpolator;
 
+import org.j3d.maths.vector.Point3d;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-
-import javax.vecmath.Point3f;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -81,7 +80,7 @@ public class PositionInterpolatorTest
     }
 
     /**
-     * Test that we can create a basic array of values using Point3f
+     * Test that we can create a basic array of values using Point3d
      * inserted linearly without generating exceptions.
      */
     @Test(groups = "unit")
@@ -89,24 +88,27 @@ public class PositionInterpolatorTest
     {
         int i;
         int num_keys = keys.length;
-        Point3f point;
+        Point3d point;
 
         PositionInterpolator interpolator = new PositionInterpolator();
 
         for(i = 0; i < num_keys; i++)
         {
-            point = new Point3f(values[i]);
+            point = new Point3d();
+            point.x = values[i][0];
+            point.y = values[i][1];
+            point.z = values[i][2];
             interpolator.addKeyFrame(keys[i], point);
         }
 
         // now fetch these values back again and make sure they are the same
         for(i = 0; i < num_keys; i++)
         {
-            Point3f vals = interpolator.pointValue(keys[i]);
+            Point3d vals = interpolator.pointValue(keys[i]);
 
-            assertEquals(vals.x, values[i][0], i + " X coord not same");
-            assertEquals(vals.y, values[i][1], i + " Y coord not same");
-            assertEquals(vals.z, values[i][2], i + " Z coord not same");
+            assertEquals(vals.x, (double)values[i][0], i + " X coord not same");
+            assertEquals(vals.y, (double)values[i][1], i + " Y coord not same");
+            assertEquals(vals.z, (double)values[i][2], i + " Z coord not same");
         }
     }
 
@@ -159,29 +161,38 @@ public class PositionInterpolatorTest
     {
         int i;
         int num_keys = keys.length;
-        Point3f point;
+        Point3d point;
 
         assertTrue(num_keys > 2, "Not enough keys ( < 3) to do this test");
 
         PositionInterpolator interpolator = new PositionInterpolator();
 
-        point = new Point3f(values[0]);
+        point = new Point3d();
+        point.x = values[0][0];
+        point.y = values[0][1];
+        point.z = values[0][2];
         interpolator.addKeyFrame(keys[0], point);
 
-        point = new Point3f(values[2]);
+        point = new Point3d();
+        point.x = values[2][0];
+        point.y = values[2][1];
+        point.z = values[2][2];
         interpolator.addKeyFrame(keys[2], point);
 
-        point = new Point3f(values[1]);
+        point = new Point3d();
+        point.x = values[1][0];
+        point.y = values[1][1];
+        point.z = values[1][2];
         interpolator.addKeyFrame(keys[1], point);
 
         // now fetch these values back again and make sure they are the same
         for(i = 0; i < num_keys; i++)
         {
-            Point3f vals = interpolator.pointValue(keys[i]);
+            Point3d vals = interpolator.pointValue(keys[i]);
 
-            assertEquals(vals.x, values[i][0], i + " X coord not same");
-            assertEquals(vals.y, values[i][1], i + " Y coord not same");
-            assertEquals(vals.z, values[i][2], i + " Z coord not same");
+            assertEquals(vals.x, (double)values[i][0], i + " X coord not same");
+            assertEquals(vals.y, (double)values[i][1], i + " Y coord not same");
+            assertEquals(vals.z, (double)values[i][2], i + " Z coord not same");
         }
     }
 
@@ -239,22 +250,25 @@ public class PositionInterpolatorTest
     {
         int i;
         int num_keys = keys.length;
-        Point3f point;
+        Point3d point;
 
         PositionInterpolator interpolator = new PositionInterpolator();
 
         for(i = 0; i < num_keys; i++)
         {
-            point = new Point3f(values[i]);
+            point = new Point3d();
+            point.x = values[i][0];
+            point.y = values[i][1];
+            point.z = values[i][2];
             interpolator.addKeyFrame(keys[i], point);
         }
 
         float mid_key = keys[0] + ((keys[1] - keys[0]) / 2);
-        float x_val = values[0][0] + ((values[1][0] - values[0][0]) / 2);
-        float y_val = values[0][0] + ((values[1][1] - values[0][1]) / 2);
-        float z_val = values[0][0] + ((values[1][2] - values[0][2]) / 2);
+        double x_val = values[0][0] + ((values[1][0] - values[0][0]) / 2);
+        double y_val = values[0][0] + ((values[1][1] - values[0][1]) / 2);
+        double z_val = values[0][0] + ((values[1][2] - values[0][2]) / 2);
 
-        Point3f vals = interpolator.pointValue(mid_key);
+        Point3d vals = interpolator.pointValue(mid_key);
 
         assertEquals(vals.x, x_val, "1st X coord not same");
         assertEquals(vals.y, y_val, "1st Y coord not same");

@@ -10,7 +10,7 @@
 package org.j3d.util.interpolator;
 
 // External imports
-import javax.vecmath.Color4f;
+// None
 
 // Local imports
 import org.j3d.util.ColorUtils;
@@ -54,9 +54,6 @@ public class ColorInterpolator extends Interpolator
 
     /** The interpolator should be RGB color space */
     public static final int RGB_SPACE = 2;
-
-    /** Reference to the shared Color4f return value for key values */
-    private Color4f sharedColor;
 
     /** Reference to the shared float array return value for key values */
     private float[] sharedVector;
@@ -113,7 +110,6 @@ public class ColorInterpolator extends Interpolator
         keys = new float[size];
         keyValues = new float[size][4];
 
-        sharedColor = new Color4f();
         sharedVector = new float[4];
 
         this.colorSpace = colorSpace;
@@ -187,35 +183,6 @@ public class ColorInterpolator extends Interpolator
     }
 
     /**
-     * Add a key frame set of values at the given key point. This will insert
-     * the values at the correct color within the array for the given key.
-     * If two keys have the same value, the new key is inserted before the old
-     * one.
-     *
-     * @param key The value of the key to use
-     * @param pt The point data to take information from
-     */
-    public void addRGBKeyFrame(float key, Color4f pt)
-    {
-        addRGBKeyFrame(key, pt.x, pt.y, pt.z, pt.w);
-    }
-
-    /**
-     * Add a key frame set of values at the given key point. This will insert
-     * the values at the correct color within the array for the given key.
-     * If two keys have the same value, the new key is inserted before the old
-     * one.
-     *
-     * @param key The value of the key to use
-     * @param pt The point data to take information from
-     * @throws IllegalArgumentException s is zero and h is not NaN
-     */
-    public void addHSVKeyFrame(float key, Color4f pt)
-    {
-        addHSVKeyFrame(key, pt.x, pt.y, pt.z, pt.w);
-    }
-
-    /**
      * Get the interpolated value of the point at the given key value as an
      * RGB value. If the key lies outside the range of the values defined,
      * it will be clamped to the end point value. For speed reasons, this
@@ -245,40 +212,6 @@ public class ColorInterpolator extends Interpolator
     }
 
     /**
-     * Get the interpolated HSV value of the point at the given key value. If
-     * the key lies outside the range of the values defined, it will be clamped
-     * to the end point value. For speed reasons, this will return a reusable
-     * point instance. Do not modify the values or keep a reference to this as
-     * it will change values between calls.
-     * <p>
-     * The value will be interpolated according to the colorspace that was
-     * specified in the constructor.
-     *
-     * @param key The key value to get the color for
-     * @return A point representation of the HSV value at that color
-     */
-    public Color4f pointRGBValue(float key)
-    {
-        floatValue(key);
-
-        if(colorSpace == HSV_SPACE)
-        {
-            // Convert the key values across to RGB, and the results are
-            // also left in the sharedVector. Alpha is never touched.
-            convertHSVtoRGB(sharedVector[0],
-                            sharedVector[1],
-                            sharedVector[2]);
-        }
-
-        sharedColor.x = sharedVector[0];
-        sharedColor.y = sharedVector[1];
-        sharedColor.z = sharedVector[2];
-        sharedColor.w = sharedVector[3];
-
-        return sharedColor;
-    }
-
-    /**
      * Get the interpolated value of the point at the given key value as an
      * RGB value. If the key lies outside the range of the values defined,
      * it will be clamped to the end point value. For speed reasons, this
@@ -305,37 +238,6 @@ public class ColorInterpolator extends Interpolator
         }
 
         return sharedVector;
-    }
-
-    /**
-     * Get the interpolated value of the point at the given key value. If the
-     * key lies outside the range of the values defined, it will be clamped to
-     * the end point value. For speed reasons, this will return a reusable
-     * float array. Do not modify the values or keep a reference to this as
-     * it will change values between calls.
-     *
-     * @param key The key value to get the color for
-     * @return An array of the values at that color [h, s, v, a]
-     */
-    public Color4f pointHSVValue(float key)
-    {
-        floatValue(key);
-
-        if(colorSpace == RGB_SPACE)
-        {
-            // Convert the key values across to HSV, and the results are
-            // also left in the sharedVector. Alpha is never touched.
-            convertRGBtoHSV(sharedVector[0],
-                            sharedVector[1],
-                            sharedVector[2]);
-        }
-
-        sharedColor.x = sharedVector[0];
-        sharedColor.y = sharedVector[1];
-        sharedColor.z = sharedVector[2];
-        sharedColor.w = sharedVector[3];
-
-        return sharedColor;
     }
 
     //---------------------------------------------------------------
@@ -486,16 +388,6 @@ public class ColorInterpolator extends Interpolator
                     if(found_key != prev_key)
                         fraction = (key - prev_key) / (found_key - prev_key);
 
-/*
-System.out.println("Prev key " + prev_key);
-System.out.println("Next key " + found_key);
-System.out.println("Reqd key " + key);
-System.out.println("Fraction is " + fraction);
-System.out.println("r " + x0 + " x_dist " + x_dist);
-System.out.println("g " + p0[1] + " y_dist " + y_dist);
-System.out.println("b " + p0[2] + " z_dist " + z_dist);
-System.out.println("a " + p0[3] + " w_dist " + w_dist);
-*/
                     sharedVector[0] = x0 + fraction * x_dist;
                     sharedVector[1] = p0[1] + fraction * y_dist;
                     sharedVector[2] = p0[2] + fraction * z_dist;
@@ -518,7 +410,7 @@ System.out.println("a " + p0[3] + " w_dist " + w_dist);
      * as final in order to encourage the compiler to inline the code for
      * faster execution.
      */
-    private final void realloc()
+    private void realloc()
     {
         if(currentSize == allocatedSize)
         {
@@ -550,9 +442,10 @@ System.out.println("a " + p0[3] + " w_dist " + w_dist);
      *
      * @return A nicely formatted string representation
      */
+    @Override
     public String toString()
     {
-        StringBuffer buf = new StringBuffer("<color interpolator>\n");
+        StringBuilder buf = new StringBuilder("<color interpolator>\n");
 
         for(int i = 0; i < currentSize; i++)
         {

@@ -10,10 +10,12 @@
 package org.j3d.util.interpolator;
 
 // Standard imports
-import javax.vecmath.Point3f;
+// None
 
 // Application specific imports
 // none
+
+import org.j3d.maths.vector.Point3d;
 
 /**
  * An interpolator that works with positional coordinates.
@@ -29,7 +31,7 @@ import javax.vecmath.Point3f;
 public class PositionInterpolator extends Interpolator
 {
     /** Reference to the shared Point3f return value for key values */
-    private Point3f sharedPoint;
+    private Point3d sharedPoint;
 
     /** Reference to the shared float array return value for key values */
     private float[] sharedVector;
@@ -70,7 +72,7 @@ public class PositionInterpolator extends Interpolator
         keys = new float[size];
         keyValues = new float[size][3];
 
-        sharedPoint = new Point3f();
+        sharedPoint = new Point3d();
         sharedVector = new float[3];
     }
 
@@ -134,9 +136,9 @@ public class PositionInterpolator extends Interpolator
      * @param key The value of the key to use
      * @param pt The point data to take information from
      */
-    public void addKeyFrame(float key, Point3f pt)
+    public void addKeyFrame(float key, Point3d pt)
     {
-        addKeyFrame(key, pt.x, pt.y, pt.z);
+        addKeyFrame(key, (float)pt.x, (float)pt.y, (float)pt.z);
     }
 
     /**
@@ -149,14 +151,14 @@ public class PositionInterpolator extends Interpolator
      * @param key The key value to get the position for
      * @return A point representation of the value at that position
      */
-    public Point3f pointValue(float key)
+    public Point3d pointValue(float key)
     {
         int loc = findKeyIndex(key);
 
         if(loc < 0)
-           sharedPoint.set(keyValues[0]);
+           sharedPoint.set(keyValues[0][0], keyValues[0][1], keyValues[0][2]);
         else if(loc >= (currentSize - 1))
-           sharedPoint.set(keyValues[currentSize - 1]);
+           sharedPoint.set(keyValues[currentSize - 1][0], keyValues[currentSize - 1][1], keyValues[currentSize - 1][2]);
         else
         {
             switch(interpolationType)
