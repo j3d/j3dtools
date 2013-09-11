@@ -1847,7 +1847,7 @@ public class GeometryInfo {
                         d[offset++] = ((TexCoord4f) texCoordSets[j][i]).x;
                         d[offset++] = ((TexCoord4f) texCoordSets[j][i]).y;
                         d[offset++] = ((TexCoord4f) texCoordSets[j][i]).z;
-                        d[offset++] = ((TexCoord4f) texCoordSets[j][i]).w;
+                        d[offset++] = ((TexCoord4f) texCoordSets[j][i]).angle;
                     }
                 }
 
@@ -1859,7 +1859,7 @@ public class GeometryInfo {
                     d[offset++] = colors4[i].x;
                     d[offset++] = colors4[i].y;
                     d[offset++] = colors4[i].z;
-                    d[offset++] = colors4[i].w;
+                    d[offset++] = colors4[i].angle;
                 }
 
                 if (normals != null) {

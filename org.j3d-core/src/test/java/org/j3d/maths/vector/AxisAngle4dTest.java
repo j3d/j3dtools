@@ -19,21 +19,21 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 
 /**
- * This class does something
+ * Unit tests for the AxisAngle4d class
  *
  * @author justin
  */
-public class Point4dTest
+public class AxisAngle4dTest
 {
     @Test(groups = "unit")
     public void testBasicConstruction() throws Exception
     {
-        Point4d classUnderTest = new Point4d();
+        AxisAngle4d classUnderTest = new AxisAngle4d();
 
         assertEquals(classUnderTest.x, 0.0, "Non-zero default x coordinate");
         assertEquals(classUnderTest.y, 0.0, "Non-zero default y coordinate");
         assertEquals(classUnderTest.z, 0.0, "Non-zero default z coordinate");
-        assertEquals(classUnderTest.w, 0.0, "Non-zero default w coordinate");
+        assertEquals(classUnderTest.angle, 0.0, "Non-zero default angle coordinate");
     }
 
     @Test(groups = "unit")
@@ -42,38 +42,63 @@ public class Point4dTest
         final double TEST_X = 0.4;
         final double TEST_Y = -1.0;
         final double TEST_Z = 4.0;
-        final double TEST_W = -0.6;
+        final double TEST_ANGLE = -0.6;
 
-        Point4d classUnderTest = new Point4d();
-        classUnderTest.set(TEST_X, TEST_Y, TEST_Z, TEST_W);
+        AxisAngle4d classUnderTest = new AxisAngle4d();
+        classUnderTest.set(TEST_X, TEST_Y, TEST_Z, TEST_ANGLE);
 
         assertEquals(classUnderTest.x, TEST_X, 0.001, "X Coordinate incorrectly set");
         assertEquals(classUnderTest.y, TEST_Y, 0.001, "Y Coordinate incorrectly set");
         assertEquals(classUnderTest.z, TEST_Z, 0.001, "Z Coordinate incorrectly set");
-        assertEquals(classUnderTest.w, TEST_W, 0.001, "W component incorrectly set");
+        assertEquals(classUnderTest.angle, TEST_ANGLE, 0.001, "Angle amount incorrectly set");
+    }
+
+    @Test(groups = "unit")
+    public void testNormaliseZeroLength() throws Exception
+    {
+        AxisAngle4d classUnderTest = new AxisAngle4d();
+        classUnderTest.normalise();
+
+        assertEquals(classUnderTest.x, 0.0, "X Coordinate is not zero");
+        assertEquals(classUnderTest.y, 0.0, "Y Coordinate is not zero");
+        assertEquals(classUnderTest.z, 0.0, "Z Coordinate is not zero");
+    }
+
+    @Test(groups = "unit")
+    public void testNormalise() throws Exception
+    {
+        AxisAngle4d classUnderTest = new AxisAngle4d();
+        classUnderTest.set(10, -0.5, 0.1, 0.0);
+        classUnderTest.normalise();
+
+        double l2 = classUnderTest.x * classUnderTest.x +
+            classUnderTest.y * classUnderTest.y +
+            classUnderTest.z * classUnderTest.z;
+
+        assertEquals(l2, 1.0, "Normalised length is not 1");
     }
 
     @Test(groups = "unit")
     public void testNotEqualsToOther() throws Exception
     {
-        Point4d classUnderTest = new Point4d();
+        AxisAngle4d classUnderTest = new AxisAngle4d();
         assertFalse(classUnderTest.equals(new Date()), "Should not be equal to a date");
     }
 
     @Test(groups = "unit", dataProvider = "equals")
     public void testEquals(Double[] src, Double[] dest, boolean expectedResult) throws Exception
     {
-        Point4d testClass = new Point4d();
+        AxisAngle4d testClass = new AxisAngle4d();
         testClass.x = src[0];
         testClass.y = src[1];
         testClass.z = src[2];
-        testClass.w = src[3];
+        testClass.angle = src[3];
 
-        Point4d classUnderTest = new Point4d();
+        AxisAngle4d classUnderTest = new AxisAngle4d();
         classUnderTest.x = dest[0];
         classUnderTest.y = dest[1];
         classUnderTest.z = dest[2];
-        classUnderTest.w = dest[3];
+        classUnderTest.angle = dest[3];
 
         assertEquals(classUnderTest.equals(testClass), expectedResult, "Incorrect equals comparison");
         assertEquals(testClass.equals(classUnderTest), expectedResult, "Incorrect reverse equals comparison");
@@ -87,17 +112,17 @@ public class Point4dTest
         final double TEST_Z = 13.4;
         final double TEST_W = 0.25;
 
-        Point4d testClass = new Point4d();
+        AxisAngle4d testClass = new AxisAngle4d();
         testClass.x = TEST_X;
         testClass.y = TEST_Y;
         testClass.z = TEST_Z;
-        testClass.w = TEST_W;
+        testClass.angle = TEST_W;
 
-        Point4d classUnderTest = new Point4d();
+        AxisAngle4d classUnderTest = new AxisAngle4d();
         classUnderTest.x = TEST_X;
         classUnderTest.y = TEST_Y;
         classUnderTest.z = TEST_Z;
-        classUnderTest.w = TEST_W;
+        classUnderTest.angle = TEST_W;
 
         assertEquals(classUnderTest.hashCode(), testClass.hashCode(), "Same variables didn't generate same hash");
     }

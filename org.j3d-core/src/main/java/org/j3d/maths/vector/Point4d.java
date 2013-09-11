@@ -53,4 +53,22 @@ public class Point4d
 
         return (int)(bits ^ (bits >> 32));
     }
+
+    // ---- Local Methods ----------------------------------------------------
+
+    /**
+     * Convenience method to set all the fields at once
+     *
+     * @param px The x coordinate to set
+     * @param py The z coordinate to set
+     * @param pz The y coordinate to set
+     * @param pw The w component to set
+     */
+    public void set(double px, double py, double pz, double pw)
+    {
+        x = px;
+        y = py;
+        z = pz;
+        w = pw;
+    }
 }

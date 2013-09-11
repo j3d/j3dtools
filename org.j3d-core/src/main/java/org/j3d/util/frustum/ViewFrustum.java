@@ -46,11 +46,10 @@
 package org.j3d.util.frustum;
 
 // Standard imports
-import javax.vecmath.Point4d;
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector4d;
-import javax.vecmath.Vector3d;
-import javax.vecmath.Matrix4d;
+// None
+
+// Local imports
+import org.j3d.maths.vector.*;
 
 /**
  * A utility for tracking the ViewFrustum planes and determining if
@@ -96,7 +95,6 @@ public abstract class ViewFrustum
     private Vector3d tVec1;
     private Vector3d tVec2;
     private Vector3d tVec3;
-    private Matrix4d tMatrix;
 
     private Point3d tmpP1;
     private Point3d tmpP2;
@@ -106,13 +104,12 @@ public abstract class ViewFrustum
      * Create a new instance that on a given number of canvases that contribute
      * to the total view frustum.
      *
-     * @param numCanvases The number of canvases contributing to this frustum
+     * @param canvasCount The number of canvases contributing to this frustum
      */
-    public ViewFrustum(int numCanvases)
+    protected ViewFrustum(int canvasCount)
     {
-        this.numCanvases = numCanvases;
+        this.numCanvases = canvasCount;
 
-        tMatrix = new Matrix4d();
         tVec1 = new Vector3d();
         tVec2 = new Vector3d();
         tVec3 = new Vector3d();
@@ -134,9 +131,9 @@ public abstract class ViewFrustum
         frustumPoints[6] = new Point4d();
         frustumPoints[7] = new Point4d();
 
-        frustums = new Canvas3DFrustum[numCanvases];
+        frustums = new Canvas3DFrustum[canvasCount];
 
-        for(int i = 0; i < numCanvases; i++)
+        for(int i = 0; i < canvasCount; i++)
             frustums[i] = new Canvas3DFrustum();
     }
 
@@ -161,14 +158,14 @@ public abstract class ViewFrustum
      */
     public void manualPlatformMove(Matrix4d tx)
     {
-        tx.transform(frustumPoints[0]);
-        tx.transform(frustumPoints[1]);
-        tx.transform(frustumPoints[2]);
-        tx.transform(frustumPoints[3]);
-        tx.transform(frustumPoints[4]);
-        tx.transform(frustumPoints[5]);
-        tx.transform(frustumPoints[6]);
-        tx.transform(frustumPoints[7]);
+        tx.transform(frustumPoints[0], frustumPoints[0]);
+        tx.transform(frustumPoints[1], frustumPoints[1]);
+        tx.transform(frustumPoints[2], frustumPoints[2]);
+        tx.transform(frustumPoints[3], frustumPoints[3]);
+        tx.transform(frustumPoints[4], frustumPoints[4]);
+        tx.transform(frustumPoints[5], frustumPoints[5]);
+        tx.transform(frustumPoints[6], frustumPoints[6]);
+        tx.transform(frustumPoints[7], frustumPoints[7]);
 
         for(int i = 0; i < numCanvases; i++)
             updatePlanes(i);
@@ -309,7 +306,6 @@ public abstract class ViewFrustum
      */
     private void computeFrustumPlanes(int canvasId)
     {
-
         frustumPoints[0].set(-1.0, -1.0,  1.0, 1.0);  // lower-left-front
         frustumPoints[1].set(-1.0,  1.0,  1.0, 1.0);  // upper-left-front
         frustumPoints[2].set( 1.0,  1.0,  1.0, 1.0);  // upper-right-front
@@ -323,7 +319,7 @@ public abstract class ViewFrustum
 
         for (int i = 0; i < frustumPoints.length; i++)
         {
-            inverseProjection.transform(frustumPoints[i]);
+            inverseProjection.transform(frustumPoints[i], frustumPoints[i]);
             double w_inv = 1.0 / frustumPoints[i].w;
             frustumPoints[i].x *= w_inv;
             frustumPoints[i].y *= w_inv;
@@ -408,7 +404,7 @@ public abstract class ViewFrustum
         tVec2.z = p2.z - p1.z;
 
         tVec3.cross(tVec2, tVec1);
-        tVec3.normalize();
+        tVec3.normalise();
         planeEq.x = tVec3.x;
         planeEq.y = tVec3.y;
         planeEq.z = tVec3.z;

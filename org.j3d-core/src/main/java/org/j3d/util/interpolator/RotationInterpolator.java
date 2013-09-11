@@ -107,7 +107,7 @@ public class RotationInterpolator extends Interpolator
      * @param x The x coordinate of the orientation at this key
      * @param y The y coordinate of the orientation at this key
      * @param z The z coordinate of the orientation at this key
-     * @param w The w coordinate (angle) of the orientation at this key
+     * @param w The angle coordinate (angle) of the orientation at this key
      */
     public void addKeyFrame(float key, float x, float y, float z, float w)
     {
@@ -315,7 +315,7 @@ System.out.println("Fraction is " + fraction);
 System.out.println("x " + p0[0] + " x_dist " + x_dist);
 System.out.println("y " + p0[1] + " y_dist " + y_dist);
 System.out.println("z " + p0[2] + " z_dist " + z_dist);
-System.out.println("w " + p0[3] + " w_dist " + w_dist);
+System.out.println("angle " + p0[3] + " w_dist " + w_dist);
 */
                     sharedVector[0] = p0[0] + fraction * x_dist;
                     sharedVector[1] = p0[1] + fraction * y_dist;
@@ -425,7 +425,7 @@ System.out.println("w " + p0[3] + " w_dist " + w_dist);
             buf.append(keyValues[i][1]);
             buf.append(" z: ");
             buf.append(keyValues[i][2]);
-            buf.append(" w: ");
+            buf.append(" angle: ");
             buf.append(keyValues[i][3]);
             buf.append("\n");
         }

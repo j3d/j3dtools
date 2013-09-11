@@ -75,7 +75,7 @@ public class TriangleUtils
      * @param texCoords The list of 2D texture coordinates, one per
      *   vertex, flattened
      * @param tangents The array to put the returned tangents in, must
-     *   be 4x the number of coordinates as it is provided in x,y,z,w
+     *   be 4x the number of coordinates as it is provided in x,y,z,angle
      *   form
      * @throws NullPointerException One of the arrays provided was
      *   null. Message contains the details of which one
@@ -223,7 +223,7 @@ public class TriangleUtils
             }
 
             // Calculate handedness
-            //tangent[a].w = (Dot(Cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F;
+            //tangent[a].angle = (Dot(Cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F;
 
             float c_x = n_y * t_z - n_z * t_y;
             float c_y = n_z * t_x - n_x * t_z;
@@ -248,7 +248,7 @@ public class TriangleUtils
      * @param texCoords The list of 2D texture coordinates, one per
      *   vertex, flattened
      * @param tangents The array to put the returned tangents in, must
-     *   be 4x the number of coordinates as it is provided in x,y,z,w
+     *   be 4x the number of coordinates as it is provided in x,y,z,angle
      *   form
      * @throws NullPointerException One of the arrays provided was
      *   null. Message contains the details of which one
@@ -390,7 +390,7 @@ public class TriangleUtils
             }
 
             // Calculate handedness
-            //tangent[a].w = (Dot(Cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F;
+            //tangent[a].angle = (Dot(Cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F;
 
             float c_x = n_y * t_z - n_z * t_y;
             float c_y = n_z * t_x - n_x * t_z;

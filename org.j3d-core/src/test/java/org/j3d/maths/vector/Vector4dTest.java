@@ -10,10 +10,13 @@
 
 package org.j3d.maths.vector;
 
+import java.util.Date;
+
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 
 /**
  * This class does something
@@ -31,6 +34,82 @@ public class Vector4dTest
         assertEquals(classUnderTest.y, 0.0, "Non-zero default y coordinate");
         assertEquals(classUnderTest.z, 0.0, "Non-zero default z coordinate");
         assertEquals(classUnderTest.w, 0.0, "Non-zero default w coordinate");
+    }
+
+    @Test(groups = "unit")
+    public void testSet() throws Exception
+    {
+        final double TEST_X = 0.4;
+        final double TEST_Y = -1.0;
+        final double TEST_Z = 4.0;
+        final double TEST_W = -0.6;
+
+        Vector4d classUnderTest = new Vector4d();
+        classUnderTest.set(TEST_X, TEST_Y, TEST_Z, TEST_W);
+
+        assertEquals(classUnderTest.x, TEST_X, 0.001, "X Coordinate incorrectly set");
+        assertEquals(classUnderTest.y, TEST_Y, 0.001, "Y Coordinate incorrectly set");
+        assertEquals(classUnderTest.z, TEST_Z, 0.001, "Z Coordinate incorrectly set");
+        assertEquals(classUnderTest.w, TEST_W, 0.001, "W component incorrectly set");
+    }
+
+    @Test(groups = "unit")
+    public void testNormaliseZeroLength() throws Exception
+    {
+        Vector4d classUnderTest = new Vector4d();
+        classUnderTest.normalise();
+
+        assertEquals(classUnderTest.x, 0.0, "X Coordinate is not zero");
+        assertEquals(classUnderTest.y, 0.0, "Y Coordinate is not zero");
+        assertEquals(classUnderTest.z, 0.0, "Z Coordinate is not zero");
+        assertEquals(classUnderTest.w, 0.0, "W Coordinate is not zero");
+    }
+
+    @Test(groups = "unit")
+    public void testNormalise() throws Exception
+    {
+        Vector4d classUnderTest = new Vector4d();
+        classUnderTest.set(10, -0.5, 0.11, 1.3);
+        classUnderTest.normalise();
+
+        double l2 = Math.sqrt(classUnderTest.x * classUnderTest.x +
+                              classUnderTest.y * classUnderTest.y +
+                              classUnderTest.z * classUnderTest.z);
+
+        assertEquals(l2, 1.0, 0.01, "Normalised length is not 1");
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testDotNull() throws Exception
+    {
+        Vector4d classUnderTest = new Vector4d();
+        classUnderTest.dot(null);
+    }
+
+    @Test(groups = "unit", dataProvider = "dot")
+    public void testDot(Double[] v1, Double[] v2, double expectedResult) throws Exception
+    {
+        Vector4d vx1 = new Vector4d();
+        vx1.x = v1[0];
+        vx1.y = v1[1];
+        vx1.z = v1[2];
+        vx1.w = v1[3];
+
+        Vector4d classUnderTest = new Vector4d();
+        classUnderTest.x = v2[0];
+        classUnderTest.y = v2[1];
+        classUnderTest.z = v2[2];
+        classUnderTest.w = v2[3];
+
+        assertEquals(classUnderTest.dot(vx1), expectedResult, "Incorrect dot product");
+        assertEquals(vx1.dot(classUnderTest), expectedResult, "Incorrect reverse dot product");
+    }
+
+    @Test(groups = "unit")
+    public void testNotEqualsToOther() throws Exception
+    {
+        Vector4d classUnderTest = new Vector4d();
+        assertFalse(classUnderTest.equals(new Date()), "Should not be equal to a date");
     }
 
     @Test(groups = "unit", dataProvider = "equals")
@@ -73,6 +152,20 @@ public class Vector4dTest
         classUnderTest.w = TEST_W;
 
         assertEquals(classUnderTest.hashCode(), testClass.hashCode(), "Same variables didn't generate same hash");
+    }
+
+    @DataProvider(name = "dot")
+    public Object[][] generateDotData()
+    {
+        return new Object[][]
+            {
+                // X.Y = 0
+                { new Double[] { 1.0, 0.0, 0.0, 0.0}, new Double[] { 0.0, 1.0, 0.0, 0.0}, 0.0},
+                // X.X = 1
+                { new Double[] { 1.0, 0.0, 0.0, 0.0}, new Double[] { 1.0, 0.0, 0.0, 0.0 }, 1.0},
+                // X.Z = 0
+                { new Double[] { 1.0, 0.0, 0.0, 0.0}, new Double[] { 0.0, 0.0, 1.0, 0.0 }, 0.0},
+            };
     }
 
     @DataProvider(name = "equals")

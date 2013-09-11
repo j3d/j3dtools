@@ -30,7 +30,7 @@ package org.j3d.geom.particle;
 public class TexCoordInterpolator
 {
 
-    /** The key values indexed as [index * (s, t, r, w)] */
+    /** The key values indexed as [index * (s, t, r, angle)] */
     private float[] keyValues;
 
     /** The number of tex coords per particle. */

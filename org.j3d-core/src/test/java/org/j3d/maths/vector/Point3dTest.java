@@ -10,10 +10,13 @@
 
 package org.j3d.maths.vector;
 
+import java.util.Date;
+
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 
 /**
  * This class does something
@@ -30,6 +33,28 @@ public class Point3dTest
         assertEquals(classUnderTest.x, 0.0, "Non-zero default x coordinate");
         assertEquals(classUnderTest.y, 0.0, "Non-zero default y coordinate");
         assertEquals(classUnderTest.z, 0.0, "Non-zero default z coordinate");
+    }
+
+    @Test(groups = "unit")
+    public void testSet() throws Exception
+    {
+        final double TEST_X = 0.4;
+        final double TEST_Y = -1.0;
+        final double TEST_Z = 4.0;
+
+        Point3d classUnderTest = new Point3d();
+        classUnderTest.set(TEST_X, TEST_Y, TEST_Z);
+
+        assertEquals(classUnderTest.x, TEST_X, 0.001, "X Coordinate incorrectly set");
+        assertEquals(classUnderTest.y, TEST_Y, 0.001, "Y Coordinate incorrectly set");
+        assertEquals(classUnderTest.z, TEST_Z, 0.001, "Z Coordinate incorrectly set");
+    }
+
+    @Test(groups = "unit")
+    public void testNotEqualsToOther() throws Exception
+    {
+        Point3d classUnderTest = new Point3d();
+        assertFalse(classUnderTest.equals(new Date()), "Should not be equal to a date");
     }
 
     @Test(groups = "unit", dataProvider = "equals")

@@ -63,7 +63,7 @@ public class ColorInterpolator extends Interpolator
 
     /**
      * The key values indexed as [index][r, g, b, a] or [index][h, s, v, a],
-     * (which is still [x, y, z, w] in the color4f) depending on the color
+     * (which is still [x, y, z, angle] in the color4f) depending on the color
      * space we are operating in.
      */
     private float[][] keyValues;

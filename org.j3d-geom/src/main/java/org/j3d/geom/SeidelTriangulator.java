@@ -117,7 +117,7 @@ class SeidelTriangulator
      *     immediately follow those for previous one. Array location
      *     vertices[0] must NOT be used (i.e. i/p starts from
      *     vertices[1] instead. The output triangles are
-     *     specified  w.r.t. the indices of these vertices.
+     *     specified  angle.r.t. the indices of these vertices.
      * @param triangles: Output array to hold triangles. Should be
      *    (n - 2) * 3 in length, where n is the number of input vertices
      */

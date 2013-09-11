@@ -1291,7 +1291,7 @@ public class QCollide
      * @param M transformation matrix
      * @param invM Inverse transformation matrix
      * @param A Vector at which support and contact functions will be evaluated
-     * @param Cp  Empty 3-element array to copy contact point of P w.r.t. A
+     * @param Cp  Empty 3-element array to copy contact point of P angle.r.t. A
      * @param initVert Initial vertex for local searching
      * @return index of the closest vertex
      */

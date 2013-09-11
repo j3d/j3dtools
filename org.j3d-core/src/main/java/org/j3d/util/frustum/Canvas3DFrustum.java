@@ -46,11 +46,11 @@
 
 package org.j3d.util.frustum;
 
-import javax.vecmath.Point4d;
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector4d;
-import javax.vecmath.Vector3d;
-import javax.vecmath.Matrix4d;
+// External imports
+// None
+
+// Local imports
+import org.j3d.maths.vector.*;
 
 /**
  * ViewFrustum planes for a single Canvas3D and determining if
@@ -156,7 +156,7 @@ class Canvas3DFrustum
                      point.y * plane.y +
                      point.z * plane.z;
 
-        //System.out.println( point +"  "+(dot+(float)plane.w) );
+        //System.out.println( point +"  "+(dot+(float)plane.angle) );
 
         return dot + plane.w;
     }
