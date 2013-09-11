@@ -31,7 +31,7 @@ need to do anything more. For more information on this code, have a look at the
 
 To implement a specific algorithm (eg ROAM) you would extend the
 {@link org.j3d.terrain.Landscape} class and implement the
-{@link org.j3d.terrain.Landscape#setView(javax.vecmath.Tuple3f, javax.vecmath.Vector3f)}
+{@link org.j3d.terrain.Landscape#setView(Point3d, Vector3d)}
 method. Every time that the user's viewpoint changes, you will be notified
 by this method (assuming that you have implemented a navigation system that
 calls it!). That means you should perform

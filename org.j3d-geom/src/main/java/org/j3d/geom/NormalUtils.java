@@ -10,10 +10,11 @@
 package org.j3d.geom;
 
 // Standard imports
-import javax.vecmath.Vector3f;
+// None
 
 // Application specific imports
-// none
+
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * A utility class that can be used to modify or create normal values of an
@@ -34,18 +35,18 @@ public class NormalUtils
     private static NormalUtils sharedInstance;
 
     /** Working values for the normal generation */
-    private Vector3f normal;
-    private Vector3f v0;
-    private Vector3f v1;
+    private Vector3d normal;
+    private Vector3d v0;
+    private Vector3d v1;
 
     /**
      * Create a default instance of the utility class.
      */
     public NormalUtils()
     {
-        v0 = new Vector3f();
-        v1 = new Vector3f();
-        normal = new Vector3f();
+        v0 = new Vector3d();
+        v1 = new Vector3d();
+        normal = new Vector3d();
     }
 
     /**
@@ -171,11 +172,11 @@ public class NormalUtils
         v1.z = coords[p + 2] - coords[p2 + 2];
 
         normal.cross(v0, v1);
-        normal.normalize();
+        normal.normalise();
 
-        normals[offset] = normal.x;
-        normals[offset + 1] = normal.y;
-        normals[offset + 2] = normal.z;
+        normals[offset] = (float)normal.x;
+        normals[offset + 1] = (float)normal.y;
+        normals[offset + 2] = (float)normal.z;
     }
 
     /**
@@ -206,11 +207,11 @@ public class NormalUtils
         v1.z = coords[p][2] - coords[p2][2];
 
         normal.cross(v0, v1);
-        normal.normalize();
+        normal.normalise();
 
-        normals[offset][0] = normal.x;
-        normals[offset][1] = normal.y;
-        normals[offset][2] = normal.z;
+        normals[offset][0] = (float)normal.x;
+        normals[offset][1] = (float)normal.y;
+        normals[offset][2] = (float)normal.z;
     }
 
     /**

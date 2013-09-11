@@ -10,14 +10,14 @@
 package org.j3d.geom.terrain;
 
 // Standard imports
-import javax.vecmath.Vector3f;
+// None
 
 // Application specific imports
 import org.j3d.geom.GeometryGenerator;
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.InvalidArraySizeException;
 import org.j3d.geom.UnsupportedTypeException;
-import org.j3d.util.interpolator.ColorInterpolator;
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * A generator that takes a set of height values as a grid and turns it into
@@ -1611,7 +1611,7 @@ public class ElevationGridGenerator extends GeometryGenerator
      * smoothing of normal averages for interior points. Around the edges,
      * we use the average of the edge value polygons.
      */
-    private final void regenerateNormals()
+    private void regenerateNormals()
     {
         if(!normalsChanged)
             return;
@@ -1624,7 +1624,7 @@ public class ElevationGridGenerator extends GeometryGenerator
             terrainNormals = new float[numTerrainValues];
         }
 
-        Vector3f norm;
+        Vector3d norm;
         int count = 0;
         int base_count = 0;
         int i, j;
@@ -1634,9 +1634,9 @@ public class ElevationGridGenerator extends GeometryGenerator
         // corner point - normal based on only that face
         norm = createFaceNormal(terrainCoordinates, width_inc, 0, 3);
 
-        terrainNormals[count++] = norm.x;
-        terrainNormals[count++] = norm.y;
-        terrainNormals[count++] = norm.z;
+        terrainNormals[count++] = (float)norm.x;
+        terrainNormals[count++] = (float)norm.y;
+        terrainNormals[count++] = (float)norm.z;
 
         base_count = 3;
 
@@ -1648,9 +1648,9 @@ public class ElevationGridGenerator extends GeometryGenerator
                                          base_count + width_inc,
                                          base_count - 3);
 
-            terrainNormals[count++] = norm.x;
-            terrainNormals[count++] = norm.y;
-            terrainNormals[count++] = norm.z;
+            terrainNormals[count++] = (float)norm.x;
+            terrainNormals[count++] = (float)norm.y;
+            terrainNormals[count++] = (float)norm.z;
 
             base_count += 3;
         }
@@ -1661,9 +1661,9 @@ public class ElevationGridGenerator extends GeometryGenerator
                                 base_count + width_inc,
                                 base_count - 3);
 
-        terrainNormals[count++] = norm.x;
-        terrainNormals[count++] = norm.y;
-        terrainNormals[count++] = norm.z;
+        terrainNormals[count++] = (float)norm.x;
+        terrainNormals[count++] = (float)norm.y;
+        terrainNormals[count++] = (float)norm.z;
 
         base_count += 3;
 
@@ -1677,9 +1677,9 @@ public class ElevationGridGenerator extends GeometryGenerator
                                          base_count + 3,
                                          base_count + width_inc);
 
-            terrainNormals[count++] = norm.x;
-            terrainNormals[count++] = norm.y;
-            terrainNormals[count++] = norm.z;
+            terrainNormals[count++] = (float)norm.x;
+            terrainNormals[count++] = (float)norm.y;
+            terrainNormals[count++] = (float)norm.z;
 
             base_count += 3;
 
@@ -1693,9 +1693,9 @@ public class ElevationGridGenerator extends GeometryGenerator
                                              base_count - 3,
                                              base_count - width_inc);
 
-                terrainNormals[count++] = norm.x;
-                terrainNormals[count++] = norm.y;
-                terrainNormals[count++] = norm.z;
+                terrainNormals[count++] = (float)norm.x;
+                terrainNormals[count++] = (float)norm.y;
+                terrainNormals[count++] = (float)norm.z;
 
                 base_count += 3;
             }
@@ -1707,9 +1707,9 @@ public class ElevationGridGenerator extends GeometryGenerator
                                          base_count - 3,
                                          base_count - width_inc);
 
-            terrainNormals[count++] = norm.x;
-            terrainNormals[count++] = norm.y;
-            terrainNormals[count++] = norm.z;
+            terrainNormals[count++] = (float)norm.x;
+            terrainNormals[count++] = (float)norm.y;
+            terrainNormals[count++] = (float)norm.z;
 
             base_count += 3;
         }
@@ -1721,9 +1721,9 @@ public class ElevationGridGenerator extends GeometryGenerator
                                 base_count - width_inc,
                                 base_count + 3);
 
-        terrainNormals[count++] = norm.x;
-        terrainNormals[count++] = norm.y;
-        terrainNormals[count++] = norm.z;
+        terrainNormals[count++] = (float)norm.x;
+        terrainNormals[count++] = (float)norm.y;
+        terrainNormals[count++] = (float)norm.z;
 
         base_count += 3;
 
@@ -1735,9 +1735,9 @@ public class ElevationGridGenerator extends GeometryGenerator
                                          base_count - width_inc,
                                          base_count + 3);
 
-            terrainNormals[count++] = norm.x;
-            terrainNormals[count++] = norm.y;
-            terrainNormals[count++] = norm.z;
+            terrainNormals[count++] = (float)norm.x;
+            terrainNormals[count++] = (float)norm.y;
+            terrainNormals[count++] = (float)norm.z;
 
             base_count += 3;
         }
@@ -1748,9 +1748,9 @@ public class ElevationGridGenerator extends GeometryGenerator
                                 base_count - 3,
                                 base_count - width_inc);
 
-        terrainNormals[count++] = norm.x;
-        terrainNormals[count++] = norm.y;
-        terrainNormals[count++] = norm.z;
+        terrainNormals[count++] = (float)norm.x;
+        terrainNormals[count++] = (float)norm.y;
+        terrainNormals[count++] = (float)norm.z;
     }
 
     /**
@@ -1764,30 +1764,30 @@ public class ElevationGridGenerator extends GeometryGenerator
      * @param p3 The last point of the second side
      * @return The averaged vector
      */
-    private Vector3f calcSideAverageNormal(float[] coords,
+    private Vector3d calcSideAverageNormal(float[] coords,
                                            int p,
                                            int p1,
                                            int p2,
                                            int p3)
     {
-        Vector3f norm;
+        Vector3d norm;
         float x, y, z;
 
         // Normal first for the previous quad
         norm = createFaceNormal(terrainCoordinates, p, p1, p2);
-        x = norm.x;
-        y = norm.y;
-        z = norm.z;
+        x = (float)norm.x;
+        y = (float)norm.y;
+        z = (float)norm.z;
 
         // Normal for the next quad
         norm = createFaceNormal(terrainCoordinates, p, p2, p3);
 
-        // create the average of each compoenent for the final normal
+        // create the average of each component for the final normal
         norm.x = (norm.x + x) / 2;
         norm.y = (norm.y + y) / 2;
         norm.z = (norm.z + z) / 2;
 
-        norm.normalize();
+        norm.normalise();
 
         return norm;
     }
@@ -1805,35 +1805,35 @@ public class ElevationGridGenerator extends GeometryGenerator
      * @param p4 shared point between third and fourth quad
      * @return The averaged vector
      */
-    private Vector3f calcQuadAverageNormal(float[] coords,
+    private Vector3d calcQuadAverageNormal(float[] coords,
                                            int p,
                                            int p1,
                                            int p2,
                                            int p3,
                                            int p4)
     {
-        Vector3f norm;
+        Vector3d norm;
         float x, y, z;
 
         // Normal first for quads 1 & 2
         norm = createFaceNormal(terrainCoordinates, p, p2, p1);
-        x = norm.x;
-        y = norm.y;
-        z = norm.z;
+        x = (float)norm.x;
+        y = (float)norm.y;
+        z = (float)norm.z;
 
         // Normal for the quads 2 & 3
         norm = createFaceNormal(terrainCoordinates, p, p2, p3);
 
-        x += norm.x;
-        y += norm.y;
-        z += norm.z;
+        x += (float)norm.x;
+        y += (float)norm.y;
+        z += (float)norm.z;
 
         // Normal for quads 3 & 4
         norm = createFaceNormal(terrainCoordinates, p, p3, p4);
 
-        x += norm.x;
-        y += norm.y;
-        z += norm.z;
+        x += (float)norm.x;
+        y += (float)norm.y;
+        z += (float)norm.z;
 
         // Normal for quads 1 & 4
         norm = createFaceNormal(terrainCoordinates, p, p4, p1);
@@ -1843,7 +1843,7 @@ public class ElevationGridGenerator extends GeometryGenerator
         norm.y = (norm.y + y) / 4;
         norm.z = (norm.z + z) / 4;
 
-        norm.normalize();
+        norm.normalise();
 
         return norm;
     }

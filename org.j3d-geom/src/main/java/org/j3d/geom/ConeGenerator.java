@@ -10,10 +10,12 @@
 package org.j3d.geom;
 
 // Standard imports
-import javax.vecmath.Vector3f;
+// None
 
 // Application specific imports
 // none
+
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * Generator of Cone raw coordinates and geometry normals.
@@ -861,7 +863,7 @@ public class ConeGenerator extends GeometryGenerator
 
         int i;
         float[] normals = data.normals;
-        Vector3f norm = new Vector3f();
+        Vector3d norm = new Vector3d();
         int count = 0;
         vtx_cnt = 0;
 
@@ -874,21 +876,21 @@ public class ConeGenerator extends GeometryGenerator
                                         vtx_cnt,
                                         vtx_cnt + 6);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 createBottomRadialNormal(data.coordinates, vtx_cnt + 3, norm);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 createBottomRadialNormal(data.coordinates, vtx_cnt + 6, norm);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 vtx_cnt += 9;
             }
@@ -924,7 +926,7 @@ public class ConeGenerator extends GeometryGenerator
      * @param p The index of the point to calculate
      * @return A temporary value containing the normal value
      */
-    private void createBottomRadialNormal(float[] coords, int p, Vector3f normal)
+    private void createBottomRadialNormal(float[] coords, int p, Vector3d normal)
     {
         float x = coords[p];
         float y = coneHeight / 2 - coords[p + 1];
@@ -974,7 +976,7 @@ public class ConeGenerator extends GeometryGenerator
 
         int i;
         float[] normals = data.normals;
-        Vector3f norm;
+        Vector3d norm;
         int count = 0;
 
         if (useBottom)
@@ -986,15 +988,15 @@ public class ConeGenerator extends GeometryGenerator
                                         count,
                                         count + 9);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 norm = createRadialNormal(data.coordinates, count);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
             }
         }
 

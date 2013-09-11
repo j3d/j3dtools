@@ -10,10 +10,10 @@
 package org.j3d.geom;
 
 // Standard imports
-import javax.vecmath.Vector3f;
+// none
 
 // Application specific imports
-// none
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * Abstract base representation of geometry generator of box raw coordinate
@@ -50,15 +50,15 @@ import javax.vecmath.Vector3f;
 public abstract class GeometryGenerator
 {
     /** Working values for the normal generation */
-    private Vector3f normal;
-    private Vector3f v0;
-    private Vector3f v1;
+    private Vector3d normal;
+    private Vector3d v0;
+    private Vector3d v1;
 
     protected GeometryGenerator()
     {
-        v0 = new Vector3f();
-        v1 = new Vector3f();
-        normal = new Vector3f();
+        v0 = new Vector3d();
+        v1 = new Vector3d();
+        normal = new Vector3d();
     }
 
     /**
@@ -99,7 +99,7 @@ public abstract class GeometryGenerator
      * @param p2 The index of the second point
      * @return A temporary value containing the normal value
      */
-    protected Vector3f createFaceNormal(float[] coords, int p, int p1, int p2)
+    protected Vector3d createFaceNormal(float[] coords, int p, int p1, int p2)
     {
         v0.x = coords[p1]     - coords[p];
         v0.y = coords[p1 + 1] - coords[p + 1];
@@ -110,7 +110,7 @@ public abstract class GeometryGenerator
         v1.z = coords[p + 2] - coords[p2 + 2];
 
         normal.cross(v0, v1);
-        normal.normalize();
+        normal.normalise();
 
         return normal;
     }
@@ -131,7 +131,7 @@ public abstract class GeometryGenerator
      * @param p2 The index of the second point
      * @return A temporary value containing the normal value
      */
-    protected Vector3f createFaceNormal(float[][] coords,
+    protected Vector3d createFaceNormal(float[][] coords,
                                         int w, int p,
                                         int w1, int p1,
                                         int w2, int p2)
@@ -145,7 +145,7 @@ public abstract class GeometryGenerator
         v1.z = coords[w][p + 2] - coords[w2][p2 + 2];
 
         normal.cross(v0, v1);
-        normal.normalize();
+        normal.normalise();
 
         return normal;
     }
@@ -159,7 +159,7 @@ public abstract class GeometryGenerator
      * @param p The index of the point to calculate
      * @return A temporary value containing the normal value
      */
-    protected Vector3f createRadialNormal(float[] coords, int p)
+    protected Vector3d createRadialNormal(float[] coords, int p)
     {
         float x = coords[p];
         float y = coords[p + 1];
@@ -196,7 +196,7 @@ public abstract class GeometryGenerator
      * @param originOffset The offset into the origin array to use
      * @return A temporary value containing the normal value
      */
-    protected Vector3f createRadialNormal(float[] coords,
+    protected Vector3d createRadialNormal(float[] coords,
                                           int p,
                                           float[] origin,
                                           int originOffset)

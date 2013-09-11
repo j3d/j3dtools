@@ -10,10 +10,12 @@
 package org.j3d.loaders.ldraw;
 
 // External imports
-import javax.vecmath.Matrix4d;
+// None
 
 // Local parser
 // None
+
+import org.j3d.maths.vector.Matrix4d;
 
 /**
  * Base representation of a part from the file that is not the header.

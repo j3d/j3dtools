@@ -10,10 +10,12 @@
 package org.j3d.geom;
 
 // Standard imports
-import javax.vecmath.Vector3f;
+// None
 
 // Application specific imports
 // none
+
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * A customisable sphere where you can specify the radius, center and
@@ -1022,7 +1024,7 @@ public class SphereGenerator extends GeometryGenerator
                                                 vtx_cnt * 3);
 
         float[] normals = data.normals;
-        Vector3f norm;
+        Vector3d norm;
         int count = 0;
 
         // Wonder if we can do any loop unravelling here?
@@ -1030,9 +1032,9 @@ public class SphereGenerator extends GeometryGenerator
         {
             norm = createRadialNormal(data.coordinates, count);
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
         }
     }
 

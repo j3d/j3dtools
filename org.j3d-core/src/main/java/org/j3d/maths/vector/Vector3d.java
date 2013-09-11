@@ -86,6 +86,50 @@ public class Vector3d
     }
 
     /**
+     * Add the two input vectors together and place in this vector.
+     * Both arguments must not be null. Code is safe to allow the use of
+     * this as one of the two inputs
+     *
+     * @param v1 The first input vector
+     * @param v2 The second input vector that we add to v1
+     */
+    public void add(Vector3d v1, Vector3d v2)
+    {
+        if(v1 == null)
+            throw new IllegalArgumentException("First vector cannot be null in add");
+
+        if(v2 == null)
+            throw new IllegalArgumentException("Second vector cannot be null in add");
+
+        
+        x = v1.x + v2.x;
+        y = v1.y + v2.y;
+        z = v1.z + v2.z;
+    }
+
+    /**
+     * Subtract the first vector from the second vector and place in this vector.
+     * Both arguments must not be null. Code is safe to allow the use of
+     * this as one of the two inputs
+     *
+     * @param v1 The first input vector
+     * @param v2 The second input vector that we subtract from v1
+     */
+    public void sub(Vector3d v1, Vector3d v2)
+    {
+        if(v1 == null)
+            throw new IllegalArgumentException("First vector cannot be null in sub");
+
+        if(v2 == null)
+            throw new IllegalArgumentException("Second vector cannot be null in sub");
+
+
+        x = v1.x - v2.x;
+        y = v1.y - v2.y;
+        z = v1.z - v2.z;
+    }
+
+    /**
      * Returns the dot product of this vector with the supplied vector.
      * If the input is null, generates an exception.
      *

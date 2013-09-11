@@ -208,25 +208,86 @@ public class Matrix4d
         if(src == null)
             return;
 
-        m00 = 1.0;
+        m00 = 0.0;
         m01 = 0.0;
         m02 = 0.0;
         m03 = src.x;
 
         m10 = 0.0;
-        m11 = 1.0;
+        m11 = 0.0;
         m12 = 0.0;
         m13 = src.y;
 
         m20 = 0.0;
         m21 = 0.0;
-        m22 = 1.0;
+        m22 = 0.0;
         m23 = src.z;
 
         m30 = 0.0;
         m31 = 0.0;
         m32 = 0.0;
         m33 = src.w;
+    }
+
+    /**
+     * Reset this matrix as a pure translation matrix with the given vector and
+     * the w translation component set to 1.0. If the input is null, do nothing.
+     *
+     * @param src The input vector to set the translation to
+     */
+    public void set(Vector3d src)
+    {
+        if(src == null)
+            return;
+
+        m00 = 0.0;
+        m01 = 0.0;
+        m02 = 0.0;
+        m03 = src.x;
+
+        m10 = 0.0;
+        m11 = 0.0;
+        m12 = 0.0;
+        m13 = src.y;
+
+        m20 = 0.0;
+        m21 = 0.0;
+        m22 = 0.0;
+        m23 = src.z;
+
+        m30 = 0.0;
+        m31 = 0.0;
+        m32 = 0.0;
+        m33 = 1.0;
+    }
+
+    /**
+     * Reset this matrix as a pure scale matrix with the given value applied
+     * across all 3 components.
+     *
+     * @param scale The new scale value to apply
+     */
+    public void set(double scale)
+    {
+        m00 = scale;
+        m01 = 0.0;
+        m02 = 0.0;
+        m03 = 0.0;
+
+        m10 = 0.0;
+        m11 = scale;
+        m12 = 0.0;
+        m13 = 0.0;
+
+        m20 = 0.0;
+        m21 = 0.0;
+        m22 = scale;
+        m23 = 0.0;
+
+        m30 = 0.0;
+        m31 = 0.0;
+        m32 = 0.0;
+        m33 = 1.0;
     }
 
     /**
@@ -365,6 +426,42 @@ public class Matrix4d
         outVec.y = y;
         outVec.z = z;
         outVec.w = w;
+    }
+
+    /**
+     * Set this matrix to the left multiplication of the two input matrices.
+     * Data safe so that you can use this as one of the inputs
+     *
+     * @param matrix1 The left matrix to apply to the multiplication
+     * @param matrix2 The right matrix to apply to the multiplication
+     */
+    public void mul(Matrix4d matrix1, Matrix4d matrix2)
+    {
+        if(matrix1 == null)
+            throw new IllegalArgumentException("First matrix cannot be null");
+
+        if(matrix2 == null)
+            throw new IllegalArgumentException("Second matrix cannot be null");
+        
+        m00 = matrix1.m00 * matrix2.m00;
+        m01 = matrix1.m01 * matrix2.m01;
+        m02 = matrix1.m02 * matrix2.m02;
+        m03 = matrix1.m03 * matrix2.m03;
+
+        m10 = matrix1.m10 * matrix2.m10;
+        m11 = matrix1.m11 * matrix2.m11;
+        m12 = matrix1.m12 * matrix2.m12;
+        m13 = matrix1.m13 * matrix2.m13;
+
+        m20 = matrix1.m20 * matrix2.m20;
+        m21 = matrix1.m21 * matrix2.m21;
+        m22 = matrix1.m22 * matrix2.m22;
+        m23 = matrix1.m23 * matrix2.m23;
+
+        m30 = matrix1.m30 * matrix2.m30;
+        m31 = matrix1.m31 * matrix2.m31;
+        m32 = matrix1.m32 * matrix2.m32;
+        m33 = matrix1.m33 * matrix2.m33;
     }
 
     /**

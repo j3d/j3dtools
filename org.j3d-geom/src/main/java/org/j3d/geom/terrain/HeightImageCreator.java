@@ -12,12 +12,7 @@ package org.j3d.geom.terrain;
 // Standard imports
 import java.awt.image.*;
 
-import javax.vecmath.Color4b;
-
 // Application specific imports
-import org.j3d.geom.GeometryData;
-import org.j3d.geom.InvalidArraySizeException;
-import org.j3d.geom.UnsupportedTypeException;
 import org.j3d.util.interpolator.ColorInterpolator;
 
 /**
@@ -47,10 +42,10 @@ public class HeightImageCreator
         { (byte)255, (byte)255, (byte)255, (byte)255 };
 
     /** The colour of the minimum height */
-    private Color4b minColor;
+    private byte[] minColor;
 
     /** The colour of the maximum height */
-    private Color4b maxColor;
+    private byte[] maxColor;
 
     /** Flag to denote if we have to deal with alpha values */
     private boolean hasAlpha;
@@ -75,17 +70,40 @@ public class HeightImageCreator
      * @param min The colour of the minimum height
      * @param max The colour of the maximum height
      */
-    public HeightImageCreator(Color4b min, Color4b max)
+    public HeightImageCreator(byte[] min, byte[] max)
     {
-        if(min == null)
-            minColor = new Color4b(BLACK_BYTES);
-        else
-            minColor = new Color4b(min);
+        minColor = new byte[4];
+        maxColor = new byte[4];
 
-        if(max == null)
-            maxColor = new Color4b(WHITE_BYTES);
+        if(min == null || min.length < 4)
+        {
+            minColor[0] = BLACK_BYTES[0];
+            minColor[1] = BLACK_BYTES[1];
+            minColor[2] = BLACK_BYTES[2];
+            minColor[3] = BLACK_BYTES[3];
+        }
         else
-            maxColor = new Color4b(max);
+        {
+            minColor[0] = min[0];
+            minColor[1] = min[1];
+            minColor[2] = min[2];
+            minColor[3] = min[3];
+        }
+
+        if(max == null || max.length < 4)
+        {
+            maxColor[0] = WHITE_BYTES[0];
+            maxColor[1] = WHITE_BYTES[1];
+            maxColor[2] = WHITE_BYTES[2];
+            maxColor[3] = WHITE_BYTES[3];
+        }
+        else
+        {
+            maxColor[0] = max[0];
+            maxColor[1] = max[1];
+            maxColor[2] = max[2];
+            maxColor[3] = max[3];
+        }
 
         reconstructInterpolator();
     }
@@ -98,17 +116,37 @@ public class HeightImageCreator
      * @param min The colour of the minimum height
      * @param max The colour of the maximum height
      */
-    public void setColorRange(Color4b min, Color4b max)
+    public void setColorRange(byte[] min, byte[] max)
     {
-        if(min == null)
-            minColor.set(BLACK_BYTES);
+        if(min == null || min.length < 4)
+        {
+            minColor[0] = BLACK_BYTES[0];
+            minColor[1] = BLACK_BYTES[1];
+            minColor[2] = BLACK_BYTES[2];
+            minColor[3] = BLACK_BYTES[3];
+        }
         else
-            minColor.set(min);
+        {
+            minColor[0] = min[0];
+            minColor[1] = min[1];
+            minColor[2] = min[2];
+            minColor[3] = min[3];
+        }
 
-        if(max == null)
-            maxColor.set(WHITE_BYTES);
+        if(max == null || max.length < 4)
+        {
+            maxColor[0] = WHITE_BYTES[0];
+            maxColor[1] = WHITE_BYTES[1];
+            maxColor[2] = WHITE_BYTES[2];
+            maxColor[3] = WHITE_BYTES[3];
+        }
         else
-            maxColor.set(max);
+        {
+            maxColor[0] = max[0];
+            maxColor[1] = max[1];
+            maxColor[2] = max[2];
+            maxColor[3] = max[3];
+        }
 
         reconstructInterpolator();
     }
@@ -286,21 +324,21 @@ public class HeightImageCreator
     private void reconstructInterpolator()
     {
         // Simple comparisons because we're dealing with bytes.
-        hasAlpha = ((((int)minColor.w & 0xFF) != 255) ||
-                    (((int)maxColor.w & 0xFF) != 255));
+        hasAlpha = ((((int)minColor[3] & 0xFF) != 255) ||
+                    (((int)maxColor[3] & 0xFF) != 255));
 
         interpolator = new ColorInterpolator(2);
 
-        float r = (float)((int)minColor.x & 0xFF) / 255;
-        float g = (float)((int)minColor.y & 0xFF) / 255;
-        float b = (float)((int)minColor.z & 0xFF) / 255;
-        float a = (float)((int)minColor.w & 0xFF) / 255;
+        float r = (float)((int)minColor[0] & 0xFF) / 255;
+        float g = (float)((int)minColor[1] & 0xFF) / 255;
+        float b = (float)((int)minColor[2] & 0xFF) / 255;
+        float a = (float)((int)minColor[3] & 0xFF) / 255;
         interpolator.addRGBKeyFrame(0, r, g, b, a);
 
-        r = (float)((int)maxColor.x & 0xFF) / 255;
-        g = (float)((int)maxColor.y & 0xFF) / 255;
-        b = (float)((int)maxColor.z & 0xFF) / 255;
-        a = (float)((int)maxColor.w & 0xFF) / 255;
+        r = (float)((int)maxColor[0] & 0xFF) / 255;
+        g = (float)((int)maxColor[1] & 0xFF) / 255;
+        b = (float)((int)maxColor[2] & 0xFF) / 255;
+        a = (float)((int)maxColor[3] & 0xFF) / 255;
 
         interpolator.addRGBKeyFrame(1, r, g, b, a);
     }

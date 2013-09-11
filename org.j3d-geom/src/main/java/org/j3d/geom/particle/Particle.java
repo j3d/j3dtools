@@ -10,11 +10,13 @@
 package org.j3d.geom.particle;
 
 // External imports
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
+// None
 
 // Local imports
 // None
+
+import org.j3d.maths.vector.Point3d;
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * An abstract Particle that defines some physical properties and life-cycle
@@ -58,13 +60,13 @@ public abstract class Particle
     protected float mass;
 
     /** Force applied to the particle in newtons */
-    protected Vector3f resultantForce;
+    protected Vector3d resultantForce;
 
     /** Current velocity in  meters per second */
-    protected Vector3f velocity;
+    protected Vector3d velocity;
 
     /** Current position of the particle */
-    protected Point3f position;
+    protected Point3d position;
 
     /** bounding box for the particle */
     protected float[] boundingBox;
@@ -100,9 +102,9 @@ public abstract class Particle
         energy = 0;
         mass = 0;
         cycleAge = 0;
-        resultantForce = new Vector3f();
-        velocity = new Vector3f();
-        position = new Point3f();
+        resultantForce = new Vector3d();
+        velocity = new Vector3d();
+        position = new Point3d();
 
         width = 0.2f;
         height = 0.2f;
@@ -116,9 +118,9 @@ public abstract class Particle
      */
     public void getPosition(float[] val)
     {
-        val[0] = position.x;
-        val[1] = position.y;
-        val[2] = position.z;
+        val[0] = (float)position.x;
+        val[1] = (float)position.y;
+        val[2] = (float)position.z;
     }
 
     /**
@@ -176,13 +178,13 @@ public abstract class Particle
         if(boundingBox == null)
             boundingBox = new float[6];
 
-        boundingBox[0] = position.x - width;
-        boundingBox[1] = position.y - height;
-        boundingBox[2] = position.z - depth;
+        boundingBox[0] = (float)(position.x - width);
+        boundingBox[1] = (float)(position.y - height);
+        boundingBox[2] = (float)(position.z - depth);
 
-        boundingBox[0] = position.x + width;
-        boundingBox[1] = position.y + height;
-        boundingBox[2] = position.z + depth;;
+        boundingBox[0] = (float)(position.x + width);
+        boundingBox[1] = (float)(position.y + height);
+        boundingBox[2] = (float)(position.z + depth);
 
         return boundingBox;
     }
@@ -271,7 +273,7 @@ public abstract class Particle
      *
      * @return Returns a Vector3d
      */
-    public Vector3f getResultantForce()
+    public Vector3d getResultantForce()
     {
         return resultantForce;
     }
@@ -281,9 +283,11 @@ public abstract class Particle
      *
      * @param force The resultant Force to set
      */
-    public void setResultantForce(Vector3f force)
+    public void setResultantForce(Vector3d force)
     {
-        resultantForce.set(force);
+        resultantForce.x = force.x;
+        resultantForce.y = force.y;
+        resultantForce.z = force.z;
     }
 
     /**
@@ -311,7 +315,7 @@ public abstract class Particle
      *
      * @return Returns a Vector3d
      */
-    public Vector3f getVelocity()
+    public Vector3d getVelocity()
     {
         return velocity;
     }
@@ -319,11 +323,13 @@ public abstract class Particle
     /**
      * Sets the velocity of the particle.
      *
-     * @param velocity The velocity to set
+     * @param v The velocity to set
      */
-    public void setVelocity(Vector3f velocity)
+    public void setVelocity(Vector3d v)
     {
-        this.velocity.set(velocity);
+        velocity.x = v.x;
+        velocity.y = v.y;
+        velocity.z = v.z;
     }
 
     /**

@@ -14,11 +14,9 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import javax.vecmath.Point3d;
-import javax.vecmath.Tuple3f;
-import javax.vecmath.Vector3f;
-
 // Local imports
+import org.j3d.maths.vector.Point3d;
+import org.j3d.maths.vector.Vector3d;
 import org.j3d.terrain.*;
 
 import org.j3d.util.I18nManager;
@@ -195,7 +193,7 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
      * @param position The position the user is in the virtual world
      * @param direction The orientation of the user's gaze
      */
-    public void initialize(Tuple3f position, Vector3f direction)
+    public void initialize(Point3d position, Vector3d direction)
     {
         // Just to make sure
         landscapeView.viewingPlatformMoved();
@@ -233,7 +231,7 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
      * @param position The position of the camera
      * @param direction The direction the camera is looking
      */
-    public void setView(Tuple3f position, Vector3f direction)
+    public void setView(Point3d position, Vector3d direction)
     {
         queueManager.clear();
         landscapeView.viewingPlatformMoved();
@@ -241,7 +239,7 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
         TreeNode mergeCandidate;
         boolean done;
 
-        // Do terrain type spectific processing first
+        // Do terrain type specific processing first
         switch(terrainDataType)
         {
             case TerrainData.TILED_DATA:
@@ -437,7 +435,7 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
      * @param position The position of the camera
      * @param direction The direction the camera is looking
      */
-    private void createTiledPatches(Tuple3f position, Vector3f direction)
+    private void createTiledPatches(Point3d position, Vector3d direction)
     {
         TiledTerrainData t_data = (TiledTerrainData)terrainData;
 
@@ -607,8 +605,8 @@ System.out.println("Free-form terrain not implemented yet");
      * @param direction The direction the viewer is looking
      * @return true if these bounds are the same as the old ones
      */
-    private boolean calculateViewTileBounds(Tuple3f position,
-                                            Vector3f direction)
+    private boolean calculateViewTileBounds(Point3d position,
+                                            Vector3d direction)
     {
         TiledTerrainData t_data = (TiledTerrainData)terrainData;
 
@@ -620,8 +618,8 @@ System.out.println("Free-form terrain not implemented yet");
         t_data.getCoordinate(origin, 0, 0);
 
         // turn the position into a tile coord
-        float cur_x = position.x - origin[0];
-        float cur_z = origin[2] - position.z;
+        double cur_x = position.x - origin[0];
+        double cur_z = origin[2] - position.z;
 
         int tile_x = (int)Math.floor(cur_x / (x_spacing * tile_size));
         int tile_y = (int)Math.floor(cur_z / (y_spacing * tile_size));
@@ -639,7 +637,7 @@ System.out.println("Free-form terrain not implemented yet");
             // The int rounding helps us because if the angle is such that
             // it takes more than half a tile then the numbers round up and
             // we get something that looks right.
-            float aspect = Math.abs(direction.x / direction.z);
+            double aspect = Math.abs(direction.x / direction.z);
 
             if(direction.x >= 0)
             {
@@ -720,7 +718,7 @@ System.out.println("Free-form terrain not implemented yet");
      *
      * @param position The position of the camera
      */
-    private void loadNewTiles(Tuple3f position)
+    private void loadNewTiles(Point3d position)
     {
         // Since we run axis aligned boundaies, let's just look at the
         // difference between new and old.

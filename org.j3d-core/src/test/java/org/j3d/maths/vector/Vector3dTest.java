@@ -178,6 +178,109 @@ public class Vector3dTest
         assertEquals(classUnderTest.hashCode(), testClass.hashCode(), "Same variables didn't generate same hash");
     }
 
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testAddV1Null() throws Exception
+    {
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.add(null, new Vector3d());
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testAddV2Null() throws Exception
+    {
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.add(new Vector3d(), null);
+    }
+
+    @Test(groups = "unit", dataProvider = "add")
+    public void testAdd(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
+    {
+        Vector3d vx1 = new Vector3d();
+        vx1.x = v1[0];
+        vx1.y = v1[1];
+        vx1.z = v1[2];
+
+        Vector3d vx2 = new Vector3d();
+        vx2.x = v2[0];
+        vx2.y = v2[1];
+        vx2.z = v2[2];
+
+        Vector3d classUnderTest = new Vector3d();
+
+        classUnderTest.add(vx1, vx2);
+
+        assertEquals(classUnderTest.x, expectedResult[0], "Incorrect X component");
+        assertEquals(classUnderTest.y, expectedResult[1], "Incorrect Y component");
+        assertEquals(classUnderTest.z, expectedResult[2], "Incorrect Z component");
+    }
+
+    @Test(groups = "unit", dataProvider = "add")
+    public void testAddWithSelf(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
+    {
+        Vector3d vx1 = new Vector3d();
+        vx1.x = v1[0];
+        vx1.y = v1[1];
+        vx1.z = v1[2];
+
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.x = v2[0];
+        classUnderTest.y = v2[1];
+        classUnderTest.z = v2[2];
+
+        classUnderTest.add(vx1, classUnderTest);
+
+        assertEquals(classUnderTest.x, expectedResult[0], "Incorrect X component");
+        assertEquals(classUnderTest.y, expectedResult[1], "Incorrect Y component");
+        assertEquals(classUnderTest.z, expectedResult[2], "Incorrect Z component");
+
+        // Add in other order, should give same results
+        classUnderTest.x = v2[0];
+        classUnderTest.y = v2[1];
+        classUnderTest.z = v2[2];
+
+        classUnderTest.add(classUnderTest, vx1);
+
+        assertEquals(classUnderTest.x, expectedResult[0], "Incorrect X component");
+        assertEquals(classUnderTest.y, expectedResult[1], "Incorrect Y component");
+        assertEquals(classUnderTest.z, expectedResult[2], "Incorrect Z component");
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testSubV1Null() throws Exception
+    {
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.sub(null, new Vector3d());
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testSubV2Null() throws Exception
+    {
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.sub(new Vector3d(), null);
+    }
+
+    @Test(groups = "unit", dataProvider = "sub")
+    public void testSub(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
+    {
+        Vector3d vx1 = new Vector3d();
+        vx1.x = v1[0];
+        vx1.y = v1[1];
+        vx1.z = v1[2];
+
+        Vector3d vx2 = new Vector3d();
+        vx2.x = v2[0];
+        vx2.y = v2[1];
+        vx2.z = v2[2];
+
+        Vector3d classUnderTest = new Vector3d();
+
+        classUnderTest.sub(vx1, vx2);
+
+        assertEquals(classUnderTest.x, expectedResult[0], "Incorrect X component");
+        assertEquals(classUnderTest.y, expectedResult[1], "Incorrect Y component");
+        assertEquals(classUnderTest.z, expectedResult[2], "Incorrect Z component");
+    }
+
     @DataProvider(name = "cross product")
     public Object[][] generateCrossProductData()
     {
@@ -211,6 +314,40 @@ public class Vector3dTest
             // X.Z = 0
             { new Double[] { 1.0, 0.0, 0.0}, new Double[] { 0.0, 0.0, 1.0 }, 0.0},
         };
+    }
+
+    @DataProvider(name = "add")
+    public Object[][] generateAddData()
+    {
+        return new Object[][]
+            {
+                { new Double[] { 1.0, 0.0, 0.0}, new Double[] { 0.0, 1.0, 0.0 }, new Double[] { 1.0, 1.0, 0.0 }},
+                { new Double[] { 1.0, 0.0, 0.0}, new Double[] { 0.0, 0.0, 1.0 }, new Double[] { 1.0, 0.0, 1.0 }},
+                { new Double[] { 0.0, 1.0, 0.0}, new Double[] { 0.0, 0.0, 1.0 }, new Double[] { 0.0, 1.0, 1.0 }},
+                { new Double[] { -1.0, 0.0, 0.0}, new Double[] { 0.0, 1.0, 0.0 }, new Double[] { -1.0, 1.0, 0.0 }},
+                { new Double[] { -1.0, 0.0, 0.0}, new Double[] { 0.0, 0.0, 1.0 }, new Double[] { -1.0, 0.0, 1.0 }},
+                { new Double[] { 0.0, -1.0, 0.0}, new Double[] { 0.0, 0.0, 1.0 }, new Double[] { 0.0, -1.0, 1.0 }},
+                { new Double[] { -1.0, 0.0, 0.0}, new Double[] { 1.0, 0.0, 0.0 }, new Double[] { 0.0, 0.0, 0.0 }},
+                { new Double[] { 0.0, -1.0, 0.0}, new Double[] { 0.0, 1.0, 0.0 }, new Double[] { 0.0, 0.0, 0.0 }},
+                { new Double[] { 0.0,  0.0, -1.0}, new Double[] { 0.0, 0.0, 1.0 }, new Double[] { 0.0, 0.0, 0.0 }},
+            };
+    }
+
+    @DataProvider(name = "sub")
+    public Object[][] generateSubData()
+    {
+        return new Object[][]
+            {
+                { new Double[] { 1.0, 0.0, 0.0}, new Double[] { 0.0, 1.0, 0.0 }, new Double[] { 1.0, -1.0, 0.0 }},
+                { new Double[] { 1.0, 0.0, 0.0}, new Double[] { 0.0, 0.0, 1.0 }, new Double[] { 1.0, 0.0, -1.0 }},
+                { new Double[] { 0.0, 1.0, 0.0}, new Double[] { 0.0, 0.0, 1.0 }, new Double[] { 0.0, 1.0, -1.0 }},
+                { new Double[] { -1.0, 0.0, 0.0}, new Double[] { 0.0, 1.0, 0.0 }, new Double[] { -1.0, -1.0, 0.0 }},
+                { new Double[] { -1.0, 0.0, 0.0}, new Double[] { 0.0, 0.0, 1.0 }, new Double[] { -1.0, 0.0, -1.0 }},
+                { new Double[] { 0.0, -1.0, 0.0}, new Double[] { 0.0, 0.0, 1.0 }, new Double[] { 0.0, -1.0, -1.0 }},
+                { new Double[] { -1.0, 0.0, 0.0}, new Double[] { 1.0, 0.0, 0.0 }, new Double[] { -2.0, 0.0, 0.0 }},
+                { new Double[] { 0.0, -1.0, 0.0}, new Double[] { 0.0, 1.0, 0.0 }, new Double[] { 0.0, -2.0, 0.0 }},
+                { new Double[] { 0.0,  0.0, -1.0}, new Double[] { 0.0, 0.0, 1.0 }, new Double[] { 0.0, 0.0, -2.0 }},
+            };
     }
 
     @DataProvider(name = "equals")

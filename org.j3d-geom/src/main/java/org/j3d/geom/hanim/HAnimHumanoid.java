@@ -12,9 +12,8 @@ package org.j3d.geom.hanim;
 // External imports
 import java.util.ArrayList;
 
-import javax.vecmath.Matrix4f;
-
 // Local imports
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.ErrorReporter;
 import org.j3d.util.I18nManager;
 
@@ -53,7 +52,7 @@ public abstract class HAnimHumanoid extends HAnimObject
         "org.j3d.geom.hanim.HAnimHumanoid.invChildTypeMsg";
 
     /** The identity matrix to pass through to the other nodes */
-    private static final Matrix4f IDENTITY_MATRIX = new Matrix4f();
+    private static final Matrix4d IDENTITY_MATRIX = new Matrix4d();
 
     /** The current bboxCenter of the segment */
     protected float[] bboxCenter;
@@ -139,7 +138,7 @@ public abstract class HAnimHumanoid extends HAnimObject
     private int numSegments;
 
     /** Local matrix value that combines all the fields together */
-    protected Matrix4f localMatrix;
+    protected Matrix4d localMatrix;
 
     /** This is the root joint for the skeleton */
     protected HAnimJoint rootJoint;
@@ -185,7 +184,7 @@ public abstract class HAnimHumanoid extends HAnimObject
         rotation[2] = 1;
         scaleOrientation[2] = 1;
 
-        localMatrix = new Matrix4f();
+        localMatrix = new Matrix4d();
         localMatrix.setIdentity();
 
         updatedChildren = new ArrayList<HAnimObject>();

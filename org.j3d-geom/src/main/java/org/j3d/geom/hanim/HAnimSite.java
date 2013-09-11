@@ -10,9 +10,10 @@
 package org.j3d.geom.hanim;
 
 // External imports
-import javax.vecmath.Matrix4f;
+// None
 
 // Local imports
+import org.j3d.maths.vector.Matrix4d;
 import org.j3d.util.I18nManager;
 
 /**
@@ -60,10 +61,10 @@ public class HAnimSite extends HAnimObject
     protected int numChildren;
 
     /** Local matrix value that combines all the fields together */
-    protected Matrix4f localMatrix;
+    protected Matrix4d localMatrix;
 
     /** Matrix that contains the global transformation down to this site */
-    protected Matrix4f globalMatrix;
+    protected Matrix4d globalMatrix;
 
     /** The parent of this joint */
     private HAnimObjectParent parent;
@@ -94,8 +95,8 @@ public class HAnimSite extends HAnimObject
         rotation[2] = 1;
         scaleOrientation[2] = 1;
 
-        localMatrix = new Matrix4f();
-        globalMatrix = new Matrix4f();
+        localMatrix = new Matrix4d();
+        globalMatrix = new Matrix4d();
 
         matrixChanged = false;
         updateSent = false;
@@ -393,7 +394,7 @@ public class HAnimSite extends HAnimObject
      * @param parentChanged Flag to indicate that the parent transformation
      *   matrix has changed or is still the same as last call
      */
-    protected void updateLocation(Matrix4f parentTransform,
+    protected void updateLocation(Matrix4d parentTransform,
                                   boolean parentChanged)
     {
         if(matrixChanged)

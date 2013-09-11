@@ -10,11 +10,12 @@
 package org.j3d.terrain;
 
 // External imports
-import javax.vecmath.Tuple3f;
-import javax.vecmath.Vector3f;
+// None
 
 // Local imports
 import org.j3d.geom.terrain.HeightMapGeometry;
+import org.j3d.maths.vector.Point3d;
+import org.j3d.maths.vector.Vector3d;
 import org.j3d.util.I18nManager;
 import org.j3d.util.frustum.ViewFrustum;
 
@@ -32,7 +33,7 @@ import org.j3d.util.frustum.ViewFrustum;
  * that can be placed in a scenegraph and have view information passed to it
  * without the need to know the specific algorithm in use. To implement a
  * specific algorithm (eg ROAM) you would extend this class and implement the
- * {@link #setView(Tuple3f, Vector3f)} method. Every time that the scene
+ * {@link #setView(Point3d, Vector3d)} method. Every time that the scene
  * changes, you will be notified by this method. That means you should perform
  * any culling/LOD and update the scene graph at this point. This will be
  * called at most once per frame.
@@ -139,7 +140,7 @@ public abstract class Landscape
      * @param position The position the user is in the virtual world
      * @param direction The orientation of the user's gaze
      */
-    public abstract void initialize(Tuple3f position, Vector3f direction);
+    public abstract void initialize(Point3d position, Vector3d direction);
 
     /**
      * Set the current viewing direction for the user. The user is located
@@ -149,5 +150,5 @@ public abstract class Landscape
      * @param position The position the user is in the virtual world
      * @param direction The orientation of the user's gaze
      */
-    public abstract void setView(Tuple3f position, Vector3f direction);
+    public abstract void setView(Point3d position, Vector3d direction);
 }

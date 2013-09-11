@@ -10,11 +10,12 @@
 package org.j3d.geom.hanim;
 
 // External imports
-import javax.vecmath.AxisAngle4f;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Matrix4f;
+// None
 
 // Local imports
+import org.j3d.maths.vector.AxisAngle4d;
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Vector3d;
 import org.j3d.util.DefaultErrorReporter;
 import org.j3d.util.ErrorReporter;
 
@@ -39,20 +40,20 @@ public abstract class HAnimObject
 
     // Classes for doing the matrix multiplication
 
-    private static Vector3f tempVec;
-    private static AxisAngle4f tempAxis;
-    private static Matrix4f tempMtx1;
-    private static Matrix4f tempMtx2;
-    private static Matrix4f tempMtx3;
+    private static Vector3d tempVec;
+    private static AxisAngle4d tempAxis;
+    private static Matrix4d tempMtx1;
+    private static Matrix4d tempMtx2;
+    private static Matrix4d tempMtx3;
 
     // Static constructor to set up the common nodes
     static
     {
-        tempVec = new Vector3f();
-        tempAxis = new AxisAngle4f();
-        tempMtx1 = new Matrix4f();
-        tempMtx2 = new Matrix4f();
-        tempMtx3 = new Matrix4f();
+        tempVec = new Vector3d();
+        tempAxis = new AxisAngle4d();
+        tempMtx1 = new Matrix4d();
+        tempMtx2 = new Matrix4d();
+        tempMtx3 = new Matrix4d();
     }
 
     /**
@@ -128,7 +129,7 @@ public abstract class HAnimObject
                                        float[] scale,
                                        float[] scaleOrientation,
                                        float[] translation,
-                                       Matrix4f output)
+                                       Matrix4d output)
     {
 
         //System.out.println(this);
@@ -136,8 +137,7 @@ public abstract class HAnimObject
         tempVec.y = -center[1];
         tempVec.z = -center[2];
 
-        tempMtx3.setIdentity();
-        tempMtx3.setTranslation(tempVec);
+        tempMtx3.set(tempVec);
 
         float scaleVal = 1.0f;
 
@@ -223,8 +223,7 @@ public abstract class HAnimObject
         tempVec.y = center[1];
         tempVec.z = center[2];
 
-        tempMtx1.setIdentity();
-        tempMtx1.setTranslation(tempVec);
+        tempMtx1.set(tempVec);
 
         tempMtx2.mul(tempMtx1, tempMtx3);
 
@@ -232,8 +231,7 @@ public abstract class HAnimObject
         tempVec.y = translation[1];
         tempVec.z = translation[2];
 
-        tempMtx1.setIdentity();
-        tempMtx1.setTranslation(tempVec);
+        tempMtx1.set(tempVec);
 
         output.mul(tempMtx1, tempMtx2);
     }

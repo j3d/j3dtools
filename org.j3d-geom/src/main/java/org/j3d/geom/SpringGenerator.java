@@ -10,10 +10,12 @@
 package org.j3d.geom;
 
 // Standard imports
-import javax.vecmath.Vector3f;
+// None
 
 // Application specific imports
 // None
+
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * A generator of Spring geometry with customisable inner radius, outer
@@ -1143,7 +1145,7 @@ public class SpringGenerator extends GeometryGenerator
                                                 data.coordinates.length);
 
         float[] normals = data.normals;
-        Vector3f norm;
+        Vector3d norm;
         int count = 0;
         float[] origin = new float[3];
         int facet_offset = 0;
@@ -1161,54 +1163,54 @@ public class SpringGenerator extends GeometryGenerator
                                           count,
                                           oradiusCoordinates,
                                           facet_offset);
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 norm = createRadialNormal(data.coordinates,
                                           count,
                                           oradiusCoordinates,
                                           facet_offset);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 norm = createRadialNormal(data.coordinates,
                                           count,
                                           oradiusCoordinates,
                                           facet_offset + 3);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 // triangle 2
                 norm = createRadialNormal(data.coordinates,
                                           count,
                                           oradiusCoordinates,
                                           facet_offset + 3);
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 norm = createRadialNormal(data.coordinates,
                                           count,
                                           oradiusCoordinates,
                                           facet_offset + 3);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 norm = createRadialNormal(data.coordinates,
                                           count,
                                           oradiusCoordinates,
                                           facet_offset);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 facet_offset += 3;
             }
@@ -1218,54 +1220,54 @@ public class SpringGenerator extends GeometryGenerator
                                       count,
                                       oradiusCoordinates,
                                       facet_offset);
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
 
             norm = createRadialNormal(data.coordinates,
                                       count,
                                       oradiusCoordinates,
                                       facet_offset);
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
 
             norm = createRadialNormal(data.coordinates,
                                       count,
                                       oradiusCoordinates,
                                       0);
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
 
             // triangle 2
             norm = createRadialNormal(data.coordinates,
                                       count,
                                       oradiusCoordinates,
                                       0);
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
 
             norm = createRadialNormal(data.coordinates,
                                       count,
                                       oradiusCoordinates,
                                       0);
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
 
             norm = createRadialNormal(data.coordinates,
                                       count,
                                       oradiusCoordinates,
                                       facet_offset);
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
         }
 
         // Now that we have one loop, copy the normals along the array for
@@ -1295,7 +1297,7 @@ public class SpringGenerator extends GeometryGenerator
                                                 data.coordinates.length);
 
         float[] normals = data.normals;
-        Vector3f norm;
+        Vector3d norm;
         int count = 0;
         float[] origin = new float[3];
         int facet_offset = 0;
@@ -1310,18 +1312,18 @@ public class SpringGenerator extends GeometryGenerator
                                       count,
                                       oradiusCoordinates,
                                       facet_offset);
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
 
             norm = createRadialNormal(data.coordinates,
                                       count,
                                       oradiusCoordinates,
                                       facet_offset);
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
 
             for(i = outerFacetCount; --i > 0; )
             {
@@ -1332,26 +1334,26 @@ public class SpringGenerator extends GeometryGenerator
                                           oradiusCoordinates,
                                           facet_offset);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
-                normals[count + 6] = norm.x;
-                normals[count + 7] = norm.y;
-                normals[count + 8] = norm.z;
+                normals[count + 6] = (float)norm.x;
+                normals[count + 7] = (float)norm.y;
+                normals[count + 8] = (float)norm.z;
 
                 norm = createRadialNormal(data.coordinates,
                                           count,
                                           oradiusCoordinates,
                                           facet_offset);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 count += 3;
             }
@@ -1361,18 +1363,18 @@ public class SpringGenerator extends GeometryGenerator
                                       oradiusCoordinates,
                                       0);
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
 
             norm = createRadialNormal(data.coordinates,
                                       count,
                                       oradiusCoordinates,
                                       0);
 
-            normals[count++] = norm.x;
-            normals[count++] = norm.y;
-            normals[count++] = norm.z;
+            normals[count++] = (float)norm.x;
+            normals[count++] = (float)norm.y;
+            normals[count++] = (float)norm.z;
         }
 
         // Now that we have one loop, copy the normals along the array for
@@ -1402,7 +1404,7 @@ public class SpringGenerator extends GeometryGenerator
                                                 data.coordinates.length);
 
         float[] normals = data.normals;
-        Vector3f norm;
+        Vector3d norm;
         int count = 0;
         float[] origin = new float[3];
         int facet_offset = 0;
@@ -1420,18 +1422,18 @@ public class SpringGenerator extends GeometryGenerator
                                           oradiusCoordinates,
                                           facet_offset);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 norm = createRadialNormal(data.coordinates,
                                           count,
                                           oradiusCoordinates,
                                           facet_offset);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 facet_offset += 3;
             }
@@ -1464,7 +1466,7 @@ public class SpringGenerator extends GeometryGenerator
                                                 data.coordinates.length);
 
         float[] normals = data.normals;
-        Vector3f norm;
+        Vector3d norm;
         int count = 0;
         float[] origin = new float[3];
         int facet_count = 0;
@@ -1482,9 +1484,9 @@ public class SpringGenerator extends GeometryGenerator
                                           oradiusCoordinates,
                                           facet_count);
 
-                normals[count++] = norm.x;
-                normals[count++] = norm.y;
-                normals[count++] = norm.z;
+                normals[count++] = (float)norm.x;
+                normals[count++] = (float)norm.y;
+                normals[count++] = (float)norm.z;
 
                 facet_count += 3;
             }

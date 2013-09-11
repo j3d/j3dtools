@@ -10,8 +10,7 @@
 package org.j3d.geom.terrain;
 
 // External imports
-import javax.vecmath.Color3f;
-import javax.vecmath.Color4f;
+// None
 
 // Local imports
 import org.j3d.geom.GeometryData;
@@ -93,32 +92,6 @@ public class ColorRampGenerator
 
     /**
      * Create a new colour ramp generator that uses the given heights and
-     * 3 component colour values for that height for the interpolation.
-     *
-     * @param heights The array of heights for each color
-     * @param ramp The color values at each height
-     * @throws IllegalArgumentException The two arrays have differet length
-     */
-    public ColorRampGenerator(float[] heights, Color3f[] ramp)
-    {
-        setColorRamp(heights, ramp);
-    }
-
-    /**
-     * Create a new colour ramp generator that uses the given heights and
-     * 4 component colour values for that height for the interpolation.
-     *
-     * @param heights The array of heights for each color
-     * @param ramp The color values at each height
-     * @throws IllegalArgumentException The two arrays have differet length
-     */
-    public ColorRampGenerator(float[] heights, Color4f[] ramp)
-    {
-        setColorRamp(heights, ramp);
-    }
-
-    /**
-     * Create a new colour ramp generator that uses the given heights and
      * colour values for that height for the interpolation. To determine if
      * an alpha channel is used, the first index of the array's length is
      * checked. If length is 3 then no alpha channel is used, otherwise it
@@ -147,66 +120,6 @@ public class ColorRampGenerator
     public ColorRampGenerator(float[] heights, float[] ramp, boolean hasAlpha)
     {
         setColorRamp(heights, ramp, hasAlpha);
-    }
-
-    /**
-     * Set the color data for the ramp to the new 3 component values.
-     *
-     * @param heights The array of heights for each color
-     * @param ramp The color values at each height
-     * @throws IllegalArgumentException The two arrays have differet length
-     */
-    public void setColorRamp(float[] heights, Color3f[] ramp)
-    {
-        if(heights.length != ramp.length)
-        {
-            I18nManager intl_mgr = I18nManager.getManager();
-
-            String msg = intl_mgr.getString(LENGTH_MSG_PROP);
-            throw new IllegalArgumentException(msg);
-        }
-
-        hasAlpha = false;
-        interpolator = new ColorInterpolator(heights.length);
-
-        for(int i = 0; i < heights.length; i++)
-        {
-            interpolator.addRGBKeyFrame(heights[i],
-                                        ramp[i].x,
-                                        ramp[i].y,
-                                        ramp[i].z,
-                                        0);
-        }
-    }
-
-    /**
-     * Set the color data for the ramp to the new 4 component values.
-     *
-     * @param heights The array of heights for each color
-     * @param ramp The color values at each height
-     * @throws IllegalArgumentException The two arrays have differet length
-     */
-    public void setColorRamp(float[] heights, Color4f[] ramp)
-    {
-        if(heights.length != ramp.length)
-        {
-            I18nManager intl_mgr = I18nManager.getManager();
-
-            String msg = intl_mgr.getString(LENGTH_MSG_PROP);
-            throw new IllegalArgumentException(msg);
-        }
-
-        hasAlpha = true;
-        interpolator = new ColorInterpolator(heights.length);
-
-        for(int i = 0; i < heights.length; i++)
-        {
-            interpolator.addRGBKeyFrame(heights[i],
-                                        ramp[i].x,
-                                        ramp[i].y,
-                                        ramp[i].z,
-                                        ramp[i].w);
-        }
     }
 
     /**

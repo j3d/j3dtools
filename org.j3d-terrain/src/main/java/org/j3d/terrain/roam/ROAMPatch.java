@@ -12,9 +12,8 @@ package org.j3d.terrain.roam;
 // Standard imports
 import java.awt.Point;
 
-import javax.vecmath.Tuple3f;
-
 // Application specific imports
+import org.j3d.maths.vector.Point3d;
 import org.j3d.terrain.TerrainData;
 import org.j3d.util.frustum.ViewFrustum;
 
@@ -128,7 +127,7 @@ public abstract class ROAMPatch
      * @param frustum The viewing frustum information for clipping
      * @param queueManager Manager for ordering terrain chunks
      */
-    void setView(Tuple3f position,
+    void setView(Point3d position,
                  ViewFrustum frustum,
                  QueueManager queueManager)
     {
@@ -281,8 +280,6 @@ public abstract class ROAMPatch
 
     /**
      * Reset this patch back to a simple patch like new.
-     *
-     * @param frustum The view information
      */
     void reset()
     {
@@ -357,7 +354,7 @@ public abstract class ROAMPatch
      * @param position The current view location
      * @param queueManager The queue to place newly generated items on
      */
-    void updateEdges(Tuple3f position, QueueManager queueManager)
+    void updateEdges(Point3d position, QueueManager queueManager)
     {
         int old = -1;
         int neu = -1;
@@ -500,7 +497,7 @@ public abstract class ROAMPatch
      */
     public String toString2()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         if(westNeighbour != null)
             buf.append(westNeighbour.hashCode());

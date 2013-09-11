@@ -31,7 +31,7 @@ public class Matrix4dTest
     {
         Matrix4d classUnderTest = new Matrix4d();
 
-        testAllZeroMatrix(classUnderTest);
+        checkAllZeroMatrix(classUnderTest);
     }
 
     @Test(groups = "unit")
@@ -156,7 +156,7 @@ public class Matrix4dTest
     }
 
     @Test(groups = "unit")
-    public void testSetVectorWithNull() throws Exception
+    public void testSetVector4WithNull() throws Exception
     {
         // Set a collection of random values to check that it is reset to identity
         Matrix4d classUnderTest = new Matrix4d();
@@ -186,7 +186,37 @@ public class Matrix4dTest
     }
 
     @Test(groups = "unit")
-    public void testSetVector() throws Exception
+    public void testSetVector3WithNull() throws Exception
+    {
+        // Set a collection of random values to check that it is reset to identity
+        Matrix4d classUnderTest = new Matrix4d();
+        generateRandomMatrix(classUnderTest);
+
+        classUnderTest.set((Vector3d) null);
+
+        assertNotEquals(classUnderTest.m00, 0.0, "[0][0] reset to 0");
+        assertNotEquals(classUnderTest.m01, 0.0, "[0][1] reset to 0");
+        assertNotEquals(classUnderTest.m02, 0.0, "[0][2] reset to 0");
+        assertNotEquals(classUnderTest.m03, 0.0, "[0][3] reset to 0");
+
+        assertNotEquals(classUnderTest.m10, 0.0, "[1][0] reset to 0");
+        assertNotEquals(classUnderTest.m11, 0.0, "[1][1] reset to 0");
+        assertNotEquals(classUnderTest.m12, 0.0, "[1][2] reset to 0");
+        assertNotEquals(classUnderTest.m13, 0.0, "[1][3] reset to 0");
+
+        assertNotEquals(classUnderTest.m20, 0.0, "[2][0] reset to 0");
+        assertNotEquals(classUnderTest.m21, 0.0, "[2][1] reset to 0");
+        assertNotEquals(classUnderTest.m22, 0.0, "[2][2] reset to 0");
+        assertNotEquals(classUnderTest.m23, 0.0, "[2][3] reset to 0");
+
+        assertNotEquals(classUnderTest.m30, 0.0, "[3][0] reset to 0");
+        assertNotEquals(classUnderTest.m31, 0.0, "[3][1] reset to 0");
+        assertNotEquals(classUnderTest.m32, 0.0, "[3][2] reset to 0");
+        assertNotEquals(classUnderTest.m33, 0.0, "[3][3] reset to 0");
+    }
+
+    @Test(groups = "unit")
+    public void testSetVector4() throws Exception
     {
         final double TEST_X = 0.4;
         final double TEST_Y = -0.4;
@@ -226,6 +256,44 @@ public class Matrix4dTest
     }
 
     @Test(groups = "unit")
+    public void testSetVector3() throws Exception
+    {
+        final double TEST_X = 0.4;
+        final double TEST_Y = -0.4;
+        final double TEST_Z = 13.4;
+
+        Vector3d testVector = new Vector3d();
+        testVector.x = TEST_X;
+        testVector.y = TEST_Y;
+        testVector.z = TEST_Z;
+
+        Matrix4d classUnderTest = new Matrix4d();
+        generateRandomMatrix(classUnderTest);
+
+        classUnderTest.set(testVector);
+
+        assertEquals(classUnderTest.m00, 0.0, "Non-zero value [0][0] coordinate");
+        assertEquals(classUnderTest.m01, 0.0, "Non-zero value [0][1] coordinate");
+        assertEquals(classUnderTest.m02, 0.0, "Non-zero value [0][2] coordinate");
+        assertEquals(classUnderTest.m03, TEST_X, "Incorrect translation for [0][3]");
+
+        assertEquals(classUnderTest.m10, 0.0, "Non-zero value [1][0] coordinate");
+        assertEquals(classUnderTest.m11, 0.0, "Non-zero value [1][1] coordinate");
+        assertEquals(classUnderTest.m12, 0.0, "Non-zero value [1][2] coordinate");
+        assertEquals(classUnderTest.m13, TEST_Y, "Incorrect translation for [1][3]");
+
+        assertEquals(classUnderTest.m20, 0.0, "Non-zero value [2][0] coordinate");
+        assertEquals(classUnderTest.m21, 0.0, "Non-zero value [2][1] coordinate");
+        assertEquals(classUnderTest.m22, 0.0, "Non-zero value [2][2] coordinate");
+        assertEquals(classUnderTest.m23, TEST_Z, "Incorrect translation for [2][3]");
+
+        assertEquals(classUnderTest.m30, 0.0, "Non-zero value [3][0] coordinate");
+        assertEquals(classUnderTest.m31, 0.0, "Non-zero value [3][1] coordinate");
+        assertEquals(classUnderTest.m32, 0.0, "Non-zero value [3][2] coordinate");
+        assertEquals(classUnderTest.m33, 1.0, "translation for [3][3] should be 1.0");
+    }
+
+    @Test(groups = "unit")
     public void testSetAxisAngleZeroLength() throws Exception
     {
         Matrix4d classUnderTest = new Matrix4d();
@@ -245,7 +313,7 @@ public class Matrix4dTest
 
         classUnderTest.clear();
 
-        testAllZeroMatrix(classUnderTest);
+        checkAllZeroMatrix(classUnderTest);
     }
 
     @Test(groups = "unit")
@@ -257,7 +325,7 @@ public class Matrix4dTest
 
         classUnderTest.set(new Matrix4d());
 
-        testAllZeroMatrix(classUnderTest);
+        checkAllZeroMatrix(classUnderTest);
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
@@ -423,6 +491,81 @@ public class Matrix4dTest
         assertEquals(classUnderTest.determinant(), 1.0, "Identity matrix should have determinant of one");
     }
 
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testMulMatrix1Null() throws Exception
+    {
+        Matrix4d classUnderTest = new Matrix4d();
+
+        classUnderTest.mul(null, new Matrix4d());
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testMulMatrix2Null() throws Exception
+    {
+        Matrix4d classUnderTest = new Matrix4d();
+
+        classUnderTest.mul(new Matrix4d(), null);
+    }
+
+    @Test(groups = "unit", dependsOnMethods = "testSetIdentity")
+    public void testMulIdentity() throws Exception
+    {
+        Matrix4d m1 = new Matrix4d();
+        m1.setIdentity();
+
+        Matrix4d m2 = new Matrix4d();
+        m2.setIdentity();
+
+        Matrix4d classUnderTest = new Matrix4d();
+
+        classUnderTest.mul(m1, m2);
+
+        checkIsIdentityMatrix(classUnderTest);
+    }
+
+    @Test(groups = "unit", dependsOnMethods = "testSetIdentity")
+    public void testMulWithSelf() throws Exception
+    {
+        Matrix4d m1 = new Matrix4d();
+        generateRandomMatrix(m1);
+
+        Matrix4d classUnderTest = new Matrix4d();
+        generateRandomMatrix(classUnderTest);
+
+        classUnderTest.mul(m1, classUnderTest);
+
+        checkAllNonZeroMatrix(classUnderTest);
+    }
+
+    @Test(groups = "unit", dependsOnMethods = "testSetIdentity")
+    public void testSetScale() throws Exception 
+    {
+        final double TEST_SCALE = 1.5f;
+        Matrix4d classUnderTest = new Matrix4d();
+        
+        classUnderTest.set(TEST_SCALE);
+
+        assertEquals(classUnderTest.m00, TEST_SCALE, "[0][0] not set to scale value");
+        assertEquals(classUnderTest.m01, 0.0, "[0][1] not reset to 0");
+        assertEquals(classUnderTest.m02, 0.0, "[0][2] not reset to 0");
+        assertEquals(classUnderTest.m03, 0.0, "[0][3] not reset to 0");
+
+        assertEquals(classUnderTest.m10, 0.0, "[1][0] not reset to 0");
+        assertEquals(classUnderTest.m11, TEST_SCALE, "[1][1] not set to scale value");
+        assertEquals(classUnderTest.m12, 0.0, "[1][2] not reset to 0");
+        assertEquals(classUnderTest.m13, 0.0, "[1][3] not reset to 0");
+
+        assertEquals(classUnderTest.m20, 0.0, "[2][0] not reset to 0");
+        assertEquals(classUnderTest.m21, 0.0, "[2][1] not reset to 0");
+        assertEquals(classUnderTest.m22, TEST_SCALE, "[2][2] not set to scale value");
+        assertEquals(classUnderTest.m23, 0.0, "[2][3] not reset to 0");
+
+        assertEquals(classUnderTest.m30, 0.0, "[3][0] not reset to 0");
+        assertEquals(classUnderTest.m31, 0.0, "[3][1] not reset to 0");
+        assertEquals(classUnderTest.m32, 0.0, "[3][2] not reset to 0");
+        assertEquals(classUnderTest.m33, 1.0, "[3][3] not set to 1");
+    }
+    
     @DataProvider(name = "equals")
     public Object[][] generateEqualsData()
     {
@@ -482,7 +625,7 @@ public class Matrix4dTest
         src.m33 = Math.random();
     }
 
-    private void testAllZeroMatrix(Matrix4d src)
+    private void checkAllZeroMatrix(Matrix4d src)
     {
         assertEquals(src.m00, 0.0, "Non-zero default [0][0] coordinate");
         assertEquals(src.m01, 0.0, "Non-zero default [0][1] coordinate");
@@ -503,6 +646,36 @@ public class Matrix4dTest
         assertEquals(src.m31, 0.0, "Non-zero default [3][1] coordinate");
         assertEquals(src.m32, 0.0, "Non-zero default [3][2] coordinate");
         assertEquals(src.m33, 0.0, "Non-zero default [3][3] coordinate");
+    }
+
+    /**
+     * Checks the matrix to see if it is all non-zero. Generally used for
+     * making sure a randomly-set matrix hasn't been set back to all zeroes
+     * or identity due to some operation.
+     * 
+     * @param src The matrix to test
+     */
+    private void checkAllNonZeroMatrix(Matrix4d src)
+    {
+        assertNotEquals(src.m00, 0.0, "Coordinate reset to zero at [0][0]");
+        assertNotEquals(src.m01, 0.0, "Coordinate reset to zero at [0][1]");
+        assertNotEquals(src.m02, 0.0, "Coordinate reset to zero at [0][2]");
+        assertNotEquals(src.m03, 0.0, "Coordinate reset to zero at [0][3]");
+
+        assertNotEquals(src.m10, 0.0, "Coordinate reset to zero at [1][0]");
+        assertNotEquals(src.m11, 0.0, "Coordinate reset to zero at [1][1]");
+        assertNotEquals(src.m12, 0.0, "Coordinate reset to zero at [1][2]");
+        assertNotEquals(src.m13, 0.0, "Coordinate reset to zero at [1][3]");
+
+        assertNotEquals(src.m20, 0.0, "Coordinate reset to zero at [2][0]");
+        assertNotEquals(src.m21, 0.0, "Coordinate reset to zero at [2][1]");
+        assertNotEquals(src.m22, 0.0, "Coordinate reset to zero at [2][2]");
+        assertNotEquals(src.m23, 0.0, "Coordinate reset to zero at [2][3]");
+
+        assertNotEquals(src.m30, 0.0, "Coordinate reset to zero at [3][0]");
+        assertNotEquals(src.m31, 0.0, "Coordinate reset to zero at [3][1]");
+        assertNotEquals(src.m32, 0.0, "Coordinate reset to zero at [3][2]");
+        assertNotEquals(src.m33, 0.0, "Coordinate reset to zero at [3][3]");
     }
 
     private void checkIsIdentityMatrix(Matrix4d src)

@@ -10,13 +10,14 @@
 package org.j3d.geom.spline;
 
 // Standard imports
-import javax.vecmath.Vector3f;
+// None
 
 // Application specific imports
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.GeometryGenerator;
 import org.j3d.geom.InvalidArraySizeException;
 import org.j3d.geom.UnsupportedTypeException;
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * Base geometry generator defintion for all forms of spline-based patches.
@@ -2262,7 +2263,7 @@ public abstract class PatchGenerator extends GeometryGenerator
             patchNormals = new float[widthFacetCount + 1][numNormalValues];
         }
 
-        Vector3f norm;
+        Vector3d norm;
         int count = 0;
         int i, j;
 
@@ -2270,9 +2271,9 @@ public abstract class PatchGenerator extends GeometryGenerator
         // corner point - normal based on only that face
         norm = createFaceNormal(patchCoordinates, 1, 0, 0, 0, 0, 3);
 
-        patchNormals[0][count++] = norm.x;
-        patchNormals[0][count++] = norm.y;
-        patchNormals[0][count++] = norm.z;
+        patchNormals[0][count++] = (float)norm.x;
+        patchNormals[0][count++] = (float)norm.y;
+        patchNormals[0][count++] = (float)norm.z;
 
         for(i = 1; i < widthFacetCount; i++)
         {
@@ -2281,9 +2282,9 @@ public abstract class PatchGenerator extends GeometryGenerator
                                          1, count,
                                          0, count - 3);
 
-            patchNormals[0][count++] = norm.x;
-            patchNormals[0][count++] = norm.y;
-            patchNormals[0][count++] = norm.z;
+            patchNormals[0][count++] = (float)norm.x;
+            patchNormals[0][count++] = (float)norm.y;
+            patchNormals[0][count++] = (float)norm.z;
         }
 
         // Last corner point of the first row
@@ -2292,9 +2293,9 @@ public abstract class PatchGenerator extends GeometryGenerator
                                 1, count,
                                 1, count - 3);
 
-        patchNormals[0][count++] = norm.x;
-        patchNormals[0][count++] = norm.y;
-        patchNormals[0][count++] = norm.z;
+        patchNormals[0][count++] = (float)norm.x;
+        patchNormals[0][count++] = (float)norm.y;
+        patchNormals[0][count++] = (float)norm.z;
 
         // Now, process all of the internal points
         for(i = 1; i < widthFacetCount; i++)
@@ -2305,9 +2306,9 @@ public abstract class PatchGenerator extends GeometryGenerator
                                          i, count + 3,
                                          i + 1, count);
 
-            patchNormals[i][count++] = norm.x;
-            patchNormals[i][count++] = norm.y;
-            patchNormals[i][count++] = norm.z;
+            patchNormals[i][count++] = (float)norm.x;
+            patchNormals[i][count++] = (float)norm.y;
+            patchNormals[i][count++] = (float)norm.z;
 
             for(j = 1; j < widthFacetCount; j++)
             {
@@ -2318,9 +2319,9 @@ public abstract class PatchGenerator extends GeometryGenerator
                                              i, count - 3,
                                              i - 1, count);
 
-                patchNormals[i][count++] = norm.x;
-                patchNormals[i][count++] = norm.y;
-                patchNormals[i][count++] = norm.z;
+                patchNormals[i][count++] = (float)norm.x;
+                patchNormals[i][count++] = (float)norm.y;
+                patchNormals[i][count++] = (float)norm.z;
             }
 
             // Last point of the row
@@ -2329,9 +2330,9 @@ public abstract class PatchGenerator extends GeometryGenerator
                                          i, count - 3,
                                          i - 1, count);
 
-            patchNormals[i][count++] = norm.x;
-            patchNormals[i][count++] = norm.y;
-            patchNormals[i][count++] = norm.z;
+            patchNormals[i][count++] = (float)norm.x;
+            patchNormals[i][count++] = (float)norm.y;
+            patchNormals[i][count++] = (float)norm.z;
         }
 
         // The last edge
@@ -2342,9 +2343,9 @@ public abstract class PatchGenerator extends GeometryGenerator
                                 widthFacetCount - 1, count,
                                 widthFacetCount, count + 3);
 
-        patchNormals[widthFacetCount][count++] = norm.x;
-        patchNormals[widthFacetCount][count++] = norm.y;
-        patchNormals[widthFacetCount][count++] = norm.z;
+        patchNormals[widthFacetCount][count++] = (float)norm.x;
+        patchNormals[widthFacetCount][count++] = (float)norm.y;
+        patchNormals[widthFacetCount][count++] = (float)norm.z;
 
         for(i = 1; i < widthFacetCount; i++)
         {
@@ -2353,9 +2354,9 @@ public abstract class PatchGenerator extends GeometryGenerator
                                          i - 1, count,
                                          i, count + 3);
 
-            patchNormals[widthFacetCount][count++] = norm.x;
-            patchNormals[widthFacetCount][count++] = norm.y;
-            patchNormals[widthFacetCount][count++] = norm.z;
+            patchNormals[widthFacetCount][count++] = (float)norm.x;
+            patchNormals[widthFacetCount][count++] = (float)norm.y;
+            patchNormals[widthFacetCount][count++] = (float)norm.z;
         }
 
         // Last corner point of the first row
@@ -2364,35 +2365,34 @@ public abstract class PatchGenerator extends GeometryGenerator
                                 widthFacetCount, count - 3,
                                 widthFacetCount - 1, count);
 
-        patchNormals[widthFacetCount][count++] = norm.x;
-        patchNormals[widthFacetCount][count++] = norm.y;
-        patchNormals[widthFacetCount][count++] = norm.z;
+        patchNormals[widthFacetCount][count++] = (float)norm.x;
+        patchNormals[widthFacetCount][count++] = (float)norm.y;
+        patchNormals[widthFacetCount][count++] = (float)norm.z;
     }
 
     /**
      * Convenience method to calculate the average normal value between
      * two quads - ie along the side of an object
      *
-     * @param coords The coordinates to generate from
      * @param p The centre point
      * @param p1 The first point of the first side
      * @param p2 The middle, shared side point
      * @param p3 The last point of the second side
      * @return The averaged vector
      */
-    private Vector3f calcSideAverageNormal(int w, int p,
+    private Vector3d calcSideAverageNormal(int w, int p,
                                            int w1, int p1,
                                            int w2, int p2,
                                            int w3, int p3)
     {
-        Vector3f norm;
+        Vector3d norm;
         float x, y, z;
 
         // Normal first for the previous quad
         norm = createFaceNormal(patchCoordinates, w, p, w1, p1, w2, p2);
-        x = norm.x;
-        y = norm.y;
-        z = norm.z;
+        x = (float)norm.x;
+        y = (float)norm.y;
+        z = (float)norm.z;
 
         // Normal for the next quad
         norm = createFaceNormal(patchCoordinates, w, p, w2, p2, w3, p3);
@@ -2402,7 +2402,7 @@ public abstract class PatchGenerator extends GeometryGenerator
         norm.y = (norm.y + y) / 2;
         norm.z = (norm.z + z) / 2;
 
-        norm.normalize();
+        norm.normalise();
 
         return norm;
     }
@@ -2412,7 +2412,6 @@ public abstract class PatchGenerator extends GeometryGenerator
      * quads based around a common centre point (the one having the normal
      * calculated).
      *
-     * @param coords The coordinates to generate from
      * @param p The centre point
      * @param p1 shared point between first and last quad
      * @param p2 shared point between first and second quad
@@ -2420,34 +2419,34 @@ public abstract class PatchGenerator extends GeometryGenerator
      * @param p4 shared point between third and fourth quad
      * @return The averaged vector
      */
-    private Vector3f calcQuadAverageNormal(int w, int p,
+    private Vector3d calcQuadAverageNormal(int w, int p,
                                            int w1, int p1,
                                            int w2, int p2,
                                            int w3, int p3,
                                            int w4, int p4)
     {
-        Vector3f norm;
+        Vector3d norm;
         float x, y, z;
 
         // Normal first for quads 1 & 2
         norm = createFaceNormal(patchCoordinates, w, p, w2, p2, w1, p1);
-        x = norm.x;
-        y = norm.y;
-        z = norm.z;
+        x = (float)norm.x;
+        y = (float)norm.y;
+        z = (float)norm.z;
 
         // Normal for the quads 2 & 3
         norm = createFaceNormal(patchCoordinates, w, p, w2, p2, w3, p3);
 
-        x += norm.x;
-        y += norm.y;
-        z += norm.z;
+        x += (float)norm.x;
+        y += (float)norm.y;
+        z += (float)norm.z;
 
         // Normal for quads 3 & 4
         norm = createFaceNormal(patchCoordinates, w, p, w3, p3, w4, p4);
 
-        x += norm.x;
-        y += norm.y;
-        z += norm.z;
+        x += (float)norm.x;
+        y += (float)norm.y;
+        z += (float)norm.z;
 
         // Normal for quads 1 & 4
         norm = createFaceNormal(patchCoordinates, w, p, w4, p4, w1, p1);
@@ -2457,7 +2456,7 @@ public abstract class PatchGenerator extends GeometryGenerator
         norm.y = (norm.y + y) / 4;
         norm.z = (norm.z + z) / 4;
 
-        norm.normalize();
+        norm.normalise();
 
         return norm;
     }

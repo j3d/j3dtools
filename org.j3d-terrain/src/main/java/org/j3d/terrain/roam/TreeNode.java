@@ -12,9 +12,8 @@ package org.j3d.terrain.roam;
 // Standard imports
 import java.util.LinkedList;
 
-import javax.vecmath.Tuple3f;
-
 // Application specific imports
+import org.j3d.maths.vector.Point3d;
 import org.j3d.terrain.TerrainData;
 import org.j3d.util.frustum.ViewFrustum;
 
@@ -234,12 +233,12 @@ public class TreeNode extends QueueItem
      *
      * @param position The position for the computation
      */
-    void computeVariance(Tuple3f position)
+    void computeVariance(Point3d position)
     {
         float center_x = (p1X + p2X) * 0.5f;
         float center_z = -(p1Y + p2Y) * 0.5f;
-        float pos_x = (position.x - center_x) * (position.x - center_x);
-        float pos_z = (position.z - center_z) * (position.z - center_z);
+        double pos_x = (position.x - center_x) * (position.x - center_x);
+        double pos_z = (position.z - center_z) * (position.z - center_z);
         float distance = (float)Math.sqrt(pos_x + pos_z);
 
         float angle = varianceTree.getVariance(node) / distance;
@@ -260,7 +259,7 @@ public class TreeNode extends QueueItem
      */
     int edgeSplit(TreeNode newNeighbour,
                   int orientation,
-                  Tuple3f position,
+                  Point3d position,
                   ViewFrustum frustum,
                   QueueManager queue)
     {
@@ -320,7 +319,7 @@ public class TreeNode extends QueueItem
      * @param queue The queue to place newly generated items on
      * @return The number of triangles generated as a result
      */
-    void forceSplit(Tuple3f position, ViewFrustum frustum, QueueManager queue)
+    void forceSplit(Point3d position, ViewFrustum frustum, QueueManager queue)
     {
         if(baseNeighbour != null)
         {
@@ -380,7 +379,7 @@ public class TreeNode extends QueueItem
      * @param frustum The view information
      * @param queue The queue manager to place newly generated items on
      */
-    void split(Tuple3f position,
+    void split(Point3d position,
                ViewFrustum frustum,
                QueueManager queue)
     {
@@ -531,7 +530,7 @@ public class TreeNode extends QueueItem
      *    tree node
      * @param queue The queue to put the merged node on
      */
-    void updateTree(Tuple3f position,
+    void updateTree(Point3d position,
                     ViewFrustum frustum,
                     VarianceTree varianceTree,
                     int parentVisible,

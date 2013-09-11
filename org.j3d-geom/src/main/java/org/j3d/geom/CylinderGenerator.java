@@ -10,9 +10,11 @@
 package org.j3d.geom;
 
 // Standard imports
-import javax.vecmath.Vector3f;
+// None
 
 // Application specific imports
+
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * A simple cylinder that can be configured to have end caps.
@@ -92,7 +94,7 @@ public class CylinderGenerator extends GeometryGenerator
     private boolean facetsChanged;
 
     /** Working values for the normal generation */
-    private Vector3f normal;
+    private Vector3d normal;
 
     /**
      * Construct a default cylinder with end caps. The default height is 2
@@ -252,7 +254,7 @@ public class CylinderGenerator extends GeometryGenerator
         useSide = side;
         baseChanged = true;
         facetsChanged = true;
-        normal = new Vector3f();
+        normal = new Vector3d();
     }
 
     /**
@@ -1737,60 +1739,60 @@ public class CylinderGenerator extends GeometryGenerator
 
             for(i = facetCount; --i > 0; )
             {
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
-                normals[count + 9] = normal.x;
-                normals[count + 10] = normal.y;
-                normals[count + 11] = normal.z;
+                normals[count + 9] = (float)normal.x;
+                normals[count + 10] = (float)normal.y;
+                normals[count + 11] = (float)normal.z;
 
-                normals[count + 12] = normal.x;
-                normals[count + 13] = normal.y;
-                normals[count + 14] = normal.z;
+                normals[count + 12] = (float)normal.x;
+                normals[count + 13] = (float)normal.y;
+                normals[count + 14] = (float)normal.z;
 
                 createRadialFlatNormal(vtx++);
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
                 count += 6;
             }
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+            normals[count++] = (float)normal.x;
+            normals[count++] = (float)normal.y;
+            normals[count++] = (float)normal.z;
 
-            normals[count + 9] = normal.x;
-            normals[count + 10] = normal.y;
-            normals[count + 11] = normal.z;
+            normals[count + 9] = (float)normal.x;
+            normals[count + 10] = (float)normal.y;
+            normals[count + 11] = (float)normal.z;
 
-            normals[count + 12] = normal.x;
-            normals[count + 13] = normal.y;
-            normals[count + 14] = normal.z;
+            normals[count + 12] = (float)normal.x;
+            normals[count + 13] = (float)normal.y;
+            normals[count + 14] = (float)normal.z;
 
             createRadialFlatNormal(0);
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+            normals[count++] = (float)normal.x;
+            normals[count++] = (float)normal.y;
+            normals[count++] = (float)normal.z;
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+            normals[count++] = (float)normal.x;
+            normals[count++] = (float)normal.y;
+            normals[count++] = (float)normal.z;
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+            normals[count++] = (float)normal.x;
+            normals[count++] = (float)normal.y;
+            normals[count++] = (float)normal.z;
 
             count += 6;
         }
@@ -1870,13 +1872,13 @@ public class CylinderGenerator extends GeometryGenerator
             {
                 createRadialFlatNormal(vtx++);
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
             }
 
             // Last row of the facets is the same as the first items
@@ -1955,32 +1957,32 @@ public class CylinderGenerator extends GeometryGenerator
 
             for(i = facetCount; --i > 0; )
             {
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
                 createRadialFlatNormal(vtx++);
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
             }
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+            normals[count++] = (float)normal.x;
+            normals[count++] = (float)normal.y;
+            normals[count++] = (float)normal.z;
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+            normals[count++] = (float)normal.x;
+            normals[count++] = (float)normal.y;
+            normals[count++] = (float)normal.z;
 
             normals[count++] = normals[0];
             normals[count++] = normals[1];
@@ -2049,44 +2051,44 @@ public class CylinderGenerator extends GeometryGenerator
 
             for(i = facetCount; --i > 0; )
             {
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
-                normals[count + 6] = normal.x;
-                normals[count + 7] = normal.y;
-                normals[count + 8] = normal.z;
+                normals[count + 6] = (float)normal.x;
+                normals[count + 7] = (float)normal.y;
+                normals[count + 8] = (float)normal.z;
 
                 createRadialFlatNormal(vtx++);
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
                 count += 3;
             }
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+            normals[count++] = (float)normal.x;
+            normals[count++] = (float)normal.y;
+            normals[count++] = (float)normal.z;
 
-            normals[count + 6] = normal.x;
-            normals[count + 7] = normal.y;
-            normals[count + 8] = normal.z;
+            normals[count + 6] = (float)normal.x;
+            normals[count + 7] = (float)normal.y;
+            normals[count + 8] = (float)normal.z;
 
             createRadialFlatNormal(0);
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+            normals[count++] = (float)normal.x;
+            normals[count++] = (float)normal.y;
+            normals[count++] = (float)normal.z;
 
-            normals[count++] = normal.x;
-            normals[count++] = normal.y;
-            normals[count++] = normal.z;
+            normals[count++] = (float)normal.x;
+            normals[count++] = (float)normal.y;
+            normals[count++] = (float)normal.z;
 
             count += 3;
         }
@@ -2173,13 +2175,13 @@ public class CylinderGenerator extends GeometryGenerator
             {
                 createRadialFlatNormal(vtx++);
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
 
-                normals[count++] = normal.x;
-                normals[count++] = normal.y;
-                normals[count++] = normal.z;
+                normals[count++] = (float)normal.x;
+                normals[count++] = (float)normal.y;
+                normals[count++] = (float)normal.z;
             }
         }
 
