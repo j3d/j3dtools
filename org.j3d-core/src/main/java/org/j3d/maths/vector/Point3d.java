@@ -65,4 +65,23 @@ public class Point3d
         y = py;
         z = pz;
     }
+
+    /**
+     * Calculate the linear euclidean distance from this point to the supplied
+     * point. If the supplied point is null, throws an exception.
+     *
+     * @param point The other point to find the distance to
+     * @return A positive distance number
+     */
+    public double distance(Point3d point)
+    {
+        if(point == null)
+            throw new IllegalArgumentException("Target point cannot be null");
+
+        double dx = x - point.x;
+        double dy = y - point.y;
+        double dz = z - point.z;
+
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
 }

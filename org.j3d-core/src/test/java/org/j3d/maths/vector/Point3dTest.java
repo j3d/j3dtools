@@ -51,6 +51,22 @@ public class Point3dTest
     }
 
     @Test(groups = "unit")
+    public void testDistance() throws Exception
+    {
+        final double TEST_X = 0.4;
+        final double TEST_Y = -1.0;
+        final double TEST_Z = 4.0;
+        final double EXPECTED = Math.sqrt(TEST_X * TEST_X + TEST_Y * TEST_Y + TEST_Z * TEST_Z);
+
+        Point3d testPoint = new Point3d();
+        testPoint.set(TEST_X, TEST_Y, TEST_Z);
+
+        Point3d classUnderTest = new Point3d();
+
+        assertEquals(classUnderTest.distance(testPoint), EXPECTED, 0.001, "Wrong distance found");
+    }
+
+    @Test(groups = "unit")
     public void testNotEqualsToOther() throws Exception
     {
         Point3d classUnderTest = new Point3d();

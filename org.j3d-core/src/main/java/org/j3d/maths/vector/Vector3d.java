@@ -108,6 +108,29 @@ public class Vector3d
     }
 
     /**
+     * Add the two input vectors together, treating both points as a
+     * vector from the origin to the point location, and place in this vector.
+     * Both arguments must not be null. Code is safe to allow the use of
+     * this as one of the two inputs
+     *
+     * @param v1 The first input vector
+     * @param v2 The second input vector that we add to v1
+     */
+    public void add(Point3d v1, Point3d v2)
+    {
+        if(v1 == null)
+            throw new IllegalArgumentException("First point cannot be null in add");
+
+        if(v2 == null)
+            throw new IllegalArgumentException("Second point cannot be null in add");
+
+
+        x = v1.x + v2.x;
+        y = v1.y + v2.y;
+        z = v1.z + v2.z;
+    }
+
+    /**
      * Subtract the first vector from the second vector and place in this vector.
      * Both arguments must not be null. Code is safe to allow the use of
      * this as one of the two inputs
@@ -123,6 +146,28 @@ public class Vector3d
         if(v2 == null)
             throw new IllegalArgumentException("Second vector cannot be null in sub");
 
+
+        x = v1.x - v2.x;
+        y = v1.y - v2.y;
+        z = v1.z - v2.z;
+    }
+
+    /**
+     * Subtract the first point from the second point, treating both points as a
+     * vector from the origin to the point location, and place in this vector.
+     * Both arguments must not be null. Code is safe to allow the use of
+     * this as one of the two inputs
+     *
+     * @param v1 The first input vector
+     * @param v2 The second input vector that we subtract from v1
+     */
+    public void sub(Point3d v1, Point3d v2)
+    {
+        if(v1 == null)
+            throw new IllegalArgumentException("First vector cannot be null in sub");
+
+        if(v2 == null)
+            throw new IllegalArgumentException("Second vector cannot be null in sub");
 
         x = v1.x - v2.x;
         y = v1.y - v2.y;
@@ -162,5 +207,26 @@ public class Vector3d
         x = v1.y * v2.z - v1.z * v2.y;
         y = v1.x * v2.z - v1.z * v2.x;
         z = v1.x * v2.y - v1.y * v2.x;
+    }
+
+    /**
+     * Calculate the length of this vector
+     *
+     * @return sqrt(x^2 + y^2 + z^2)
+     */
+    public double length()
+    {
+        return Math.sqrt(x * x + y * y + z * z);
+    }
+
+    /**
+     * Calculate the length squared of this vector. Saves using a costly
+     * square-root operation.
+     *
+     * @return x^2 + y^2 + z^2
+     */
+    public double lengthSquared()
+    {
+        return x * x + y * y + z * z;
     }
 }

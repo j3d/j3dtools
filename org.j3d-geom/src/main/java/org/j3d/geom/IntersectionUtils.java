@@ -10,12 +10,14 @@
 package org.j3d.geom;
 
 // Standard imports
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
-import javax.vecmath.Matrix4d;
+// None
 
 // Application specific imports
 // none
+
+import org.j3d.maths.vector.Matrix4d;
+import org.j3d.maths.vector.Point3d;
+import org.j3d.maths.vector.Vector3d;
 
 /**
  * A collection of utility methods to do geometry intersection tests.
@@ -263,7 +265,7 @@ public class IntersectionUtils
         }
 
         if(ret_val)
-            vworldTransform.transform(point);
+            vworldTransform.transform(point, point);
 
         return ret_val;
     }
@@ -328,7 +330,9 @@ public class IntersectionUtils
                 if(this_length < shortest_length)
                 {
                     shortest_length = this_length;
-                    point.set(wkPoint);
+                    point.x = wkPoint.x;
+                    point.y = wkPoint.y;
+                    point.z = wkPoint.z;
 
                     if(intersectOnly)
                         break;
@@ -398,7 +402,9 @@ public class IntersectionUtils
                 if(this_length < shortest_length)
                 {
                     shortest_length = this_length;
-                    point.set(wkPoint);
+                    point.x = wkPoint.x;
+                    point.y = wkPoint.y;
+                    point.z = wkPoint.z;
 
                     if(intersectOnly)
                         break;
@@ -479,7 +485,9 @@ public class IntersectionUtils
                     if(this_length < shortest_length)
                     {
                         shortest_length = this_length;
-                        point.set(wkPoint);
+                        point.x = wkPoint.x;
+                        point.y = wkPoint.y;
+                        point.z = wkPoint.z;
 
                         if(intersectOnly)
                             break;
@@ -578,7 +586,9 @@ public class IntersectionUtils
                     if(this_length < shortest_length)
                     {
                         shortest_length = this_length;
-                        point.set(wkPoint);
+                        point.x = wkPoint.x;
+                        point.y = wkPoint.y;
+                        point.z = wkPoint.z;
 
                         if(intersectOnly)
                             break;
@@ -667,7 +677,9 @@ public class IntersectionUtils
                 if(this_length < shortest_length)
                 {
                     shortest_length = this_length;
-                    point.set(wkPoint);
+                    point.x = wkPoint.x;
+                    point.y = wkPoint.y;
+                    point.z = wkPoint.z;
 
                     if(intersectOnly)
                         break;
@@ -758,7 +770,9 @@ public class IntersectionUtils
                 if(this_length < shortest_length)
                 {
                     shortest_length = this_length;
-                    point.set(wkPoint);
+                    point.x = wkPoint.x;
+                    point.y = wkPoint.y;
+                    point.z = wkPoint.z;
 
                     if(intersectOnly)
                         break;
@@ -1269,7 +1283,10 @@ public class IntersectionUtils
         wkVec.z = coords[2];
         double d = normal.dot(wkVec);
 
-        wkVec.set(origin);
+        wkVec.x = origin.x;
+        wkVec.y = origin.y;
+        wkVec.z = origin.z;
+
         double n_dot_o = normal.dot(wkVec);
 
         // t = (d - N.O) / N.D

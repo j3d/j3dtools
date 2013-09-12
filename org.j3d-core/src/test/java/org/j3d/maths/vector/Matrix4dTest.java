@@ -104,25 +104,7 @@ public class Matrix4dTest
 
         classUnderTest.set((Matrix4d) null);
 
-        assertNotEquals(classUnderTest.m00, 0.0, "[0][0] reset to 0");
-        assertNotEquals(classUnderTest.m01, 0.0, "[0][1] reset to 0");
-        assertNotEquals(classUnderTest.m02, 0.0, "[0][2] reset to 0");
-        assertNotEquals(classUnderTest.m03, 0.0, "[0][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m10, 0.0, "[1][0] reset to 0");
-        assertNotEquals(classUnderTest.m11, 0.0, "[1][1] reset to 0");
-        assertNotEquals(classUnderTest.m12, 0.0, "[1][2] reset to 0");
-        assertNotEquals(classUnderTest.m13, 0.0, "[1][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m20, 0.0, "[2][0] reset to 0");
-        assertNotEquals(classUnderTest.m21, 0.0, "[2][1] reset to 0");
-        assertNotEquals(classUnderTest.m22, 0.0, "[2][2] reset to 0");
-        assertNotEquals(classUnderTest.m23, 0.0, "[2][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m30, 0.0, "[3][0] reset to 0");
-        assertNotEquals(classUnderTest.m31, 0.0, "[3][1] reset to 0");
-        assertNotEquals(classUnderTest.m32, 0.0, "[3][2] reset to 0");
-        assertNotEquals(classUnderTest.m33, 0.0, "[3][3] reset to 0");
+        checkAllNonZeroMatrix(classUnderTest);
     }
 
     @Test(groups = "unit")
@@ -134,25 +116,7 @@ public class Matrix4dTest
 
         classUnderTest.set((AxisAngle4d) null);
 
-        assertNotEquals(classUnderTest.m00, 0.0, "[0][0] reset to 0");
-        assertNotEquals(classUnderTest.m01, 0.0, "[0][1] reset to 0");
-        assertNotEquals(classUnderTest.m02, 0.0, "[0][2] reset to 0");
-        assertNotEquals(classUnderTest.m03, 0.0, "[0][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m10, 0.0, "[1][0] reset to 0");
-        assertNotEquals(classUnderTest.m11, 0.0, "[1][1] reset to 0");
-        assertNotEquals(classUnderTest.m12, 0.0, "[1][2] reset to 0");
-        assertNotEquals(classUnderTest.m13, 0.0, "[1][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m20, 0.0, "[2][0] reset to 0");
-        assertNotEquals(classUnderTest.m21, 0.0, "[2][1] reset to 0");
-        assertNotEquals(classUnderTest.m22, 0.0, "[2][2] reset to 0");
-        assertNotEquals(classUnderTest.m23, 0.0, "[2][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m30, 0.0, "[3][0] reset to 0");
-        assertNotEquals(classUnderTest.m31, 0.0, "[3][1] reset to 0");
-        assertNotEquals(classUnderTest.m32, 0.0, "[3][2] reset to 0");
-        assertNotEquals(classUnderTest.m33, 0.0, "[3][3] reset to 0");
+        checkAllNonZeroMatrix(classUnderTest);
     }
 
     @Test(groups = "unit")
@@ -164,25 +128,7 @@ public class Matrix4dTest
 
         classUnderTest.set((Vector4d) null);
 
-        assertNotEquals(classUnderTest.m00, 0.0, "[0][0] reset to 0");
-        assertNotEquals(classUnderTest.m01, 0.0, "[0][1] reset to 0");
-        assertNotEquals(classUnderTest.m02, 0.0, "[0][2] reset to 0");
-        assertNotEquals(classUnderTest.m03, 0.0, "[0][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m10, 0.0, "[1][0] reset to 0");
-        assertNotEquals(classUnderTest.m11, 0.0, "[1][1] reset to 0");
-        assertNotEquals(classUnderTest.m12, 0.0, "[1][2] reset to 0");
-        assertNotEquals(classUnderTest.m13, 0.0, "[1][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m20, 0.0, "[2][0] reset to 0");
-        assertNotEquals(classUnderTest.m21, 0.0, "[2][1] reset to 0");
-        assertNotEquals(classUnderTest.m22, 0.0, "[2][2] reset to 0");
-        assertNotEquals(classUnderTest.m23, 0.0, "[2][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m30, 0.0, "[3][0] reset to 0");
-        assertNotEquals(classUnderTest.m31, 0.0, "[3][1] reset to 0");
-        assertNotEquals(classUnderTest.m32, 0.0, "[3][2] reset to 0");
-        assertNotEquals(classUnderTest.m33, 0.0, "[3][3] reset to 0");
+        checkAllNonZeroMatrix(classUnderTest);
     }
 
     @Test(groups = "unit")
@@ -194,25 +140,7 @@ public class Matrix4dTest
 
         classUnderTest.set((Vector3d) null);
 
-        assertNotEquals(classUnderTest.m00, 0.0, "[0][0] reset to 0");
-        assertNotEquals(classUnderTest.m01, 0.0, "[0][1] reset to 0");
-        assertNotEquals(classUnderTest.m02, 0.0, "[0][2] reset to 0");
-        assertNotEquals(classUnderTest.m03, 0.0, "[0][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m10, 0.0, "[1][0] reset to 0");
-        assertNotEquals(classUnderTest.m11, 0.0, "[1][1] reset to 0");
-        assertNotEquals(classUnderTest.m12, 0.0, "[1][2] reset to 0");
-        assertNotEquals(classUnderTest.m13, 0.0, "[1][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m20, 0.0, "[2][0] reset to 0");
-        assertNotEquals(classUnderTest.m21, 0.0, "[2][1] reset to 0");
-        assertNotEquals(classUnderTest.m22, 0.0, "[2][2] reset to 0");
-        assertNotEquals(classUnderTest.m23, 0.0, "[2][3] reset to 0");
-
-        assertNotEquals(classUnderTest.m30, 0.0, "[3][0] reset to 0");
-        assertNotEquals(classUnderTest.m31, 0.0, "[3][1] reset to 0");
-        assertNotEquals(classUnderTest.m32, 0.0, "[3][2] reset to 0");
-        assertNotEquals(classUnderTest.m33, 0.0, "[3][3] reset to 0");
+        checkAllNonZeroMatrix(classUnderTest);
     }
 
     @Test(groups = "unit")
@@ -234,19 +162,19 @@ public class Matrix4dTest
 
         classUnderTest.set(testVector);
 
-        assertEquals(classUnderTest.m00, 0.0, "Non-zero value [0][0] coordinate");
+        assertEquals(classUnderTest.m00, 1.0, "[0][0] coordinate should be 1.0");
         assertEquals(classUnderTest.m01, 0.0, "Non-zero value [0][1] coordinate");
         assertEquals(classUnderTest.m02, 0.0, "Non-zero value [0][2] coordinate");
         assertEquals(classUnderTest.m03, TEST_X, "Incorrect translation for [0][3]");
 
         assertEquals(classUnderTest.m10, 0.0, "Non-zero value [1][0] coordinate");
-        assertEquals(classUnderTest.m11, 0.0, "Non-zero value [1][1] coordinate");
+        assertEquals(classUnderTest.m11, 1.0, "[1][1] coordinate should be 1.0");
         assertEquals(classUnderTest.m12, 0.0, "Non-zero value [1][2] coordinate");
         assertEquals(classUnderTest.m13, TEST_Y, "Incorrect translation for [1][3]");
 
         assertEquals(classUnderTest.m20, 0.0, "Non-zero value [2][0] coordinate");
         assertEquals(classUnderTest.m21, 0.0, "Non-zero value [2][1] coordinate");
-        assertEquals(classUnderTest.m22, 0.0, "Non-zero value [2][2] coordinate");
+        assertEquals(classUnderTest.m22, 1.0, "[2][2] coordinate should be 1.0");
         assertEquals(classUnderTest.m23, TEST_Z, "Incorrect translation for [2][3]");
 
         assertEquals(classUnderTest.m30, 0.0, "Non-zero value [3][0] coordinate");
@@ -272,19 +200,19 @@ public class Matrix4dTest
 
         classUnderTest.set(testVector);
 
-        assertEquals(classUnderTest.m00, 0.0, "Non-zero value [0][0] coordinate");
+        assertEquals(classUnderTest.m00, 1.0, "[0][0] coordinate should be 1.0");
         assertEquals(classUnderTest.m01, 0.0, "Non-zero value [0][1] coordinate");
         assertEquals(classUnderTest.m02, 0.0, "Non-zero value [0][2] coordinate");
         assertEquals(classUnderTest.m03, TEST_X, "Incorrect translation for [0][3]");
 
         assertEquals(classUnderTest.m10, 0.0, "Non-zero value [1][0] coordinate");
-        assertEquals(classUnderTest.m11, 0.0, "Non-zero value [1][1] coordinate");
+        assertEquals(classUnderTest.m11, 1.0, "[1][1] coordinate should be 1.0");
         assertEquals(classUnderTest.m12, 0.0, "Non-zero value [1][2] coordinate");
         assertEquals(classUnderTest.m13, TEST_Y, "Incorrect translation for [1][3]");
 
         assertEquals(classUnderTest.m20, 0.0, "Non-zero value [2][0] coordinate");
         assertEquals(classUnderTest.m21, 0.0, "Non-zero value [2][1] coordinate");
-        assertEquals(classUnderTest.m22, 0.0, "Non-zero value [2][2] coordinate");
+        assertEquals(classUnderTest.m22, 1.0, "[2][2] coordinate should be 1.0");
         assertEquals(classUnderTest.m23, TEST_Z, "Incorrect translation for [2][3]");
 
         assertEquals(classUnderTest.m30, 0.0, "Non-zero value [3][0] coordinate");
@@ -408,6 +336,121 @@ public class Matrix4dTest
         assertEquals(resultVector.y, TEST_Y, "Different vector Y component was changed unexpectedly");
         assertEquals(resultVector.z, TEST_Z, "Different vector Z component was changed unexpectedly");
         assertEquals(resultVector.w, TEST_W, "Different vector W component was changed unexpectedly");
+    }
+
+
+    @Test(groups = "unit", dependsOnMethods = "testSetIdentity")
+    public void testTransformVector3IdentityMatrix() throws Exception
+    {
+        final double TEST_X = 0.4;
+        final double TEST_Y = -0.4;
+        final double TEST_Z = 13.4;
+
+        Vector3d testPoint = new Vector3d();
+        testPoint.x = TEST_X;
+        testPoint.y = TEST_Y;
+        testPoint.z = TEST_Z;
+
+        Matrix4d classUnderTest = new Matrix4d();
+        classUnderTest.setIdentity();
+
+        classUnderTest.transform(testPoint, testPoint);
+
+        assertEquals(testPoint.x, TEST_X, "Same vector X component was changed unexpectedly");
+        assertEquals(testPoint.y, TEST_Y, "Same vector Y component was changed unexpectedly");
+        assertEquals(testPoint.z, TEST_Z, "Same vector Z component was changed unexpectedly");
+
+        Vector3d resultPoint = new Vector3d();
+
+        classUnderTest.transform(testPoint, resultPoint);
+
+        assertEquals(resultPoint.x, TEST_X, "Different vector X component was changed unexpectedly");
+        assertEquals(resultPoint.y, TEST_Y, "Different vector Y component was changed unexpectedly");
+        assertEquals(resultPoint.z, TEST_Z, "Different vector Z component was changed unexpectedly");
+    }
+
+    @Test(groups = "unit", dependsOnMethods = "testSetIdentity")
+    public void testTransformVectorNormal() throws Exception
+    {
+        final double TRANSLATE_X = 0.5;
+        final double TRANSLATE_Y = 1.5;
+        final double TRANSLATE_Z = -2.5;
+
+        final double TEST_X = 0.4;
+        final double TEST_Y = -0.4;
+        final double TEST_Z = 13.4;
+
+        Vector3d testPoint = new Vector3d();
+        testPoint.x = TEST_X;
+        testPoint.y = TEST_Y;
+        testPoint.z = TEST_Z;
+
+        Vector4d translation = new Vector4d();
+        translation.x = TRANSLATE_X;
+        translation.y = TRANSLATE_Y;
+        translation.z = TRANSLATE_Z;
+
+        Matrix4d classUnderTest = new Matrix4d();
+        classUnderTest.set(translation);
+
+        classUnderTest.transformNormal(testPoint, testPoint);
+
+        assertEquals(testPoint.x, TEST_X, "Same vector X component was changed unexpectedly");
+        assertEquals(testPoint.y, TEST_Y, "Same vector Y component was changed unexpectedly");
+        assertEquals(testPoint.z, TEST_Z, "Same vector Z component was changed unexpectedly");
+
+        Vector3d resultPoint = new Vector3d();
+
+        testPoint.x = TEST_X;
+        testPoint.y = TEST_Y;
+        testPoint.z = TEST_Z;
+        classUnderTest.transformNormal(testPoint, resultPoint);
+
+        assertEquals(resultPoint.x, TEST_X, "Different vector X component was changed unexpectedly");
+        assertEquals(resultPoint.y, TEST_Y, "Different vector Y component was changed unexpectedly");
+        assertEquals(resultPoint.z, TEST_Z, "Different vector Z component was changed unexpectedly");
+    }
+
+    @Test(groups = "unit", dependsOnMethods = "testSetIdentity")
+    public void testTransformVectorDirection() throws Exception
+    {
+        final double TRANSLATE_X = 0.5;
+        final double TRANSLATE_Y = 1.5;
+        final double TRANSLATE_Z = -2.5;
+
+        final double TEST_X = 0.4;
+        final double TEST_Y = -0.4;
+        final double TEST_Z = 13.4;
+
+        Vector3d testPoint = new Vector3d();
+        testPoint.x = TEST_X;
+        testPoint.y = TEST_Y;
+        testPoint.z = TEST_Z;
+
+        Vector4d translation = new Vector4d();
+        translation.x = TRANSLATE_X;
+        translation.y = TRANSLATE_Y;
+        translation.z = TRANSLATE_Z;
+
+        Matrix4d classUnderTest = new Matrix4d();
+        classUnderTest.set(translation);
+
+        classUnderTest.transform(testPoint, testPoint);
+
+        assertEquals(testPoint.x, TEST_X + TRANSLATE_X, "Same vector X component not translated");
+        assertEquals(testPoint.y, TEST_Y + TRANSLATE_Y, "Same vector Y component not translated");
+        assertEquals(testPoint.z, TEST_Z + TRANSLATE_Z, "Same vector Z component not translated");
+
+        testPoint.x = TEST_X;
+        testPoint.y = TEST_Y;
+        testPoint.z = TEST_Z;
+        Vector3d resultPoint = new Vector3d();
+
+        classUnderTest.transform(testPoint, resultPoint);
+
+        assertEquals(resultPoint.x, TEST_X + TRANSLATE_X, "Different vector X component not translated");
+        assertEquals(resultPoint.y, TEST_Y + TRANSLATE_Y, "Different vector Y component not translated");
+        assertEquals(resultPoint.z, TEST_Z + TRANSLATE_Z, "Different vector Z component not translated");
     }
 
     @Test(groups = "unit", dependsOnMethods = "testSetIdentity")

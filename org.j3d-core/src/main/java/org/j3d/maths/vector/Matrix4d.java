@@ -208,19 +208,19 @@ public class Matrix4d
         if(src == null)
             return;
 
-        m00 = 0.0;
+        m00 = 1.0;
         m01 = 0.0;
         m02 = 0.0;
         m03 = src.x;
 
         m10 = 0.0;
-        m11 = 0.0;
+        m11 = 1.0;
         m12 = 0.0;
         m13 = src.y;
 
         m20 = 0.0;
         m21 = 0.0;
-        m22 = 0.0;
+        m22 = 1.0;
         m23 = src.z;
 
         m30 = 0.0;
@@ -240,19 +240,19 @@ public class Matrix4d
         if(src == null)
             return;
 
-        m00 = 0.0;
+        m00 = 1.0;
         m01 = 0.0;
         m02 = 0.0;
         m03 = src.x;
 
         m10 = 0.0;
-        m11 = 0.0;
+        m11 = 1.0;
         m12 = 0.0;
         m13 = src.y;
 
         m20 = 0.0;
         m21 = 0.0;
-        m22 = 0.0;
+        m22 = 1.0;
         m23 = src.z;
 
         m30 = 0.0;
@@ -344,6 +344,60 @@ public class Matrix4d
             m32 = 0.0;
             m33 = 1.0;
         }
+    }
+
+    /**
+     * Transform the vector from input value and place it in the output. Will be
+     * input safe so that input and output are the same object, it doesn't cause
+     * any weird values.
+     *
+     * @param inVec The input vector to transform by this matrix
+     * @param outVec The output vector to put the transformed result into
+     * @throws IllegalArgumentException Either the input or the output is null
+     */
+    public void transform(Vector3d inVec, Vector3d outVec)
+    {
+        if(inVec == null)
+            throw new IllegalArgumentException("Input vector cannot be null");
+
+        if(outVec == null)
+            throw new IllegalArgumentException("Output vector cannot be null");
+
+        double x = m00 * inVec.x + m01 * inVec.y + m02 * inVec.z + m03;
+        double y = m10 * inVec.x + m11 * inVec.y + m12 * inVec.z + m13;
+        double z = m20 * inVec.x + m21 * inVec.y + m22 * inVec.z + m23;
+
+        outVec.x = x;
+        outVec.y = y;
+        outVec.z = z;
+    }
+
+    /**
+     * Transform the vector from input value and place it in the output, treating
+     * it as a normal vector. The 4th component of the vector is treated as zero
+     * for this purpose to avoid any translation effect. Will be
+     * input safe so that input and output are the same object, it doesn't cause
+     * any weird values.
+     *
+     * @param inVec The input vector to transform by this matrix
+     * @param outVec The output vector to put the transformed result into
+     * @throws IllegalArgumentException Either the input or the output is null
+     */
+    public void transformNormal(Vector3d inVec, Vector3d outVec)
+    {
+        if(inVec == null)
+            throw new IllegalArgumentException("Input vector cannot be null");
+
+        if(outVec == null)
+            throw new IllegalArgumentException("Output vector cannot be null");
+
+        double x = m00 * inVec.x + m01 * inVec.y + m02 * inVec.z;
+        double y = m10 * inVec.x + m11 * inVec.y + m12 * inVec.z;
+        double z = m20 * inVec.x + m21 * inVec.y + m22 * inVec.z;
+
+        outVec.x = x;
+        outVec.y = y;
+        outVec.z = z;
     }
 
     /**
@@ -464,6 +518,19 @@ public class Matrix4d
         m33 = matrix1.m33 * matrix2.m33;
     }
 
+    /**
+     * Set this matrix to the inverse of the provided matrix. Will support
+     * passing in this as the target matrix
+     *
+     * @param src The source matrix to invert
+     */
+    public void invert(Matrix4d src)
+    {
+        if(src == null)
+            throw new IllegalArgumentException("Source matrix cannot be null");
+
+        // TBD
+    }
     /**
      * Calculate the determinant of this matrix.
      *

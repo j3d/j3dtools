@@ -179,21 +179,21 @@ public class Vector3dTest
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
-    public void testAddV1Null() throws Exception
+    public void testAddVectorV1Null() throws Exception
     {
         Vector3d classUnderTest = new Vector3d();
         classUnderTest.add(null, new Vector3d());
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
-    public void testAddV2Null() throws Exception
+    public void testAddVectorV2Null() throws Exception
     {
         Vector3d classUnderTest = new Vector3d();
         classUnderTest.add(new Vector3d(), null);
     }
 
     @Test(groups = "unit", dataProvider = "add")
-    public void testAdd(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
+    public void testAddVector(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
     {
         Vector3d vx1 = new Vector3d();
         vx1.x = v1[0];
@@ -215,7 +215,7 @@ public class Vector3dTest
     }
 
     @Test(groups = "unit", dataProvider = "add")
-    public void testAddWithSelf(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
+    public void testAddVectorWithSelf(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
     {
         Vector3d vx1 = new Vector3d();
         vx1.x = v1[0];
@@ -246,21 +246,21 @@ public class Vector3dTest
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
-    public void testSubV1Null() throws Exception
+    public void testSubVectorV1Null() throws Exception
     {
         Vector3d classUnderTest = new Vector3d();
         classUnderTest.sub(null, new Vector3d());
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
-    public void testSubV2Null() throws Exception
+    public void testSubVectorV2Null() throws Exception
     {
         Vector3d classUnderTest = new Vector3d();
         classUnderTest.sub(new Vector3d(), null);
     }
 
     @Test(groups = "unit", dataProvider = "sub")
-    public void testSub(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
+    public void testSubVector(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
     {
         Vector3d vx1 = new Vector3d();
         vx1.x = v1[0];
@@ -279,6 +279,90 @@ public class Vector3dTest
         assertEquals(classUnderTest.x, expectedResult[0], "Incorrect X component");
         assertEquals(classUnderTest.y, expectedResult[1], "Incorrect Y component");
         assertEquals(classUnderTest.z, expectedResult[2], "Incorrect Z component");
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testAddPointV1Null() throws Exception
+    {
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.add(null, new Point3d());
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testAddPointV2Null() throws Exception
+    {
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.add(new Point3d(), null);
+    }
+
+    @Test(groups = "unit", dataProvider = "add")
+    public void testAddPoint(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
+    {
+        Point3d vx1 = new Point3d();
+        vx1.x = v1[0];
+        vx1.y = v1[1];
+        vx1.z = v1[2];
+
+        Point3d vx2 = new Point3d();
+        vx2.x = v2[0];
+        vx2.y = v2[1];
+        vx2.z = v2[2];
+
+        Vector3d classUnderTest = new Vector3d();
+
+        classUnderTest.add(vx1, vx2);
+
+        assertEquals(classUnderTest.x, expectedResult[0], "Incorrect X component");
+        assertEquals(classUnderTest.y, expectedResult[1], "Incorrect Y component");
+        assertEquals(classUnderTest.z, expectedResult[2], "Incorrect Z component");
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testSubPointV1Null() throws Exception
+    {
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.sub(null, new Point3d());
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testSubPointV2Null() throws Exception
+    {
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.sub(new Point3d(), null);
+    }
+
+    @Test(groups = "unit", dataProvider = "sub")
+    public void testSubPoint(Double[] v1, Double[] v2, Double[] expectedResult) throws Exception
+    {
+        Point3d vx1 = new Point3d();
+        vx1.x = v1[0];
+        vx1.y = v1[1];
+        vx1.z = v1[2];
+
+        Point3d vx2 = new Point3d();
+        vx2.x = v2[0];
+        vx2.y = v2[1];
+        vx2.z = v2[2];
+
+        Vector3d classUnderTest = new Vector3d();
+
+        classUnderTest.sub(vx1, vx2);
+
+        assertEquals(classUnderTest.x, expectedResult[0], "Incorrect X component");
+        assertEquals(classUnderTest.y, expectedResult[1], "Incorrect Y component");
+        assertEquals(classUnderTest.z, expectedResult[2], "Incorrect Z component");
+    }
+
+    @Test(groups = "unit")
+    public void testLength() throws Exception
+    {
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.x = 1.0;
+        classUnderTest.y = 1.0;
+        classUnderTest.z = 1.0;
+
+        assertEquals(classUnderTest.length(), Math.sqrt(3), "Incorrect length");
+        assertEquals(classUnderTest.lengthSquared(), 3.0, "Incorrect squared length");
     }
 
     @DataProvider(name = "cross product")
