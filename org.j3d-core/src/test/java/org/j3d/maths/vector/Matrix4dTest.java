@@ -534,6 +534,33 @@ public class Matrix4dTest
         assertEquals(classUnderTest.determinant(), 1.0, "Identity matrix should have determinant of one");
     }
 
+    @Test(groups = "unit")
+    public void testMatrixDeterminant() throws Exception
+    {
+        Matrix4d classUnderTest = new Matrix4d();
+        classUnderTest.m00 = 1;
+        classUnderTest.m01 = 2;
+        classUnderTest.m02 = 2;
+        classUnderTest.m03 = 2;
+
+        classUnderTest.m10 = 2;
+        classUnderTest.m11 = 1;
+        classUnderTest.m12 = 2;
+        classUnderTest.m13 = 2;
+
+        classUnderTest.m20 = 2;
+        classUnderTest.m21 = 2;
+        classUnderTest.m22 = 1;
+        classUnderTest.m23 = 2;
+
+        classUnderTest.m30 = 2;
+        classUnderTest.m31 = 2;
+        classUnderTest.m32 = 2;
+        classUnderTest.m33 = 1;
+
+        assertEquals(classUnderTest.determinant(), -7.0, "Incorrect determinant");
+    }
+
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void testMulMatrix1Null() throws Exception
     {
@@ -578,6 +605,181 @@ public class Matrix4dTest
         classUnderTest.mul(m1, classUnderTest);
 
         checkAllNonZeroMatrix(classUnderTest);
+    }
+
+    @Test(groups = "unit", dependsOnMethods = "testSetIdentity")
+    public void testMul() throws Exception
+    {
+        Matrix4d m1 = new Matrix4d();
+        m1.m00 = 1;
+        m1.m01 = 2;
+        m1.m02 = 3;
+        m1.m03 = 4;
+
+        m1.m10 = 11;
+        m1.m11 = 12;
+        m1.m12 = 13;
+        m1.m13 = 14;
+
+        m1.m20 = 21;
+        m1.m21 = 22;
+        m1.m22 = 23;
+        m1.m23 = 24;
+
+        m1.m30 = 31;
+        m1.m31 = 32;
+        m1.m32 = 33;
+        m1.m33 = 34;
+
+        Matrix4d m2 = new Matrix4d();
+        m2.m00 = 1;
+        m2.m01 = 2;
+        m2.m02 = 3;
+        m2.m03 = 4;
+
+        m2.m10 = 11;
+        m2.m11 = 12;
+        m2.m12 = 13;
+        m2.m13 = 14;
+
+        m2.m20 = 21;
+        m2.m21 = 22;
+        m2.m22 = 23;
+        m2.m23 = 24;
+
+        m2.m30 = 31;
+        m2.m31 = 32;
+        m2.m32 = 33;
+        m2.m33 = 34;
+
+        Matrix4d classUnderTest = new Matrix4d();
+
+        classUnderTest.mul(m1, m2);
+
+        assertEquals(classUnderTest.m00, 210.0, "Incorrect coordinate [0][0]");
+        assertEquals(classUnderTest.m01, 220.0, "Incorrect coordinate [0][1]");
+        assertEquals(classUnderTest.m02, 230.0, "Incorrect coordinate [0][2]");
+        assertEquals(classUnderTest.m03, 240.0, "Incorrect coordinate [0][3]");
+
+        assertEquals(classUnderTest.m10, 850.0, "Incorrect coordinate [1][0]");
+        assertEquals(classUnderTest.m11, 900.0, "Incorrect coordinate [1][1]");
+        assertEquals(classUnderTest.m12, 950.0, "Incorrect coordinate [1][2]");
+        assertEquals(classUnderTest.m13, 1000.0, "Incorrect coordinate [1][3]");
+
+        assertEquals(classUnderTest.m20, 1490.0, "Incorrect coordinate [2][0]");
+        assertEquals(classUnderTest.m21, 1580.0, "Incorrect coordinate [2][1]");
+        assertEquals(classUnderTest.m22, 1670.0, "Incorrect coordinate [2][2]");
+        assertEquals(classUnderTest.m23, 1760.0, "Incorrect coordinate [2][3]");
+
+        assertEquals(classUnderTest.m30, 2130.0, "Incorrect coordinate [3][0]");
+        assertEquals(classUnderTest.m31, 2260.0, "Incorrect coordinate [3][1]");
+        assertEquals(classUnderTest.m32, 2390.0, "Incorrect coordinate [3][2]");
+        assertEquals(classUnderTest.m33, 2520.0, "Incorrect coordinate [3][3]");
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testTransposeNull() throws Exception
+    {
+        Matrix4d classUnderTest = new Matrix4d();
+
+        classUnderTest.transpose(null);
+    }
+
+    @Test(groups = "unit")
+    public void testTranspose() throws Exception
+    {
+        Matrix4d testMatrix = new Matrix4d();
+        testMatrix.m00 = 1;
+        testMatrix.m01 = 2;
+        testMatrix.m02 = 3;
+        testMatrix.m03 = 4;
+
+        testMatrix.m10 = 11;
+        testMatrix.m11 = 12;
+        testMatrix.m12 = 13;
+        testMatrix.m13 = 14;
+
+        testMatrix.m20 = 21;
+        testMatrix.m21 = 22;
+        testMatrix.m22 = 23;
+        testMatrix.m23 = 24;
+
+        testMatrix.m30 = 31;
+        testMatrix.m31 = 32;
+        testMatrix.m32 = 33;
+        testMatrix.m33 = 34;
+
+        Matrix4d classUnderTest = new Matrix4d();
+
+        classUnderTest.transpose(testMatrix);
+
+        assertEquals(classUnderTest.m00, testMatrix.m00, "Non-transposed coordinate [0][0]");
+        assertEquals(classUnderTest.m01, testMatrix.m10, "Non-transposed coordinate [0][1]");
+        assertEquals(classUnderTest.m02, testMatrix.m20, "Non-transposed coordinate [0][2]");
+        assertEquals(classUnderTest.m03, testMatrix.m30, "Non-transposed coordinate [0][3]");
+
+        assertEquals(classUnderTest.m10, testMatrix.m01, "Non-transposed coordinate [1][0]");
+        assertEquals(classUnderTest.m11, testMatrix.m11, "Non-transposed coordinate [1][1]");
+        assertEquals(classUnderTest.m12, testMatrix.m21, "Non-transposed coordinate [1][2]");
+        assertEquals(classUnderTest.m13, testMatrix.m31, "Non-transposed coordinate [1][3]");
+
+        assertEquals(classUnderTest.m20, testMatrix.m02, "Non-transposed coordinate [2][0]");
+        assertEquals(classUnderTest.m21, testMatrix.m12, "Non-transposed coordinate [2][1]");
+        assertEquals(classUnderTest.m22, testMatrix.m22, "Non-transposed coordinate [2][2]");
+        assertEquals(classUnderTest.m23, testMatrix.m32, "Non-transposed coordinate [2][3]");
+
+        assertEquals(classUnderTest.m30, testMatrix.m03, "Non-transposed coordinate [3][0]");
+        assertEquals(classUnderTest.m31, testMatrix.m13, "Non-transposed coordinate [3][1]");
+        assertEquals(classUnderTest.m32, testMatrix.m23, "Non-transposed coordinate [3][2]");
+        assertEquals(classUnderTest.m33, testMatrix.m33, "Non-transposed coordinate [3][3]");
+    }
+
+    @Test(groups = "unit")
+    public void testTransposeSelf() throws Exception
+    {
+        Matrix4d classUnderTest = new Matrix4d();
+
+        classUnderTest.m00 = 0;
+        classUnderTest.m01 = 1;
+        classUnderTest.m02 = 2;
+        classUnderTest.m03 = 3;
+
+        classUnderTest.m10 = 10;
+        classUnderTest.m11 = 11;
+        classUnderTest.m12 = 12;
+        classUnderTest.m13 = 13;
+
+        classUnderTest.m20 = 20;
+        classUnderTest.m21 = 21;
+        classUnderTest.m22 = 22;
+        classUnderTest.m23 = 23;
+
+        classUnderTest.m30 = 30;
+        classUnderTest.m31 = 31;
+        classUnderTest.m32 = 32;
+        classUnderTest.m33 = 33;
+
+        classUnderTest.transpose(classUnderTest);
+
+        assertEquals(classUnderTest.m00,  0.0, "Non-transposed coordinate [0][0]");
+        assertEquals(classUnderTest.m01, 10.0, "Non-transposed coordinate [0][1]");
+        assertEquals(classUnderTest.m02, 20.0, "Non-transposed coordinate [0][2]");
+        assertEquals(classUnderTest.m03, 30.0, "Non-transposed coordinate [0][3]");
+
+        assertEquals(classUnderTest.m10,  1.0, "Non-transposed coordinate [1][0]");
+        assertEquals(classUnderTest.m11, 11.0, "Non-transposed coordinate [1][1]");
+        assertEquals(classUnderTest.m12, 21.0, "Non-transposed coordinate [1][2]");
+        assertEquals(classUnderTest.m13, 31.0, "Non-transposed coordinate [1][3]");
+
+        assertEquals(classUnderTest.m20,  2.0, "Non-transposed coordinate [2][0]");
+        assertEquals(classUnderTest.m21, 12.0, "Non-transposed coordinate [2][1]");
+        assertEquals(classUnderTest.m22, 22.0, "Non-transposed coordinate [2][2]");
+        assertEquals(classUnderTest.m23, 32.0, "Non-transposed coordinate [2][3]");
+
+        assertEquals(classUnderTest.m30,  3.0, "Non-transposed coordinate [3][0]");
+        assertEquals(classUnderTest.m31, 13.0, "Non-transposed coordinate [3][1]");
+        assertEquals(classUnderTest.m32, 23.0, "Non-transposed coordinate [3][2]");
+        assertEquals(classUnderTest.m33, 33.0, "Non-transposed coordinate [3][3]");
     }
 
     @Test(groups = "unit", dependsOnMethods = "testSetIdentity")

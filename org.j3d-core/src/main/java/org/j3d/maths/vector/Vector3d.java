@@ -86,6 +86,18 @@ public class Vector3d
     }
 
     /**
+     * Multiply this vector by the given scale factor.
+     *
+     * @param s The scale to apply to the vector
+     */
+    public void scale(double s)
+    {
+        x *= s;
+        y *= s;
+        z *= s;
+    }
+
+    /**
      * Add the two input vectors together and place in this vector.
      * Both arguments must not be null. Code is safe to allow the use of
      * this as one of the two inputs

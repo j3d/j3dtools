@@ -18,6 +18,7 @@ package org.j3d.geom;
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Point3d;
 import org.j3d.maths.vector.Vector3d;
+import org.j3d.util.MatrixUtils;
 
 /**
  * A collection of utility methods to do geometry intersection tests.
@@ -102,6 +103,9 @@ public class IntersectionUtils
     /** Place to invert the incoming transform for reverse mappings */
     private Matrix4d reverseTx;
 
+    /** For inverting matrices etc */
+    private MatrixUtils matrixUtils;
+
     /**
      * Create a default instance of this class with no internal data
      * structures allocated.
@@ -116,6 +120,7 @@ public class IntersectionUtils
         diffVec = new Vector3d();
         wkPolygon = new float[12];
         reverseTx = new Matrix4d();
+        matrixUtils = new MatrixUtils();
 
         pickStart = new Point3d();
         pickDir = new Vector3d();
@@ -173,7 +178,7 @@ public class IntersectionUtils
     {
         boolean ret_val = false;
 
-        reverseTx.invert(vworldTransform);
+        matrixUtils.inverse(vworldTransform, reverseTx);
         transformPicks(reverseTx, origin, direction);
 
         switch(data.geometryType)

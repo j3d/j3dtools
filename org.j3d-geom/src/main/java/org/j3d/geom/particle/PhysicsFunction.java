@@ -113,9 +113,9 @@ public class PhysicsFunction implements ParticleFunction
         if(particle.mass != 0)
         {
             // A = force / mass
-            float a_x = particle.resultantForce.x * deltaTime / particle.mass;
-            float a_y = particle.resultantForce.y * deltaTime / particle.mass;
-            float a_z = particle.resultantForce.z * deltaTime / particle.mass;
+            double a_x = particle.resultantForce.x * deltaTime / particle.mass;
+            double a_y = particle.resultantForce.y * deltaTime / particle.mass;
+            double a_z = particle.resultantForce.z * deltaTime / particle.mass;
 
             particle.velocity.x += a_x;
             particle.velocity.y += a_y;
@@ -124,9 +124,9 @@ public class PhysicsFunction implements ParticleFunction
 
         // get the change in position
         // S' = S + ut
-        float x = particle.position.x + particle.velocity.x * deltaTime;
-        float y = particle.position.y + particle.velocity.y * deltaTime;
-        float z = particle.position.z + particle.velocity.z * deltaTime;
+        double x = particle.position.x + particle.velocity.x * deltaTime;
+        double y = particle.position.y + particle.velocity.y * deltaTime;
+        double z = particle.position.z + particle.velocity.z * deltaTime;
 
         // update the position
         particle.setPosition(x, y, z);

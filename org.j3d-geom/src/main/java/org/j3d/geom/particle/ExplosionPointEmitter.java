@@ -113,7 +113,7 @@ public class ExplosionPointEmitter extends BaseEmitter
         float v_z = randomiser.nextFloat() * variation * speed * z_sign;
 
         particle.velocity.set(v_x, v_y, v_z);
-        particle.velocity.normalize();
+        particle.velocity.normalise();
         particle.velocity.scale(speed * rnd);
 
         return true;

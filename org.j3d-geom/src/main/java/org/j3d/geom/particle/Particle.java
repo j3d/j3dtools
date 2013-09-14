@@ -130,7 +130,7 @@ public abstract class Particle
      * @param y The y coordinate of the new position
      * @param z The z coordinate of the new position
      */
-    public void setPosition(float x, float y, float z)
+    public void setPosition(double x, double y, double z)
     {
         position.set(x, y, z);
     }

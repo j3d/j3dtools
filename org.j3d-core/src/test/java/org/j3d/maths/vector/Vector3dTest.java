@@ -365,6 +365,26 @@ public class Vector3dTest
         assertEquals(classUnderTest.lengthSquared(), 3.0, "Incorrect squared length");
     }
 
+    @Test(groups = "unit")
+    public void testScale() throws Exception
+    {
+        final double TEST_X = 0.4;
+        final double TEST_Y = -1.0;
+        final double TEST_Z = 4.0;
+        final double TEST_SCALE = 0.5;
+
+        Vector3d classUnderTest = new Vector3d();
+        classUnderTest.x = TEST_X;
+        classUnderTest.y = TEST_Y;
+        classUnderTest.z = TEST_Z;
+
+        classUnderTest.scale(TEST_SCALE);
+
+        assertEquals(classUnderTest.x, TEST_X * TEST_SCALE, "Incorrect X scaled value");
+        assertEquals(classUnderTest.y, TEST_Y * TEST_SCALE, "Incorrect Y scaled value");
+        assertEquals(classUnderTest.z, TEST_Z * TEST_SCALE, "Incorrect Z scaled value");
+    }
+
     @DataProvider(name = "cross product")
     public Object[][] generateCrossProductData()
     {

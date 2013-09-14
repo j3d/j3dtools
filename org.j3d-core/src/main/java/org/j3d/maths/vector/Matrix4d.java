@@ -486,51 +486,106 @@ public class Matrix4d
      * Set this matrix to the left multiplication of the two input matrices.
      * Data safe so that you can use this as one of the inputs
      *
-     * @param matrix1 The left matrix to apply to the multiplication
-     * @param matrix2 The right matrix to apply to the multiplication
+     * @param m1 The left matrix to apply to the multiplication
+     * @param m2 The right matrix to apply to the multiplication
      */
-    public void mul(Matrix4d matrix1, Matrix4d matrix2)
+    public void mul(Matrix4d m1, Matrix4d m2)
     {
-        if(matrix1 == null)
+        if(m1 == null)
             throw new IllegalArgumentException("First matrix cannot be null");
 
-        if(matrix2 == null)
+        if(m2 == null)
             throw new IllegalArgumentException("Second matrix cannot be null");
-        
-        m00 = matrix1.m00 * matrix2.m00;
-        m01 = matrix1.m01 * matrix2.m01;
-        m02 = matrix1.m02 * matrix2.m02;
-        m03 = matrix1.m03 * matrix2.m03;
 
-        m10 = matrix1.m10 * matrix2.m10;
-        m11 = matrix1.m11 * matrix2.m11;
-        m12 = matrix1.m12 * matrix2.m12;
-        m13 = matrix1.m13 * matrix2.m13;
 
-        m20 = matrix1.m20 * matrix2.m20;
-        m21 = matrix1.m21 * matrix2.m21;
-        m22 = matrix1.m22 * matrix2.m22;
-        m23 = matrix1.m23 * matrix2.m23;
+        double t00 = m1.m00 * m2.m00 + m1.m01 * m2.m10 + m1.m02 * m2.m20 + m1.m03 * m2.m30;
+        double t01 = m1.m00 * m2.m01 + m1.m01 * m2.m11 + m1.m02 * m2.m21 + m1.m03 * m2.m31;
+        double t02 = m1.m00 * m2.m02 + m1.m01 * m2.m12 + m1.m02 * m2.m22 + m1.m03 * m2.m32;
+        double t03 = m1.m00 * m2.m03 + m1.m01 * m2.m13 + m1.m02 * m2.m23 + m1.m03 * m2.m33;
 
-        m30 = matrix1.m30 * matrix2.m30;
-        m31 = matrix1.m31 * matrix2.m31;
-        m32 = matrix1.m32 * matrix2.m32;
-        m33 = matrix1.m33 * matrix2.m33;
+        double t10 = m1.m10 * m2.m00 + m1.m11 * m2.m10 + m1.m12 * m2.m20 + m1.m13 * m2.m30;
+        double t11 = m1.m10 * m2.m01 + m1.m11 * m2.m11 + m1.m12 * m2.m21 + m1.m13 * m2.m31;
+        double t12 = m1.m10 * m2.m02 + m1.m11 * m2.m12 + m1.m12 * m2.m22 + m1.m13 * m2.m32;
+        double t13 = m1.m10 * m2.m03 + m1.m11 * m2.m13 + m1.m12 * m2.m23 + m1.m13 * m2.m33;
+
+        double t20 = m1.m20 * m2.m00 + m1.m21 * m2.m10 + m1.m22 * m2.m20 + m1.m23 * m2.m30;
+        double t21 = m1.m20 * m2.m01 + m1.m21 * m2.m11 + m1.m22 * m2.m21 + m1.m23 * m2.m31;
+        double t22 = m1.m20 * m2.m02 + m1.m21 * m2.m12 + m1.m22 * m2.m22 + m1.m23 * m2.m32;
+        double t23 = m1.m20 * m2.m03 + m1.m21 * m2.m13 + m1.m22 * m2.m23 + m1.m23 * m2.m33;
+
+        double t30 = m1.m30 * m2.m00 + m1.m31 * m2.m10 + m1.m32 * m2.m20 + m1.m33 * m2.m30;
+        double t31 = m1.m30 * m2.m01 + m1.m31 * m2.m11 + m1.m32 * m2.m21 + m1.m33 * m2.m31;
+        double t32 = m1.m30 * m2.m02 + m1.m31 * m2.m12 + m1.m32 * m2.m22 + m1.m33 * m2.m32;
+        double t33 = m1.m30 * m2.m03 + m1.m31 * m2.m13 + m1.m32 * m2.m23 + m1.m33 * m2.m33;
+
+        m00 = t00; m01 = t01; m02 = t02; m03 = t03;
+        m10 = t10; m11 = t11; m12 = t12; m13 = t13;
+        m20 = t20; m21 = t21; m22 = t22; m23 = t23;
+        m30 = t30; m31 = t31; m32 = t32; m33 = t33;
     }
 
     /**
-     * Set this matrix to the inverse of the provided matrix. Will support
-     * passing in this as the target matrix
+     * Set this matrix to the transpose of the given matrix. Will handle using this
+     * as the input to allow self-transposition. If the argument is null, will
+     * generate an exception.
      *
-     * @param src The source matrix to invert
+     * @param src The input matrix to generate a transpose from
      */
-    public void invert(Matrix4d src)
+    public void transpose(Matrix4d src)
     {
         if(src == null)
             throw new IllegalArgumentException("Source matrix cannot be null");
 
-        // TBD
+        if(src == this)
+        {
+            double tmp = m01;
+            m01 = m10;
+            m10 = tmp;
+
+            tmp = m02;
+            m02 = m20;
+            m20 = tmp;
+
+            tmp = m03;
+            m03 = m30;
+            m30 = tmp;
+
+            tmp = m12;
+            m12 = m21;
+            m21 = tmp;
+
+            tmp = m13;
+            m13 = m31;
+            m31 = tmp;
+
+            tmp = m23;
+            m23 = m32;
+            m32 = tmp;
+        }
+        else
+        {
+            m00 = src.m00;
+            m01 = src.m10;
+            m02 = src.m20;
+            m03 = src.m30;
+
+            m10 = src.m01;
+            m11 = src.m11;
+            m12 = src.m21;
+            m13 = src.m31;
+
+            m20 = src.m02;
+            m21 = src.m12;
+            m22 = src.m22;
+            m23 = src.m32;
+
+            m30 = src.m03;
+            m31 = src.m13;
+            m32 = src.m23;
+            m33 = src.m33;
+        }
     }
+
     /**
      * Calculate the determinant of this matrix.
      *
@@ -538,78 +593,14 @@ public class Matrix4d
      */
     public double determinant()
     {
-        double[] tempMat = new double[9];
-
         // det = a * |1, 2, 3| - b * | 0, 2, 3 | + c * | 0, 1, 3 | - d * | 0, 1, 2 |
-        tempMat[0] = m11;
-        tempMat[1] = m12;
-        tempMat[2] = m13;
+        double retval = 0;
 
-        tempMat[3] = m21;
-        tempMat[4] = m22;
-        tempMat[5] = m23;
-
-        tempMat[6] = m31;
-        tempMat[7] = m32;
-        tempMat[8] = m33;
-
-        double retval = m00 * determinant3x3(tempMat);
-
-        tempMat[0] = m00;
-        tempMat[1] = m02;
-        tempMat[2] = m03;
-
-        tempMat[3] = m20;
-        tempMat[4] = m22;
-        tempMat[5] = m23;
-
-        tempMat[6] = m30;
-        tempMat[7] = m32;
-        tempMat[8] = m33;
-
-        retval -= m01 * determinant3x3(tempMat);
-
-        tempMat[0] = m00;
-        tempMat[1] = m01;
-        tempMat[2] = m03;
-
-        tempMat[3] = m10;
-        tempMat[4] = m11;
-        tempMat[5] = m13;
-
-        tempMat[6] = m30;
-        tempMat[7] = m31;
-        tempMat[8] = m33;
-
-        retval += m02 * determinant3x3(tempMat);
-
-        tempMat[0] = m00;
-        tempMat[1] = m01;
-        tempMat[2] = m02;
-
-        tempMat[3] = m10;
-        tempMat[4] = m11;
-        tempMat[5] = m12;
-
-        tempMat[6] = m20;
-        tempMat[7] = m21;
-        tempMat[8] = m22;
-
-        retval -= m03 * determinant3x3(tempMat);
-
+        retval  = m00 * (m11 * m22 * m33+ m12 * m23 * m31 + m13 * m21 * m32 - m13  *  m22 * m31 -m11 * m23 * m32 - m12 * m21 * m33);
+        retval -= m01 * (m10 * m22 * m33+ m12 * m23 * m30 + m13 * m20 * m32 - m13  *  m22 * m30 -m10 * m23 * m32 - m12 * m20 * m33);
+        retval += m02 * (m10 * m21 * m33+ m11 * m23 * m30 + m13 * m20 * m31 - m13  *  m21 * m30 -m10 * m23 * m31 - m11 * m20 * m33);
+        retval -= m03 * (m10 * m21 * m32+ m11 * m22 * m30 + m12 * m20 * m31 - m12  *  m21 * m30 -m10 * m22 * m31 - m11 * m20 * m32);
+        
         return retval;
-    }
-
-    /**
-     * Calculate the determinant of the 3x3 double temp matrix.
-     *
-     * @param tempMat3d The determinant matrix for the initial setup
-     * @return the determinant value
-     */
-    private double determinant3x3(double[] tempMat3d)
-    {
-        return tempMat3d[0] * (tempMat3d[4] * tempMat3d[8] - tempMat3d[7] * tempMat3d[5]) -
-            tempMat3d[1] * (tempMat3d[3] * tempMat3d[8] - tempMat3d[6] * tempMat3d[5]) +
-            tempMat3d[2] * (tempMat3d[3] * tempMat3d[7] - tempMat3d[6] * tempMat3d[4]);
     }
 }
