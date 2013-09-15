@@ -1155,14 +1155,14 @@ public class GeometryInfo
 
         // Create hash table with initial capacity equal to the number
         // of components (assuming about half will be duplicates)
-        HashMap table = new HashMap(list.length);
+        HashMap<Object, Integer> table = new HashMap<Object, Integer>(list.length);
 
         Integer idx;
         for(int i = 0; i < list.length; i++)
         {
 
             // Find index associated with this object
-            idx = (Integer) table.get(list[i]);
+            idx = table.get(list[i]);
 
             if(idx == null)
             {
@@ -1170,13 +1170,13 @@ public class GeometryInfo
                 indices[i] = i;
 
                 // Put into hash table and remember the index
-                table.put(list[i], new Integer(i));
+                table.put(list[i], i);
 
             }
             else
             {
                 // We've seen this object
-                indices[i] = idx.intValue();
+                indices[i] = idx;
             }
         }
 
@@ -1190,6 +1190,7 @@ public class GeometryInfo
         int size;
         private static final int HASHCONST = 0xBABEFACE;
 
+        @Override
         public int hashCode()
         {
             int bits = 0;
@@ -1200,6 +1201,7 @@ public class GeometryInfo
             return bits;
         } // End of IndexRow.hashCode
 
+        @Override
         public boolean equals(Object obj)
         {
             for(int i = 0; i < size; i++)
@@ -1458,28 +1460,26 @@ public class GeometryInfo
         {
             newData = new Vector3f[num];
         }
-/*
-        else if(data instanceof javax.vecmath.Color3f[])
+        else if(data instanceof Color3f[])
         {
             newData = new Color3f[num];
         }
-        else if(data instanceof javax.vecmath.Color4f[])
+        else if(data instanceof Color4f[])
         {
             newData = new Color4f[num];
         }
-        else if(data instanceof javax.vecmath.TexCoord2f[])
+        else if(data instanceof TexCoord2f[])
         {
             newData = new TexCoord2f[num];
         }
-        else if(data instanceof javax.vecmath.TexCoord3f[])
+        else if(data instanceof TexCoord3f[])
         {
             newData = new TexCoord3f[num];
         }
-        else if(data instanceof javax.vecmath.TexCoord4f[])
+        else if(data instanceof TexCoord4f[])
         {
             newData = new TexCoord4f[num];
         }
-*/
         else if(data instanceof IndexRow[])
         {
             // Hack so we can use compactData for coordIndexOnly
@@ -1487,6 +1487,7 @@ public class GeometryInfo
         }
         else
             throw new IllegalArgumentException("GeometryInfo9");
+
         return newData;
     } // End of allocateArray
 

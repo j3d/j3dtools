@@ -10,11 +10,11 @@
 package org.j3d.util.interpolator;
 
 // Standard imports
-import javax.vecmath.AxisAngle4f;
-import javax.vecmath.Quat4f;
+// None
 
 // Application specific imports
-// none
+import org.j3d.maths.vector.AxisAngle4d;
+import org.j3d.maths.vector.Quat4d;
 
 /**
  * An interpolator that works with positional coordinates.
@@ -40,7 +40,7 @@ public class RotationInterpolator extends Interpolator
     public static final int QUATERNION = 3;
 
     /** Reference to the shared quaternion return value for key values */
-    private Quat4f sharedPoint;
+    private Quat4d sharedPoint;
 
     /** Reference to the shared float array return value for key values */
     private float[] sharedVector;
@@ -49,8 +49,8 @@ public class RotationInterpolator extends Interpolator
     private float[][] keyValues;
 
     // Working vars for quaternion based interpolation
-    private AxisAngle4f angle1, angle2;
-    private Quat4f quat1, quat2;
+    private AxisAngle4d angle1, angle2;
+    private Quat4d quat1, quat2;
 
     /**
      * Create a new linear interpolator instance with the default size for the
@@ -85,15 +85,15 @@ public class RotationInterpolator extends Interpolator
         keys = new float[size];
         keyValues = new float[size][4];
 
-        sharedPoint = new Quat4f();
+        sharedPoint = new Quat4d();
         sharedVector = new float[4];
 
         if(type == QUATERNION)
         {
-            angle1 = new AxisAngle4f();
-            angle2 = new AxisAngle4f();
-            quat1 = new Quat4f();
-            quat2 = new Quat4f();
+            angle1 = new AxisAngle4d();
+            angle2 = new AxisAngle4d();
+            quat1 = new Quat4d();
+            quat2 = new Quat4d();
         }
     }
 
@@ -159,9 +159,9 @@ public class RotationInterpolator extends Interpolator
      * @param key The value of the key to use
      * @param pt The point data to take information from
      */
-    public void addKeyFrame(float key, Quat4f pt)
+    public void addKeyFrame(float key, AxisAngle4d pt)
     {
-        addKeyFrame(key, pt.x, pt.y, pt.z, pt.w);
+        addKeyFrame(key, (float)pt.x, (float)pt.y, (float)pt.z, (float)pt.angle);
     }
 
     /**
@@ -174,14 +174,19 @@ public class RotationInterpolator extends Interpolator
      * @param key The key value to get the position for
      * @return A point representation of the value at that position
      */
-    public Quat4f pointValue(float key)
+    public Quat4d pointValue(float key)
     {
         int loc = findKeyIndex(key);
 
         if(loc < 0)
-           sharedPoint.set(keyValues[0]);
+           sharedPoint.set(keyValues[0][0], keyValues[0][1], keyValues[0][2], keyValues[0][2]);
         else if(loc >= currentSize)
-           sharedPoint.set(keyValues[currentSize - 1]);
+        {
+           sharedPoint.set(keyValues[currentSize - 1][0],
+                           keyValues[currentSize - 1][1],
+                           keyValues[currentSize - 1][2],
+                           keyValues[currentSize - 1][3]);
+        }
         else
         {
             switch(interpolationType)
@@ -207,7 +212,7 @@ public class RotationInterpolator extends Interpolator
                     sharedPoint.x = p0[0] + fraction * x_dist;
                     sharedPoint.y = p0[1] + fraction * y_dist;
                     sharedPoint.z = p0[2] + fraction * z_dist;
-                    sharedPoint.w = p0[3] + fraction * w_dist;
+                    sharedPoint.angle = p0[3] + fraction * w_dist;
                     break;
 
                 case STEP:
@@ -216,15 +221,15 @@ public class RotationInterpolator extends Interpolator
                     sharedPoint.x = pnt[0];
                     sharedPoint.y = pnt[1];
                     sharedPoint.z = pnt[2];
-                    sharedPoint.w = pnt[3];
+                    sharedPoint.angle = pnt[3];
                     break;
 
                 case QUATERNION:
                     p1 = keyValues[loc + 1];
                     p0 = keyValues[loc];
 
-                    angle1.set(p0);
-                    angle2.set(p1);
+                    angle1.set(p0[0], p0[1], p0[2], p0[3]);
+                    angle2.set(p1[0], p1[1], p1[2], p1[3]);
 
                     quat1.set(angle1);
                     quat2.set(angle2);
@@ -232,7 +237,7 @@ public class RotationInterpolator extends Interpolator
                     double cos_omega = quat1.x * quat2.x +
                                        quat1.y * quat2.y +
                                        quat1.z * quat2.z +
-                                       quat1.w * quat2.w;
+                                       quat1.angle * quat2.angle;
 
                     // If opposite hemispheres then negate quat1
                     if (cos_omega < 0.0)
@@ -247,12 +252,15 @@ public class RotationInterpolator extends Interpolator
                     if(found_key != prev_key)
                         fraction = (key - prev_key) / (found_key - prev_key);
 
-                    quat1.interpolate(quat2, fraction);
+                    quat1.interpolate(quat1, quat2, fraction);
+                    quat1.get(angle1);
 
-                    angle1.set(quat1);
-                    angle1.get(sharedVector);
+                    sharedVector[0] = (float)angle1.x;
+                    sharedVector[1] = (float)angle1.y;
+                    sharedVector[2] = (float)angle1.z;
+                    sharedVector[3] = (float)angle1.angle;
 
-                    sharedPoint.set(sharedVector);
+                    sharedPoint.set(sharedVector[0], sharedVector[1], sharedVector[2], sharedVector[3]);
             }
         }
 
@@ -307,16 +315,7 @@ public class RotationInterpolator extends Interpolator
 
                     if(found_key != prev_key)
                         fraction = (key - prev_key) / (found_key - prev_key);
-/*
-System.out.println("Prev key " + prev_key);
-System.out.println("Next key " + found_key);
-System.out.println("Reqd key " + key);
-System.out.println("Fraction is " + fraction);
-System.out.println("x " + p0[0] + " x_dist " + x_dist);
-System.out.println("y " + p0[1] + " y_dist " + y_dist);
-System.out.println("z " + p0[2] + " z_dist " + z_dist);
-System.out.println("angle " + p0[3] + " w_dist " + w_dist);
-*/
+
                     sharedVector[0] = p0[0] + fraction * x_dist;
                     sharedVector[1] = p0[1] + fraction * y_dist;
                     sharedVector[2] = p0[2] + fraction * z_dist;
@@ -335,8 +334,8 @@ System.out.println("angle " + p0[3] + " w_dist " + w_dist);
                     p1 = keyValues[loc + 1];
                     p0 = keyValues[loc];
 
-                    angle1.set(p0);
-                    angle2.set(p1);
+                    angle1.set(p0[0], p0[1], p0[2], p0[3]);
+                    angle2.set(p1[0], p1[1], p1[2], p1[3]);
 
                     quat1.set(angle1);
                     quat2.set(angle2);
@@ -344,7 +343,7 @@ System.out.println("angle " + p0[3] + " w_dist " + w_dist);
                     double cos_omega = quat1.x * quat2.x +
                                        quat1.y * quat2.y +
                                        quat1.z * quat2.z +
-                                       quat1.w * quat2.w;
+                                       quat1.angle * quat2.angle;
 
                     // If opposite hemispheres then negate quat1
                     if (cos_omega < 0.0)
@@ -359,10 +358,13 @@ System.out.println("angle " + p0[3] + " w_dist " + w_dist);
                     if(found_key != prev_key)
                         fraction = (key - prev_key) / (found_key - prev_key);
 
-                    quat1.interpolate(quat2, fraction);
+                    quat1.interpolate(quat1, quat2, fraction);
+                    quat1.get(angle1);
 
-                    angle1.set(quat1);
-                    angle1.get(sharedVector);
+                    sharedVector[0] = (float)angle1.x;
+                    sharedVector[1] = (float)angle1.y;
+                    sharedVector[2] = (float)angle1.z;
+                    sharedVector[3] = (float)angle1.angle;
             }
         }
 
@@ -412,7 +414,7 @@ System.out.println("angle " + p0[3] + " w_dist " + w_dist);
      */
     public String toString()
     {
-        StringBuffer buf = new StringBuffer("<rotation interpolator>\n");
+        StringBuilder buf = new StringBuilder("<rotation interpolator>\n");
 
         for(int i = 0; i < currentSize; i++)
         {
