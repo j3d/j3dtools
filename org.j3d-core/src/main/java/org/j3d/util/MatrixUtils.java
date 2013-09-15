@@ -45,10 +45,6 @@ public class MatrixUtils
 	 *  when double precision is required */
 	private double[] tempMat4d;
 	
-	/** Scratch matrix object used in double precision invert()
-	 *  calculation */
-	private Matrix4d matrix4d;
-	
     /**
      * Construct a default instance of this class.
      */
@@ -58,7 +54,6 @@ public class MatrixUtils
 		
 		tempMat3d = new double[9];
 		tempMat4d = new double[16];
-		matrix4d = new Matrix4d();
     }
 
     /**
