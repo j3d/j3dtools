@@ -9,33 +9,33 @@
  *  purpose. Use it at your own risk. If there's a problem you get to fix it.
  */
 
-package org.j3d.maths.vector;
+package org.j3d.geom.triangulation;
 
 /**
  * Represents a location in 3D space.
  *
  * @author justin
  */
-public class Point3d
+public class Color3f
 {
     /** The X coordinate of the location */
-    public double x;
+    public float x;
 
     /** The Y coordinate of the location */
-    public double y;
+    public float y;
 
     /** The Z coordinate of the location */
-    public double z;
+    public float z;
 
     // ---- Methods defined by Object ----------------------------------------
 
     @Override
     public boolean equals(Object o)
     {
-        if(!(o instanceof Point3d))
+        if(!(o instanceof Color3f))
             return false;
 
-        Point3d other = (Point3d)o;
+        Color3f other = (Color3f)o;
 
         return other.x == x && other.y == y && other.z == z;
     }
@@ -59,7 +59,7 @@ public class Point3d
      * @param py The z coordinate to set
      * @param pz The y coordinate to set
      */
-    public void set(double px, double py, double pz)
+    public void set(float px, float py, float pz)
     {
         x = px;
         y = py;
@@ -71,29 +71,10 @@ public class Point3d
      *
      * @param pt The source point to copy data from
      */
-    public void set(Point3d pt)
+    public void set(Color3f pt)
     {
         x = pt.x;
         y = pt.y;
         z = pt.z;
-    }
-
-    /**
-     * Calculate the linear euclidean distance from this point to the supplied
-     * point. If the supplied point is null, throws an exception.
-     *
-     * @param point The other point to find the distance to
-     * @return A positive distance number
-     */
-    public double distance(Point3d point)
-    {
-        if(point == null)
-            throw new IllegalArgumentException("Target point cannot be null");
-
-        double dx = x - point.x;
-        double dy = y - point.y;
-        double dz = z - point.z;
-
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 }

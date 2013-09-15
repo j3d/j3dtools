@@ -105,7 +105,7 @@ public class LDrawFileReference extends LDrawColoredPart
     }
 
     /**
-     * Returns the matrix information as a vecmath matrix4d. This takes a
+     * Returns the matrix information as a matrix4d. This takes a
      * copy of the internal data, but returns the same referenced object
      * for each call.
      *

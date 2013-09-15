@@ -9,35 +9,38 @@
  *  purpose. Use it at your own risk. If there's a problem you get to fix it.
  */
 
-package org.j3d.maths.vector;
+package org.j3d.geom.triangulation;
 
 /**
- * Represents a location in 3D space.
+ * Represents a location in RGBA Colour in floating point format.
  *
  * @author justin
  */
-public class Point3d
+public class Color4f
 {
     /** The X coordinate of the location */
-    public double x;
+    public float x;
 
     /** The Y coordinate of the location */
-    public double y;
+    public float y;
 
     /** The Z coordinate of the location */
-    public double z;
+    public float z;
+
+    /** The Z coordinate of the location */
+    public float w;
 
     // ---- Methods defined by Object ----------------------------------------
 
     @Override
     public boolean equals(Object o)
     {
-        if(!(o instanceof Point3d))
+        if(!(o instanceof Color4f))
             return false;
 
-        Point3d other = (Point3d)o;
+        Color4f other = (Color4f)o;
 
-        return other.x == x && other.y == y && other.z == z;
+        return other.x == x && other.y == y && other.z == z && other.w == w;
     }
 
     @Override
@@ -46,6 +49,7 @@ public class Point3d
         long bits = Double.doubleToLongBits(x);
         bits += 31L * bits + Double.doubleToLongBits(y);
         bits += 31L * bits + Double.doubleToLongBits(z);
+        bits += 31L * bits + Double.doubleToLongBits(w);
 
         return (int)(bits ^ (bits >> 32));
     }
@@ -59,11 +63,12 @@ public class Point3d
      * @param py The z coordinate to set
      * @param pz The y coordinate to set
      */
-    public void set(double px, double py, double pz)
+    public void set(float px, float py, float pz, float pw)
     {
         x = px;
         y = py;
         z = pz;
+        w = pw;
     }
 
     /**
@@ -71,29 +76,11 @@ public class Point3d
      *
      * @param pt The source point to copy data from
      */
-    public void set(Point3d pt)
+    public void set(Color4f pt)
     {
         x = pt.x;
         y = pt.y;
         z = pt.z;
-    }
-
-    /**
-     * Calculate the linear euclidean distance from this point to the supplied
-     * point. If the supplied point is null, throws an exception.
-     *
-     * @param point The other point to find the distance to
-     * @return A positive distance number
-     */
-    public double distance(Point3d point)
-    {
-        if(point == null)
-            throw new IllegalArgumentException("Target point cannot be null");
-
-        double dx = x - point.x;
-        double dy = y - point.y;
-        double dz = z - point.z;
-
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+        w = pt.w;
     }
 }

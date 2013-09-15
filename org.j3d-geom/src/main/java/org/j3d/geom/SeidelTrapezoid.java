@@ -13,10 +13,12 @@
 package org.j3d.geom;
 
 // External imports
-import javax.vecmath.Point2f;
+// None
 
 // Local imports
 // None
+
+import org.j3d.maths.vector.Point2d;
 
 /**
  * Attributes of a trapezoid used in the Siedel triangulation routines.
@@ -29,8 +31,8 @@ class SeidelTrapezoid
     int leftSegment;
     int rightSegment;
 
-    Point2f hi;
-    Point2f lo;
+    Point2d hi;
+    Point2d lo;
 
     int u0;
     int u1;
@@ -46,8 +48,8 @@ class SeidelTrapezoid
     {
         valid = false;
         mergeSideLeft = false;
-        hi = new Point2f();
-        lo = new Point2f();
+        hi = new Point2d();
+        lo = new Point2d();
     }
 
     /**

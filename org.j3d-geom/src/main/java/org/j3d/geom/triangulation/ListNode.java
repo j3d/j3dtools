@@ -59,29 +59,32 @@
 
 package org.j3d.geom.triangulation;
 
-class ListNode {
+class ListNode
+{
     int index;
     int prev;
     int next;
     int convex;
-    int vcntIndex;		// Vertex, Color, Normal, Texture Index
+    int vcntIndex;        // Vertex, Color, Normal, Texture Index
 
 
-
-    ListNode(int ind) {
-	index = ind;
-	prev = -1;
-	next = -1;
-	convex = 0;
-	vcntIndex = -1;
+    ListNode(int ind)
+    {
+        index = ind;
+        prev = -1;
+        next = -1;
+        convex = 0;
+        vcntIndex = -1;
     }
 
-    void setCommonIndex(int comIndex) {
-	vcntIndex = comIndex;
+    void setCommonIndex(int comIndex)
+    {
+        vcntIndex = comIndex;
 
     }
 
-    int getCommonIndex() {
-	return vcntIndex;
+    int getCommonIndex()
+    {
+        return vcntIndex;
     }
 }

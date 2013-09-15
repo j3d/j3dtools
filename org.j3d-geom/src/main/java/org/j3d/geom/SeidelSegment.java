@@ -13,10 +13,12 @@
 package org.j3d.geom;
 
 // External imports
-import javax.vecmath.Point2f;
+// None
 
 // Local imports
 // None
+
+import org.j3d.maths.vector.Point2d;
 
 /**
  * Attributes of a segment used in the Siedel triangulation routines.
@@ -27,10 +29,10 @@ import javax.vecmath.Point2f;
 class SeidelSegment
 {
     /** Endpoint 1 */
-    Point2f v0;
+    Point2d v0;
 
     /** Endpoint 2 */
-    Point2f v1;
+    Point2d v1;
 
     /** Has the segment been inserted into the trapezoidation yet */
     boolean isInserted;
@@ -49,8 +51,8 @@ class SeidelSegment
 
     SeidelSegment()
     {
-        v0 = new Point2f();
-        v1 = new Point2f();
+        v0 = new Point2d();
+        v1 = new Point2d();
     }
 
     /**

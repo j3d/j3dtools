@@ -15,7 +15,7 @@ package org.j3d.geom;
 // External imports
 import java.util.Random;
 
-import javax.vecmath.Point2f;
+import org.j3d.maths.vector.Point2d;
 
 // Local imports
 // None
@@ -309,36 +309,24 @@ System.out.println("triangulate");
         // Add the first segment and get the query structure and trapezoid
         // list initialised
         int root = initQueryStructure(chooseSegment());
-System.out.println(1 + " nseg " + nseg);
 
         for(int i = 1; i <= nseg; i++)
             segments[i].root0 = segments[i].root1 = root;
-System.out.println(2);
 
         int ls_n = logStarN(nseg);
 
-System.out.println(3 + " logStar " + ls_n);
-
         for(int h = 1; h <= ls_n; h++)
         {
-System.out.println("a " + h);
             for(int i = nRatio(nseg, h - 1) + 1; i <= nRatio(nseg, h); i++)
-{ System.out.println("a1 " + i);
                 addSegment(chooseSegment());
-}
 
-System.out.println("b " + h);
             /* Find a new root for each of the segment endpoints */
             for(int i = 1; i <= nseg; i++)
                 findNewRoots(i);
         }
 
-System.out.println(4);
-
         for(int i = nRatio(nseg, ls_n) + 1; i <= nseg; i++)
             addSegment(chooseSegment());
-
-System.out.println(5);
     }
 
     /**
@@ -531,7 +519,7 @@ System.out.println(5);
 
         if(greaterThan(s.v1, s.v0)) // Get higher vertex in v0
         {
-            Point2f tmp = s.v0;
+            Point2d tmp = s.v0;
             s.v0 = s.v1;
             s.v1 = tmp;
 
@@ -664,7 +652,6 @@ System.out.println(5);
         // Thread the segment into the query tree creating a new X-node
         // First, split all the trapezoids which are intersected by s into two
 
-System.out.println("addSeg " + tfirst);
         t = tfirst;
         while((t > 0) && greaterThanOrEqualTo(trapezoidList[t].lo, trapezoidList[tlast].lo))
         {
@@ -691,7 +678,7 @@ System.out.println("addSeg " + tfirst);
             if(t == tfirst)
                 tfirstr = tn;
 
-            if(trapezoidList[t].lo.epsilonEquals(trapezoidList[tlast].lo, EPSILON))
+            if(equalsEpsilon(trapezoidList[t].lo, trapezoidList[tlast].lo))
                 tlastr = tn;
 
             trapezoidList[tn] = trapezoidList[t];
@@ -957,11 +944,11 @@ System.out.println("addSeg " + tfirst);
                 else
                 {
 // TODO: fix this dynamic allocation
-                    Point2f tmppt = new Point2f();
+                    Point2d tmppt = new Point2d();
                     tmppt.y = trapezoidList[t].lo.y;
-                    float y0 = trapezoidList[t].lo.y;
+                    double y0 = trapezoidList[t].lo.y;
 
-                    float yt = (y0 - s.v0.y) / (s.v1.y - s.v0.y);
+                    double yt = (y0 - s.v0.y) / (s.v1.y - s.v0.y);
                     tmppt.x = s.v0.x + yt * (s.v1.x - s.v0.x);
 
                     if(lessThan(tmppt, trapezoidList[t].lo))
@@ -1208,7 +1195,7 @@ System.out.println("addSeg " + tfirst);
      * A query routine that determines which trapezoid the point v lies in.
      * The return value is the trapezoid number.
      */
-    private int locateEndpoint(Point2f v, Point2f vo, int r)
+    private int locateEndpoint(Point2d v, Point2d vo, int r)
     {
         SeidelNode rptr = queryList[r];
 
@@ -1223,7 +1210,7 @@ System.out.println("addSeg " + tfirst);
             case SeidelNode.TYPE_Y:
                 if(greaterThan(v, rptr.yVal)) // above
                     ret_val = locateEndpoint(v, vo, rptr.rightChild);
-                else if(v.epsilonEquals(rptr.yVal, EPSILON))
+                else if(equalsEpsilon(v, rptr.yVal))
                 {
                     // the point is already inserted.
                     if(greaterThan(vo, rptr.yVal)) // above
@@ -1236,8 +1223,8 @@ System.out.println("addSeg " + tfirst);
                 break;
 
             case SeidelNode.TYPE_X:
-                if(v.epsilonEquals(segments[rptr.segmentIndex].v0, EPSILON) ||
-                   v.epsilonEquals(segments[rptr.segmentIndex].v1, EPSILON))
+                if(equalsEpsilon(v, segments[rptr.segmentIndex].v0) ||
+                    equalsEpsilon(v, segments[rptr.segmentIndex].v1))
                 {
                     if(equalsEpsilon(v.y, vo.y)) // horizontal segment
                     {
@@ -1365,7 +1352,7 @@ System.out.println("addSeg " + tfirst);
             }
             else  // only downward cusp
             {
-                if(t.lo.epsilonEquals(segments[t.leftSegment].v1, EPSILON))
+                if(equalsEpsilon(t.lo, segments[t.leftSegment].v1))
                 {
                     v0 = trapezoidList[t.u0].rightSegment;
                     v1 = segments[t.leftSegment].next;
@@ -1415,7 +1402,7 @@ System.out.println("addSeg " + tfirst);
         {
             if((t.d0 > 0) && (t.d1 > 0)) // only upward cusp
             {
-                if(t.hi.epsilonEquals(segments[t.leftSegment].v0, EPSILON))
+                if(equalsEpsilon(t.hi, segments[t.leftSegment].v0))
                 {
                     v0 = trapezoidList[t.d1].leftSegment;
                     v1 = t.leftSegment;
@@ -1462,8 +1449,8 @@ System.out.println("addSeg " + tfirst);
             }
             else  // no cusp
             {
-                if(t.hi.epsilonEquals(segments[t.leftSegment].v0, EPSILON) &&
-                   t.lo.epsilonEquals(segments[t.rightSegment].v0, EPSILON))
+                if(equalsEpsilon(t.hi, segments[t.leftSegment].v0) &&
+                    equalsEpsilon(t.lo, segments[t.rightSegment].v0))
                 {
                     v0 = t.rightSegment;
                     v1 = t.leftSegment;
@@ -1485,8 +1472,8 @@ System.out.println("addSeg " + tfirst);
                         traversePolygon(mnew, t.u1, trapezoidIndex, false);
                     }
                 }
-                else if(t.hi.epsilonEquals(segments[t.rightSegment].v1, EPSILON) &&
-                        t.lo.epsilonEquals(segments[t.leftSegment].v1, EPSILON))
+                else if(equalsEpsilon(t.hi,segments[t.rightSegment].v1) &&
+                        equalsEpsilon(t.lo, segments[t.leftSegment].v1))
                 {
                     v0 = segments[t.rightSegment].next;
                     v1 = segments[t.leftSegment].next;
@@ -1538,8 +1525,8 @@ System.out.println("addSeg " + tfirst);
             int vcount = 1;
             int vfirst = monotoneChain[monotonePosition[i]].vnum;
 
-            Point2f ymax = vertexChain[vfirst].point;
-            Point2f ymin = vertexChain[vfirst].point;
+            Point2d ymax = vertexChain[vfirst].point;
+            Point2d ymin = vertexChain[vfirst].point;
 
             int posmax = monotonePosition[i];
             int posmin = monotonePosition[i];
@@ -1588,7 +1575,7 @@ System.out.println("addSeg " + tfirst);
             {
                 // triangulate the polygon
                 v = monotoneChain[monotoneChain[posmax].next].vnum;
-                if(vertexChain[v].point.epsilonEquals(ymin, EPSILON))
+                if(equalsEpsilon(vertexChain[v].point, ymin))
                 {
                     // LHS is a single line
                     op_idx = triangulateSinglePolygon(nvert,
@@ -1879,13 +1866,13 @@ System.out.println("addSeg " + tfirst);
      * @param vp1 The vertex of the second line
      * @return The angle between them
      */
-    private double getAngle(Point2f vp0, Point2f  vpnext, Point2f vp1)
+    private double getAngle(Point2d vp0, Point2d  vpnext, Point2d vp1)
     {
-        float v0_x = vpnext.x - vp0.x;
-        float v0_y = vpnext.y - vp0.y;
+        double v0_x = vpnext.x - vp0.x;
+        double v0_y = vpnext.y - vp0.y;
 
-        float v1_x = vp1.x - vp0.x;
-        float v1_y = vp1.y - vp0.y;
+        double v1_x = vp1.x - vp0.x;
+        double v1_y = vp1.y - vp0.y;
 
         double l0 = Math.sqrt(v0_x * v0_x + v0_y * v0_y);
         double l1 = Math.sqrt(v1_x * v1_x + v1_y * v1_y);
@@ -1899,7 +1886,7 @@ System.out.println("addSeg " + tfirst);
     /**
      * Return the maximum of the two points into the yval structure
      */
-    private int max(Point2f yval, Point2f v0, Point2f v1)
+    private int max(Point2d yval, Point2d v0, Point2d v1)
     {
         if(v0.y > v1.y + EPSILON)
             yval.set(v0);
@@ -1918,7 +1905,7 @@ System.out.println("addSeg " + tfirst);
 
 
     /* Return the minimum of the two points into the yval structure */
-    private int min(Point2f yval, Point2f v0, Point2f v1)
+    private int min(Point2d yval, Point2d v0, Point2d v1)
     {
         if(v0.y < v1.y - EPSILON)
             yval.set(v0);
@@ -1943,7 +1930,7 @@ System.out.println("addSeg " + tfirst);
      * @param v1 The destination point to check
      * @return true if v0 is gt v1
      */
-    private boolean greaterThan(Point2f v0, Point2f v1)
+    private boolean greaterThan(Point2d v0, Point2d v1)
     {
         if(v0.y > v1.y + EPSILON)
             return true;
@@ -1961,7 +1948,7 @@ System.out.println("addSeg " + tfirst);
      * @param v1 The destination point to check
      * @return true if v0 is gt v1
      */
-    private boolean lessThan(Point2f v0, Point2f v1)
+    private boolean lessThan(Point2d v0, Point2d v1)
     {
         if(v0.y < v1.y - EPSILON)
             return true;
@@ -1979,7 +1966,7 @@ System.out.println("addSeg " + tfirst);
      * @param v1 The destination point to check
      * @return true if v0 is gteq  v1
      */
-    private boolean greaterThanOrEqualTo(Point2f v0, Point2f v1)
+    private boolean greaterThanOrEqualTo(Point2d v0, Point2d v1)
     {
         if(v0.y > v1.y + EPSILON)
             return true;
@@ -1994,10 +1981,10 @@ System.out.println("addSeg " + tfirst);
      * segnum. Takes care of the degenerate cases when both the vertices
      * have the same y--cood, etc.
      */
-    private boolean isLeftOf(int segnum, Point2f v)
+    private boolean isLeftOf(int segnum, Point2d v)
     {
         SeidelSegment s = segments[segnum];
-        float area;
+        double area;
 
         if(greaterThan(s.v1, s.v0)) /* seg. going upwards */
         {
@@ -2050,7 +2037,7 @@ System.out.println("addSeg " + tfirst);
      * @param v2 The third point to use
      * @return The result of the cross product
      */
-    private float tripleCross(Point2f v0, Point2f v1, Point2f v2)
+    private double tripleCross(Point2d v0, Point2d v1, Point2d v2)
     {
         return (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x);
     }
@@ -2104,8 +2091,30 @@ System.out.println("addSeg " + tfirst);
      * Floating point comparison for almost equal values within the epsilon
      * delta value.
      */
-    private boolean equalsEpsilon(float a, float b)
+    private boolean equalsEpsilon(double a, double b)
     {
         return Math.abs(a - b) <= EPSILON;
+    }
+
+    /**
+     * Floating point comparison for almost equal values within the epsilon
+     * delta value.
+     */
+    private boolean equalsEpsilon(Point2d a, Point2d b)
+    {
+        double diff = a.x - b.x;
+
+        if(Double.isNaN(diff))
+            return false;
+
+        if((diff < 0 ? -diff : diff) > EPSILON)
+            return false;
+
+        diff = a.y - b.y;
+
+        if(Double.isNaN(diff))
+            return false;
+
+        return !((diff < 0 ? -diff : diff) > EPSILON);
     }
 }

@@ -13,10 +13,12 @@
 package org.j3d.geom;
 
 // External imports
-import javax.vecmath.Point2f;
+// None
 
 // Local imports
 // None
+
+import org.j3d.maths.vector.Point2d;
 
 /**
  *
@@ -25,7 +27,7 @@ import javax.vecmath.Point2f;
  */
 class SeidelVertexChain
 {
-    Point2f point;
+    Point2d point;
 
     /** Next vertices for the 4 chains */
     int[] nextVertex;

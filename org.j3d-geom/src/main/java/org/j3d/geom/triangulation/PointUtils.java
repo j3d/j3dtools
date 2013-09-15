@@ -59,108 +59,42 @@
 
 package org.j3d.geom.triangulation;
 
-import javax.vecmath.*;
+/** Cleans up the basic operations on points like they were vectors. */
+class PointUtils
+{
 
-class Basic {
-	
-	static final double D_RND_MAX = 2147483647.0;
-	
-	
-	static double detExp(double u_x, double u_y, double u_z,
-		double v_x, double v_y, double v_z,
-		double w_x, double w_y, double w_z) {
-		
-		return ((u_x) * ((v_y) * (w_z)  -  (v_z) * (w_y))  -
-			(u_y) * ((v_x) * (w_z)  -  (v_z) * (w_x))  +
-			(u_z) * ((v_x) * (w_y)  -  (v_y) * (w_x)));
-	}
-	
-	
-	static double det3D(Tuple3f u, Tuple3f v, Tuple3f w) {
-		return ((u).x * ((v).y * (w).z  -  (v).z * (w).y)  -
-			(u).y * ((v).x * (w).z  -  (v).z * (w).x)  +
-			(u).z * ((v).x * (w).y  -  (v).y * (w).x));
-	}
-	
-	
-	static double det2D(Tuple2f u, Tuple2f v, Tuple2f w) {
-		return (((u).x - (v).x) * ((v).y - (w).y) + ((v).y - (u).y) * ((v).x - (w).x));
-	}
-	
-	
-	static double length2(Tuple3f u) {
-		return (((u).x * (u).x) + ((u).y * (u).y) + ((u).z * (u).z));
-	}
-	
-	static double lengthL1(Tuple3f u) {
-		return (Math.abs((u).x) + Math.abs((u).y) + Math.abs((u).z));
-	}
-	
-	static double lengthL2(Tuple3f u) {
-		return Math.sqrt(((u).x * (u).x) + ((u).y * (u).y) + ((u).z * (u).z));
-	}
-	
-	
-	static double dotProduct(Tuple3f u, Tuple3f v) {
-		return (((u).x * (v).x) + ((u).y * (v).y) + ((u).z * (v).z));
-	}
-	
-	
-	static double dotProduct2D(Tuple2f u, Tuple2f v) {
-		return (((u).x * (v).x) + ((u).y * (v).y));
-	}
-	
-	
-	static void vectorProduct(Tuple3f p, Tuple3f q, Tuple3f r) {
-		(r).x = (p).y * (q).z  -  (q).y * (p).z;
-		(r).y = (q).x * (p).z  -  (p).x * (q).z;
-		(r).z = (p).x * (q).y  -  (q).x * (p).y;
-	}
-	
-	
-	static void vectorAdd( Tuple3f p, Tuple3f q, Tuple3f r) {
-		(r).x = (p).x + (q).x;
-		(r).y = (p).y + (q).y;
-		(r).z = (p).z + (q).z;
-	}
-	
-	static void vectorSub( Tuple3f p, Tuple3f q, Tuple3f r) {
-		(r).x = (p).x - (q).x;
-		(r).y = (p).y - (q).y;
-		(r).z = (p).z - (q).z;
-	}
-	
-	
-	static void vectorAdd2D( Tuple2f p, Tuple2f q, Tuple2f r) {
-		(r).x = (p).x + (q).x;
-		(r).y = (p).y + (q).y;
-	}
-	
-	
-	static void vectorSub2D( Tuple2f p, Tuple2f q, Tuple2f r) {
-		(r).x = (p).x - (q).x;
-		(r).y = (p).y - (q).y;
-	}
-	
-	static void invertVector(Tuple3f p) {
-		(p).x = -(p).x;
-		(p).y = -(p).y;
-		(p).z = -(p).z;
-	}
-	
-	static void divScalar(double scalar, Tuple3f u) {
-		(u).x /= scalar;
-		(u).y /= scalar;
-		(u).z /= scalar;
-	}
-	
-	static void multScalar2D(double scalar, Tuple2f u) {
-		(u).x *= scalar;
-		(u).y *= scalar;
-	}
-	
-	
-	static int signEps(double x, double eps) {
-		return ((x <= eps) ? ((x < -eps) ? -1 : 0) : 1);
-	}
+    static double det2D(Point2f u, Point2f v, Point2f w)
+    {
+        return (((u).x - (v).x) * ((v).y - (w).y) + ((v).y - (u).y) * ((v).x - (w).x));
+    }
+
+    static double dotProduct2D(Point2f u, Point2f v)
+    {
+        return (((u).x * (v).x) + ((u).y * (v).y));
+    }
+
+    static void vectorProduct(Point3f p, Point3f q, Point3f r)
+    {
+        (r).x = (p).y * (q).z - (q).y * (p).z;
+        (r).y = (q).x * (p).z - (p).x * (q).z;
+        (r).z = (p).x * (q).y - (q).x * (p).y;
+    }
+
+    static void vectorSub(Point3f p, Point3f q, Point3f r)
+    {
+        (r).x = (p).x - (q).x;
+        (r).y = (p).y - (q).y;
+        (r).z = (p).z - (q).z;
+    }
+
+    static void vectorSub2D(Point2f p, Point2f q, Point2f r)
+    {
+        (r).x = (p).x - (q).x;
+        (r).y = (p).y - (q).y;
+    }
+
+    static int signEps(double x, double eps)
+    {
+        return ((x <= eps) ? ((x < -eps) ? -1 : 0) : 1);
+    }
 }

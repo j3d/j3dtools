@@ -12,11 +12,11 @@
 package org.j3d.maths.vector;
 
 /**
- * Represents a location in 3D space.
+ * Represents a location in 2D space.
  *
  * @author justin
  */
-public class Point3d
+public class Point2d
 {
     /** The X coordinate of the location */
     public double x;
@@ -24,20 +24,17 @@ public class Point3d
     /** The Y coordinate of the location */
     public double y;
 
-    /** The Z coordinate of the location */
-    public double z;
-
     // ---- Methods defined by Object ----------------------------------------
 
     @Override
     public boolean equals(Object o)
     {
-        if(!(o instanceof Point3d))
+        if(!(o instanceof Point2d))
             return false;
 
-        Point3d other = (Point3d)o;
+        Point2d other = (Point2d)o;
 
-        return other.x == x && other.y == y && other.z == z;
+        return other.x == x && other.y == y;
     }
 
     @Override
@@ -45,7 +42,6 @@ public class Point3d
     {
         long bits = Double.doubleToLongBits(x);
         bits += 31L * bits + Double.doubleToLongBits(y);
-        bits += 31L * bits + Double.doubleToLongBits(z);
 
         return (int)(bits ^ (bits >> 32));
     }
@@ -57,25 +53,22 @@ public class Point3d
      *
      * @param px The x coordinate to set
      * @param py The z coordinate to set
-     * @param pz The y coordinate to set
      */
-    public void set(double px, double py, double pz)
+    public void set(double px, double py)
     {
         x = px;
         y = py;
-        z = pz;
     }
 
     /**
      * Convenience method to set all the fields at once
      *
-     * @param pt The source point to copy data from
+     * @param pt The source point to get values from
      */
-    public void set(Point3d pt)
+    public void set(Point2d pt)
     {
         x = pt.x;
         y = pt.y;
-        z = pt.z;
     }
 
     /**
@@ -85,15 +78,14 @@ public class Point3d
      * @param point The other point to find the distance to
      * @return A positive distance number
      */
-    public double distance(Point3d point)
+    public double distance(Point2d point)
     {
         if(point == null)
             throw new IllegalArgumentException("Target point cannot be null");
 
         double dx = x - point.x;
         double dy = y - point.y;
-        double dz = z - point.z;
 
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+        return Math.sqrt(dx * dx + dy * dy);
     }
 }

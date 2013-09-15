@@ -59,15 +59,18 @@
 
 package org.j3d.geom.triangulation;
 
-class Distance extends Object {
+class Distance
+{
     int ind;
     double dist;
 
-    Distance() {
+    Distance()
+    {
     }
 
-    void copy(Distance d) {
-	ind = d.ind;
-	dist = d.dist;
+    void copy(Distance d)
+    {
+        ind = d.ind;
+        dist = d.dist;
     }
 }

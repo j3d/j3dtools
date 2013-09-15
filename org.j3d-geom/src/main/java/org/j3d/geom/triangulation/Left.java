@@ -59,7 +59,7 @@
 
 package org.j3d.geom.triangulation;
 
-class Left extends Object {
+class Left {
     int ind;
     int index;
 

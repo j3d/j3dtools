@@ -9,33 +9,35 @@
  *  purpose. Use it at your own risk. If there's a problem you get to fix it.
  */
 
-package org.j3d.maths.vector;
+package org.j3d.geom.triangulation;
+
+import org.j3d.maths.vector.Point3d;
 
 /**
  * Represents a direction vector in 3D space.
  *
  * @author justin
  */
-public class Vector3d
+public class Vector3f
 {
     /** The X coordinate of the direction */
-    public double x;
+    public float x;
 
     /** The X coordinate of the direction */
-    public double y;
+    public float y;
 
     /** The X coordinate of the direction */
-    public double z;
+    public float z;
 
     // ---- Methods defined by Object ----------------------------------------
 
     @Override
     public boolean equals(Object o)
     {
-        if(!(o instanceof Vector3d))
+        if(!(o instanceof Vector3f))
             return false;
 
-        Vector3d other = (Vector3d)o;
+        Vector3f other = (Vector3f)o;
 
         return other.x == x && other.y == y && other.z == z;
     }
@@ -60,7 +62,7 @@ public class Vector3d
      * @param py The z coordinate to set
      * @param pz The y coordinate to set
      */
-    public void set(double px, double py, double pz)
+    public void set(float px, float py, float pz)
     {
         x = px;
         y = py;
@@ -72,7 +74,7 @@ public class Vector3d
      *
      * @param vec The vector to source the data from
      */
-    public void set(Vector3d vec)
+    public void set(Vector3f vec)
     {
         x = vec.x;
         y = vec.y;
@@ -95,6 +97,12 @@ public class Vector3d
             y *= l;
             z *= l;
         }
+        else
+        {
+            x = 0;
+            y = 0;
+            z = 1;
+        }
     }
 
     /**
@@ -102,7 +110,7 @@ public class Vector3d
      *
      * @param s The scale to apply to the vector
      */
-    public void scale(double s)
+    public void scale(float s)
     {
         x *= s;
         y *= s;
@@ -117,7 +125,7 @@ public class Vector3d
      * @param v1 The first input vector
      * @param v2 The second input vector that we add to v1
      */
-    public void add(Vector3d v1, Vector3d v2)
+    public void add(Vector3f v1, Vector3f v2)
     {
         if(v1 == null)
             throw new IllegalArgumentException("First vector cannot be null in add");
@@ -140,7 +148,7 @@ public class Vector3d
      * @param v1 The first input vector
      * @param v2 The second input vector that we add to v1
      */
-    public void add(Point3d v1, Point3d v2)
+    public void add(Point3f v1, Point3f v2)
     {
         if(v1 == null)
             throw new IllegalArgumentException("First point cannot be null in add");
@@ -162,7 +170,7 @@ public class Vector3d
      * @param v1 The first input vector
      * @param v2 The second input vector that we subtract from v1
      */
-    public void sub(Vector3d v1, Vector3d v2)
+    public void sub(Vector3f v1, Vector3f v2)
     {
         if(v1 == null)
             throw new IllegalArgumentException("First vector cannot be null in sub");
@@ -185,7 +193,7 @@ public class Vector3d
      * @param v1 The first input vector
      * @param v2 The second input vector that we subtract from v1
      */
-    public void sub(Point3d v1, Point3d v2)
+    public void sub(Point3f v1, Point3f v2)
     {
         if(v1 == null)
             throw new IllegalArgumentException("First vector cannot be null in sub");
@@ -205,7 +213,7 @@ public class Vector3d
      * @param v1 The source vector to calculate the dot product with
      * @return this dot v1
      */
-    public double dot(Vector3d v1)
+    public double dot(Vector3f v1)
     {
         if(v1 == null)
             throw new IllegalArgumentException("Comparison vector cannot be null in dot product");
@@ -220,7 +228,7 @@ public class Vector3d
      * @param v1 The first vector to include in the cross product
      * @param v2 The second vector to include in the cross product
      */
-    public void cross(Vector3d v1, Vector3d v2)
+    public void cross(Vector3f v1, Vector3f v2)
     {
         if(v1 == null)
             throw new IllegalArgumentException("First vector cannot be null in cross product");
@@ -252,5 +260,12 @@ public class Vector3d
     public double lengthSquared()
     {
         return x * x + y * y + z * z;
+    }
+
+    public void negate()
+    {
+        x = -x;
+        y = -y;
+        z = -z;
     }
 }

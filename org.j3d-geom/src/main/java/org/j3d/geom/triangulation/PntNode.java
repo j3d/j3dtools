@@ -60,11 +60,13 @@
 package org.j3d.geom.triangulation;
 
 // Placeholder list
-class PntNode extends Object {
+class PntNode
+{
     int pnt;
     int next;
 
-    PntNode() {
+    PntNode()
+    {
     }
 }
 

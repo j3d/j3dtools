@@ -59,11 +59,15 @@
 
 package org.j3d.geom.triangulation;
 
-class Triangle extends Object {
+class Triangle
+{
     int v1, v2, v3; // This store the index into the list array.
     // Not the index into vertex pool yet!
 
-    Triangle(int a, int b, int c) {
-	v1=a; v2=b; v3=c;
+    Triangle(int a, int b, int c)
+    {
+        v1 = a;
+        v2 = b;
+        v3 = c;
     }
 }

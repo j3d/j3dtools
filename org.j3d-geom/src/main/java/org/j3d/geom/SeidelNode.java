@@ -13,10 +13,12 @@
 package org.j3d.geom;
 
 // External imports
-import javax.vecmath.Point2f;
+// None
 
 // Local imports
 // None
+
+import org.j3d.maths.vector.Point2d;
 
 /**
  * Attributes of every node in the query structures used in the Siedel
@@ -37,7 +39,7 @@ class SeidelNode
     /** Index of the segment this node belongs to */
     int segmentIndex;
 
-    Point2f yVal;
+    Point2d yVal;
 
     int trapezoidIndex;
     int parent;
@@ -46,7 +48,7 @@ class SeidelNode
 
     SeidelNode()
     {
-        yVal = new Point2f();
+        yVal = new Point2d();
     }
 
     /**
