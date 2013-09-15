@@ -135,6 +135,8 @@ public class Quat4dTest
         classUnderTest.z = TEST_Z;
         classUnderTest.angle = TEST_ANGLE;
 
+        classUnderTest.negate();
+
         assertEquals(classUnderTest.x, -TEST_X, "X component wasn't negated");
         assertEquals(classUnderTest.y, -TEST_Y, "Y component wasn't negated");
         assertEquals(classUnderTest.z, -TEST_Z, "Z component wasn't negated");
