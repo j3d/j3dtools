@@ -1,7 +1,0 @@
-Class-Path: org-j3d-loader-core.jar org-j3d-util.jar
-Extension-List: 
-Specification-Vendor: Justin Couch
-Specification-Version: 2.0.0
-Implementation-Vendor-Id: org.j3d
-Implementation-Vendor: Yumetech, Inc
-Implementation-Version: 2.0.0

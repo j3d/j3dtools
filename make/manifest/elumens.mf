@@ -1,6 +1,0 @@
-Extension-Name: j3d-org
-Specification-Vendor: Justin Couch
-Specification-Version: 2.0.0
-Implementation-Vendor-Id: org.j3d
-Implementation-Vendor: j3d.org
-Implementation-Version: 2.0.0
