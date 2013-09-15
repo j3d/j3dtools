@@ -7,13 +7,15 @@
  *
  ****************************************************************************/
 
-package org.j3d.util;
+package org.j3d.color;
 
 // Standard imports
 // None
 
 // Application specific imports
 // none
+
+import org.j3d.util.I18nManager;
 
 /**
  * An set of utility functions that convert from one color space to another.

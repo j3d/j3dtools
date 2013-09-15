@@ -13,7 +13,7 @@ package org.j3d.util.interpolator;
 // None
 
 // Local imports
-import org.j3d.util.ColorUtils;
+import org.j3d.color.ColorUtils;
 import org.j3d.util.I18nManager;
 
 /**
