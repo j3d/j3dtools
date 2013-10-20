@@ -29,9 +29,6 @@ import org.j3d.maths.vector.*;
 public class MatrixUtils
 {
     /** Work variable for the fallback lookat calculations. */
-    private AxisAngle4d orient;
-
-    /** Work variable for the fallback lookat calculations. */
     private AxisAngle4d orientd;
 
     /** A temp 4x4 matrix used during the invert() routines */
@@ -44,7 +41,10 @@ public class MatrixUtils
 	/** A temp 4x4 double matrix used during the invert() routines 
 	 *  when double precision is required */
 	private double[] tempMat4d;
-	
+
+    /** SVD decomposer when getting scales */
+    private SingularValueDecomposition svdUtil;
+
     /**
      * Construct a default instance of this class.
      */
@@ -154,6 +154,114 @@ public class MatrixUtils
         res.m31 = 0;
         res.m32 = 0;
         res.m33 = 1;
+    }
+
+    /**
+     * Get the uniform scale component of the given matrix. Performs a decomposition and
+     * returns the maximum of the scale values across the 3 directional components.
+     *
+     * @param mat The matrix to source the uniform scale from
+     */
+    public double getUniformScale(Matrix4d mat)
+    {
+        // Put the upper 3x3 into the temp matrix before decomposing
+        tempMat3d[0] = mat.m00;
+        tempMat3d[1] = mat.m01;
+        tempMat3d[2] = mat.m02;
+
+        tempMat3d[3] = mat.m10;
+        tempMat3d[4] = mat.m11;
+        tempMat3d[5] = mat.m12;
+
+        tempMat3d[6] = mat.m20;
+        tempMat3d[7] = mat.m21;
+        tempMat3d[8] = mat.m22;
+
+        if(svdUtil == null)
+        {
+            svdUtil = new SingularValueDecomposition();
+        }
+
+        svdUtil.decompose(tempMat3d);
+        svdUtil.getSingularValues(tempMat4d);
+
+        // since the S values are ordered in decreasing size, just take the first one
+        // and we have the max scale factor
+        return tempMat4d[0];
+    }
+
+    /**
+     * Perform a Singular Value Decomposition (SVD) of the given input matrix for the upper
+     * left 3x3 matrix.
+     *
+     * @param mat The matrix to source the uniform scale from
+     * @param rotationOutput
+     * @param scaleOutput
+     */
+    public void getScaleRotation(Matrix4d mat, double[] rotationOutput, double[] scaleOutput)
+    {
+        // Put the upper 3x3 into the temp matrix before decomposing
+        tempMat3d[0] = mat.m00;
+        tempMat3d[1] = mat.m01;
+        tempMat3d[2] = mat.m02;
+
+        tempMat3d[3] = mat.m10;
+        tempMat3d[4] = mat.m11;
+        tempMat3d[5] = mat.m12;
+
+        tempMat3d[6] = mat.m20;
+        tempMat3d[7] = mat.m21;
+        tempMat3d[8] = mat.m22;
+
+        if(svdUtil == null)
+        {
+            svdUtil = new SingularValueDecomposition();
+        }
+    }
+
+    /**
+     * Perform a Singular Value Decomposition (SVD) of the given input matrix for the upper
+     * left 3x3 matrix.
+     *
+     * @param mat The matrix to source the uniform scale from
+     * @param uOutput The output for the left singular vectors
+     * @param vOutput The output for the right singular vectors
+     */
+    public void decomposeSVD(Matrix4d mat, double[] uOutput, double[] vOutput)
+    {
+        // Put the upper 3x3 into the temp matrix before decomposing
+        tempMat3d[0] = mat.m00;
+        tempMat3d[1] = mat.m01;
+        tempMat3d[2] = mat.m02;
+
+        tempMat3d[3] = mat.m10;
+        tempMat3d[4] = mat.m11;
+        tempMat3d[5] = mat.m12;
+
+        tempMat3d[6] = mat.m20;
+        tempMat3d[7] = mat.m21;
+        tempMat3d[8] = mat.m22;
+
+        if(svdUtil == null)
+        {
+            svdUtil = new SingularValueDecomposition();
+        }
+
+        double[][] m = new double[3][3];
+        m[0][0] = mat.m00;
+        m[0][1] = mat.m01;
+        m[0][2] = mat.m02;
+
+        m[1][0] = mat.m10;
+        m[1][1] = mat.m11;
+        m[1][2] = mat.m12;
+
+        m[2][0] = mat.m20;
+        m[2][1] = mat.m21;
+        m[2][2] = mat.m22;
+
+        svdUtil.decompose(m);
+
     }
 
     /**

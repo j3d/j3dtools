@@ -49,6 +49,18 @@ public class MatrixUtilsTest
         checkIsIdentityMatrix(result);
     }
 
+    @Test(groups = "unit")
+    public void testUniformScaleIdentityMatrix() throws Exception
+    {
+        Matrix4d testMatrix = new Matrix4d();
+        testMatrix.setIdentity();
+
+        MatrixUtils classUnderTest = new MatrixUtils();
+
+        // This should give a scale factor of 1.
+        assertEquals(classUnderTest.getUniformScale(testMatrix), 1.0, 0.0001, "Incorrect scale for identity matrix");
+    }
+
     private void checkIsIdentityMatrix(Matrix4d src)
     {
         assertEquals(src.m00, 1.0, 0.001, "[0][0] not set to 1");
