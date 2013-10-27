@@ -245,9 +245,9 @@ public class SingularValueDecompositionTest
     /**
      * Convenience method to multiply m1 x m2 and put the result in the output matrix
      *
-     * @param m1
-     * @param m2
-     * @param out
+     * @param m1 The left multiplicand
+     * @param m2 The right multiplicand
+     * @param out THe place to put the output matrix
      */
     private void multMatrix(double[] m1, double[] m2, double[] out)
     {

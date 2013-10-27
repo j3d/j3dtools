@@ -195,39 +195,11 @@ public class MatrixUtils
      * left 3x3 matrix.
      *
      * @param mat The matrix to source the uniform scale from
-     * @param rotationOutput
-     * @param scaleOutput
+     * @param uOutput The optional output for the left singular vectors. If null not generated
+     * @param vOutput The optional output for the right singular vectors. If null not generated
+     * @param sOutput The singular (diagonal) vector
      */
-    public void getScaleRotation(Matrix4d mat, double[] rotationOutput, double[] scaleOutput)
-    {
-        // Put the upper 3x3 into the temp matrix before decomposing
-        tempMat3d[0] = mat.m00;
-        tempMat3d[1] = mat.m01;
-        tempMat3d[2] = mat.m02;
-
-        tempMat3d[3] = mat.m10;
-        tempMat3d[4] = mat.m11;
-        tempMat3d[5] = mat.m12;
-
-        tempMat3d[6] = mat.m20;
-        tempMat3d[7] = mat.m21;
-        tempMat3d[8] = mat.m22;
-
-        if(svdUtil == null)
-        {
-            svdUtil = new SingularValueDecomposition();
-        }
-    }
-
-    /**
-     * Perform a Singular Value Decomposition (SVD) of the given input matrix for the upper
-     * left 3x3 matrix.
-     *
-     * @param mat The matrix to source the uniform scale from
-     * @param uOutput The output for the left singular vectors
-     * @param vOutput The output for the right singular vectors
-     */
-    public void decomposeSVD(Matrix4d mat, double[] uOutput, double[] vOutput)
+    public void decomposeSVD(Matrix4d mat, double[] uOutput, double[] vOutput, double[] sOutput)
     {
         // Put the upper 3x3 into the temp matrix before decomposing
         tempMat3d[0] = mat.m00;
@@ -260,8 +232,11 @@ public class MatrixUtils
         m[2][1] = mat.m21;
         m[2][2] = mat.m22;
 
+        svdUtil.generateLeftVectors(uOutput != null);
+        svdUtil.generateRightVectors(vOutput != null);
         svdUtil.decompose(m);
 
+        svdUtil.getSingularValues(sOutput);
     }
 
     /**
