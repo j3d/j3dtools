@@ -71,4 +71,23 @@ public class Point4d
         z = pz;
         w = pw;
     }
+
+    /**
+     * Linearly interpolates between the two points and places the result into this point:
+     * <code>this = (1 - alpha) * t1 + alpha * t2</code>. All ranges of alpha are allowed,
+     * meaning that this can interpolate beyond the last point in a straight line or before
+     * the first point.
+     *
+     * @param t1 the first point to interpolate from
+     * @param t2 the second point to interpolate to
+     * @param alpha the alpha interpolation parameter
+     */
+    public void interpolate(Point4d t1, Point4d t2, double alpha)
+    {
+        this.x = (1 - alpha) * t1.x + alpha * t2.x;
+        this.y = (1 - alpha) * t1.y + alpha * t2.y;
+        this.z = (1 - alpha) * t1.z + alpha * t2.z;
+        this.w = (1 - alpha) * t1.w + alpha * t2.w;
+    }
+
 }

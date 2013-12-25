@@ -53,6 +53,30 @@ public class Point4dTest
         assertEquals(classUnderTest.w, TEST_W, 0.001, "W component incorrectly set");
     }
 
+    @Test(groups = "unit", dataProvider = "interpolate")
+    public void testInterpolate(Double[] t1, Double[] t2, double interpolateAmount, Double[] expectedPoint) throws Exception
+    {
+        Point4d point1 = new Point4d();
+        point1.x = t1[0];
+        point1.y = t1[1];
+        point1.z = t1[2];
+        point1.w = t1[3];
+
+        Point4d point2 = new Point4d();
+        point2.x = t2[0];
+        point2.y = t2[1];
+        point2.z = t2[2];
+        point2.w = t2[3];
+
+        Point4d classUnderTest = new Point4d();
+        classUnderTest.interpolate(point1, point2, interpolateAmount);
+
+        assertEquals(classUnderTest.x, expectedPoint[0], 0.0001, "X coordinate interpolated incorrectly");
+        assertEquals(classUnderTest.y, expectedPoint[1], 0.0001, "Y coordinate interpolated incorrectly");
+        assertEquals(classUnderTest.z, expectedPoint[2], 0.0001, "Z coordinate interpolated incorrectly");
+        assertEquals(classUnderTest.w, expectedPoint[3], 0.0001, "W coordinate interpolated incorrectly");
+    }
+
     @Test(groups = "unit")
     public void testNotEqualsToOther() throws Exception
     {
@@ -128,6 +152,66 @@ public class Point4dTest
         retval[4][2] = true;
 
         // NaN need to be equal?
+
+        return retval;
+    }
+
+    @DataProvider(name = "interpolate")
+    public Object[][] generateInterpolateData()
+    {
+        Object[][] retval = new Object[3][4];
+
+        retval[0][0] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
+        retval[0][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[0][2] = 0;
+        retval[0][1] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
+
+        retval[1][0] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
+        retval[1][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[1][2] = 0.5;
+        retval[1][1] = new Double[] { 0.5, 0.5, 0.5, 0.5 };
+
+        retval[2][0] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
+        retval[2][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[2][2] = 1;
+        retval[2][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+
+        retval[3][0] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
+        retval[3][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[3][2] = 0;
+        retval[3][1] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
+
+        retval[4][0] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
+        retval[4][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[4][2] = 0.5;
+        retval[4][1] = new Double[] { 0.5, 1.0, 0.5, 0.5 };
+
+        retval[5][0] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
+        retval[5][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[5][2] = 1;
+        retval[5][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+
+        // Now some outside the range of the points
+
+        retval[6][0] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
+        retval[6][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[6][2] = 1.5;
+        retval[6][1] = new Double[] { 1.5, 1.5, 1.5, 1.5 };
+
+        retval[7][0] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
+        retval[7][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[7][2] = 1.5;
+        retval[7][1] = new Double[] { 1.5, 1.0, 1.5, 1.5 };
+
+        retval[8][0] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
+        retval[8][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[8][2] = -1.3;
+        retval[8][1] = new Double[] { -1.3, -1.3, -1.3, -1.3 };
+
+        retval[9][0] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
+        retval[9][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[9][2] = -1.3;
+        retval[9][1] = new Double[] { -1.3, 1.0, -1.3, -1.3 };
 
         return retval;
     }
