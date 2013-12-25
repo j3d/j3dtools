@@ -10,7 +10,7 @@
         <version>3.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>org.j3d-ui</artifactId>
+    <artifactId>j3d-ui</artifactId>
     <version>3.0.0-SNAPSHOT</version>
 
     <build>
@@ -30,7 +30,7 @@
     <dependencies>
         <dependency>
             <groupId>org.j3d</groupId>
-            <artifactId>org.j3d-loaders</artifactId>
+            <artifactId>j3d-loaders</artifactId>
             <version>3.0.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

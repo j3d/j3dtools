@@ -10,7 +10,7 @@
         <version>3.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>org.j3d-texture</artifactId>
+    <artifactId>j3d-texture</artifactId>
     <version>3.0.0-SNAPSHOT</version>
 
 </project>
