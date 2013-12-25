@@ -159,59 +159,59 @@ public class Point4dTest
     @DataProvider(name = "interpolate")
     public Object[][] generateInterpolateData()
     {
-        Object[][] retval = new Object[3][4];
+        Object[][] retval = new Object[10][4];
 
         retval[0][0] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
         retval[0][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
         retval[0][2] = 0;
-        retval[0][1] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
+        retval[0][3] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
 
         retval[1][0] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
         retval[1][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
         retval[1][2] = 0.5;
-        retval[1][1] = new Double[] { 0.5, 0.5, 0.5, 0.5 };
+        retval[1][3] = new Double[] { 0.5, 0.5, 0.5, 0.5 };
 
         retval[2][0] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
         retval[2][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
         retval[2][2] = 1;
-        retval[2][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[2][3] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
 
         retval[3][0] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
         retval[3][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
         retval[3][2] = 0;
-        retval[3][1] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
+        retval[3][3] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
 
         retval[4][0] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
         retval[4][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
         retval[4][2] = 0.5;
-        retval[4][1] = new Double[] { 0.5, 1.0, 0.5, 0.5 };
+        retval[4][3] = new Double[] { 0.5, 1.0, 0.5, 0.5 };
 
         retval[5][0] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
         retval[5][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
         retval[5][2] = 1;
-        retval[5][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
+        retval[5][3] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
 
         // Now some outside the range of the points
 
         retval[6][0] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
         retval[6][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
         retval[6][2] = 1.5;
-        retval[6][1] = new Double[] { 1.5, 1.5, 1.5, 1.5 };
+        retval[6][3] = new Double[] { 1.5, 1.5, 1.5, 1.5 };
 
         retval[7][0] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
         retval[7][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
         retval[7][2] = 1.5;
-        retval[7][1] = new Double[] { 1.5, 1.0, 1.5, 1.5 };
+        retval[7][3] = new Double[] { 1.5, 1.0, 1.5, 1.5 };
 
         retval[8][0] = new Double[] { 0.0, 0.0, 0.0, 0.0 };
         retval[8][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
         retval[8][2] = -1.3;
-        retval[8][1] = new Double[] { -1.3, -1.3, -1.3, -1.3 };
+        retval[8][3] = new Double[] { -1.3, -1.3, -1.3, -1.3 };
 
         retval[9][0] = new Double[] { 0.0, 1.0, 0.0, 0.0 };
         retval[9][1] = new Double[] { 1.0, 1.0, 1.0, 1.0 };
         retval[9][2] = -1.3;
-        retval[9][1] = new Double[] { -1.3, 1.0, -1.3, -1.3 };
+        retval[9][3] = new Double[] { -1.3, 1.0, -1.3, -1.3 };
 
         return retval;
     }
