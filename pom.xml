@@ -60,14 +60,14 @@
     </contributors>
 
     <modules>
-        <module>org.j3d-core</module>
-        <module>org.j3d-geom</module>
-        <module>org.j3d-loaders</module>
-        <module>org.j3d-terrain</module>
-        <module>org.j3d-texture</module>
-        <module>org.j3d-device</module>
-        <module>org.j3d-ui</module>
-        <module>org.j3d-filter</module>
+        <module>j3d-core</module>
+        <module>j3d-geom</module>
+        <module>j3d-loaders</module>
+        <module>j3d-terrain</module>
+        <module>j3d-texture</module>
+        <module>j3d-device</module>
+        <module>j3d-ui</module>
+        <module>j3d-filter</module>
     </modules>
 
     <properties>
