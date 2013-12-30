@@ -347,6 +347,34 @@ public class Matrix4d
     }
 
     /**
+     * Reset this matrix as a pure rotation matrix with the given 3x3 rotation matrix.
+     *
+     * @param mat The rotation matrix to use
+     */
+    public void set(Matrix3d mat)
+    {
+        m00 = mat.m00;
+        m01 = mat.m01;
+        m02 = mat.m02;
+        m03 = 0;
+
+        m10 = mat.m10;
+        m11 = mat.m11;
+        m12 = mat.m12;
+        m13 = 0;
+
+        m20 = mat.m20;
+        m21 = mat.m21;
+        m22 = mat.m22;
+        m23 = 0;
+
+        m30 = 0.0;
+        m31 = 0.0;
+        m32 = 0.0;
+        m33 = 1.0;
+    }
+
+    /**
      * Transform the vector from input value and place it in the output. Will be
      * input safe so that input and output are the same object, it doesn't cause
      * any weird values.
