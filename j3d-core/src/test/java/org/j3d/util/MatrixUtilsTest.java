@@ -163,6 +163,25 @@ public class MatrixUtilsTest
         assertEquals(result, TEST_SCALE_1, "Incorrect largest scale factor found");
     }
 
+    @Test(groups = "unit")
+    public void testRotateXIdentity() throws Exception {
+        Matrix4d testMatrix = new Matrix4d();
+        testMatrix.setIdentity();
+
+        MatrixUtils classUnderTest = new MatrixUtils();
+        classUnderTest.rotateX(0, testMatrix);
+
+        checkIsIdentityMatrix(testMatrix);
+
+        classUnderTest.rotateX(Math.PI * 0.5, testMatrix);
+
+        checkIsIdentityMatrix(testMatrix);
+
+        classUnderTest.rotateX(Math.PI * -0.5, testMatrix);
+
+        checkIsIdentityMatrix(testMatrix);
+    }
+
     /** Convenience method to check the matrix is an identity matrix, will allowing
      * for some error.
      *

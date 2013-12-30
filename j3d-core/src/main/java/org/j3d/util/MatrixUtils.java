@@ -296,10 +296,10 @@ public class MatrixUtils
      * @param angle The angle to rotate in radians
      * @param mat The matrix to set the values in
      */
-    public void rotateX(float angle, Matrix4d mat)
+    public void rotateX(double angle, Matrix4d mat)
     {
-        float a = (float)Math.cos(angle);
-        float b = (float)Math.sin(angle);
+        double a = Math.cos(angle);
+        double b = Math.sin(angle);
 
         mat.m00 = 1;
         mat.m01 = 0;
@@ -328,10 +328,10 @@ public class MatrixUtils
      * @param angle The angle to rotate in radians
      * @param mat The matrix to set the values in
      */
-    public void rotateY(float angle, Matrix4d mat)
+    public void rotateY(double angle, Matrix4d mat)
     {
-        float a = (float)Math.cos(angle);
-        float b = (float)Math.sin(angle);
+        double a = Math.cos(angle);
+        double b = Math.sin(angle);
 
         mat.m00 = a;
         mat.m01 = 0;
@@ -352,6 +352,38 @@ public class MatrixUtils
         mat.m31 = 0;
         mat.m33 = 1;
         mat.m32 = 0;
+    }
+
+    /**
+     * Set the matrix to the rotation about the Y axis by the given angle.
+     *
+     * @param angle The angle to rotate in radians
+     * @param mat The matrix to set the values in
+     */
+    public void rotateZ(float angle, Matrix4d mat)
+    {
+        double a = Math.sin(angle);
+        double b = Math.cos(angle);
+
+        mat.m00 = b;
+        mat.m01 = -a;
+        mat.m02 = 0.0;
+        mat.m03 = 0.0;
+
+        mat.m10 = a;
+        mat.m11 = b;
+        mat.m12 = 0.0;
+        mat.m13 = 0.0;
+
+        mat.m20 = 0.0;
+        mat.m21 = 0.0;
+        mat.m22 = 1.0;
+        mat.m23 = 0.0;
+
+        mat.m30 = 0.0;
+        mat.m31 = 0.0;
+        mat.m32 = 0.0;
+        mat.m33 = 1.0;    
     }
 
     /**
