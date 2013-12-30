@@ -175,11 +175,188 @@ public class MatrixUtilsTest
 
         classUnderTest.rotateX(Math.PI * 0.5, testMatrix);
 
-        checkIsIdentityMatrix(testMatrix);
+
+        // Should be
+        // 1 0 0 0
+        // 0 0 -1 0
+        // 0 1 0 0
+        // 0 0 0 1
+        assertEquals(testMatrix.m00, 1.0, 0.001, "[0][0] not set to 1");
+        assertEquals(testMatrix.m01, 0.0, 0.001, "[0][1] not set to 0");
+        assertEquals(testMatrix.m02, 0.0, 0.001, "[0][2] not set to 0");
+        assertEquals(testMatrix.m03, 0.0, 0.001, "[0][3] not set to 0");
+
+        assertEquals(testMatrix.m10, 0.0, 0.001, "[1][0] not set to 0");
+        assertEquals(testMatrix.m11, 0.0, 0.001, "[1][1] not set to 0");
+        assertEquals(testMatrix.m12, -1.0, 0.001, "[1][2] not set to -1");
+        assertEquals(testMatrix.m13, 0.0, 0.001, "[1][3] not set to 0");
+
+        assertEquals(testMatrix.m20, 0.0, 0.001, "[2][0] not set to 0");
+        assertEquals(testMatrix.m21, 1.0, 0.001, "[2][1] not set to 1");
+        assertEquals(testMatrix.m22, 0.0, 0.001, "[2][2] not set to 0");
+        assertEquals(testMatrix.m23, 0.0, 0.001, "[2][3] not set to 0");
+
+        assertEquals(testMatrix.m30, 0.0, 0.001, "[3][0] not set to 0");
+        assertEquals(testMatrix.m31, 0.0, 0.001, "[3][1] not set to 0");
+        assertEquals(testMatrix.m32, 0.0, 0.001, "[3][2] not set to 0");
+        assertEquals(testMatrix.m33, 1.0, 0.001, "[3][3] not set to 1");
 
         classUnderTest.rotateX(Math.PI * -0.5, testMatrix);
 
+        // Should be
+        // 1 0 0 0
+        // 0 0 1 0
+        // 0 -1 0 0
+        // 0 0 0 1
+        assertEquals(testMatrix.m00, 1.0, 0.001, "[0][0] not set to 1");
+        assertEquals(testMatrix.m01, 0.0, 0.001, "[0][1] not set to 0");
+        assertEquals(testMatrix.m02, 0.0, 0.001, "[0][2] not set to 0");
+        assertEquals(testMatrix.m03, 0.0, 0.001, "[0][3] not set to 0");
+
+        assertEquals(testMatrix.m10, 0.0, 0.001, "[1][0] not set to 0");
+        assertEquals(testMatrix.m11, 0.0, 0.001, "[1][1] not set to 0");
+        assertEquals(testMatrix.m12, 1.0, 0.001, "[1][2] not set to 1");
+        assertEquals(testMatrix.m13, 0.0, 0.001, "[1][3] not set to 0");
+
+        assertEquals(testMatrix.m20, 0.0, 0.001, "[2][0] not set to 0");
+        assertEquals(testMatrix.m21, -1.0, 0.001, "[2][1] not set to -1");
+        assertEquals(testMatrix.m22, 0.0, 0.001, "[2][2] not set to 0");
+        assertEquals(testMatrix.m23, 0.0, 0.001, "[2][3] not set to 0");
+
+        assertEquals(testMatrix.m30, 0.0, 0.001, "[3][0] not set to 0");
+        assertEquals(testMatrix.m31, 0.0, 0.001, "[3][1] not set to 0");
+        assertEquals(testMatrix.m32, 0.0, 0.001, "[3][2] not set to 0");
+        assertEquals(testMatrix.m33, 1.0, 0.001, "[3][3] not set to 1");
+    }
+
+    @Test(groups = "unit")
+    public void testRotateYIdentity() throws Exception {
+        Matrix4d testMatrix = new Matrix4d();
+        testMatrix.setIdentity();
+
+        MatrixUtils classUnderTest = new MatrixUtils();
+        classUnderTest.rotateY(0, testMatrix);
+
         checkIsIdentityMatrix(testMatrix);
+
+        classUnderTest.rotateY(Math.PI * 0.5, testMatrix);
+
+
+        // Should be
+        //  0  0  1  0
+        //  0  1  0  0
+        // -1  0  0  0
+        //  0  0  0  1
+        assertEquals(testMatrix.m00, 0.0, 0.001, "[0][0] not set to 0");
+        assertEquals(testMatrix.m01, 0.0, 0.001, "[0][1] not set to 0");
+        assertEquals(testMatrix.m02, 1.0, 0.001, "[0][2] not set to 1");
+        assertEquals(testMatrix.m03, 0.0, 0.001, "[0][3] not set to 0");
+
+        assertEquals(testMatrix.m10, 0.0, 0.001, "[1][0] not set to 0");
+        assertEquals(testMatrix.m11, 1.0, 0.001, "[1][1] not set to 1");
+        assertEquals(testMatrix.m12, 0.0, 0.001, "[1][2] not set to 0");
+        assertEquals(testMatrix.m13, 0.0, 0.001, "[1][3] not set to 0");
+
+        assertEquals(testMatrix.m20, -1.0, 0.001, "[2][0] not set to -1");
+        assertEquals(testMatrix.m21, 0.0, 0.001, "[2][1] not set to 0");
+        assertEquals(testMatrix.m22, 0.0, 0.001, "[2][2] not set to 0");
+        assertEquals(testMatrix.m23, 0.0, 0.001, "[2][3] not set to 0");
+
+        assertEquals(testMatrix.m30, 0.0, 0.001, "[3][0] not set to 0");
+        assertEquals(testMatrix.m31, 0.0, 0.001, "[3][1] not set to 0");
+        assertEquals(testMatrix.m32, 0.0, 0.001, "[3][2] not set to 0");
+        assertEquals(testMatrix.m33, 1.0, 0.001, "[3][3] not set to 1");
+
+        classUnderTest.rotateY(Math.PI * -0.5, testMatrix);
+
+        //  0  0 -1  0
+        //  0  1  0  0
+        //  1  0  0  0
+        //  0  0  0  1
+        assertEquals(testMatrix.m00, 0.0, 0.001, "[0][0] not set to 0");
+        assertEquals(testMatrix.m01, 0.0, 0.001, "[0][1] not set to 0");
+        assertEquals(testMatrix.m02, -1.0, 0.001, "[0][2] not set to -1");
+        assertEquals(testMatrix.m03, 0.0, 0.001, "[0][3] not set to 0");
+
+        assertEquals(testMatrix.m10, 0.0, 0.001, "[1][0] not set to 0");
+        assertEquals(testMatrix.m11, 1.0, 0.001, "[1][1] not set to 1");
+        assertEquals(testMatrix.m12, 0.0, 0.001, "[1][2] not set to 0");
+        assertEquals(testMatrix.m13, 0.0, 0.001, "[1][3] not set to 0");
+
+        assertEquals(testMatrix.m20, 1.0, 0.001, "[2][0] not set to 1");
+        assertEquals(testMatrix.m21, 0.0, 0.001, "[2][1] not set to 0");
+        assertEquals(testMatrix.m22, 0.0, 0.001, "[2][2] not set to 0");
+        assertEquals(testMatrix.m23, 0.0, 0.001, "[2][3] not set to 0");
+
+        assertEquals(testMatrix.m30, 0.0, 0.001, "[3][0] not set to 0");
+        assertEquals(testMatrix.m31, 0.0, 0.001, "[3][1] not set to 0");
+        assertEquals(testMatrix.m32, 0.0, 0.001, "[3][2] not set to 0");
+        assertEquals(testMatrix.m33, 1.0, 0.001, "[3][3] not set to 1");
+    }
+
+    @Test(groups = "unit")
+    public void testRotateZIdentity() throws Exception {
+        Matrix4d testMatrix = new Matrix4d();
+        testMatrix.setIdentity();
+
+        MatrixUtils classUnderTest = new MatrixUtils();
+        classUnderTest.rotateZ(0, testMatrix);
+
+        checkIsIdentityMatrix(testMatrix);
+
+        classUnderTest.rotateZ(Math.PI * 0.5, testMatrix);
+
+
+        // Should be
+        //  0 -1  0  0
+        //  1  0  0  0
+        //  0  0  1  0
+        //  0  0  0  1
+        assertEquals(testMatrix.m00, 0.0, 0.001, "[0][0] not set to 0");
+        assertEquals(testMatrix.m01, -1.0, 0.001, "[0][1] not set to -1");
+        assertEquals(testMatrix.m02, 0.0, 0.001, "[0][2] not set to 0");
+        assertEquals(testMatrix.m03, 0.0, 0.001, "[0][3] not set to 0");
+
+        assertEquals(testMatrix.m10, 1.0, 0.001, "[1][0] not set to 1");
+        assertEquals(testMatrix.m11, 0.0, 0.001, "[1][1] not set to 0");
+        assertEquals(testMatrix.m12, 0.0, 0.001, "[1][2] not set to 0");
+        assertEquals(testMatrix.m13, 0.0, 0.001, "[1][3] not set to 0");
+
+        assertEquals(testMatrix.m20, 0.0, 0.001, "[2][0] not set to 0");
+        assertEquals(testMatrix.m21, 0.0, 0.001, "[2][1] not set to 0");
+        assertEquals(testMatrix.m22, 1.0, 0.001, "[2][2] not set to 1");
+        assertEquals(testMatrix.m23, 0.0, 0.001, "[2][3] not set to 0");
+
+        assertEquals(testMatrix.m30, 0.0, 0.001, "[3][0] not set to 0");
+        assertEquals(testMatrix.m31, 0.0, 0.001, "[3][1] not set to 0");
+        assertEquals(testMatrix.m32, 0.0, 0.001, "[3][2] not set to 0");
+        assertEquals(testMatrix.m33, 1.0, 0.001, "[3][3] not set to 1");
+
+        classUnderTest.rotateZ(Math.PI * -0.5, testMatrix);
+
+        //  0  1  0  0
+        // -1  0  0  0
+        //  0  0  0  0
+        //  0  0  0  1
+        assertEquals(testMatrix.m00, 0.0, 0.001, "[0][0] not set to 0");
+        assertEquals(testMatrix.m01, 1.0, 0.001, "[0][1] not set to 1");
+        assertEquals(testMatrix.m02, 0.0, 0.001, "[0][2] not set to 0");
+        assertEquals(testMatrix.m03, 0.0, 0.001, "[0][3] not set to 0");
+
+        assertEquals(testMatrix.m10, -1.0, 0.001, "[1][0] not set to -1");
+        assertEquals(testMatrix.m11, 0.0, 0.001, "[1][1] not set to 0");
+        assertEquals(testMatrix.m12, 0.0, 0.001, "[1][2] not set to 0");
+        assertEquals(testMatrix.m13, 0.0, 0.001, "[1][3] not set to 0");
+
+        assertEquals(testMatrix.m20, 0.0, 0.001, "[2][0] not set to 0");
+        assertEquals(testMatrix.m21, 0.0, 0.001, "[2][1] not set to 0");
+        assertEquals(testMatrix.m22, 1.0, 0.001, "[2][2] not set to 1");
+        assertEquals(testMatrix.m23, 0.0, 0.001, "[2][3] not set to 0");
+
+        assertEquals(testMatrix.m30, 0.0, 0.001, "[3][0] not set to 0");
+        assertEquals(testMatrix.m31, 0.0, 0.001, "[3][1] not set to 0");
+        assertEquals(testMatrix.m32, 0.0, 0.001, "[3][2] not set to 0");
+        assertEquals(testMatrix.m33, 1.0, 0.001, "[3][3] not set to 1");
     }
 
     /** Convenience method to check the matrix is an identity matrix, will allowing

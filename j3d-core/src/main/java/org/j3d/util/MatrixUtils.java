@@ -360,7 +360,7 @@ public class MatrixUtils
      * @param angle The angle to rotate in radians
      * @param mat The matrix to set the values in
      */
-    public void rotateZ(float angle, Matrix4d mat)
+    public void rotateZ(double angle, Matrix4d mat)
     {
         double a = Math.sin(angle);
         double b = Math.cos(angle);
