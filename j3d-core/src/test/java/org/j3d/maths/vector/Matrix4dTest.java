@@ -222,6 +222,84 @@ public class Matrix4dTest
     }
 
     @Test(groups = "unit")
+    public void testSetTranslationVector3() throws Exception
+    {
+        final double TEST_X = 0.4;
+        final double TEST_Y = -0.4;
+        final double TEST_Z = 13.4;
+
+        Vector3d testVector = new Vector3d();
+        testVector.x = TEST_X;
+        testVector.y = TEST_Y;
+        testVector.z = TEST_Z;
+
+        Matrix4d classUnderTest = new Matrix4d();
+        generateRandomMatrix(classUnderTest);
+
+        classUnderTest.setTranslation(testVector);
+
+        assertNotEquals(classUnderTest.m00, 1.0, "[0][0] coordinate should be 1.0");
+        assertNotEquals(classUnderTest.m01, 0.0, "Non-zero value [0][1] coordinate");
+        assertNotEquals(classUnderTest.m02, 0.0, "Non-zero value [0][2] coordinate");
+        assertEquals(classUnderTest.m03, TEST_X, "Incorrect translation for [0][3]");
+
+        assertNotEquals(classUnderTest.m10, 0.0, "Non-zero value [1][0] coordinate");
+        assertNotEquals(classUnderTest.m11, 1.0, "[1][1] coordinate should be 1.0");
+        assertNotEquals(classUnderTest.m12, 0.0, "Non-zero value [1][2] coordinate");
+        assertEquals(classUnderTest.m13, TEST_Y, "Incorrect translation for [1][3]");
+
+        assertNotEquals(classUnderTest.m20, 0.0, "Non-zero value [2][0] coordinate");
+        assertNotEquals(classUnderTest.m21, 0.0, "Non-zero value [2][1] coordinate");
+        assertNotEquals(classUnderTest.m22, 1.0, "[2][2] coordinate should be 1.0");
+        assertEquals(classUnderTest.m23, TEST_Z, "Incorrect translation for [2][3]");
+
+        assertNotEquals(classUnderTest.m30, 0.0, "Non-zero value [3][0] coordinate");
+        assertNotEquals(classUnderTest.m31, 0.0, "Non-zero value [3][1] coordinate");
+        assertNotEquals(classUnderTest.m32, 0.0, "Non-zero value [3][2] coordinate");
+        assertEquals(classUnderTest.m33, 1.0, "translation for [3][3] should be 1.0");
+    }
+
+    @Test(groups = "unit")
+    public void testSetTranslationVector4() throws Exception
+    {
+        final double TEST_X = 0.4;
+        final double TEST_Y = -0.4;
+        final double TEST_Z = 13.4;
+        final double TEST_W = 6.7;
+
+        Vector4d testVector = new Vector4d();
+        testVector.x = TEST_X;
+        testVector.y = TEST_Y;
+        testVector.z = TEST_Z;
+        testVector.w = TEST_W;
+
+        Matrix4d classUnderTest = new Matrix4d();
+        generateRandomMatrix(classUnderTest);
+
+        classUnderTest.setTranslation(testVector);
+
+        assertNotEquals(classUnderTest.m00, 1.0, "[0][0] coordinate should be 1.0");
+        assertNotEquals(classUnderTest.m01, 0.0, "Non-zero value [0][1] coordinate");
+        assertNotEquals(classUnderTest.m02, 0.0, "Non-zero value [0][2] coordinate");
+        assertEquals(classUnderTest.m03, TEST_X, "Incorrect translation for [0][3]");
+
+        assertNotEquals(classUnderTest.m10, 0.0, "Non-zero value [1][0] coordinate");
+        assertNotEquals(classUnderTest.m11, 1.0, "[1][1] coordinate should be 1.0");
+        assertNotEquals(classUnderTest.m12, 0.0, "Non-zero value [1][2] coordinate");
+        assertEquals(classUnderTest.m13, TEST_Y, "Incorrect translation for [1][3]");
+
+        assertNotEquals(classUnderTest.m20, 0.0, "Non-zero value [2][0] coordinate");
+        assertNotEquals(classUnderTest.m21, 0.0, "Non-zero value [2][1] coordinate");
+        assertNotEquals(classUnderTest.m22, 1.0, "[2][2] coordinate should be 1.0");
+        assertEquals(classUnderTest.m23, TEST_Z, "Incorrect translation for [2][3]");
+
+        assertNotEquals(classUnderTest.m30, 0.0, "Non-zero value [3][0] coordinate");
+        assertNotEquals(classUnderTest.m31, 0.0, "Non-zero value [3][1] coordinate");
+        assertNotEquals(classUnderTest.m32, 0.0, "Non-zero value [3][2] coordinate");
+        assertEquals(classUnderTest.m33, TEST_W, "translation for [3][3] should be 1.0");
+    }
+
+    @Test(groups = "unit")
     public void testSetMatrix3() throws Exception
     {
         Matrix3d testMatrix = new Matrix3d();

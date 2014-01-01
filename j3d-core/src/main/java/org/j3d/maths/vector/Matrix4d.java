@@ -353,6 +353,9 @@ public class Matrix4d
      */
     public void set(Matrix3d mat)
     {
+        if(mat == null)
+            return;
+
         m00 = mat.m00;
         m01 = mat.m01;
         m02 = mat.m02;
@@ -372,6 +375,42 @@ public class Matrix4d
         m31 = 0.0;
         m32 = 0.0;
         m33 = 1.0;
+    }
+
+    /**
+     * Set the translation component of this matrix and leave all the rest of it
+     * alone. It will return the m33 component back to a value of 1.0 assuming this
+     * vector is without the w component.
+     *
+     * @param src The vector to set the translation to
+     */
+    public void setTranslation(Vector3d src)
+    {
+        if(src == null)
+            return;
+
+        m03 = src.x;
+        m13 = src.y;
+        m23 = src.z;
+        m33 = 1.0;
+    }
+
+    /**
+     * Set the translation component of this matrix and leave all the rest of it
+     * alone. It will return the m33 component back to a value of 1.0 assuming this
+     * vector is without the w component.
+     *
+     * @param src The vector to set the translation to
+     */
+    public void setTranslation(Vector4d src)
+    {
+        if(src == null)
+            return;
+
+        m03 = src.x;
+        m13 = src.y;
+        m23 = src.z;
+        m33 = src.w;
     }
 
     /**
