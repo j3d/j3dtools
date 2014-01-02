@@ -59,9 +59,7 @@ import java.util.HashMap;
  * Also, the GeometryCompressor can take a set of GeometryInfo objects in a
  * CompressionSteam and generate a CompressedGeometry object from the
  * geometry.<p>
- * Geometry is loaded into a GeometryInfo in a manner similar to the
- * <a href="../../../../../javax/media/j3d/GeometryArray.html">
- * GeometryArray</a> methods.  The constructor for the GeometryInfo takes a flag
+ * The constructor for the GeometryInfo takes a flag
  * that specifies the kind of data being loaded.  The vertex data is
  * specified using methods that are similar to the GeometryArray methods, but
  * with fewer variations.<p>
@@ -635,8 +633,6 @@ public class GeometryInfo
     /**
      * Sets the mapping between texture coordinate sets and texture units.
      * See the
-     * <a href="../../../../../javax/media/j3d/GeometryArray.html#texCoordSetMap">
-     * GeometryArray constructor </a> for further details.
      * <p> <b>Note:</b> If the texCoordSetMap is not set, multi-texturing is
      * turned off. Only the texture coordinate set at index 0 (if set) will be
      * used. Any other sets specified by the GeometryInfo.setTextureCoordinate*
@@ -649,9 +645,6 @@ public class GeometryInfo
 
     /**
      * Returns a reference to the texture coordinate set map.
-     * See the
-     * <a href="../../../../../javax/media/j3d/GeometryArray.html#texCoordSetMap">
-     * GeometryArray constructor </a> for further details.
      */
     public int[] getTexCoordSetMap()
     {
