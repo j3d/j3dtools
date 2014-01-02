@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                      J3D.org Copyright (c) 2000
+ *                      J3D.org Copyright (c) 2000 - 2013
  *                              Java Source
  *
  * This source is licensed under the GNU LGPL v2.1
@@ -16,7 +16,7 @@ import java.io.*;
 // None
 
 /**
- * A data input stream which allows reading of arrays of primative types as
+ * A data input stream which allows reading of arrays of primitive types as
  * well as the standard types a DataInputStream allows.
  * <p>
  * This class is considerably faster then the standard DataInputStream provided
@@ -43,34 +43,46 @@ import java.io.*;
      * Creates a BlockDataInputStream that uses the specified
      * underlying InputStream.
      *
-     * @param  in  the specified input stream
+     * @param  input The input stream to source upstream data from
      */
-    public BlockDataInputStream(InputStream in)
+    public BlockDataInputStream(InputStream input)
     {
-        super(in);
+        super(input);
 
         byteBuff = new byte[4];
         readBuffer = new byte[8];
     }
 
+    //------------------------------------------------------------------------
+    // Methods defined by FilterInputStream
+    //------------------------------------------------------------------------
+
+    @Override
     public int read(byte b[])
         throws IOException
     {
         return in.read(b, 0, b.length);
     }
 
+    @Override
     public int read(byte b[], int off, int len)
         throws IOException
     {
         return in.read(b, off, len);
     }
 
+    //------------------------------------------------------------------------
+    // Methods defined by DataInput
+    //------------------------------------------------------------------------
+
+    @Override
     public void readFully(byte b[])
         throws IOException
     {
         readFully(b, 0, b.length);
     }
 
+    @Override
     public void readFully(byte b[], int off, int len)
         throws IOException
     {
@@ -85,6 +97,7 @@ import java.io.*;
         }
     }
 
+    @Override
     public int skipBytes(int n)
         throws IOException
     {
@@ -98,6 +111,7 @@ import java.io.*;
         return total;
     }
 
+    @Override
     public boolean readBoolean()
         throws IOException
     {
@@ -107,6 +121,7 @@ import java.io.*;
         return (ch != 0);
     }
 
+    @Override
     public byte readByte()
         throws IOException
     {
@@ -116,6 +131,7 @@ import java.io.*;
         return (byte)(ch);
     }
 
+    @Override
     public int readUnsignedByte()
         throws IOException
     {
@@ -125,6 +141,7 @@ import java.io.*;
         return ch;
     }
 
+    @Override
     public short readShort()
         throws IOException
     {
@@ -147,6 +164,7 @@ import java.io.*;
 */
     }
 
+    @Override
     public int readUnsignedShort()
         throws IOException
     {
@@ -157,6 +175,7 @@ import java.io.*;
         return (ch1 << 8) + ch2;
     }
 
+    @Override
     public char readChar()
         throws IOException
     {
@@ -167,6 +186,7 @@ import java.io.*;
         return (char)((ch1 << 8) + ch2);
     }
 
+    @Override
     public int readInt()
         throws IOException
     {
@@ -180,40 +200,7 @@ import java.io.*;
         return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + ch4);
     }
 
-    /**
-     * Reads n ints into an array.  The array must be preallocated
-     * to at least n size.
-     *
-     * @param data The place to store the data
-     * @param len The number of floats to read.
-     */
-    public void readInts(int[] data, int len)
-        throws IOException
-    {
-        int size = len * 4;
-        if (byteBuff.length < size)
-            byteBuff = new byte[size];
-
-        readFully(byteBuff, 0, size);
-
-        int ch1;
-        int ch2;
-        int ch3;
-        int ch4;
-        int idx=0;
-
-        for(int i=0; i < len; i++)
-        {
-            ch1 = byteBuff[idx++];
-            ch2 = (byteBuff[idx++] & 255);
-            ch3 = (byteBuff[idx++] & 255);
-            ch4 = (byteBuff[idx++] & 255);
-
-            data[i] = ((ch1 << 24) + (ch2 << 16) +
-                  (ch3 << 8) + (ch4 << 0));
-        }
-    }
-
+    @Override
     public long readLong()
         throws IOException
     {
@@ -228,6 +215,7 @@ import java.io.*;
                 ((readBuffer[7] & 255) <<  0));
     }
 
+    @Override
     public float readFloat()
         throws IOException
     {
@@ -249,46 +237,14 @@ import java.io.*;
         //return Float.intBitsToFloat(readInt());
     }
 
-    /**
-     * Reads n floats into an array.  The array must be preallocated
-     * to at least n size.
-     *
-     * @param data The place to store the data
-     * @param len The number of floats to read.
-     */
-    public void readFloats(float[] data, int len)
-        throws IOException
-    {
-        int size = len * 4;
-        if (byteBuff.length < size)
-            byteBuff = new byte[size];
-
-        readFully(byteBuff, 0, size);
-
-        int ch1;
-        int ch2;
-        int ch3;
-        int ch4;
-        int idx=0;
-
-        for(int i=0; i < len; i++)
-        {
-            ch1 = byteBuff[idx++];
-            ch2 = (byteBuff[idx++] & 255);
-            ch3 = (byteBuff[idx++] & 255);
-            ch4 = (byteBuff[idx++] & 255);
-
-            data[i] = Float.intBitsToFloat(((ch1 << 24) + (ch2 << 16) +
-                  (ch3 << 8) + (ch4 << 0)));
-        }
-    }
-
+    @Override
     public double readDouble()
         throws IOException
     {
         return Double.longBitsToDouble(readLong());
     }
 
+    @Override
     public String readLine()
         throws IOException
     {
@@ -341,26 +297,20 @@ import java.io.*;
         return String.copyValueOf(buf, 0, offset);
     }
 
+    @Override
     public String readUTF()
         throws IOException
     {
-        return readUTF(this);
-    }
+        int utflen = readUnsignedShort();
 
-    public static String readUTF(DataInput in)
-        throws IOException
-    {
-        int utflen = in.readUnsignedShort();
-
-        // TODO: Stop creating new StringBuffers each time
-        StringBuffer str = new StringBuffer(utflen);
+        StringBuilder str = new StringBuilder(utflen);
 
         // TODO: Stop creating bytearr each time
         byte[] bytearr = new byte[utflen];
         int c, char2, char3;
         int count = 0;
 
-        in.readFully(bytearr, 0, utflen);
+        readFully(bytearr, 0, utflen);
 
         while (count < utflen)
         {
@@ -405,9 +355,9 @@ import java.io.*;
                     if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80))
                         throw new UTFDataFormatException();
                     str.append((char)(((c     & 0x0F) << 12) |
-                                      ((char2 & 0x3F) << 6)  |
-                                      ((char3 & 0x3F) << 0)));
-                break;
+                        ((char2 & 0x3F) << 6)  |
+                        ((char3 & 0x3F) << 0)));
+                    break;
                 default:
                     /* 10xx xxxx,  1111 xxxx */
                     throw new UTFDataFormatException();
@@ -416,5 +366,77 @@ import java.io.*;
 
         // The number of chars produced may be less than utflen
         return new String(str);
+    }
+
+    //------------------------------------------------------------------------
+    // Local Methods
+    //------------------------------------------------------------------------
+
+    /**
+     * Reads n ints into an array.  The array must be preallocated
+     * to at least n size.
+     *
+     * @param data The place to store the data
+     * @param len The number of floats to read.
+     */
+    public void readInts(int[] data, int len)
+        throws IOException
+    {
+        int size = len * 4;
+        if (byteBuff.length < size)
+            byteBuff = new byte[size];
+
+        readFully(byteBuff, 0, size);
+
+        int ch1;
+        int ch2;
+        int ch3;
+        int ch4;
+        int idx=0;
+
+        for(int i=0; i < len; i++)
+        {
+            ch1 = byteBuff[idx++];
+            ch2 = (byteBuff[idx++] & 255);
+            ch3 = (byteBuff[idx++] & 255);
+            ch4 = (byteBuff[idx++] & 255);
+
+            data[i] = ((ch1 << 24) + (ch2 << 16) +
+                (ch3 << 8) + (ch4 << 0));
+        }
+    }
+
+    /**
+     * Reads n floats into an array.  The array must be preallocated
+     * to at least n size.
+     *
+     * @param data The place to store the data
+     * @param len The number of floats to read.
+     */
+    public void readFloats(float[] data, int len)
+        throws IOException
+    {
+        int size = len * 4;
+        if (byteBuff.length < size)
+            byteBuff = new byte[size];
+
+        readFully(byteBuff, 0, size);
+
+        int ch1;
+        int ch2;
+        int ch3;
+        int ch4;
+        int idx=0;
+
+        for(int i = 0; i < len; i++)
+        {
+            ch1 = byteBuff[idx++];
+            ch2 = (byteBuff[idx++] & 255);
+            ch3 = (byteBuff[idx++] & 255);
+            ch4 = (byteBuff[idx++] & 255);
+
+            data[i] = Float.intBitsToFloat(((ch1 << 24) + (ch2 << 16) +
+                (ch3 << 8) + (ch4 << 0)));
+        }
     }
 }

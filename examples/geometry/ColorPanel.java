@@ -17,8 +17,6 @@ import java.awt.Label;
 import java.awt.Panel;
 import java.awt.TextField;
 
-import javax.vecmath.Color4b;
-
 // Application Specific imports
 // none
 
