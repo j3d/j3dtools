@@ -136,7 +136,6 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven.javadoc.plugin.version}</version>
                 <configuration>
-                    <outputDirectory>${project.basedir}/docs/javadoc</outputDirectory>
                     <docfilessubdirs>true</docfilessubdirs>
                     <windowtitle>j3d.org Code Library ${project.version}</windowtitle>
                     <doctitle>j3d.org Code Repository API ${project.version}</doctitle>
@@ -144,16 +143,28 @@
                     <bottom><![CDATA[
                         <center>
                         Latest Info from <a href="http://code.j3d.org">http://code.j3d.org/</a> <br>
-                            <font size=2>Copyright &copy; 2001 - 2013<a href="http://www.j3d.org">j3d.org</a></font>
+                            <font size=2>Copyright &copy; 2001 - 2014 <a href="http://www.j3d.org">j3d.org</a></font>
                         </center>
                         ]]>
                     </bottom>
-                    <overview>org.j3d-core/src/main/javadoc/overview.html</overview>
+                    <overview>${project.basedir}/j3d-core/src/main/javadoc/overview.html</overview>
                     <quiet>true</quiet>
                     <excludePackageNames>
                         org.j3d.ui.collision
                     </excludePackageNames>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>aggregate</id>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                        <phase>site</phase>
+                        <configuration>
+                            <sourcepath>${project.build.sourceDirectory}/../generated</sourcepath>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -195,6 +206,10 @@
             <name>Sonatype Nexus release repository</name>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
+        <site>
+            <id>${project.artifactId}-site</id>
+            <url>${project.baseUri}</url>
+        </site>
     </distributionManagement>
 
     <dependencies>
