@@ -152,6 +152,40 @@
                     <excludePackageNames>
                         org.j3d.ui.collision
                     </excludePackageNames>
+                    <groups>
+                        <group>
+                            <title>J3D Core</title>
+                            <packages>org.j3d.color*:org.j3d.io*:org.j3d.maths*:org.j3d.util*</packages>
+                        </group>
+                        <group>
+                            <title>Devices</title>
+                            <packages>org.j3d.device*</packages>
+                        </group>
+                        <group>
+                            <title>Geometry</title>
+                            <packages>org.j3d.geom*</packages>
+                        </group>
+                        <group>
+                            <title>File Loaders</title>
+                            <packages>org.j3d.loaders*</packages>
+                        </group>
+                        <group>
+                            <title>Terrain Management</title>
+                            <packages>org.j3d.terrain*</packages>
+                        </group>
+                        <group>
+                            <title>Texture Utilities</title>
+                            <packages>org.j3d.texture*</packages>
+                        </group>
+                        <group>
+                            <title>UI Utilities</title>
+                            <packages>org.j3d.ui*</packages>
+                        </group>
+                        <group>
+                            <title>J3D Filter</title>
+                            <packages>j3d.filter*</packages>
+                        </group>
+                    </groups>
                 </configuration>
                 <executions>
                     <execution>
