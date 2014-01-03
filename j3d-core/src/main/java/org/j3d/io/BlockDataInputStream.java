@@ -89,10 +89,11 @@ import java.io.*;
         if (len < 0)
             throw new IndexOutOfBoundsException();
         int n = 0;
-        while (n < len) {
+        while (n < len)
+        {
             int count = in.read(b, off + n, len - n);
             if (count < 0)
-            throw new EOFException();
+                throw new EOFException("Unexpected end of stream. Read " + n + " bytes, expected " + len);
             n += count;
         }
     }
@@ -154,14 +155,6 @@ import java.io.*;
         ch2 = (byteBuff[1] & 255);
 
         return (short)((ch1 << 8) + (ch2 << 0));
-/*
-
-        int ch1 = in.read();
-        int ch2 = in.read();
-        if ((ch1 | ch2) < 0)
-            throw new EOFException();
-        return (short)((ch1 << 8) + (ch2 << 0));
-*/
     }
 
     @Override
