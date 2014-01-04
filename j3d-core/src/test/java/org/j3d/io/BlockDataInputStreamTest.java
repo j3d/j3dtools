@@ -11,11 +11,9 @@
 
 package org.j3d.io;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
@@ -71,6 +69,36 @@ public class BlockDataInputStreamTest
         {
             assertEquals(read_result[TEST_READ_OFFSET + i], test_data[i], "Read array contents incorrect at index " + i);
         }
+    }
+
+    @Test(groups = "unit", expectedExceptions = IndexOutOfBoundsException.class)
+    public void testExtendedByteArrayReadingInvalidLength() throws Exception
+    {
+        final byte[] test_data = { 0, 0, 1, 2, 4, 8 };
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        // Make the read array bigger than the source data to make sure we
+        // read the correct values.
+        byte[] read_result = new byte[test_data.length * 2];
+
+        classUnderTest.read(read_result, 0, -2);
+    }
+
+    @Test(groups = "unit", expectedExceptions = IndexOutOfBoundsException.class)
+    public void testExtendedByteArrayReadingInvalidOffset() throws Exception
+    {
+        final byte[] test_data = { 0, 0, 1, 2, 4, 8 };
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        // Make the read array bigger than the source data to make sure we
+        // read the correct values.
+        byte[] read_result = new byte[test_data.length * 2];
+
+        classUnderTest.read(read_result, -2, test_data.length);
     }
 
     @Test(groups = "unit")
@@ -155,6 +183,36 @@ public class BlockDataInputStreamTest
         classUnderTest.readFully(read_result);
     }
 
+    @Test(groups = "unit", expectedExceptions = IndexOutOfBoundsException.class)
+    public void testExtendedFullReadingInvalidLength() throws Exception
+    {
+        final byte[] test_data = { 0, 0, 1, 2, 4, 8 };
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        // Make the read array bigger than the source data to make sure we
+        // read the correct values.
+        byte[] read_result = new byte[test_data.length * 2];
+
+        classUnderTest.readFully(read_result, 0, -2);
+    }
+
+    @Test(groups = "unit", expectedExceptions = IndexOutOfBoundsException.class)
+    public void testExtendedFullReadingInvalidOffset() throws Exception
+    {
+        final byte[] test_data = { 0, 0, 1, 2, 4, 8 };
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        // Make the read array bigger than the source data to make sure we
+        // read the correct values.
+        byte[] read_result = new byte[test_data.length * 2];
+
+        classUnderTest.readFully(read_result, -2, test_data.length);
+    }
+
     @Test(groups = "unit", dependsOnMethods = "testByteArrayMultiReading")
     public void testSkipBytes() throws Exception
     {
@@ -199,6 +257,18 @@ public class BlockDataInputStreamTest
         assertTrue(classUnderTest.readBoolean(), test_data[3] + " was not true");
     }
 
+    @Test(groups = "unit", expectedExceptions = IOException.class)
+    public void testReadBooleanEmptyStream() throws Exception
+    {
+        // should produce, in order, false, true, true, true
+        final byte[] test_data = { };
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        classUnderTest.readBoolean();
+    }
+
     @Test(groups = "unit")
     public void testReadByte() throws Exception
     {
@@ -212,6 +282,18 @@ public class BlockDataInputStreamTest
         {
             assertEquals(classUnderTest.readByte(), test_data[i], "Test data at index " + i + " was not correct");
         }
+    }
+
+    @Test(groups = "unit", expectedExceptions = IOException.class)
+    public void testReadByteEmptyStream() throws Exception
+    {
+        // should produce, in order, false, true, true, true
+        final byte[] test_data = { };
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        classUnderTest.readByte();
     }
 
     @Test(groups = "unit")
@@ -233,6 +315,18 @@ public class BlockDataInputStreamTest
         {
             assertEquals(classUnderTest.readUnsignedByte(), expected_result[i], "Test data at index " + i + " was not correct");
         }
+    }
+
+    @Test(groups = "unit", expectedExceptions = IOException.class)
+    public void testReadUnsignedByteEmptyStream() throws Exception
+    {
+        // should produce, in order, false, true, true, true
+        final byte[] test_data = { };
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        classUnderTest.readUnsignedByte();
     }
 
     @Test(groups = "unit")
@@ -258,6 +352,18 @@ public class BlockDataInputStreamTest
         {
             assertEquals(classUnderTest.readShort(), test_data[i], "Test data at index " + i + " was not correct");
         }
+    }
+
+    @Test(groups = "unit", expectedExceptions = IOException.class, dataProvider = "2 byte count")
+    public void testReadShortEmptyStream(int numBytes) throws Exception
+    {
+        // should produce, in order, false, true, true, true
+        final byte[] test_data = new byte[numBytes];
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        classUnderTest.readShort();
     }
 
     @Test(groups = "unit")
@@ -291,6 +397,18 @@ public class BlockDataInputStreamTest
         }
     }
 
+    @Test(groups = "unit", expectedExceptions = IOException.class, dataProvider = "2 byte count")
+    public void testReadUnsignedShortEmptyStream(int numBytes) throws Exception
+    {
+        // should produce, in order, false, true, true, true
+        final byte[] test_data = new byte[numBytes];
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        classUnderTest.readUnsignedShort();
+    }
+
     @Test(groups = "unit")
     public void testReadChar() throws Exception
     {
@@ -316,6 +434,18 @@ public class BlockDataInputStreamTest
         }
     }
 
+    @Test(groups = "unit", expectedExceptions = IOException.class)
+    public void testReadCharEmptyStream() throws Exception
+    {
+        // should produce, in order, false, true, true, true
+        final byte[] test_data = { };
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        classUnderTest.readChar();
+    }
+
     @Test(groups = "unit")
     public void testReadInt() throws Exception
     {
@@ -339,6 +469,18 @@ public class BlockDataInputStreamTest
         {
             assertEquals(classUnderTest.readInt(), test_data[i], "Test data at index " + i + " was not correct");
         }
+    }
+
+    @Test(groups = "unit", expectedExceptions = IOException.class, dataProvider = "4 byte count")
+    public void testReadIntEmptyStream(int numBytes) throws Exception
+    {
+        // should produce, in order, false, true, true, true
+        final byte[] test_data = new byte[numBytes];
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        classUnderTest.readInt();
     }
 
     @Test(groups = "unit")
@@ -394,6 +536,18 @@ public class BlockDataInputStreamTest
         }
     }
 
+    @Test(groups = "unit", expectedExceptions = IOException.class, dataProvider = "8 byte count")
+    public void testReadLongEmptyStream(int numBytes) throws Exception
+    {
+        // should produce, in order, false, true, true, true
+        final byte[] test_data = new byte[numBytes];
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        classUnderTest.readLong();
+    }
+
     @Test(groups = "unit")
     public void testReadFloat() throws Exception
     {
@@ -417,6 +571,18 @@ public class BlockDataInputStreamTest
         {
             assertEquals(classUnderTest.readFloat(), test_data[i], 0.001, "Test data at index " + i + " was not correct");
         }
+    }
+
+    @Test(groups = "unit", expectedExceptions = IOException.class, dataProvider = "4 byte count")
+    public void testReadFloatEmptyStream(int numBytes) throws Exception
+    {
+        // should produce, in order, false, true, true, true
+        final byte[] test_data = new byte[numBytes];
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        classUnderTest.readFloat();
     }
 
     @Test(groups = "unit")
@@ -447,7 +613,6 @@ public class BlockDataInputStreamTest
         }
     }
 
-
     @Test(groups = "unit")
     public void testReadDouble() throws Exception
     {
@@ -471,5 +636,107 @@ public class BlockDataInputStreamTest
         {
             assertEquals(classUnderTest.readDouble(), test_data[i], 0.001, "Test data at index " + i + " was not correct");
         }
+    }
+
+    @Test(groups = "unit", expectedExceptions = IOException.class, dataProvider = "8 byte count")
+    public void testReadDoubleEmptyStream(int numBytes) throws Exception
+    {
+        // should produce, in order, false, true, true, true
+        final byte[] test_data = new byte[numBytes];
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        classUnderTest.readDouble();
+    }
+
+    @Test(groups = "unit")
+    public void testReadUTF8() throws Exception
+    {
+        final String[] test_data = { "abcdef", "12345", "My 1nter#\u0400tes?" };
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(bos);
+
+        for(int i = 0; i < test_data.length; i++)
+            dos.writeUTF(test_data[i]);
+
+        dos.flush();
+        dos.close();
+
+        byte[] test_byte_data = bos.toByteArray();
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_byte_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        for(int i = 0; i < test_data.length; i++)
+        {
+            assertEquals(classUnderTest.readUTF(), test_data[i], "Test data at index " + i + " was not correct");
+        }
+    }
+
+    @Test(groups = "unit")
+    public void testReadLine() throws Exception
+    {
+        // ReadLine cannot deal with multibyte character implementations. Assumes basic
+        // 7-bit ASCII.
+        final String[] test_data = { "abcdef", "12345", "My 1nter#tes?" };
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintWriter dos = new PrintWriter(new OutputStreamWriter(bos));
+
+        for(int i = 0; i < test_data.length; i++)
+            dos.println(test_data[i]);
+
+        dos.flush();
+        dos.close();
+
+        byte[] test_byte_data = bos.toByteArray();
+
+        ByteArrayInputStream test_input = new ByteArrayInputStream(test_byte_data);
+        BlockDataInputStream classUnderTest = new BlockDataInputStream(test_input);
+
+        for(int i = 0; i < test_data.length; i++)
+        {
+            assertEquals(classUnderTest.readLine(), test_data[i], "Test data at index " + i + " was not correct");
+        }
+    }
+
+    @DataProvider(name = "2 byte count")
+    public Object[][] generateTest2ByteCounts()
+    {
+        return new Object[][]
+            {
+                { 0 },
+                { 1 },
+            };
+    }
+
+    @DataProvider(name = "4 byte count")
+    public Object[][] generateTest4ByteCounts()
+    {
+        return new Object[][]
+            {
+                { 0 },
+                { 1 },
+                { 2 },
+                { 3 },
+            };
+    }
+
+    @DataProvider(name = "8 byte count")
+    public Object[][] generateTest8ByteCounts()
+    {
+        return new Object[][]
+        {
+            { 0 },
+            { 1 },
+            { 2 },
+            { 3 },
+            { 4 },
+            { 5 },
+            { 6 },
+            { 7 },
+        };
     }
 }
