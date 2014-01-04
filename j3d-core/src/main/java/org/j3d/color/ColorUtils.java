@@ -243,8 +243,8 @@ public class ColorUtils
         float b = rgb[2];
 
         yuv[0] = (0.299f * r) + (0.587f * g) + (0.114f * b);
-        yuv[1] = (-0.169f * r) - (0.331f * g) + (0.5f * b);
-        yuv[2] = (0.5f * r) - (0.419f * g) - (0.081f * b);
+        yuv[1] = (b - yuv[0]) * 0.565f;
+        yuv[2] = (r - yuv[0]) * 0.713f;
     }
 
     /**
@@ -260,9 +260,9 @@ public class ColorUtils
         float u = yuv[1];
         float v = yuv[2];
 
-        rgb[0] = y + 1.140f * v;
-        rgb[1] = y - 0.394f * u - 0.581f * v;
-        rgb[2] = y + 2.028f * u;
+        rgb[0] = y + 1.403f * v;
+        rgb[1] = y - 0.344f * u - 0.714f * v;
+        rgb[2] = y + 1.770f * u;
     }
 
     /**
@@ -278,9 +278,9 @@ public class ColorUtils
         float g = rgb[1];
         float b = rgb[2];
 
-        yiq[0] = (0.299f * r) + (0.587f * g) + (0.114f * b);
-        yiq[1] = (0.596f * r) - (0.274f * g) - (0.322f * b);
-        yiq[2] = (0.212f * r) - (0.523f * g) - (0.311f * b);
+        yiq[0] = (0.299900f * r) + (0.587000f * g) + (0.114000f * b);
+        yiq[1] = (0.595716f * r) - (0.274453f * g) - (0.321264f * b);
+        yiq[2] = (0.211456f * r) - (0.522591f * g) + (0.311350f * b);
     }
 
     /**
@@ -296,8 +296,8 @@ public class ColorUtils
         float i = yiq[1];
         float q = yiq[2];
 
-        rgb[0] = y + 0.956f * i + 0.621f * q;
-        rgb[1] = y - 0.272f * i - 0.647f * q;
-        rgb[2] = y - 1.105f * i + 1.702f * q;
+        rgb[0] = y + 0.9563f * i + 0.6210f * q;
+        rgb[1] = y - 0.2721f * i - 0.6474f * q;
+        rgb[2] = y - 1.1070f * i + 1.7046f * q;
     }
 }
