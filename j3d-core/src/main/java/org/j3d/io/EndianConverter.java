@@ -54,7 +54,7 @@ public class EndianConverter
      */
     public static int convert(byte[] srcBuffer, short[] destBuffer, int srcLength, int destOffset, int destLength)
     {
-        return convert(srcBuffer, destBuffer, srcLength, destOffset, destLength, (short) 0xff);
+        return convert(srcBuffer, destBuffer, srcLength, destOffset, destLength, (short) 0xffff);
     }
 
     /**
@@ -207,9 +207,9 @@ public class EndianConverter
         for(int i = 0; i < srcLength; i += 8)
         {
             destBuffer[(i / 8) + destOffset] = (srcBuffer[i] & 0xff
-                | (srcBuffer[i + 1] << 8) & 0xff00
-                | (srcBuffer[i + 2] << 16) & 0xff0000
-                | (srcBuffer[i + 3] << 24) & 0xff000000
+                | (srcBuffer[i + 1] << 8) & 0xff00L
+                | (srcBuffer[i + 2] << 16) & 0xff0000L
+                | (srcBuffer[i + 3] << 24) & 0xff000000L
                 | (srcBuffer[i + 3] << 32) & 0xff00000000L
                 | (srcBuffer[i + 5] << 40) & 0xff0000000000L
                 | (srcBuffer[i + 6] << 48) & 0xff000000000000L
@@ -237,10 +237,10 @@ public class EndianConverter
      */
     public static int convert(int value)
     {
-        return (value >> 24) & 0xff
-            | (value >> 8) & 0xff00
-            | (value << 8) & 0xff0000
-            | value << 24;
+        return ((value >> 24) & 0x000000ff) |
+               ((value >> 8)  & 0x0000ff00) |
+               ((value << 8)  & 0x00ff0000) |
+               ((value << 24) & 0xff000000);
     }
 
     /**
@@ -251,13 +251,14 @@ public class EndianConverter
      */
     public static long convert(long value)
     {
-        return (value >> 56) & 0xff
-            | (value >> 40) & 0xff00
-            | (value >> 24) & 0xff0000
-            | (value >> 8) & 0xff000000
-            | (value << 8) & 0xff00000000L
-            | (value << 24) & 0xff00000000L
-            | (value << 56) & 0xff0000000000L;
+        return ((value >>> 56) & 0x00000000000000ffl) |
+               ((value >>> 40) & 0x000000000000ff00l) |
+               ((value >>> 24) & 0x0000000000ff0000l) |
+               ((value >>> 8)  & 0x00000000ff000000l) |
+               ((value << 8)   & 0x000000ff00000000l) |
+               ((value << 24)  & 0x0000ff0000000000l) |
+               ((value << 40)  & 0x00ff000000000000l) |
+               ((value << 56)  & 0xff00000000000000l);
     }
 
     /**
@@ -277,25 +278,20 @@ public class EndianConverter
      * <code>destBuffer</code>
      * @return number of processed bytes of srcBuffer (multiple of 4 )
      */
-    public static int convertLittleEndianToFloat
-    (
-        byte[] srcBuffer,
-        final float[] destBuffer,
-        int srcLength,
-        int destOffset,
-        int destLength
-    )
+    public static int convertLittleEndianToFloat(byte[] srcBuffer,
+                                                 float[] destBuffer,
+                                                 int srcLength,
+                                                 int destOffset,
+                                                 int destLength)
     {
         srcLength = Math.min(destLength * 4, (srcLength / 4) * 4);
         for(int i = 0; i < srcLength; i += 4)
         {
-            destBuffer[(i / 4) + destOffset] = Float.intBitsToFloat
-                (
-                    srcBuffer[i] & 0xff
-                        | (srcBuffer[i + 1] << 8) & 0xff00
-                        | (srcBuffer[i + 2] << 16) & 0xff0000
-                        | (srcBuffer[i + 3] << 24)
-                );
+            destBuffer[(i / 4) + destOffset] =
+                Float.intBitsToFloat( (srcBuffer[i] & 0xff) |
+                                     ((srcBuffer[i + 1] << 8) & 0xff00) |
+                                     ((srcBuffer[i + 2] << 16) & 0xff0000) |
+                                      (srcBuffer[i + 3] << 24));
         }
         return srcLength;
     }
@@ -326,17 +322,16 @@ public class EndianConverter
         srcLength = Math.min(destLength * 8, (srcLength / 8) * 8);
         for(int i = 0; i < srcLength; i += 8)
         {
-            destBuffer[(i / 8) + destOffset] = Double.longBitsToDouble
-                (
-                    srcBuffer[i] & 0xff
-                        | (srcBuffer[i + 1] << 8) & 0xff00
-                        | (srcBuffer[i + 2] << 16) & 0xff0000
-                        | (srcBuffer[i + 3] << 24) & 0xff000000
-                        | (srcBuffer[i + 3] << 32) & 0xff00000000L
-                        | (srcBuffer[i + 5] << 40) & 0xff0000000000L
-                        | (srcBuffer[i + 6] << 48) & 0xff000000000000L
-                        | (srcBuffer[i + 7] << 56)
-                );
+            long longBits =  ((long)srcBuffer[i]            & 0xffl) |
+                            (((long)srcBuffer[i + 1] << 8)  & 0xff00l) |
+                            (((long)srcBuffer[i + 2] << 16) & 0xff0000l) |
+                            (((long)srcBuffer[i + 3] << 24) & 0xff000000l) |
+                            (((long)srcBuffer[i + 4] << 32) & 0xff00000000l) |
+                            (((long)srcBuffer[i + 5] << 40) & 0xff0000000000l) |
+                            (((long)srcBuffer[i + 6] << 48) & 0xff000000000000l) |
+                            (((long)srcBuffer[i + 7] << 56) & 0xff00000000000000l);
+
+            destBuffer[(i / 8) + destOffset] = Double.longBitsToDouble(longBits);
         }
         return srcLength;
     }
