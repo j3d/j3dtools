@@ -160,10 +160,7 @@ System.out.println("Reqd key " + key);
 System.out.println("Fraction is " + fraction);
 System.out.println("x " + p0 + " dist " + dist);
 */
-                    if (fraction <= 0.5)
-                        ret_val = p0;
-                    else
-                       ret_val = p1;
+                        ret_val = (int)(p0 + (p1 - p0) * fraction);
                     break;
 
                 case STEP:

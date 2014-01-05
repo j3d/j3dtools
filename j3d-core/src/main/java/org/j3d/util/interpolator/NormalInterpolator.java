@@ -169,12 +169,14 @@ public class NormalInterpolator extends Interpolator
             normalCount = valueLength/3; // discrete vectors
 
             // allocate array of angles
-            if (angles == null || angles.length != normalCount) {
+            if (angles == null || angles.length != normalCount)
+            {
                 angles = new float[normalCount];
             }
 
             int vi=0;
-            for (i=0;i<normalCount;i++) {
+            for (i=0;i<normalCount;i++)
+            {
                 // dot product: cos(angle) = ax*bx+ay*by+az*bz
                 float dot = 
                     keyValues[index][vi+0] * keyValues[index+1][vi+0] +
@@ -211,12 +213,9 @@ public class NormalInterpolator extends Interpolator
             switch(interpolationType)
             {
                 case LINEAR:
-                    float p1[] = keyValues[loc + 1];
-                    float p0[] = keyValues[loc];
                     float fraction = 0;
                     float prev_key = keys[loc];
                     float next_key = keys[loc + 1];
-                    float diff;
 
                     if(next_key != prev_key)
                         fraction = (key - prev_key) / (next_key - prev_key);
@@ -224,8 +223,9 @@ public class NormalInterpolator extends Interpolator
                     computeAngles(loc);
 
                     int i;
-                    int vi=0;  /* index into sets of x,y,z */
-                    for (i=0;i<normalCount;i++) {
+                    int vi = 0;  /* index into sets of x,y,z */
+                    for (i = 0; i < normalCount; i++)
+                    {
                         // scalara and scalarb are the contributions
                         // from normal[i] and normal[i+1] respectively.
                         float scalara = 
@@ -245,7 +245,8 @@ public class NormalInterpolator extends Interpolator
 
                         float length = (float)Math.sqrt(x*x+y*y+z*z);
 
-                        if (length==0) {
+                        if(length == 0)
+                        {
                             // if length is 0, normals are 180 degrees
                             // apart, we cannot normalize.  Instead we
                             // snap to the closest of the end points.
@@ -256,13 +257,15 @@ public class NormalInterpolator extends Interpolator
                             System.arraycopy(keyValues[src],vi,
                                              sharedVector,vi,
                                              3);
-                        } else {
+                        }
+                        else
+                        {
                             // store normalized vector
                             sharedVector[vi+0] = x / length;
                             sharedVector[vi+1] = y / length;
                             sharedVector[vi+2] = z / length;
                         }
-                        vi+=3;
+                        vi += 3;
                     }
                     break;
 
@@ -305,23 +308,23 @@ public class NormalInterpolator extends Interpolator
 
     public String toString()
     {
-        StringBuffer stringbuffer = new StringBuffer("<Normal interpolator>\n");
-        stringbuffer.append("First normal for each key\n");
+        StringBuilder buf = new StringBuilder("<Normal interpolator>\n");
+        buf.append("First normal for each key\n");
         for(int i = 0; i < currentSize; i++)
         {
-            stringbuffer.append(i);
-            stringbuffer.append(" key: ");
-            stringbuffer.append(keys[i]);
-            stringbuffer.append(" x: ");
-            stringbuffer.append(keyValues[i][0]);
-            stringbuffer.append(" y: ");
-            stringbuffer.append(keyValues[i][1]);
-            stringbuffer.append(" z: ");
-            stringbuffer.append(keyValues[i][2]);
-            stringbuffer.append("\n");
+            buf.append(i);
+            buf.append(" key: ");
+            buf.append(keys[i]);
+            buf.append(" x: ");
+            buf.append(keyValues[i][0]);
+            buf.append(" y: ");
+            buf.append(keyValues[i][1]);
+            buf.append(" z: ");
+            buf.append(keyValues[i][2]);
+            buf.append("\n");
         }
 
-        stringbuffer.append("</Normal interpolator>");
-        return stringbuffer.toString();
+        buf.append("</Normal interpolator>");
+        return buf.toString();
     }
 }
