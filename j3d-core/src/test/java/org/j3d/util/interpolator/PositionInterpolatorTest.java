@@ -218,8 +218,8 @@ public class PositionInterpolatorTest
 
         float mid_key = keys[0] + ((keys[1] - keys[0]) / 2);
         float x_val = values[0][0] + ((values[1][0] - values[0][0]) / 2);
-        float y_val = values[0][0] + ((values[1][1] - values[0][1]) / 2);
-        float z_val = values[0][0] + ((values[1][2] - values[0][2]) / 2);
+        float y_val = values[0][1] + ((values[1][1] - values[0][1]) / 2);
+        float z_val = values[0][2] + ((values[1][2] - values[0][2]) / 2);
 
         float[] vals = interpolator.floatValue(mid_key);
 
@@ -265,8 +265,8 @@ public class PositionInterpolatorTest
 
         float mid_key = keys[0] + ((keys[1] - keys[0]) / 2);
         double x_val = values[0][0] + ((values[1][0] - values[0][0]) / 2);
-        double y_val = values[0][0] + ((values[1][1] - values[0][1]) / 2);
-        double z_val = values[0][0] + ((values[1][2] - values[0][2]) / 2);
+        double y_val = values[0][1] + ((values[1][1] - values[0][1]) / 2);
+        double z_val = values[0][2] + ((values[1][2] - values[0][2]) / 2);
 
         Point3d vals = interpolator.pointValue(mid_key);
 

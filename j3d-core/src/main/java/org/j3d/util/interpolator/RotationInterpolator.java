@@ -161,6 +161,9 @@ public class RotationInterpolator extends Interpolator
      */
     public void addKeyFrame(float key, AxisAngle4d pt)
     {
+        if(pt == null)
+            throw new IllegalArgumentException("Angle must not be null");
+
         addKeyFrame(key, (float)pt.x, (float)pt.y, (float)pt.z, (float)pt.angle);
     }
 

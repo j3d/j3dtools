@@ -361,14 +361,23 @@ public class ColorInterpolator extends Interpolator
                     float x0 = p0[0];
                     float x1 = p1[0];
 
+                    // just in case we get two keys the same
+                    float prev_key = keys[loc];
+                    float found_key = keys[loc + 1];
+
+                    float fraction = 0;
+
+                    if(found_key != prev_key)
+                        fraction = (key - prev_key) / (found_key - prev_key);
+
                     if(colorSpace == HSV_SPACE)
                     {
                         // if both are NaN do nothing
-                        if(Float.isNaN(x0) && !Float.isNaN(x1))
+                        if(fraction != 0.0 && Float.isNaN(x0) && !Float.isNaN(x1))
                         {
                             x0 = x1;
                         }
-                        else if(!Float.isNaN(x0) && Float.isNaN(x1))
+                        else if(fraction != 1.0 && !Float.isNaN(x0) && Float.isNaN(x1))
                         {
                             x1 = x0;
                         }
@@ -378,15 +387,6 @@ public class ColorInterpolator extends Interpolator
                     float y_dist = p1[1] - p0[1];
                     float z_dist = p1[2] - p0[2];
                     float w_dist = p1[3] - p0[3];
-
-                    float fraction = 0;
-
-                    // just in case we get two keys the same
-                    float prev_key = keys[loc];
-                    float found_key = keys[loc + 1];
-
-                    if(found_key != prev_key)
-                        fraction = (key - prev_key) / (found_key - prev_key);
 
                     sharedVector[0] = x0 + fraction * x_dist;
                     sharedVector[1] = p0[1] + fraction * y_dist;
