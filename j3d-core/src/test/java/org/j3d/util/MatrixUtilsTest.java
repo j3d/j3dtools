@@ -61,6 +61,42 @@ public class MatrixUtilsTest
         assertEquals(classUnderTest.getUniformScale(testMatrix), 1.0, 0.0001, "Incorrect scale for identity matrix");
     }
 
+    @Test(groups = "unit")
+    public void testProjectionMatrix() throws Exception
+    {
+        final double LEFT = -2;
+        final double RIGHT = 2;
+        final double TOP = 2;
+        final double BOTTOM = -2;
+        final double NEAR = -0.1;
+        final double FAR = -100;
+
+        Matrix4d result = new Matrix4d();
+
+        MatrixUtils classUnderTest = new MatrixUtils();
+        classUnderTest.generateProjectionMatrix(LEFT, RIGHT, TOP, BOTTOM, NEAR, FAR, result);
+
+        assertEquals(result.m00, (2 * NEAR) / (RIGHT - LEFT), 0.001, "Invalid 0,0 calc");
+        assertEquals(result.m01, 0.0, "Invalid 0,1 calc");
+        assertEquals(result.m02, 0.0, "Invalid 0,2 calc");
+        assertEquals(result.m03, 0.0, "Invalid 0,3 calc");
+
+        assertEquals(result.m10, 0.0, "Invalid 1,0 calc");
+        assertEquals(result.m11, (2 * NEAR) / (TOP - BOTTOM), 0.001, "Invalid 1,1 calc");
+        assertEquals(result.m12, 0.0, "Invalid 1,2 calc");
+        assertEquals(result.m13, 0.0, "Invalid 1,3 calc");
+
+        assertEquals(result.m20, (RIGHT + LEFT) / (RIGHT - LEFT), 0.001, "Invalid 2,0 calc");
+        assertEquals(result.m21, (TOP + BOTTOM) / (TOP - BOTTOM), 0.001, "Invalid 2,1 calc");
+        assertEquals(result.m22, -(FAR + NEAR) / (FAR - NEAR), 0.001, "Invalid 2,2 calc");
+        assertEquals(result.m23, -1.0, "Invalid 2,3 calc");
+
+        assertEquals(result.m30, 0.0, "Invalid 3,0 calc");
+        assertEquals(result.m31, 0.0, "Invalid 3,1 calc");
+        assertEquals(result.m32, (-2 * FAR * NEAR) / (FAR - NEAR), 0.001, "Invalid 3,2 calc");
+        assertEquals(result.m33, 0.0, "Invalid 3,3 calc");
+    }
+
     /**
      * Test the SVD decomposition of a matrix. Uses the same test as in the
      * lower level SVD class test, but wraps the matrix stuff around it
@@ -164,7 +200,8 @@ public class MatrixUtilsTest
     }
 
     @Test(groups = "unit")
-    public void testRotateXIdentity() throws Exception {
+    public void testRotateXIdentity() throws Exception
+    {
         Matrix4d testMatrix = new Matrix4d();
         testMatrix.setIdentity();
 
@@ -230,7 +267,8 @@ public class MatrixUtilsTest
     }
 
     @Test(groups = "unit")
-    public void testRotateYIdentity() throws Exception {
+    public void testRotateYIdentity() throws Exception
+    {
         Matrix4d testMatrix = new Matrix4d();
         testMatrix.setIdentity();
 
@@ -295,7 +333,8 @@ public class MatrixUtilsTest
     }
 
     @Test(groups = "unit")
-    public void testRotateZIdentity() throws Exception {
+    public void testRotateZIdentity() throws Exception
+    {
         Matrix4d testMatrix = new Matrix4d();
         testMatrix.setIdentity();
 

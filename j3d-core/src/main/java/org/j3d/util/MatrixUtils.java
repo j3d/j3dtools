@@ -157,6 +157,67 @@ public class MatrixUtils
     }
 
     /**
+     * Generate a projection matrix using the given configuration, using OpenGL-style
+     * calculation. The calculation leaves it in the result matrix in the expected
+     * row-major form of Matrix4d, so if you are going to use this in an OGL call,
+     * make sure you transpose it first. Assumes the usual location of on the origin
+     * with right-handed coordinate system, looking down the -Z axis.
+     *
+     * @param left The value of the left edge of the view plane (-X axis)
+     * @param right The value of the right edge of the view plane (+X axis)
+     * @param top The value of the top edge of the view plane (Y axis)
+     * @param bottom The value of the bottom edge of the view plane (-Y axis)
+     * @param near The value of the near distance of the view plane (-Z axis)
+     * @param far The value of the far distance of the view plane (-Z axis)
+     * @param projectionMatrix
+     */
+    public void generateProjectionMatrix(double left, double right, double top, double bottom, double near, double far,
+                                         Matrix4d projectionMatrix)
+    {
+        double x, y;
+        double a, b, c, d;
+
+        x = (2.0 * near) / (right - left);
+        y = (2.0 * near) / (top - bottom);
+        a = (right + left) / (right - left);
+        b = (top + bottom) / (top - bottom);
+        c = -(far + near) / ( far - near);
+        d = -(2.0 * far * near) / (far - near);
+
+        //////////////////////////////////////////////
+        // rem: clamping to the limit as farval approaches infinity
+        // see: http://www.terathon.com/gdc07_lengyel.ppt
+        if (d < -Float.MAX_VALUE)
+        {
+            d = -2;
+        }
+        //////////////////////////////////////////////
+
+        // This is in row-form like our Matrix4d expects. Typical OGL documentation
+        // has this in column-form, so don't forget to transpose if you're dropping
+        // this into an openGL glMatrix() call.
+        projectionMatrix.m00 = x;
+        projectionMatrix.m10 = 0;
+        projectionMatrix.m20 = a;
+        projectionMatrix.m30 = 0;
+
+        projectionMatrix.m01 = 0;
+        projectionMatrix.m11 = y;
+        projectionMatrix.m21 = b;
+        projectionMatrix.m31 = 0;
+
+        projectionMatrix.m02 = 0;
+        projectionMatrix.m12 = 0;
+        projectionMatrix.m22 = c;
+        projectionMatrix.m32 = d;
+
+        projectionMatrix.m03 = 0;
+        projectionMatrix.m13 = 0;
+        projectionMatrix.m23 = -1;
+        projectionMatrix.m33 = 0;
+    }
+
+    /**
      * Get the uniform scale component of the given matrix. Performs a decomposition and
      * returns the maximum of the scale values across the 3 directional components.
      *
@@ -528,7 +589,7 @@ public class MatrixUtils
         // Angle is  cos(theta) = (A / |A|) . (B / |B|)
         // A is the -Z vector. B is ev? values that need to be normalised first
         double n = evX * evX + evY * evY + evZ * evZ;
-        if(n != 0 || n != 1)
+        if(n != 0 && n != 1)
         {
             n = 1 / Math.sqrt(n);
             evX *= n;
