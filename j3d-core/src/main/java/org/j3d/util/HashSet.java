@@ -599,6 +599,7 @@ public class HashSet<T>
      * @param o Object to be compared for equality with this set.
      * @return true if the specified object is equal to this set.
      */
+    @Override
     public boolean equals(Object o)
     {
         if(o == this)
@@ -646,6 +647,7 @@ public class HashSet<T>
      *
      * @return the hash code value for this set.
      */
+    @Override
     public int hashCode()
     {
         int h = 0;
@@ -679,6 +681,7 @@ public class HashSet<T>
      *
      * @return a string representation of this collection.
      */
+    @Override
     public String toString()
     {
         StringBuilder buf = new StringBuilder();

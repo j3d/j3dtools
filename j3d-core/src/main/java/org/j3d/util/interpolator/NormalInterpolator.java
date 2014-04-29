@@ -306,6 +306,7 @@ public class NormalInterpolator extends Interpolator
         }
     }
 
+    @Override
     public String toString()
     {
         StringBuilder buf = new StringBuilder("<Normal interpolator>\n");

@@ -312,6 +312,7 @@ System.out.println("z " + p0[2] + " z_dist " + z_dist);
      *
      * @return A nicely formatted string representation
      */
+    @Override
     public String toString()
     {
         StringBuffer buf = new StringBuffer("<position interpolator>\n");

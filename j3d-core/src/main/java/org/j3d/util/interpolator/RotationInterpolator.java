@@ -415,6 +415,7 @@ public class RotationInterpolator extends Interpolator
      *
      * @return A nicely formatted string representation
      */
+    @Override
     public String toString()
     {
         StringBuilder buf = new StringBuilder("<rotation interpolator>\n");

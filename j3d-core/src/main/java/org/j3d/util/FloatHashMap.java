@@ -14,7 +14,6 @@ package org.j3d.util;
 
 // External imports
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Arrays;
 
 // Local imports

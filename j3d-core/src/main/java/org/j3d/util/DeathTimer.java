@@ -65,7 +65,8 @@ public class DeathTimer extends Thread
      * TRUE.  Shutdown the application if {@link #waitTime} is
      * exceeded.
      */
-    public void run() 
+    @Override
+    public void run()
     {
         waitTime += System.currentTimeMillis();
 

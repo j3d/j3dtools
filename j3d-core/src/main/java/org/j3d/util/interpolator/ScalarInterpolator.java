@@ -201,6 +201,7 @@ public class ScalarInterpolator extends Interpolator
      *
      * @return A nicely formatted string representation
      */
+    @Override
     public String toString()
     {
         StringBuilder buf = new StringBuilder("<scalar interpolator>\n");

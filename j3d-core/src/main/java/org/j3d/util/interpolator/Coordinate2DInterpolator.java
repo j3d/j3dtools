@@ -211,6 +211,7 @@ public class Coordinate2DInterpolator extends Interpolator
         }
     }
 
+    @Override
     public String toString()
     {
         StringBuffer stringbuffer = new StringBuffer("<Coordinate interpolator>\n");

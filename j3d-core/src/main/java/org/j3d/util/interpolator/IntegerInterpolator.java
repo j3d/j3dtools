@@ -213,6 +213,7 @@ System.out.println("x " + p0 + " dist " + dist);
      *
      * @return A nicely formatted string representation
      */
+    @Override
     public String toString()
     {
         StringBuffer buf = new StringBuffer("<integer interpolator>\n");

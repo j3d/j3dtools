@@ -74,6 +74,7 @@ class ImageGenerator implements ImageConsumer
      *
      * @param status The status of the completion
      */
+    @Override
     public void imageComplete(int status)
     {
         if(status == STATICIMAGEDONE ||
@@ -97,6 +98,7 @@ class ImageGenerator implements ImageConsumer
      *
      * @param model The model to use
      */
+    @Override
     public void setColorModel(ColorModel model)
     {
         colorModel = model;
@@ -109,6 +111,7 @@ class ImageGenerator implements ImageConsumer
      * @param w The width of the source image
      * @param h The height of the source image
      */
+    @Override
     public void setDimensions(int w, int h)
     {
         width = w;
@@ -122,6 +125,7 @@ class ImageGenerator implements ImageConsumer
      *
      * @param flag The hints
      */
+    @Override
     public void setHints(int flags)
     {
     }
@@ -138,6 +142,7 @@ class ImageGenerator implements ImageConsumer
      * @param offset The offset into the source array to copy from
      * @param scansize The number of pixel values between rows
      */
+    @Override
     public void setPixels(int x,
         int y,
         int w,
@@ -171,6 +176,7 @@ class ImageGenerator implements ImageConsumer
      * @param offset The offset into the source array to copy from
      * @param scansize The number of pixel values between rows
      */
+    @Override
     public void setPixels(int x,
         int y,
         int w,
@@ -191,6 +197,7 @@ class ImageGenerator implements ImageConsumer
      *
      * @param props The map of properties for this image
      */
+    @Override
     public void setProperties(Hashtable props)
     {
         properties = props;

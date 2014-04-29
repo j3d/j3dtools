@@ -81,6 +81,7 @@ public class SAXErrorHandler implements ErrorHandler
      * @param spe The exception to be processed
      * @throws SAXException Never thrown
      */
+    @Override
     public void warning(SAXParseException spe) throws SAXException
     {
         System.out.println("Warning: " + getParseExceptionInfo(spe));
@@ -93,6 +94,7 @@ public class SAXErrorHandler implements ErrorHandler
      * @param spe The exception to be processed
      * @throws SAXException A wrapped version of the original exception
      */
+    @Override
     public void error(SAXParseException spe) throws SAXException
     {
         String message = "Error: " + getParseExceptionInfo(spe);
@@ -106,6 +108,7 @@ public class SAXErrorHandler implements ErrorHandler
      * @param spe The exception to be processed
      * @throws SAXException A wrapped version of the original exception
      */
+    @Override
     public void fatalError(SAXParseException spe) throws SAXException
     {
         String message = "Fatal Error: " + getParseExceptionInfo(spe);
