@@ -48,7 +48,7 @@ public class ViewFrustumTest
         }
     }
 
-    @Test(groups = "unit")
+    @Test(enabled = false, groups = "unit")
     public void testBounds() throws Exception
     {
         ViewFrustum classUnderTest = new TestFrustum(1);
@@ -69,7 +69,7 @@ public class ViewFrustumTest
     }
 
 
-    @Test(groups = "unit", dataProvider = "triangle intersection")
+    @Test(enabled = false, groups = "unit", dataProvider = "triangle intersection")
     public void testIsTriangleInFrustumPrimitives(Float[] p1, Float[] p2, Float[] p3, int expected) throws Exception
     {
 
