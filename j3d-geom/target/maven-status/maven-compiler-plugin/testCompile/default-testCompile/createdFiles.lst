@@ -1,0 +1,6 @@
+org/j3d/geom/BoxGeneratorTest.class
+org/j3d/geom/TorusGeneratorTest.class
+org/j3d/geom/ConeGeneratorTest.class
+org/j3d/geom/CylinderGeneratorTest.class
+org/j3d/geom/SphereGeneratorTest.class
+org/j3d/geom/SpringGeneratorTest.class

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="1" passed="1">
+  <reporter-output>
+  </reporter-output>
+  <suite name="org.j3d.ui.image.BaseJPEGImageObserverTest" duration-ms="149" started-at="2013-12-23T11:46:12Z" finished-at="2013-12-23T11:46:12Z">
+    <groups>
+      <group name="unit">
+        <method signature="BaseJPEGImageObserverTest.testBasicConstruction()[pri:0, instance:org.j3d.ui.image.BaseJPEGImageObserverTest@1dc58fb9]" name="testBasicConstruction" class="org.j3d.ui.image.BaseJPEGImageObserverTest"/>
+      </group> <!-- unit -->
+    </groups>
+    <test name="Command line test" duration-ms="149" started-at="2013-12-23T11:46:12Z" finished-at="2013-12-23T11:46:12Z">
+      <class name="org.j3d.ui.image.BaseJPEGImageObserverTest">
+        <test-method status="PASS" signature="testBasicConstruction()[pri:0, instance:org.j3d.ui.image.BaseJPEGImageObserverTest@1dc58fb9]" name="testBasicConstruction" duration-ms="139" started-at="2013-12-23T22:46:12Z" finished-at="2013-12-23T22:46:12Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- testBasicConstruction -->
+      </class> <!-- org.j3d.ui.image.BaseJPEGImageObserverTest -->
+    </test> <!-- Command line test -->
+  </suite> <!-- org.j3d.ui.image.BaseJPEGImageObserverTest -->
+</testng-results>

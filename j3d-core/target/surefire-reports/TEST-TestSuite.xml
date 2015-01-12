@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="TestSuite" time="0.07" tests="255" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib"/>
+    <property name="java.vm.version" value="23.5-b02"/>
+    <property name="user.country.format" value="AU"/>
+    <property name="gopherProxySet" value="false"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="java.vendor.url" value="http://java.oracle.com/"/>
+    <property name="path.separator" value=":"/>
+    <property name="guice.disable.misplaced.annotation.check" value="true"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="user.dir" value="/Users/justin/Development/code/j3dtools"/>
+    <property name="java.runtime.version" value="1.7.0_09-b05"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.CGraphicsEnvironment"/>
+    <property name="java.endorsed.dirs" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/endorsed"/>
+    <property name="os.arch" value="x86_64"/>
+    <property name="java.io.tmpdir" value="/var/folders/nm/1pp2nq0n05nbnd0j3j_frvkh0000gn/T/"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="classworlds.conf" value="/usr/local/maven/apache-maven-3.1.1/bin/m2.conf"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/Users/justin/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.class.version" value="51.0"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="os.version" value="10.9"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="user.home" value="/Users/justin"/>
+    <property name="user.timezone" value="Australia/Sydney"/>
+    <property name="java.awt.printerjob" value="sun.lwawt.macosx.CPrinterJob"/>
+    <property name="java.specification.version" value="1.7"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="user.name" value="justin"/>
+    <property name="java.class.path" value="/usr/local/maven/apache-maven-3.1.1/boot/plexus-classworlds-2.5.1.jar"/>
+    <property name="org.slf4j.simpleLogger.defaultLogLevel" value="info"/>
+    <property name="java.vm.specification.version" value="1.7"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre"/>
+    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher install"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="user.language" value="en"/>
+    <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.version" value="1.7.0_09"/>
+    <property name="java.ext.dirs" value="/Users/justin/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java"/>
+    <property name="sun.boot.class.path" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/JObjC.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/classes"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="maven.home" value="/usr/local/maven/apache-maven-3.1.1"/>
+    <property name="file.separator" value="/"/>
+    <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="sun.cpu.isalist" value=""/>
+  </properties>
+  <testcase name="testBasicConstruction" classname="org.j3d.color.Color4bTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.color.Color4bTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.color.Color4bTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.color.Color4bTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.color.Color4bTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.color.Color4bTest" time="0.001"/>
+  <testcase name="testHashCode" classname="org.j3d.color.Color4bTest" time="0"/>
+  <testcase name="testNotEqualsToOther" classname="org.j3d.color.Color4bTest" time="0"/>
+  <testcase name="testSet" classname="org.j3d.color.Color4bTest" time="0"/>
+  <testcase name="testBasicConstruction" classname="org.j3d.color.Color4fTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.color.Color4fTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.color.Color4fTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.color.Color4fTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.color.Color4fTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.color.Color4fTest" time="0"/>
+  <testcase name="testHashCode" classname="org.j3d.color.Color4fTest" time="0.001"/>
+  <testcase name="testNotEqualsToOther" classname="org.j3d.color.Color4fTest" time="0"/>
+  <testcase name="testSet" classname="org.j3d.color.Color4fTest" time="0"/>
+  <testcase name="testClamping" classname="org.j3d.util.interpolator.Coordinate2DInterpolatorTest" time="0.001"/>
+  <testcase name="testCreateFloat" classname="org.j3d.util.interpolator.Coordinate2DInterpolatorTest" time="0"/>
+  <testcase name="testInvalidInsertLessThan2Values" classname="org.j3d.util.interpolator.Coordinate2DInterpolatorTest" time="0"/>
+  <testcase name="testInvalidInsertNotMult2" classname="org.j3d.util.interpolator.Coordinate2DInterpolatorTest" time="0"/>
+  <testcase name="testInvalidInsertNullValues" classname="org.j3d.util.interpolator.Coordinate2DInterpolatorTest" time="0"/>
+  <testcase name="testInvalidInsertZeroLengthValues" classname="org.j3d.util.interpolator.Coordinate2DInterpolatorTest" time="0"/>
+  <testcase name="testKeyGenFloat" classname="org.j3d.util.interpolator.Coordinate2DInterpolatorTest" time="0.001"/>
+  <testcase name="testValueInsertFloat" classname="org.j3d.util.interpolator.Coordinate2DInterpolatorTest" time="0"/>
+  <testcase name="testClamping" classname="org.j3d.util.interpolator.CoordinateInterpolatorTest" time="0.001"/>
+  <testcase name="testCreateFloat" classname="org.j3d.util.interpolator.CoordinateInterpolatorTest" time="0"/>
+  <testcase name="testInvalidInsertLessThan3Values" classname="org.j3d.util.interpolator.CoordinateInterpolatorTest" time="0"/>
+  <testcase name="testInvalidInsertNotMutl3" classname="org.j3d.util.interpolator.CoordinateInterpolatorTest" time="0"/>
+  <testcase name="testInvalidInsertNullValues" classname="org.j3d.util.interpolator.CoordinateInterpolatorTest" time="0"/>
+  <testcase name="testInvalidInsertZeroLengthValues" classname="org.j3d.util.interpolator.CoordinateInterpolatorTest" time="0"/>
+  <testcase name="testKeyGenFloat" classname="org.j3d.util.interpolator.CoordinateInterpolatorTest" time="0"/>
+  <testcase name="testValueInsertFloat" classname="org.j3d.util.interpolator.CoordinateInterpolatorTest" time="0"/>
+  <testcase name="testAddResourceNoAppSet" classname="org.j3d.util.I18nManagerTest" time="0.016"/>
+  <testcase name="testBasicSetup" classname="org.j3d.util.I18nManagerTest" time="0"/>
+  <testcase name="testInvalidCountryLength" classname="org.j3d.util.I18nManagerTest" time="0.001"/>
+  <testcase name="testInvalidLanguage" classname="org.j3d.util.I18nManagerTest" time="0"/>
+  <testcase name="testMultiFileResourceHandling" classname="org.j3d.util.I18nManagerTest" time="0.005"/>
+  <testcase name="testSetLanguage" classname="org.j3d.util.I18nManagerTest" time="0"/>
+  <testcase name="testBasicConstruction" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testClear" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testEmptyMatrixDeterminant" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testHashCode" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testIdentityMatrixDeterminant" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testMatrixDeterminant" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testMulMatrix1Null" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testMulMatrix2Null" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testNotEqualsToOther" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testSet" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testSetAxisAngleWithNull" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testSetAxisAngleZeroLength" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testSetIdentity" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testSetMatrixWithNull" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testSetVector3" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testSetVector3WithNull" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testSetVector4" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testSetVector4WithNull" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransformPoint3V1Null" classname="org.j3d.maths.vector.Matrix4dTest" time="0.004"/>
+  <testcase name="testTransformPoint4V2Null" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testTransformVectorV1Null" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransformVectorV2Null" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTranspose" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testTransposeNull" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransposeSelf" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransformPoint4V1Null" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransformPoint3V2Null" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testBasicConstruction" classname="org.j3d.maths.vector.Point2dTest" time="0"/>
+  <testcase name="testDistance" classname="org.j3d.maths.vector.Point2dTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point2dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point2dTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point2dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point2dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point2dTest" time="0"/>
+  <testcase name="testHashCode" classname="org.j3d.maths.vector.Point2dTest" time="0"/>
+  <testcase name="testNotEqualsToOther" classname="org.j3d.maths.vector.Point2dTest" time="0"/>
+  <testcase name="testSet" classname="org.j3d.maths.vector.Point2dTest" time="0"/>
+  <testcase name="testBasicConstruction" classname="org.j3d.maths.vector.Point3dTest" time="0"/>
+  <testcase name="testDistance" classname="org.j3d.maths.vector.Point3dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point3dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point3dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point3dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point3dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point3dTest" time="0.001"/>
+  <testcase name="testHashCode" classname="org.j3d.maths.vector.Point3dTest" time="0"/>
+  <testcase name="testNotEqualsToOther" classname="org.j3d.maths.vector.Point3dTest" time="0"/>
+  <testcase name="testSet" classname="org.j3d.maths.vector.Point3dTest" time="0"/>
+  <testcase name="testClamping" classname="org.j3d.util.interpolator.PositionInterpolatorTest" time="0.001"/>
+  <testcase name="testCreateFloat" classname="org.j3d.util.interpolator.PositionInterpolatorTest" time="0"/>
+  <testcase name="testCreatePoint" classname="org.j3d.util.interpolator.PositionInterpolatorTest" time="0"/>
+  <testcase name="testKeyGenFloat" classname="org.j3d.util.interpolator.PositionInterpolatorTest" time="0"/>
+  <testcase name="testKeyGenPoint" classname="org.j3d.util.interpolator.PositionInterpolatorTest" time="0"/>
+  <testcase name="testValueInsertFloat" classname="org.j3d.util.interpolator.PositionInterpolatorTest" time="0.001"/>
+  <testcase name="testValueInsertPoint" classname="org.j3d.util.interpolator.PositionInterpolatorTest" time="0"/>
+  <testcase name="testBasicConstruction" classname="org.j3d.maths.vector.Quat4dTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Quat4dTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testHashCode" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testInterpolate" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testInterpolateQ1Null" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testInterpolateQ2Null" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testNegate" classname="org.j3d.maths.vector.Quat4dTest" time="0.001"/>
+  <testcase name="testNormalise" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testNormaliseZeroLength" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testNotEqualsToOther" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testSet" classname="org.j3d.maths.vector.Quat4dTest" time="0"/>
+  <testcase name="testClamping" classname="org.j3d.util.interpolator.ScalarInterpolatorTest" time="0"/>
+  <testcase name="testCreate" classname="org.j3d.util.interpolator.ScalarInterpolatorTest" time="0"/>
+  <testcase name="testKeyGenLinear" classname="org.j3d.util.interpolator.ScalarInterpolatorTest" time="0"/>
+  <testcase name="testKeyGenStep" classname="org.j3d.util.interpolator.ScalarInterpolatorTest" time="0"/>
+  <testcase name="testValueInsert" classname="org.j3d.util.interpolator.ScalarInterpolatorTest" time="0"/>
+  <testcase name="testBasicConstruction" classname="org.j3d.maths.vector.SingularValueDecompositionTest" time="0"/>
+  <testcase name="testIdentityDecomposition" classname="org.j3d.maths.vector.SingularValueDecompositionTest" time="0"/>
+  <testcase name="testRotationOnlyDecomposition" classname="org.j3d.maths.vector.SingularValueDecompositionTest" time="0"/>
+  <testcase name="testScaleOnlyDecomposition" classname="org.j3d.maths.vector.SingularValueDecompositionTest" time="0"/>
+  <testcase name="testScaleRotateDecomposition" classname="org.j3d.maths.vector.SingularValueDecompositionTest" time="0"/>
+  <testcase name="testAddVectorV1Null" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVectorWithSelf" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVectorWithSelf" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVectorWithSelf" classname="org.j3d.maths.vector.Vector3dTest" time="0.001"/>
+  <testcase name="testAddVectorWithSelf" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVectorWithSelf" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVectorWithSelf" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVectorWithSelf" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVectorWithSelf" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVectorWithSelf" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testDotNull" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubPointV1Null" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVector" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0.001"/>
+  <testcase name="testSubPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSet" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testNormaliseZeroLength" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddPointV2Null" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testCrossV1Null" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testBasicConstruction" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0.001"/>
+  <testcase name="testAddPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddPoint" classname="org.j3d.maths.vector.Vector3dTest" time="0.001"/>
+  <testcase name="testNormalise" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testDot" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testDot" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testDot" classname="org.j3d.maths.vector.Vector3dTest" time="0.001"/>
+  <testcase name="testNotEqualsToOther" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testScale" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVectorV2Null" classname="org.j3d.maths.vector.Vector3dTest" time="0.001"/>
+  <testcase name="testLength" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testHashCode" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Vector3dTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddVectorV2Null" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testCrossV2Null" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubPointV2Null" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testSubVectorV1Null" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testAddPointV1Null" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testCrossProduct" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testCrossProduct" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testCrossProduct" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testCrossProduct" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testCrossProduct" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testCrossProduct" classname="org.j3d.maths.vector.Vector3dTest" time="0"/>
+  <testcase name="testDot" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testDot" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testDot" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testDotNull" classname="org.j3d.maths.vector.Vector4dTest" time="0.001"/>
+  <testcase name="testNormalise" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testHashCode" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testSet" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testBasicConstruction" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testNormaliseZeroLength" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testNotEqualsToOther" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Vector4dTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Vector4dTest" time="0"/>
+  <testcase name="testSVDDecomposition" classname="org.j3d.util.MatrixUtilsTest" time="0.001"/>
+  <testcase name="testInverse" classname="org.j3d.util.MatrixUtilsTest" time="0.001"/>
+  <testcase name="testGetUniformScale" classname="org.j3d.util.MatrixUtilsTest" time="0"/>
+  <testcase name="testUniformScaleIdentityMatrix" classname="org.j3d.util.MatrixUtilsTest" time="0"/>
+  <testcase name="testSet" classname="org.j3d.maths.vector.Point4dTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point4dTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.Point4dTest" time="0"/>
+  <testcase name="testNotEqualsToOther" classname="org.j3d.maths.vector.Point4dTest" time="0"/>
+  <testcase name="testHashCode" classname="org.j3d.maths.vector.Point4dTest" time="0"/>
+  <testcase name="testBasicConstruction" classname="org.j3d.maths.vector.Point4dTest" time="0"/>
+  <testcase name="testNotEqualsToOther" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0"/>
+  <testcase name="testNormalise" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0"/>
+  <testcase name="testNormaliseZeroLength" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0.001"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0"/>
+  <testcase name="testEquals" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0"/>
+  <testcase name="testHashCode" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0"/>
+  <testcase name="testBasicConstruction" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0"/>
+  <testcase name="testSet" classname="org.j3d.maths.vector.AxisAngle4dTest" time="0"/>
+  <testcase name="testClearSettings" classname="org.j3d.util.I18nManagerTest" time="0.003"/>
+  <testcase name="testSetCountry" classname="org.j3d.util.I18nManagerTest" time="0"/>
+  <testcase name="testMul" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testMulIdentity" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testMulWithSelf" classname="org.j3d.maths.vector.Matrix4dTest" time="0.001"/>
+  <testcase name="testSetScale" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransformPoint3IdentityMatrix" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransformPoint4IdentityMatrix" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransformVector3IdentityMatrix" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransformVectorDirection" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransformVectorIdentityMatrix" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testTransformVectorNormal" classname="org.j3d.maths.vector.Matrix4dTest" time="0"/>
+  <testcase name="testGenerateFlags" classname="org.j3d.maths.vector.SingularValueDecompositionTest" time="0"/>
+  <testcase name="testChangeLocale" classname="org.j3d.util.I18nManagerTest" time="0"/>
+</testsuite>

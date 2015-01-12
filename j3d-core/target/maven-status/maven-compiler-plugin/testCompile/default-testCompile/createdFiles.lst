@@ -1,0 +1,17 @@
+org/j3d/color/Color4bTest.class
+org/j3d/util/interpolator/PositionInterpolatorTest.class
+org/j3d/maths/vector/SingularValueDecompositionTest.class
+org/j3d/maths/vector/Point2dTest.class
+org/j3d/util/interpolator/CoordinateInterpolatorTest.class
+org/j3d/maths/vector/Vector4dTest.class
+org/j3d/maths/vector/Matrix4dTest.class
+org/j3d/maths/vector/Point4dTest.class
+org/j3d/maths/vector/Vector3dTest.class
+org/j3d/maths/vector/AxisAngle4dTest.class
+org/j3d/util/I18nManagerTest.class
+org/j3d/maths/vector/Quat4dTest.class
+org/j3d/util/interpolator/ScalarInterpolatorTest.class
+org/j3d/color/Color4fTest.class
+org/j3d/util/MatrixUtilsTest.class
+org/j3d/util/interpolator/Coordinate2DInterpolatorTest.class
+org/j3d/maths/vector/Point3dTest.class

@@ -1,0 +1,5 @@
+org/j3d/texture/procedural/PerlinNoiseGenerator.class
+org/j3d/texture/TextureCacheFactory.class
+org/j3d/texture/TextureCache.class
+org/j3d/texture/procedural/TextureGenerator.class
+org/j3d/texture/CacheAlreadySetException.class
