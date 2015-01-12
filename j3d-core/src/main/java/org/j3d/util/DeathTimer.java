@@ -74,7 +74,7 @@ public class DeathTimer extends Thread
         {
             if(System.currentTimeMillis() > waitTime) 
             {
-                System.out.println("Time exceeded, killing system");
+                System.err.println("Time exceeded, killing system");
                 System.exit(exitCode);
             }
 

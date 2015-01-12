@@ -103,9 +103,9 @@ class OBJASCIIParser extends OBJParser
      */
     public OBJASCIIParser()
     {
-        coords = new ArrayList<double[]>();
-        normals = new ArrayList<double[]>();
-        texCoords = new ArrayList<double[]>();
+        coords = new ArrayList<>();
+        normals = new ArrayList<>();
+        texCoords = new ArrayList<>();
     }
 
 
@@ -116,8 +116,8 @@ class OBJASCIIParser extends OBJParser
     {
         super(strict);
 
-        coords = new ArrayList<double[]>();
-        normals = new ArrayList<double[]>();
+        coords = new ArrayList<>();
+        normals = new ArrayList<>();
         texCoords = new ArrayList<double[]>();
     }
 
@@ -138,9 +138,9 @@ class OBJASCIIParser extends OBJParser
     public GeometryData getNextObject() throws IOException, InvalidFormatException
     {
         GeometryData ret_val = null;
-        ArrayList<int[]> coord_indexes = new ArrayList<int[]>();
-        ArrayList<int[]> normal_indexes = new ArrayList<int[]>();
-        ArrayList<int[]> texCoord_indexes = new ArrayList<int[]>();
+        ArrayList<int[]> coord_indexes = new ArrayList<>();
+        ArrayList<int[]> normal_indexes = new ArrayList<>();
+        ArrayList<int[]> texCoord_indexes = new ArrayList<>();
 
         String input_line = itsReader.readLine();
 
@@ -721,9 +721,9 @@ class OBJASCIIParser extends OBJParser
     private int[][] readFace(StringTokenizer strtok)
         throws IOException
     {
-        ArrayList<Integer> indices = new ArrayList<Integer>();
-        ArrayList<Integer> indices_tc = new ArrayList<Integer>();
-        ArrayList<Integer> indices_normals = new ArrayList<Integer>();
+        ArrayList<Integer> indices = new ArrayList<>();
+        ArrayList<Integer> indices_tc = new ArrayList<>();
+        ArrayList<Integer> indices_normals = new ArrayList<>();
         int num_comps = 0;
 
         while(strtok.hasMoreElements()) {

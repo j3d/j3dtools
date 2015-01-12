@@ -52,7 +52,7 @@ public abstract class AbstractVertexGeometry extends AbstractSceneGraphObject
     {
         super(id, type);
         
-        vertices = new ArrayList<Vertex>();
+        vertices = new ArrayList<>();
     }
 
     //------------------------------------------------------------------------

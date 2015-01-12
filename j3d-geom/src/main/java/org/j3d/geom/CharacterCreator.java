@@ -107,7 +107,7 @@ public class CharacterCreator
 
         // Set it up using default transform, antialiased and metrics
         fontContext = new FontRenderContext(null, true, true);
-        charDataMap = new CharHashMap<CharacterData>();
+        charDataMap = new CharHashMap<>();
         newCoords = new float[6];
         charCoords = new float[1024];
         charIndex = new int[512];
@@ -252,7 +252,7 @@ System.out.println(" offset " +
         int second_curve_start = 0;
         int closest_point = 0;
 
-		ArrayList<int[]> polyIndexList = new ArrayList<int[]>();
+		ArrayList<int[]> polyIndexList = new ArrayList<>();
 //System.out.println("processing " + character + " flatness " + (flatness / scale));
 
         while(!glyph_path.isDone())

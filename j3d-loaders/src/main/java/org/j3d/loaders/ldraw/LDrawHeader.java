@@ -91,8 +91,8 @@ public class LDrawHeader
      */
     public LDrawHeader()
     {
-        keywords = new HashSet<String>();
-        history = new HashSet<String>();
+        keywords = new HashSet<>();
+        history = new HashSet<>();
         ccw = true;
         official = false;
         bfcCertified = false;

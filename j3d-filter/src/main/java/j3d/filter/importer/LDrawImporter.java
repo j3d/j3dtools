@@ -75,7 +75,7 @@ public class LDrawImporter
         currentCull = false;
         currentCCW = true;
         
-        colourToGeomIDMap = new HashMap<Integer, Integer>();
+        colourToGeomIDMap = new HashMap<>();
     }
     
     //------------------------------------------------------------------------

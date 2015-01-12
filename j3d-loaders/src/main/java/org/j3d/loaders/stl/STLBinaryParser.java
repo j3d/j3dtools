@@ -174,7 +174,7 @@ class STLBinaryParser extends STLParser
                     " but the file size is " + length;
 
                 if (parsingMessages == null) {
-                    parsingMessages = new ArrayList<String>();
+                    parsingMessages = new ArrayList<>();
                 }
                 parsingMessages.add(msg);
             }

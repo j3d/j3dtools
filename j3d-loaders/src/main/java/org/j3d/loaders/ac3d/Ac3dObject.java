@@ -79,8 +79,8 @@ public class Ac3dObject
     {
         creaseAngle = 45.0f;
 
-        kids = new ArrayList<Ac3dObject>();
-        surfaces = new ArrayList<Ac3dSurface>();
+        kids = new ArrayList<>();
+        surfaces = new ArrayList<>();
 
         location = new float[3];
         textureRepeat = new float[2];

@@ -390,8 +390,8 @@ class STLASCIIParser extends STLParser
     {
         int numOfObjects = 0;
         int numOfFacets = 0;
-        ArrayList<Integer> facetsPerObject = new ArrayList<Integer>(10);
-        ArrayList<String> names = new ArrayList<String>(10);
+        ArrayList<Integer> facetsPerObject = new ArrayList<>(10);
+        ArrayList<String> names = new ArrayList<>(10);
         boolean isAscii = true;
         String line = reader.readLine();
         int line_count = 1;

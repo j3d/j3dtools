@@ -15,7 +15,6 @@ package org.j3d.util;
 // Standard imports
 import java.lang.reflect.Array;
 import java.util.Collection;
-import java.util.Iterator;
 
 // Application specific imports
 // None
@@ -145,12 +144,13 @@ public class CircularList<T>
 
         if((o != null) && (count != 0))
         {
-
-            Entry<T> checker = current.next;
-            while((checker != current) && !ret_val)
+            Entry<T> checker = current;
+            do
             {
-                ret_val = (checker == o) || checker.equals(o);
+                ret_val = (checker.value == o) || checker.value.equals(o);
+                checker = checker.next;
             }
+            while((checker != current) && !ret_val);
         }
 
         return ret_val;
@@ -176,6 +176,7 @@ public class CircularList<T>
         {
             e.prev = e;
             e.next = e;
+            current = e;
         }
         else
         {
@@ -205,25 +206,31 @@ public class CircularList<T>
 
         // find the object
         boolean ret_val = false;
-        Entry<T> checker = current.next;
-        while((checker != current) && !ret_val)
-            ret_val = (checker == o) || checker.equals(o);
+
+        Entry<T> checker = current;
+        do
+        {
+            ret_val = (checker.value == o) || checker.value.equals(o);
+            checker = checker.next;
+        }
+        while((checker != current) && !ret_val);
 
         if(ret_val)
         {
-            Entry<T> tmp = checker.next;
-            checker.prev.next = checker.next;
-            tmp.next.prev = checker;
-            checker.next = null;
-            checker.prev = null;
-            checker.value = null;
+            // Found it, but moved checker on to checker.next as per the last line of
+            // the above while loop. So the one we want to eliminate from the loop is
+            // actually checker.prev
+            Entry<T> found = checker.prev;
+            found.prev.next = checker;
+            checker.prev = found.prev;
+            found.next = null;
+            found.prev = null;
+            found.value = null;
 
-            if(current == checker)
-                current = (count == 1) ? null : tmp;
-
+            current = (count == 1) ? null : checker;
             count--;
 
-            freeEntry(checker);
+            freeEntry(found);
         }
 
         return ret_val;
@@ -275,12 +282,9 @@ public class CircularList<T>
     public boolean addAll(Collection<T> c)
     {
         boolean modified = false;
-        Iterator<T> e = c.iterator();
 
-        while (e.hasNext())
+        for(T obj : c)
         {
-            T obj = e.next();
-
             if(!contains(obj))
             {
                 add(obj);
@@ -315,11 +319,9 @@ public class CircularList<T>
             return false;
 
         boolean modified = false;
-        Iterator<T> e = c.iterator();
 
-        while(e.hasNext())
+        for(T obj : c)
         {
-            T obj = e.next();
             if(remove(obj))
                 modified = true;
         }
@@ -503,7 +505,7 @@ public class CircularList<T>
      */
     public String toString()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("[");
 
         Entry<T> e = current;

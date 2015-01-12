@@ -51,7 +51,7 @@ abstract class AbstractMemoryGroup extends AbstractSceneGraphObject
     {
         super(id, type);
         
-        children = new ArrayList<SceneGraphStructureObject>();
+        children = new ArrayList<>();
     }
 
     //------------------------------------------------------------------------

@@ -74,8 +74,8 @@ public class ImageLoader
     {
         errorReporter = DefaultErrorReporter.getDefaultReporter();
 
-        loadedImages = new HashMap<String, WeakReference>(DEFAULT_SIZE);
-        loadedIcons = new HashMap<String, WeakReference>(DEFAULT_SIZE);
+        loadedImages = new HashMap<>(DEFAULT_SIZE);
+        loadedIcons = new HashMap<>(DEFAULT_SIZE);
     }
 
     /**

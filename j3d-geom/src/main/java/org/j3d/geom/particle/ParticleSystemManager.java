@@ -43,8 +43,8 @@ public class ParticleSystemManager
      */
     public ParticleSystemManager()
     {
-        particleSystems = new ArrayList<ParticleSystem>();
-        newSystems = new ArrayList<ParticleSystem>();
+        particleSystems = new ArrayList<>();
+        newSystems = new ArrayList<>();
         errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 

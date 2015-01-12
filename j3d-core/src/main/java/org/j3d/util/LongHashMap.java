@@ -159,7 +159,7 @@ public class LongHashMap<V>
         table = new Entry[initialCapacity];
         threshold = (int)(initialCapacity * loadFactor);
 
-        entryCache = new ArrayList<Entry<V>>(initialCapacity);
+        entryCache = new ArrayList<>(initialCapacity);
     }
 
     /**
@@ -531,9 +531,9 @@ public class LongHashMap<V>
 
         int size = entryCache.size();
         if(size == 0)
-            ret_val = new Entry<V>();
+            ret_val = new Entry<>();
         else
-            ret_val = (Entry<V>)entryCache.remove(size - 1);
+            ret_val = entryCache.remove(size - 1);
 
         return ret_val;
     }

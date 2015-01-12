@@ -83,8 +83,8 @@ public class C3DParameterGroup
         this.id = id;
         this.description = desc;
 
-        parameters = new ArrayList<C3DParameter>();
-        parameterMap = new HashMap<String, C3DParameter>();
+        parameters = new ArrayList<>();
+        parameterMap = new HashMap<>();
     }
 
     //----------------------------------------------------------

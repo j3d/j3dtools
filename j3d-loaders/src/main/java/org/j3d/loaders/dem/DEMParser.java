@@ -95,7 +95,7 @@ public class DEMParser implements HeightMapSource
      */
     static
     {
-        processCodes = new CharHashMap<Integer>(7);
+        processCodes = new CharHashMap<>(7);
         processCodes.put('1', DEMTypeARecord.PROCESS_RESAMPLE);
         processCodes.put('2', DEMTypeARecord.PROCESS_GRIDEM);
         processCodes.put('3', DEMTypeARecord.PROCESS_CTOG);
@@ -104,14 +104,14 @@ public class DEMParser implements HeightMapSource
         processCodes.put('6', DEMTypeARecord.PROCESS_DLG_CPS3);
         processCodes.put('7', DEMTypeARecord.PROCESS_ELECTRONIC);
 
-        groundRefCodes = new HashMap<String, Integer>(20);
+        groundRefCodes = new HashMap<>(20);
         groundRefCodes.put("0", DEMTypeARecord.G_REF_GEOGRAPHIC);
         groundRefCodes.put("1", DEMTypeARecord.G_REF_UTM);
         groundRefCodes.put("2", DEMTypeARecord.G_REF_STATEPLANE);
 
         // Need to finish the rest of this off
 
-        unitCodes = new CharHashMap<Integer>(4);
+        unitCodes = new CharHashMap<>(4);
         unitCodes.put('1', DEMTypeARecord.INTERVAL_UNIT_RADIANS);
         unitCodes.put('2', DEMTypeARecord.INTERVAL_UNIT_METERS);
         unitCodes.put('3', DEMTypeARecord.INTERVAL_UNIT_FEET);

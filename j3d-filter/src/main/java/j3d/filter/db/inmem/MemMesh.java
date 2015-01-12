@@ -51,7 +51,7 @@ class MemMesh extends AbstractSceneGraphObject
     {
         super(id, SceneGraphObjectType.MESH);
 
-        geometry = new ArrayList<VertexGeometry>();
+        geometry = new ArrayList<>();
     }
 
     //------------------------------------------------------------------------

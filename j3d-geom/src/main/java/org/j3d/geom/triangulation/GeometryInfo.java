@@ -1148,7 +1148,7 @@ public class GeometryInfo
 
         // Create hash table with initial capacity equal to the number
         // of components (assuming about half will be duplicates)
-        HashMap<Object, Integer> table = new HashMap<Object, Integer>(list.length);
+        HashMap<Object, Integer> table = new HashMap<>(list.length);
 
         Integer idx;
         for(int i = 0; i < list.length; i++)

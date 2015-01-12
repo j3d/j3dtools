@@ -32,6 +32,9 @@
     </developers>
     <contributors>
         <contributor>
+            <name>Eric Fickensher</name>
+        </contributor>
+        <contributor>
             <name>Don Brutzman</name>
         </contributor>
         <contributor>
@@ -112,8 +115,8 @@
                 <version>3.1</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <meminitial>256m</meminitial>
                     <maxmem>1024m</maxmem>
                 </configuration>
@@ -143,7 +146,7 @@
                     <bottom><![CDATA[
                         <center>
                         Latest Info from <a href="http://code.j3d.org">http://code.j3d.org/</a> <br>
-                            <font size=2>Copyright &copy; 2001 - 2014 <a href="http://www.j3d.org">j3d.org</a></font>
+                            <font size=2>Copyright &copy; 2001 - 2015 <a href="http://www.j3d.org">j3d.org</a></font>
                         </center>
                         ]]>
                     </bottom>
@@ -257,7 +260,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.8.7</version>
+            <version>6.8.8</version>
             <scope>test</scope>
         </dependency>
 

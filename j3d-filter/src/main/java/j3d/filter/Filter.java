@@ -119,28 +119,28 @@ public class Filter
      */
     static
     {   
-        KNOWN_FILTERS = new HashMap<String, String>();
+        KNOWN_FILTERS = new HashMap<>();
         KNOWN_FILTERS.put("Identity", "j3d.filter.filters.IdentityFilter");
         
-        KNOWN_DATABASES = new HashMap<String, String>();
+        KNOWN_DATABASES = new HashMap<>();
         KNOWN_DATABASES.put("mem", "j3d.filter.db.inmem.InMemoryDatabase");
         
-        KNOWN_IMPORTERS_FROM_MIME = new HashMap<String, String>();
+        KNOWN_IMPORTERS_FROM_MIME = new HashMap<>();
         KNOWN_IMPORTERS_FROM_MIME.put("application/x-ldraw", "j3d.filter.importer.LDrawImporter");
         KNOWN_IMPORTERS_FROM_MIME.put("application/x-multi-part-ldraw", 
                                       "j3d.filter.importer.LDrawImporter");
         KNOWN_IMPORTERS_FROM_MIME.put("application/x-ldlite", "j3d.filter.importer.LDrawImporter");
         
-        KNOWN_EXPORTERS_FROM_MIME = new HashMap<String, String>();
+        KNOWN_EXPORTERS_FROM_MIME = new HashMap<>();
         KNOWN_EXPORTERS_FROM_MIME.put("model/x-collada", "j3d.filter.exporter.Collada14Exporter");
         KNOWN_EXPORTERS_FROM_MIME.put("application/xml", "j3d.filter.exporter.Collada14Exporter");
         KNOWN_EXPORTERS_FROM_MIME.put("model/vnd.collada+xml", 
                                       "j3d.filter.exporter.Collada14Exporter");
 
-        KNOWN_IMPORTERS_FROM_TYPE = new HashMap<String, String>();
+        KNOWN_IMPORTERS_FROM_TYPE = new HashMap<>();
         KNOWN_IMPORTERS_FROM_TYPE.put("LDraw", "j3d.filter.importer.LDrawImporter");
 
-        KNOWN_EXPORTERS_FROM_TYPE = new HashMap<String, String>();
+        KNOWN_EXPORTERS_FROM_TYPE = new HashMap<>();
         KNOWN_EXPORTERS_FROM_TYPE.put("COLLADA_14", "j3d.filter.exporter.Collada14Exporter");
     }
     
@@ -167,7 +167,7 @@ public class Filter
         //URL.setFileNameMap(content_map);
         URLConnection.setFileNameMap(content_map);
         
-        filters = new ArrayList<GeometryFilter>();
+        filters = new ArrayList<>();
     }
 
     //------------------------------------------------------------------------

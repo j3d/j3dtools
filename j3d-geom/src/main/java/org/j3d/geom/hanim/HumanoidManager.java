@@ -41,7 +41,7 @@ public class HumanoidManager
      */
     public HumanoidManager()
     {
-        humanoids = new ArrayList<HAnimHumanoid>();
+        humanoids = new ArrayList<>();
         errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 

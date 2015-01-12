@@ -87,7 +87,7 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
     private final float accuracy;
 
     /** The collection of all patches in this landscape */
-    private ArrayList<ROAMPatch> patches = new ArrayList<ROAMPatch>();
+    private ArrayList<ROAMPatch> patches = new ArrayList<>();
 
     /** Queue manager for the pathces needing splits or merges each frame */
     private TreeQueueManager queueManager = new TreeQueueManager();
@@ -209,8 +209,8 @@ public abstract class ROAMSplitMergeLandscape extends Landscape
                 maxViewBound = new Point3d();
                 reqdBounds = new Rectangle();
                 oldTileBounds = new Rectangle();
-                freePatchList = new LinkedList<ROAMPatch>();
-                tempPatchList = new ArrayList<ROAMPatch>();
+                freePatchList = new LinkedList<>();
+                tempPatchList = new ArrayList<>();
 
                 createTiledPatches(position, direction);
                 break;

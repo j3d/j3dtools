@@ -198,7 +198,7 @@ public class LDrawParser
      */
     static
     {
-        OLD_META_COMMANDS = new HashSet<String>();
+        OLD_META_COMMANDS = new HashSet<>();
 
         OLD_META_COMMANDS.add(STEP_META);
         OLD_META_COMMANDS.add(WRITE_META);
@@ -207,14 +207,14 @@ public class LDrawParser
         OLD_META_COMMANDS.add(PAUSE_META);
         OLD_META_COMMANDS.add(SAVE_META);
 
-        ESCAPED_OFFICIAL_HEADERS = new HashSet<String>();
+        ESCAPED_OFFICIAL_HEADERS = new HashSet<>();
         ESCAPED_OFFICIAL_HEADERS.add(CATEGORY_HEADER);
         ESCAPED_OFFICIAL_HEADERS.add(KEYWORD_HEADER);
         ESCAPED_OFFICIAL_HEADERS.add(HISTORY_HEADER);
         ESCAPED_OFFICIAL_HEADERS.add(LDRAW_HEADER);
         ESCAPED_OFFICIAL_HEADERS.add(LICENSE_HEADER);
 
-        STD_OFFICIAL_HEADERS = new HashSet<String>();
+        STD_OFFICIAL_HEADERS = new HashSet<>();
         STD_OFFICIAL_HEADERS.add(AUTHOR_HEADER);
         STD_OFFICIAL_HEADERS.add(NAME_HEADER);
         STD_OFFICIAL_HEADERS.add(BFC_HEADER);
@@ -232,7 +232,7 @@ public class LDrawParser
         bfcCcw = true;
         bfcCull = false;
         bfcInvertNext = false;
-        contents = new ArrayList<LDrawFilePart>();
+        contents = new ArrayList<>();
         errorReporter = DefaultErrorReporter.getDefaultReporter();
     }
 
@@ -311,7 +311,7 @@ public class LDrawParser
         bfcCull = false;
         bfcInvertNext = false;
         inputReader = null;
-        contents = new ArrayList<LDrawFilePart>();
+        contents = new ArrayList<>();
         strtok = null;
     }
 

@@ -83,7 +83,7 @@ public abstract class LDrawColor
      */
     static
     {
-        indexToColorMap = new HashMap<Integer, LDrawColor>();
+        indexToColorMap = new HashMap<>();
     }
 
     protected LDrawColor(int idx,

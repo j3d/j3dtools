@@ -76,7 +76,7 @@ class FilterErrorReporter
     {
         logLevel = level;
 
-        ignoredExceptionTypes = new HashSet<Class<? extends Exception>>();
+        ignoredExceptionTypes = new HashSet<>();
         ignoredExceptionTypes.add(FileNotFoundException.class);
         ignoredExceptionTypes.add(IOException.class);
         ignoredExceptionTypes.add(UnknownHostException.class);

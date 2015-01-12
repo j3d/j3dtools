@@ -57,10 +57,10 @@ public class InMemoryDatabase
      */
     public InMemoryDatabase()
     {
-         objectMap = new IntHashMap<SceneGraphObject>();
-         namedObjectMap = new HashMap<String, SceneGraphObject>();
-         objectTypeMap = new HashMap<SceneGraphObjectType, Set<SceneGraphObject>>();
-         pendingURLs = new ArrayList<String[]>();
+         objectMap = new IntHashMap<>();
+         namedObjectMap = new HashMap<>();
+         objectTypeMap = new HashMap<>();
+         pendingURLs = new ArrayList<>();
          
          nodeFactory = new InMemoryNodeFactory();
     }
@@ -169,7 +169,7 @@ public class InMemoryDatabase
         objectMap.remove(obj.getID());
         if(namedObjectMap.containsValue(obj))
         {
-            Set<String> nuke_keys = new HashSet<String>();
+            Set<String> nuke_keys = new HashSet<>();
             
             for(Map.Entry<String, SceneGraphObject> entry: namedObjectMap.entrySet())
             {
@@ -194,7 +194,7 @@ public class InMemoryDatabase
             Set<SceneGraphObject> values = objectTypeMap.get(type);
             if(values == null)
             {
-                values = new HashSet<SceneGraphObject>();
+                values = new HashSet<>();
                 objectTypeMap.put(type, values);
             }
             

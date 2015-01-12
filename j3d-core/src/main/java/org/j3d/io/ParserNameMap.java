@@ -48,8 +48,8 @@ public class ParserNameMap implements FileNameMap
      */
     public ParserNameMap() 
     {
-        contentTypeMap = new HashMap<String, String>();
-        reverseMap = new HashMap<String, String>();
+        contentTypeMap = new HashMap<>();
+        reverseMap = new HashMap<>();
     }
 
     //---------------------------------------------------------------

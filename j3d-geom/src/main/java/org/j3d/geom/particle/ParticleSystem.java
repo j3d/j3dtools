@@ -133,7 +133,7 @@ public abstract class ParticleSystem implements ParticleFactory
         }
 
         systemName = name;
-        particleFunctions = new ArrayList<ParticleFunction>(NUM_INIT_FUNCTIONS);
+        particleFunctions = new ArrayList<>(NUM_INIT_FUNCTIONS);
         particleList = new ParticleList();
         deadParticles = new Particle[maxParticleCount];
 

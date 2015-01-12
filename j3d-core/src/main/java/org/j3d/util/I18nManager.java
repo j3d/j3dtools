@@ -154,10 +154,10 @@ public class I18nManager
 
         usedLocale = findLocale();
 
-        resourceFileNames = new ArrayList<String>();
+        resourceFileNames = new ArrayList<>();
         resourceFileNames.add(DEFAULT_RESOURCES_FILE);
 
-        stringResources = new ArrayList<ResourceBundle>();
+        stringResources = new ArrayList<>();
 
         stringResources.add(ResourceBundle.getBundle(DEFAULT_RESOURCES_FILE, usedLocale));
     }

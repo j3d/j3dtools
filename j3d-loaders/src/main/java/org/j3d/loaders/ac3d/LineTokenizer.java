@@ -49,7 +49,7 @@ class LineTokenizer
      */
     LineTokenizer()
     {
-        tokens = new ArrayList<String>();
+        tokens = new ArrayList<>();
     }
 
     /**

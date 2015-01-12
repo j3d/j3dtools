@@ -187,7 +187,7 @@ public abstract class HAnimHumanoid extends HAnimObject
         localMatrix = new Matrix4d();
         localMatrix.setIdentity();
 
-        updatedChildren = new ArrayList<HAnimObject>();
+        updatedChildren = new ArrayList<>();
 
         hasChildUpdates = false;
         matrixChanged = false;

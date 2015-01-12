@@ -251,7 +251,7 @@ public class Ac3dParser
      */
     static
     {
-        keywordsMap = new HashMap<String, Integer>();
+        keywordsMap = new HashMap<>();
         keywordsMap.put("MATERIAL", MATERIAL_TOKEN);
         keywordsMap.put("OBJECT", OBJECT_TOKEN);
         keywordsMap.put("kids", KIDS_TOKEN);
@@ -284,8 +284,8 @@ public class Ac3dParser
      */
     public Ac3dParser()
     {
-        materials = new ArrayList<Ac3dMaterial>();
-        objects = new ArrayList<Ac3dObject>();
+        materials = new ArrayList<>();
+        objects = new ArrayList<>();
         lineTokenizer = new LineTokenizer();
 
         materialCount = 0;
