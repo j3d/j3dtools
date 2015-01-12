@@ -1,2 +1,16 @@
-docs/javadoc
+.DS_Store
 *.releaseBackup
+.classpath
+.project
+.idea
+*.swp
+*.iml
+*.ipr
+*.iws
+*.jasper
+*.log
+*/**/.DS_Store
+docs/javadoc
+target/
+/distribution-files
+test-output/
