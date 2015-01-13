@@ -3,6 +3,7 @@
 .classpath
 .project
 .idea
+*.class
 *.swp
 *.iml
 *.ipr
@@ -10,7 +11,7 @@
 *.jasper
 *.log
 */**/.DS_Store
-docs/javadoc
+docs/javadoc/
 target/
 /distribution-files
 test-output/
