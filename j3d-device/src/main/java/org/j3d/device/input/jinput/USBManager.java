@@ -118,8 +118,8 @@ public class USBManager implements DeviceManager
         // we don't disable the device list loading straight away.
         deviceListInit = Package.getPackage("net.java.games.input") == null;
 
-        devices = new ArrayList<InputDevice>();
-        deviceListeners = new ArrayList<DeviceListener>();
+        devices = new ArrayList<>();
+        deviceListeners = new ArrayList<>();
     }
 
     //------------------------------------------------------------------------
@@ -141,7 +141,9 @@ public class USBManager implements DeviceManager
 
         // Reset the default only if we are not shutting down the system.
         if(reporter == null)
+        {
             errorReporter = DefaultErrorReporter.getDefaultReporter();
+        }
     }
 
     /**
@@ -153,7 +155,9 @@ public class USBManager implements DeviceManager
     public int getNumDevices()
     {
         if(!deviceListInit)
+        {
             loadDevices();
+        }
 
         return devices.size();
     }
@@ -168,7 +172,9 @@ public class USBManager implements DeviceManager
     public InputDevice[] getDevices()
     {
         if(!deviceListInit)
+        {
             loadDevices();
+        }
 
         InputDevice[] devs = new InputDevice[devices.size()];
 
@@ -186,8 +192,9 @@ public class USBManager implements DeviceManager
     public void addDeviceListener(DeviceListener l)
     {
         if(!deviceListeners.contains(l))
+        {
             deviceListeners.add(l);
-
+        }
     }
 
     /**
@@ -217,11 +224,9 @@ public class USBManager implements DeviceManager
 
         Controller[] ca = ce.getControllers();
 
-        InputDevice device;
         int gamepadCnt = 0;
         int joystickCnt = 0;
         int wheelCnt = 0;
-        int sixDOFCnt = 0;
 
         String name;
 
@@ -253,7 +258,7 @@ public class USBManager implements DeviceManager
             Object[] list_args =
             {
                 dev.getName(),
-                new Integer(dev.getRumblers().length)
+                dev.getRumblers().length
             };
 
             String list_msg = list_fmt.format(list_args);
@@ -268,31 +273,24 @@ public class USBManager implements DeviceManager
                 msg = intl_mgr.getString(MISSING_DEVICE_NAME_PROP);
                 errorReporter.warningReport(msg, null);
             }
-            else if(name.indexOf("RumblePad") > -1 ||
-                    name.indexOf("WingMan Cordless Gamepad") > -1 ||
-                    name.indexOf("Logitech Dual Action") > -1)
+            else if(name.contains("RumblePad") ||
+                name.contains("WingMan Cordless Gamepad") ||
+                name.contains("Logitech Dual Action"))
             {
                 devices.add(new Gamepad(dev, "Gamepad-" + gamepadCnt));
                 gamepadCnt++;
             }
-            else if(name.indexOf("Extreme Digital 3D") > -1 ||
-                       name.indexOf("Freedom 2.4") > -1)
+            else if(name.contains("Extreme Digital 3D") ||
+                name.contains("Freedom 2.4"))
             {
                 devices.add(new Joystick(dev, "Joystick-" + joystickCnt));
                 joystickCnt++;
             }
-            else if((name.indexOf("MOMO Racing") > -1) ||
-                     name.indexOf("Logitech Racing Wheel") > -1)
+            else if((name.contains("MOMO Racing")) ||
+                name.contains("Logitech Racing Wheel"))
             {
                 devices.add(new Wheel(dev, "Wheel-" + wheelCnt));
                 wheelCnt++;
-            }
-            else if(name.indexOf("SpaceBall 5000") > -1)
-            {
-/*
-                devices.add(new SixDOF(dev, "SixDOF-" + sixDOFCnt));
-                sixDOFCnt++;
-*/
             }
             else if(name.startsWith("Mouse") ||
                     name.startsWith("Keyboard"))

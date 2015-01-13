@@ -71,6 +71,7 @@
         <module>j3d-device</module>
         <module>j3d-ui</module>
         <module>j3d-filter</module>
+        <module>j3d-examples</module>
     </modules>
 
     <properties>
