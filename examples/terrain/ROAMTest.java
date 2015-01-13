@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
-// Application Specific imports
+// Local imports
 import org.j3d.geom.Axis;
 
 import org.j3d.loaders.HeightMapTerrainData;

@@ -9,10 +9,10 @@
 
 package org.j3d.geom;
 
-// Standard imports
+// External imports
 // none
 
-// Application specific imports
+// Local imports
 // none
 
 /**

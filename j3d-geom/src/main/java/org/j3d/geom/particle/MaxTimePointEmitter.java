@@ -9,7 +9,7 @@
 
 package org.j3d.geom.particle;
 
-// Standard imports
+// External imports
 
 /**
  * Emitter that limits the maximum age based on wall-clock existance time.

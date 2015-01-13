@@ -10,13 +10,13 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 
 import javax.media.j3d.GraphicsConfigTemplate3D;
 
-// Application Specific imports
+// Local imports
 import org.j3d.renderer.java3d.ui.ImageCaptureCanvas3D;
 
 /**

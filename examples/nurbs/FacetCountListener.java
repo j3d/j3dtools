@@ -10,10 +10,10 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 // None
 
-// Application Specific imports
+// Local imports
 // None
 
 /**

@@ -9,13 +9,13 @@
 
 package org.j3d.ui.image;
 
-// Standard imports
+// External imports
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 
-// Application specific imports
+// Local imports
 import javax.imageio.IIOImage;
 import javax.imageio.stream.FileImageOutputStream;
 

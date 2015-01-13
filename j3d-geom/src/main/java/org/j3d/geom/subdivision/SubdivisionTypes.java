@@ -9,9 +9,9 @@
 
 package org.j3d.geom.subdivision;
 
-// Standard imports
+// External imports
 
-// Application specific imports
+// Local imports
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.GeometryGenerator;
 import org.j3d.geom.InvalidArraySizeException;

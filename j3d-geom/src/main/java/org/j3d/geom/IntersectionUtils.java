@@ -9,12 +9,10 @@
 
 package org.j3d.geom;
 
-// Standard imports
+// External imports
 // None
 
-// Application specific imports
-// none
-
+// Local imports
 import org.j3d.maths.vector.Matrix4d;
 import org.j3d.maths.vector.Point3d;
 import org.j3d.maths.vector.Vector3d;

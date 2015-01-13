@@ -10,12 +10,12 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.Canvas;
 import java.awt.Graphics;
 import java.awt.Image;
 
-// Application Specific imports
+// Local imports
 // none
 
 /**

@@ -9,9 +9,9 @@
 
 package org.j3d.geom.particle;
 
-// Standard imports
+// External imports
 
-// Application specific imports
+// Local imports
 // None
 
 /**

@@ -10,12 +10,12 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 import javax.media.j3d.*;
 
-// Application Specific imports
+// Local imports
 // none
 
 /**

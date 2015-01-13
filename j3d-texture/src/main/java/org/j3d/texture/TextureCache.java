@@ -12,11 +12,11 @@
 
 package org.j3d.texture;
 
-// Standard imports
+// External imports
 import java.io.IOException;
 import java.net.URL;
 
-// Application specific imports
+// Local imports
 // None
 
 /**

@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import javax.swing.*;
 import javax.media.j3d.*;
@@ -22,7 +22,7 @@ import java.util.Map;
 
 import com.sun.j3d.utils.image.TextureLoader;
 
-// Application Specific imports
+// Local imports
 import org.j3d.geom.SphereGenerator;
 import org.j3d.geom.GeometryData;
 import org.j3d.renderer.java3d.navigation.MouseViewHandler;

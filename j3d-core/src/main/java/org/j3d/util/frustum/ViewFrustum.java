@@ -45,7 +45,7 @@
  */
 package org.j3d.util.frustum;
 
-// Standard imports
+// External imports
 // None
 
 // Local imports

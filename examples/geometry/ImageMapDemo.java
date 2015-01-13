@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 import javax.media.j3d.*;
@@ -18,7 +18,7 @@ import javax.vecmath.*;
 
 import java.awt.image.BufferedImage;
 
-// Application Specific imports
+// Local imports
 import org.j3d.geom.terrain.*;
 
 import org.j3d.geom.GeometryGenerator;

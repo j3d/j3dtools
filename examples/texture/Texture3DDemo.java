@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 import javax.media.j3d.*;
@@ -22,7 +22,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
-// Application Specific imports
+// Local imports
 import org.j3d.geom.*;
 
 import org.j3d.renderer.java3d.navigation.MouseViewHandler;

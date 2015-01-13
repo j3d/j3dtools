@@ -9,10 +9,10 @@
 
 package org.j3d.loaders;
 
-// Standard imports
+// External imports
 import java.awt.image.BufferedImage;
 
-// Application specific imports
+// Local imports
 import org.j3d.terrain.AbstractStaticTerrainData;
 import org.j3d.util.interpolator.ColorInterpolator;
 

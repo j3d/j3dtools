@@ -12,13 +12,13 @@
 
 package org.j3d.util;
 
-// Standard imports
+// External imports
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-// Application specific imports
+// Local imports
 // None
 
 /**

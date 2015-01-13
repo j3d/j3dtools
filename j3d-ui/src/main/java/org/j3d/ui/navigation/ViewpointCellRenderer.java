@@ -12,7 +12,7 @@
 
 package org.j3d.ui.navigation;
 
-// Standard imports
+// External imports
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
@@ -24,7 +24,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
-// Application specific imports
+// Local imports
 // none
 
 /**

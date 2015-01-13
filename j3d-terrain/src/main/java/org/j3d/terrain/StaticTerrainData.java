@@ -9,10 +9,10 @@
 
 package org.j3d.terrain;
 
-// Standard imports
+// External imports
 import java.awt.image.BufferedImage;
 
-// Application specific imports
+// Local imports
 // none
 
 /**

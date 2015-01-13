@@ -12,7 +12,7 @@
 
 package org.j3d.ui.navigation;
 
-// Standard imports
+// External imports
 import  javax.swing.*;
 
 import java.awt.GridLayout;
@@ -20,7 +20,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-// Application specific imports
+// Local imports
 import org.j3d.util.ImageLoader;
 
 /**

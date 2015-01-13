@@ -9,10 +9,10 @@
 
 package org.j3d.geom.spline;
 
-// Standard imports
+// External imports
 // None
 
-// Application specific imports
+// Local imports
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.GeometryGenerator;
 import org.j3d.geom.InvalidArraySizeException;

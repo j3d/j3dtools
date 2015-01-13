@@ -9,7 +9,7 @@
 
 package org.j3d.util;
 
-// Standard imports
+// External imports
 import java.io.InputStream;
 import java.io.IOException;
 

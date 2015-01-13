@@ -10,12 +10,12 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 
 import java.io.IOException;
 
-// Application Specific imports
+// Local imports
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.GeometryGenerator;
 

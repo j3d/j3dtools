@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import javax.swing.*;
 import javax.media.j3d.*;
@@ -21,7 +21,7 @@ import java.util.HashMap;
 
 import com.sun.j3d.utils.image.TextureLoader;
 
-// Application Specific imports
+// Local imports
 // None
 
 /**

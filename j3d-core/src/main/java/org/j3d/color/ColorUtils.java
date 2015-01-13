@@ -9,10 +9,10 @@
 
 package org.j3d.color;
 
-// Standard imports
+// External imports
 // None
 
-// Application specific imports
+// Local imports
 // none
 
 import org.j3d.util.I18nManager;

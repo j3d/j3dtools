@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import javax.swing.*;
 
 import java.awt.GridLayout;
@@ -26,7 +26,7 @@ import javax.media.j3d.Transform3D;
 
 import javax.vecmath.Vector3d;
 
-// Application Specific imports
+// Local imports
 // None
 
 /**

@@ -9,9 +9,9 @@
 
 package org.j3d.ui.collision;
 
-// Standard imports
+// External imports
 
-// Application specific imports
+// Local imports
 
 
 /**

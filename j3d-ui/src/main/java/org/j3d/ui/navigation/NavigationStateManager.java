@@ -12,7 +12,7 @@
 
 package org.j3d.ui.navigation;
 
-// Standard imports
+// External imports
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Image;
@@ -21,7 +21,7 @@ import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 
 
-// Application specific imports
+// Local imports
 import org.j3d.util.ImageLoader;
 
 /**

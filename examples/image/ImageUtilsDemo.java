@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -18,7 +18,7 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
-// Application Specific imports
+// Local imports
 import org.j3d.util.ImageUtils;
 
 /**

@@ -10,12 +10,12 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.BorderLayout;
 import java.awt.Panel;
 import java.awt.SystemColor;
 
-// Application Specific imports
+// Local imports
 // None
 
 /**

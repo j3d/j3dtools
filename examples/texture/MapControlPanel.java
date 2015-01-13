@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import javax.swing.*;
 
 import java.awt.GridLayout;
@@ -22,7 +22,7 @@ import javax.media.j3d.Switch;
 import javax.media.j3d.TexCoordGeneration;
 import javax.media.j3d.TextureUnitState;
 
-// Application Specific imports
+// Local imports
 // None
 
 /**

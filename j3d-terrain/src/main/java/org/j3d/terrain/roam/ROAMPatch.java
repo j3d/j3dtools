@@ -9,10 +9,10 @@
 
 package org.j3d.terrain.roam;
 
-// Standard imports
+// External imports
 import java.awt.Point;
 
-// Application specific imports
+// Local imports
 import org.j3d.maths.vector.Point3d;
 import org.j3d.terrain.TerrainData;
 import org.j3d.util.frustum.ViewFrustum;

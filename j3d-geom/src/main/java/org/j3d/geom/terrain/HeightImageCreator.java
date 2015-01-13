@@ -9,10 +9,10 @@
 
 package org.j3d.geom.terrain;
 
-// Standard imports
+// External imports
 import java.awt.image.*;
 
-// Application specific imports
+// Local imports
 import org.j3d.util.interpolator.ColorInterpolator;
 
 /**

@@ -10,14 +10,14 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 
 import javax.media.j3d.GraphicsConfigTemplate3D;
 import javax.media.j3d.Canvas3D;
 
-// Application Specific imports
+// Local imports
 // None
 
 /**

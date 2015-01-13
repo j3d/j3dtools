@@ -10,11 +10,11 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 
-// Application Specific imports
+// Local imports
 // None
 
 /**

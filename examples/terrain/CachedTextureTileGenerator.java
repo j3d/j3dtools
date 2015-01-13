@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -21,7 +21,7 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.ImageLayout;
 import java.util.HashMap;
 
-// Application Specific imports
+// Local imports
 import org.j3d.terrain.TextureTileGenerator;
 
 /**

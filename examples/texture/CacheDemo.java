@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -20,7 +20,7 @@ import javax.vecmath.*;
 import java.io.IOException;
 import java.util.HashMap;
 
-// Application Specific imports
+// Local imports
 import org.j3d.texture.TextureCache;
 import org.j3d.renderer.java3d.texture.J3DTextureCache;
 import org.j3d.renderer.java3d.texture.J3DTextureCacheFactory;

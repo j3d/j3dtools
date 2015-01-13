@@ -9,7 +9,7 @@
 
 package org.j3d.ui.image;
 
-// Standard imports
+// External imports
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.io.IOException;
 import javax.imageio.IIOImage;
 import javax.imageio.stream.FileImageOutputStream;
 
-// Application specific imports
+// Local imports
 
 /**
  * An image observer that turns each call into an separate JPEG image as a

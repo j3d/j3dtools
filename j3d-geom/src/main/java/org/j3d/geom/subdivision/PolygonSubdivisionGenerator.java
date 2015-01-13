@@ -9,10 +9,10 @@
 
 package org.j3d.geom.subdivision;
 
-// Standard imports
+// External imports
 // none
 
-// Application specific imports
+// Local imports
 import org.j3d.util.ObjectArray;
 
 import org.j3d.geom.GeometryData;

@@ -10,14 +10,14 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.Panel;
 import java.awt.TextField;
 
-// Application Specific imports
+// Local imports
 // none
 
 /**

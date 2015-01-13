@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -19,7 +19,7 @@ import javax.vecmath.*;
 
 import java.awt.image.BufferedImage;
 
-// Application Specific imports
+// Local imports
 // None
 
 /**

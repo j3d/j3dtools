@@ -12,10 +12,10 @@
 
 package org.j3d.texture;
 
-// Standard imports
+// External imports
 // None
 
-// Application specific imports
+// Local imports
 // None
 
 /**

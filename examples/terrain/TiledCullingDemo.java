@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-// Application Specific imports
+// Local imports
 import org.j3d.geom.Box;
 
 import org.j3d.loaders.HeightMapTerrainData;

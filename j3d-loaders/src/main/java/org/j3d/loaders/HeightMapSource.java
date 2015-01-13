@@ -9,9 +9,9 @@
 
 package org.j3d.loaders;
 
-// Standard imports
+// External imports
 
-// Application specific imports
+// Local imports
 // none
 
 /**

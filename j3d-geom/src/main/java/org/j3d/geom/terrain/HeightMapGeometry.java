@@ -12,10 +12,10 @@
 
 package org.j3d.geom.terrain;
 
-// Standard imports
+// External imports
 // none
 
-// Application specific imports
+// Local imports
 // none
 
 /**

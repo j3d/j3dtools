@@ -12,11 +12,11 @@
 
 package org.j3d.ui.navigation;
 
-// Standard imports
+// External imports
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 
-// Application specific imports
+// Local imports
 // none
 
 /**

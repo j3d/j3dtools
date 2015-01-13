@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.GridLayout;
@@ -22,7 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-// Application Specific imports
+// Local imports
 import org.j3d.device.input.DeviceManager;
 import org.j3d.device.input.InputDevice;
 import org.j3d.device.input.jinput.USBManager;

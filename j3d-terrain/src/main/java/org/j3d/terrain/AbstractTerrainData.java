@@ -9,9 +9,9 @@
 
 package org.j3d.terrain;
 
-// Standard imports
+// External imports
 
-// Application specific imports
+// Local imports
 // none
 
 /**

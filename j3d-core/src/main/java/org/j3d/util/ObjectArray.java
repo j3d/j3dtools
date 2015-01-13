@@ -12,10 +12,10 @@
 
 package org.j3d.util;
 
-// Standard imports
+// External imports
 // None
 
-// Application specific imports
+// Local imports
 // None
 
 /**

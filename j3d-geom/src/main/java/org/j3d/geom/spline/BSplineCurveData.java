@@ -9,10 +9,10 @@
 
 package org.j3d.geom.spline;
 
-// Standard imports
+// External imports
 // none
 
-// Application specific imports
+// Local imports
 // None
 
 /**

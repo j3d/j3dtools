@@ -10,13 +10,13 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import java.awt.event.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
-// Application Specific imports
+// Local imports
 import org.j3d.ui.image.JPEGImageObserver;
 import org.j3d.ui.navigation.NavigationStateListener;
 import org.j3d.ui.navigation.NavigationStateManager;

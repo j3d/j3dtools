@@ -12,7 +12,7 @@
 
 package org.j3d.ui.navigation;
 
-// Standard imports
+// External imports
 import  javax.swing.*;
 
 import java.awt.BorderLayout;
@@ -24,7 +24,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-// Application specific imports
+// Local imports
 import org.j3d.util.ImageLoader;
 
 /**

@@ -9,7 +9,7 @@
 
 package org.j3d.ui.image;
 
-// Standard imports
+// External imports
 
 import java.util.Iterator;
 import javax.imageio.ImageIO;
@@ -18,7 +18,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
 
-// Application specific imports
+// Local imports
 import org.j3d.ui.CapturedImageObserver;
 
 /**

@@ -12,10 +12,10 @@
 
 package org.j3d.ui.navigation;
 
-// Standard imports
+// External imports
 // none
 
-// Application specific imports
+// Local imports
 // none
 
 /**

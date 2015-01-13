@@ -43,10 +43,10 @@
  */
 package org.j3d.terrain.roam;
 
-// Standard imports
+// External imports
 import java.util.TreeSet;
 
-// Application specific imports
+// Local imports
 // none
 
 /**

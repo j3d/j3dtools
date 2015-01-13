@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-// Standard imports
+// External imports
 import java.awt.*;
 import javax.swing.*;
 import javax.media.j3d.*;
@@ -20,7 +20,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Map;
 
-// Application Specific imports
+// Local imports
 import org.j3d.geom.SphereGenerator;
 import org.j3d.geom.GeometryData;
 import org.j3d.renderer.java3d.navigation.MouseViewHandler;

@@ -9,10 +9,10 @@
 
 package org.j3d.util.interpolator;
 
-// Standard imports
+// External imports
 // None
 
-// Application specific imports
+// Local imports
 import org.j3d.maths.vector.AxisAngle4d;
 import org.j3d.maths.vector.Quat4d;
 

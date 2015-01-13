@@ -12,11 +12,11 @@
 
 package org.j3d.util;
 
-// Standard imports
+// External imports
 import java.lang.reflect.Array;
 import java.util.Collection;
 
-// Application specific imports
+// Local imports
 // None
 
 /**

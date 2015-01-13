@@ -9,7 +9,7 @@
 
 package org.j3d.geom;
 
-// Standard imports
+// External imports
 // None
 
 import org.testng.annotations.Test;

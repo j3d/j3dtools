@@ -9,9 +9,9 @@
 
 package org.j3d.terrain;
 
-// Standard imports
+// External imports
 
-// Application specific imports
+// Local imports
 import org.j3d.geom.terrain.HeightDataSource;
 
 /**

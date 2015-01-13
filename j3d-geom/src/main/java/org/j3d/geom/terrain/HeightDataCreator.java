@@ -9,12 +9,12 @@
 
 package org.j3d.geom.terrain;
 
-// Standard imports
+// External imports
 import java.awt.image.*;
 
 import java.awt.color.ColorSpace;
 
-// Application specific imports
+// Local imports
 import org.j3d.geom.GeometryData;
 import org.j3d.geom.InvalidArraySizeException;
 import org.j3d.geom.UnsupportedTypeException;
