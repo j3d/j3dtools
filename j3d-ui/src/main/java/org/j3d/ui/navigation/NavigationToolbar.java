@@ -199,6 +199,7 @@ public class NavigationToolbar extends JPanel
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void actionPerformed(ActionEvent evt)
     {
         if(!allowUserSelect)
@@ -247,6 +248,7 @@ public class NavigationToolbar extends JPanel
      *
      * @param state One of the state values declared here
      */
+    @Override
     public void setNavigationState(int state)
     {
         navigationState = state;
@@ -291,6 +293,7 @@ public class NavigationToolbar extends JPanel
      *
      * @return The state that the listener thinks it is in
      */
+    @Override
     public int getNavigationState()
     {
         return navigationState;
@@ -306,6 +309,7 @@ public class NavigationToolbar extends JPanel
      *
      * @param enabled true if this component is enabled
      */
+    @Override
     public void setEnabled(boolean enabled)
     {
         super.setEnabled(enabled);

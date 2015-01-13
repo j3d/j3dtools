@@ -57,6 +57,7 @@ public abstract class AbstractStaticTerrainData extends AbstractTerrainData
      *
      * @return The texture instance to use or null
      */
+    @Override
     public BufferedImage getTexture()
     {
         return texture;
@@ -67,6 +68,7 @@ public abstract class AbstractStaticTerrainData extends AbstractTerrainData
      *
      * @return The number of points in the width if the grid
      */
+    @Override
     public int getGridWidth()
     {
         return gridWidth;
@@ -77,6 +79,7 @@ public abstract class AbstractStaticTerrainData extends AbstractTerrainData
      *
      * @return The number of points in the depth of the grid
      */
+    @Override
     public int getGridDepth()
     {
         return gridWidth;

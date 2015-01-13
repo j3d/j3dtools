@@ -201,6 +201,7 @@ public class Gamepad implements GamepadDevice, TrackerDevice
      *
      * @return The name
      */
+    @Override
     public String getName()
     {
         return name;
@@ -216,6 +217,7 @@ public class Gamepad implements GamepadDevice, TrackerDevice
      *
      * @param state The state structure to fill in.
      */
+    @Override
     public void getState(GamepadState state)
     {
         controller.poll();
@@ -359,6 +361,7 @@ public class Gamepad implements GamepadDevice, TrackerDevice
      *
      * @param val The rumbler strength, from -1 to 1.
      */
+    @Override
     public void setRumblerX(float val)
     {
         if (rumblerX != null)
@@ -370,6 +373,7 @@ public class Gamepad implements GamepadDevice, TrackerDevice
      *
      * @param val The rumbler strength, from -1 to 1.
      */
+    @Override
     public void setRumblerY(float val)
     {
         if (rumblerY != null)
@@ -385,6 +389,7 @@ public class Gamepad implements GamepadDevice, TrackerDevice
      *
      * @return The number of trackers.  This cannot change after startup.
      */
+    @Override
     public int getTrackerCount()
     {
         return trackers.length;
@@ -395,6 +400,7 @@ public class Gamepad implements GamepadDevice, TrackerDevice
      *
      * @return The trackers.  This cannot changed after startup.
      */
+    @Override
     public Tracker[] getTrackers()
     {
         return trackers;

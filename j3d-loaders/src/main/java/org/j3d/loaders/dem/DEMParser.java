@@ -266,6 +266,7 @@ public class DEMParser implements HeightMapSource
      *
      * @return The converted heights or null
      */
+    @Override
     public float[][] getHeights()
     {
         float[][] ret_val = null;
@@ -282,6 +283,7 @@ public class DEMParser implements HeightMapSource
      *
      * @return The stepping information for width and depth
      */
+    @Override
     public float[] getGridStep()
     {
         return gridStepData;

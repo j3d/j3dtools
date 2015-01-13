@@ -35,6 +35,7 @@ class IntelBufferReader extends BufferReader
      * @param start The start index in the array
      * @return The value read
      */
+    @Override
     int readShort(int start)
     {
         int ch1 = buffer[start] & 255;
@@ -49,6 +50,7 @@ class IntelBufferReader extends BufferReader
      * @param start The start index in the array
      * @return The value read
      */
+    @Override
     int readInt(int start)
     {
         int ch1 = buffer[start] & 255;

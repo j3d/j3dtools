@@ -151,6 +151,7 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
      * @param bounds The bounds of the available data, to be filled in by the
      *    implementation of this class
      */
+    @Override
     public void getTilesAvailableBounds(Rectangle bounds)
     {
         bounds.x = 0;
@@ -167,6 +168,7 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
      * @param bounds The bounds of the area, in tile coordinates, that will be
      *    accessed
      */
+    @Override
     public void setActiveBounds(Rectangle bounds)
     {
     }
@@ -183,6 +185,7 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
      * @param z The z coordinate for the height sampling
      * @return The height at the current point or NaN
      */
+    @Override
     public float getHeight(float x, float z)
     {
         // work out where we are in the grid first. Rememeber that we have
@@ -224,6 +227,7 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
+    @Override
     public void getCoordinate(float[] coord, int gridX, int gridY)
     {
 
@@ -256,6 +260,7 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
+    @Override
     public void getCoordinate(float[] coord,
                               float[] tex,
                               float[] color,
@@ -309,6 +314,7 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
+    @Override
     public void getCoordinateWithTexture(float[] coord,
                                          float[] textureCoord,
                                          int gridX,
@@ -439,6 +445,7 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
+    @Override
     public void getCoordinateWithColor(float[] coord,
                                        float[] color,
                                        int gridX,
@@ -485,6 +492,7 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
      * @param gridY The Y coordinate of the position in the grid
      * @return The height at the given grid position
      */
+    @Override
     public float getHeightFromGrid(int gridX, int gridY)
     {
         int g_x = 0;

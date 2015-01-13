@@ -121,6 +121,7 @@ public abstract class Landscape
      * @param z The z coordinate for the height sampling
      * @return The height at the current point or NaN
      */
+    @Override
     public float getHeight(float x, float z)
     {
         return terrainData.getHeight(x, z);

@@ -71,6 +71,7 @@ public class JoystickState extends GenericHIDState
     /**
      * Clear changed flags.
      */
+    @Override
     public void clearChanged()
     {
         triggerButton_changed = false;

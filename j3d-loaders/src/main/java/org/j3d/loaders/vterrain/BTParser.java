@@ -126,6 +126,7 @@ public class BTParser implements HeightMapSource
      *
      * @return The array of heights in [row][column] order or null
      */
+    @Override
     public float[][] getHeights()
     {
         return heights;
@@ -137,6 +138,7 @@ public class BTParser implements HeightMapSource
      *
      * @return The stepping information for width and depth
      */
+    @Override
     public float[] getGridStep()
     {
         return gridStepData;

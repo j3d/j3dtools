@@ -96,6 +96,7 @@ public class C3DParameterGroup
      *
      * @return Information about the header
      */
+    @Override
     public String toString()
     {
         StringBuilder buf = new StringBuilder("C3DParameterGroup: ");
@@ -118,6 +119,7 @@ public class C3DParameterGroup
      *
      * @return A hash value based on the name of the group
      */
+    @Override
     public int hashCode()
     {
         return name.hashCode();

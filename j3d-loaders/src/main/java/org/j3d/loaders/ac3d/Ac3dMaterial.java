@@ -252,6 +252,7 @@ public class Ac3dMaterial
      *
      * @return The humantext stringification of the current object state.
      */
+    @Override
     public String toString()
     {
         StringBuffer ret_val=new StringBuffer();

@@ -36,7 +36,7 @@ abstract class OBJParser
     /** Detailed parsing messages or null if none */
     protected List<String> parsingMessages;
 
-    public OBJParser()
+    OBJParser()
     {
         this(false);
     }
@@ -47,7 +47,7 @@ abstract class OBJParser
      * @param strict Attempt to deal with crappy data or short downloads.
      * Will try to return any useable geometry.
      */
-    public OBJParser(boolean strict)
+    OBJParser(boolean strict)
     {
         strictParsing = strict;
     }

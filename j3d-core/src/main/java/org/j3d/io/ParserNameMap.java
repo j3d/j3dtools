@@ -80,7 +80,8 @@ public class ParserNameMap implements FileNameMap
      * @param filename The filename to extract an extension from
      * @return The matching MIME type or null if not known
      */
-    public String getContentTypeFor(String filename) 
+    @Override
+    public String getContentTypeFor(String filename)
     {
         String ext = filename.substring(filename.lastIndexOf('.') + 1);
         ext = ext.toLowerCase();

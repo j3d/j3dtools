@@ -59,6 +59,7 @@ public class ViewpointData
      *
      * @return The name of this viewpoint
      */
+    @Override
     public String toString()
     {
         return name;

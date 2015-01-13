@@ -67,6 +67,7 @@ public class BoundingBoxParticleFunction implements ParticleFunction
      *
      * @return True if this is enabled
      */
+    @Override
     public boolean isEnabled()
     {
         return enabled;
@@ -78,6 +79,7 @@ public class BoundingBoxParticleFunction implements ParticleFunction
      *
      * @param state The new enabled state to set it to
      */
+    @Override
     public void setEnabled(boolean state)
     {
         enabled = state;
@@ -89,6 +91,7 @@ public class BoundingBoxParticleFunction implements ParticleFunction
      * @param deltaT The elapsed time in milliseconds since the last frame
      * @return true if this should force another update after this one
      */
+    @Override
     public boolean newFrame(int deltaT)
     {
        return true;
@@ -101,6 +104,7 @@ public class BoundingBoxParticleFunction implements ParticleFunction
      * @param particle The particle to apply the function to
      * @return true if this should force another update after this one
      */
+    @Override
     public boolean apply(Particle particle)
     {
         // we constrain the particle to be inside the BoundingBox

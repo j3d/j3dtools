@@ -146,6 +146,7 @@ public class WindParticleFunction implements ParticleFunction
      *
      * @return True if this is enabled
      */
+    @Override
     public boolean isEnabled()
     {
         return enabled;
@@ -157,6 +158,7 @@ public class WindParticleFunction implements ParticleFunction
      *
      * @param state The new enabled state to set it to
      */
+    @Override
     public void setEnabled(boolean state)
     {
         enabled = state;
@@ -169,6 +171,7 @@ public class WindParticleFunction implements ParticleFunction
      * @param deltaT The elapsed time in milliseconds since the last frame
      * @return true if this should force another update after this one
      */
+    @Override
     public boolean newFrame(int deltaT)
     {
         // calculate the current wind pressure from the speed
@@ -183,6 +186,7 @@ public class WindParticleFunction implements ParticleFunction
      * @param particle The particle to apply the function to
      * @return true if the particle has changed, false otherwise
      */
+    @Override
     public boolean apply(Particle particle)
     {
 

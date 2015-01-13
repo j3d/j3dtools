@@ -158,7 +158,6 @@ public class MaxParser
             int type = readUnsignedShort();
             int size = readInt();
 
-//System.out.println("main 0x" + Integer.toHexString(type) + " size " + size);
             switch(type)
             {
                 case MaxConstants.VERSION:
@@ -203,7 +202,6 @@ public class MaxParser
             int type = readUnsignedShort();
             int size = readInt();
 
-//System.out.println("mesh 0x" + Integer.toHexString(type) + " size " + size);
             switch(type)
             {
                 case MaxConstants.NAMED_OBJECT:
@@ -1236,7 +1234,6 @@ public class MaxParser
             int type = readUnsignedShort();
             int size = readInt();
 
-//System.out.println("keyframe 0x" + Integer.toHexString(type) + " size " + size);
             switch(type)
             {
                 case MaxConstants.KEYFRAME_HEADER:

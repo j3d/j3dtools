@@ -72,6 +72,7 @@ public class PhysicsFunction implements ParticleFunction
      *
      * @return True if this is enabled
      */
+    @Override
     public boolean isEnabled()
     {
         return enabled;
@@ -83,6 +84,7 @@ public class PhysicsFunction implements ParticleFunction
      *
      * @param state The new enabled state to set it to
      */
+    @Override
     public void setEnabled(boolean state)
     {
         enabled = state;
@@ -95,6 +97,7 @@ public class PhysicsFunction implements ParticleFunction
      * @param deltaT The elapsed time in milliseconds since the last frame
      * @return true if this should force another update after this one
      */
+    @Override
     public boolean newFrame(int deltaT)
     {
         deltaTime = deltaT * 0.001f;
@@ -108,6 +111,7 @@ public class PhysicsFunction implements ParticleFunction
      * @param particle The particle to apply the function to
      * @return true if the particle has changed, false otherwise
      */
+    @Override
     public boolean apply(Particle particle)
     {
         if(particle.mass != 0)

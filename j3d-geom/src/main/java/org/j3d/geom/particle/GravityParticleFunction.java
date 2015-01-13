@@ -60,6 +60,7 @@ public class GravityParticleFunction implements ParticleFunction
      *
      * @return True if this is enabled
      */
+    @Override
     public boolean isEnabled()
     {
         return enabled;
@@ -71,6 +72,7 @@ public class GravityParticleFunction implements ParticleFunction
      *
      * @param state The new enabled state to set it to
      */
+    @Override
     public void setEnabled(boolean state)
     {
         enabled = state;
@@ -83,6 +85,7 @@ public class GravityParticleFunction implements ParticleFunction
      * @param deltaT The elapsed time in milliseconds since the last frame
      * @return true if this should force another update after this one
      */
+    @Override
     public boolean newFrame(int deltaT)
     {
        return true;
@@ -94,6 +97,7 @@ public class GravityParticleFunction implements ParticleFunction
      * @param particle The particle to apply the function to
      * @return true if the particle stays alive, false otherwise
      */
+    @Override
     public boolean apply(Particle particle)
     {
         particle.resultantForce.x += gravityForce[0];

@@ -134,6 +134,7 @@ public class USBManager implements DeviceManager
      *
      * @param reporter The instance to use or null
      */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         errorReporter = reporter;
@@ -148,6 +149,7 @@ public class USBManager implements DeviceManager
      *
      * @return The number of devices.
      */
+    @Override
     public int getNumDevices()
     {
         if(!deviceListInit)
@@ -162,6 +164,7 @@ public class USBManager implements DeviceManager
      *
      * @return InputDevice[] An array of discovered devices.
      */
+    @Override
     public InputDevice[] getDevices()
     {
         if(!deviceListInit)
@@ -179,6 +182,7 @@ public class USBManager implements DeviceManager
      *
      * @param l The listener.  Nulls and duplicates will be ignored.
      */
+    @Override
     public void addDeviceListener(DeviceListener l)
     {
         if(!deviceListeners.contains(l))
@@ -191,6 +195,7 @@ public class USBManager implements DeviceManager
      *
      * @param l The listener.  Nulls and not found listeners will be ignored.
      */
+    @Override
     public void removeDeviceListener(DeviceListener l)
     {
         deviceListeners.remove(l);
@@ -315,6 +320,7 @@ public class USBManager implements DeviceManager
             AccessController.doPrivileged(
                 new PrivilegedExceptionAction ()
                 {
+                    @Override
                     public Object run()
                     {
                         String osName = System.getProperty("os.name").toLowerCase();

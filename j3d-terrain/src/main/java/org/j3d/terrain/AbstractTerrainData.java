@@ -68,6 +68,7 @@ public abstract class AbstractTerrainData implements TerrainData
      *
      * @return The type of data that this instance represents
      */
+    @Override
     public int getSourceDataType()
     {
         return terrainType;
@@ -84,6 +85,7 @@ public abstract class AbstractTerrainData implements TerrainData
      *
      * @return true If per-vertex color is available
      */
+    @Override
     public boolean hasColor()
     {
         return colorAvailable;
@@ -95,6 +97,7 @@ public abstract class AbstractTerrainData implements TerrainData
      *
      * @return true If a texture(s) is available
      */
+    @Override
     public boolean hasTexture()
     {
         return textureAvailable;
@@ -105,6 +108,7 @@ public abstract class AbstractTerrainData implements TerrainData
      *
      * @return The distance between each step of the grid
      */
+    @Override
     public double getGridXStep()
     {
         return gridStepX;
@@ -115,6 +119,7 @@ public abstract class AbstractTerrainData implements TerrainData
      *
      * @return The distance between each step of the grid
      */
+    @Override
     public double getGridYStep()
     {
         return gridStepY;

@@ -88,6 +88,7 @@ public abstract class SubdivisionGenerator extends GeometryGenerator
      * @throws UnsupportedTypeException The generator cannot handle the type
      *   of geometry you have requested.
      */
+    @Override
     public int getVertexCount(GeometryData data)
         throws UnsupportedTypeException
     {
@@ -125,6 +126,7 @@ public abstract class SubdivisionGenerator extends GeometryGenerator
      * @throws UnsupportedTypeException The generator cannot handle the type
      *   of geometry you have requested
      */
+    @Override
     public void generate(GeometryData data)
         throws UnsupportedTypeException, InvalidArraySizeException
     {

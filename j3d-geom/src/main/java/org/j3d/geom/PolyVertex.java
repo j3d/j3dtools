@@ -53,6 +53,7 @@ class PolyVertex
     /**
      * Prints out the details of this vertex.
      */
+    @Override
     public String toString()
     {
         StringBuffer buf = new StringBuffer("PolyVertex ");

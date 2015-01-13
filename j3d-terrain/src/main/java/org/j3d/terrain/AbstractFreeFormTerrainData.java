@@ -66,6 +66,7 @@ public abstract class AbstractFreeFormTerrainData extends AbstractTerrainData
      *
      * @return The number of points in the width if the grid
      */
+    @Override
     public int getGridWidth()
     {
         return gridWidth;
@@ -77,6 +78,7 @@ public abstract class AbstractFreeFormTerrainData extends AbstractTerrainData
      *
      * @return The number of points in the depth of the grid
      */
+    @Override
     public int getGridDepth()
     {
         return gridDepth;
@@ -96,6 +98,7 @@ public abstract class AbstractFreeFormTerrainData extends AbstractTerrainData
      * @param bounds The bounds of the region based on the grid positions
      * @return The texture object suitable for that bounds or null
      */
+    @Override
     public BufferedImage getTexture(Rectangle bounds)
     {
         pixelBounds.x = bounds.x * widthPixelsPerGridStep;

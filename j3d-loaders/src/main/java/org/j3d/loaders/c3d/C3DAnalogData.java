@@ -91,6 +91,7 @@ public class C3DAnalogData
      *
      * @return Information about the header
      */
+    @Override
     public String toString()
     {
         StringBuffer buf = new StringBuffer("C3DAnalogData: Channel: ");

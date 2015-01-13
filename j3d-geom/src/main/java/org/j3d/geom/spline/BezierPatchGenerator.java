@@ -70,6 +70,7 @@ public class BezierPatchGenerator extends PatchGenerator
      * Regenerate the patch coordinate points according to the bezier surface
      * function.
      */
+    @Override
     protected void regeneratePatch()
     {
         if(!patchChanged)

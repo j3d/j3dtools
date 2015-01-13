@@ -87,6 +87,7 @@ public class C3DTrajectoryData
      *
      * @return Information about the header
      */
+    @Override
     public String toString()
     {
         StringBuffer buf = new StringBuffer("C3DTrajectoryData: ");

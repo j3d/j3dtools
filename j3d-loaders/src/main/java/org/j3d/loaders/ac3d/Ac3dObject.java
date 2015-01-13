@@ -428,6 +428,7 @@ public class Ac3dObject
      *
      * @return A stringified version of the internal state.
      */
+    @Override
     public String toString()
     {
         StringBuffer ret_val = new StringBuffer();

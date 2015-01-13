@@ -205,6 +205,7 @@ public abstract class HAnimHumanoid extends HAnimObject
      *
      * @param child Reference to the child that has changed
      */
+    @Override
     public void childUpdateRequired(HAnimObject child)
     {
         if(child == rootJoint)
@@ -222,6 +223,7 @@ public abstract class HAnimHumanoid extends HAnimObject
      *
      * @return The index of the object into global lists
      */
+    @Override
     public synchronized int requestNextObjectIndex()
     {
         return objectCount++;
@@ -239,6 +241,7 @@ public abstract class HAnimHumanoid extends HAnimObject
      *
      * @param reporter The instance to use or null
      */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         super.setErrorReporter(reporter);

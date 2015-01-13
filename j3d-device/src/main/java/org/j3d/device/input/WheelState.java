@@ -69,6 +69,7 @@ public class WheelState extends GenericHIDState
     /**
      * Clear changed flags.
      */
+    @Override
     public void clearChanged()
     {
         wheelX_changed = false;

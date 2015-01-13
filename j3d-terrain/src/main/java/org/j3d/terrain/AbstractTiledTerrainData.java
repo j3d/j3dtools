@@ -66,6 +66,7 @@ public abstract class AbstractTiledTerrainData extends AbstractTerrainData
      *
      * @return The number of points in the size if the grid
      */
+    @Override
     public int getTileSize()
     {
         return gridPointsPerTile;
@@ -82,6 +83,7 @@ public abstract class AbstractTiledTerrainData extends AbstractTerrainData
      * @param tileY the y coordinate of the tile number for the texture
      * @return The texture object suitable for that bounds or null
      */
+    @Override
     public BufferedImage getTexture(int tileX, int tileY)
     {
         BufferedImage ret_val = null;

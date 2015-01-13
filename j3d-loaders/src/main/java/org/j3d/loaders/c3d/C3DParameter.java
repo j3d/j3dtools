@@ -96,6 +96,7 @@ public abstract class C3DParameter
      * @param o The object instance of compare against
      * @return true if these are the same parameter by the above definition
      */
+    @Override
     public boolean equals(Object o)
     {
         if(!(o instanceof C3DParameter))

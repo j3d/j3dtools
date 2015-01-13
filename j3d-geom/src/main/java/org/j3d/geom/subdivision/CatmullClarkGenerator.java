@@ -95,6 +95,7 @@ public class CatmullClarkGenerator extends PolygonSubdivisionGenerator
      * Regenerate the patch coordinate points in accordance with the derived
      * classes algorithm type.
      */
+    @Override
     protected void regenerateSubdivision()
     {
         if(levelChanged)

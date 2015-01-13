@@ -89,6 +89,7 @@ public class AxisTracker extends Tracker
     /**
      * Notification that tracker polling is beginning.
      */
+    @Override
     public void beginPolling()
     {
         // TODO: Should we double buffer?
@@ -97,6 +98,7 @@ public class AxisTracker extends Tracker
     /**
      * Notification that tracker polling is ending.
      */
+    @Override
     public void endPolling()
     {
     }
@@ -107,6 +109,7 @@ public class AxisTracker extends Tracker
      *
      * @return The currently set action mask.
      */
+    @Override
     public int getActionMask()
     {
         return mask;
@@ -120,6 +123,7 @@ public class AxisTracker extends Tracker
 	 *    main layer to get the state from
      * @param state The current state
      */
+    @Override
     public void getState(int layer, int subLayer, TrackerState state)
     {
         updateData();
@@ -250,7 +254,6 @@ public class AxisTracker extends Tracker
 
                 tstate.actionType = TrackerState.TYPE_RELEASE;
                 tstate.buttonState[0] = false;
-                continue;
             }
         }
     }

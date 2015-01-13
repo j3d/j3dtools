@@ -130,6 +130,7 @@ public class TrackerState extends DeviceState
      *
      * @return A string containing all the state detail
      */
+    @Override
     public String toString()
     {
 

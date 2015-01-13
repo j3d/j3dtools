@@ -206,6 +206,7 @@ public class HAnimJoint extends HAnimObject
      *
      * @param child Reference to the child that has changed
      */
+    @Override
     public void childUpdateRequired(HAnimObject child)
     {
         if(!updateSent)
@@ -224,6 +225,7 @@ public class HAnimJoint extends HAnimObject
      *
      * @return The index of the object into global lists
      */
+    @Override
     public int requestNextObjectIndex()
     {
         return (parent != null) ? parent.requestNextObjectIndex() : -1;
@@ -241,6 +243,7 @@ public class HAnimJoint extends HAnimObject
      *
      * @param reporter The instance to use or null
      */
+    @Override
     public void setErrorReporter(ErrorReporter reporter)
     {
         super.setErrorReporter(reporter);

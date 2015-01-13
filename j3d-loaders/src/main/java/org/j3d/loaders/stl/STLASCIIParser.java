@@ -16,7 +16,6 @@ import java.io.*;
 import java.util.*;
 
 import java.net.URL;
-import java.net.URLConnection;
 import java.awt.Component;
 import javax.swing.ProgressMonitorInputStream;
 
@@ -77,7 +76,7 @@ class STLASCIIParser extends STLParser
     /**
      * Create a new default parser instance.
      */
-    public STLASCIIParser()
+    STLASCIIParser()
     {
     }
 
@@ -85,15 +84,15 @@ class STLASCIIParser extends STLParser
     /**
      * Create a new default parser instance.
      */
-    public STLASCIIParser(boolean strict)
+    STLASCIIParser(boolean strict)
     {
         super(strict);
-
     }
 
     /**
      * Finish the parsing off now.
      */
+    @Override
     public void close() throws IOException
     {
         if(itsReader != null)
@@ -108,6 +107,7 @@ class STLASCIIParser extends STLParser
      * @throws InvalidFormatException The file was structurally incorrect
      * @throws IOException Something happened during the reading
      */
+    @Override
     public boolean getNextFacet(double[] normal, double[][] vertices)
         throws IOException
     {
@@ -140,7 +140,8 @@ class STLASCIIParser extends STLParser
         // "end solid" rather than the spec-required "endsolid".
         if(token.equals("endsolid") || token.equals("end solid")) {
             // Skip line and read next
-            try {
+            try
+            {
                 return getNextFacet(normal, vertices);
             } catch(IOException ioe) {
                 // gone past end of file
@@ -203,7 +204,8 @@ class STLASCIIParser extends STLParser
         }
 
         // Next 3x vertex reads
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < 3; i++)
+        {
             input_line = itsReader.readLine();
             strtok = new StringTokenizer(input_line);
             lineCount++;
@@ -261,9 +263,7 @@ class STLASCIIParser extends STLParser
         return true;
     }
 
-    /**
-     * @throws InvalidFormatException The file was structurally incorrect
-     */
+    @Override
     public boolean parse(URL url, Component parentComponent)
         throws InterruptedIOException, IOException
     {
@@ -324,6 +324,7 @@ class STLASCIIParser extends STLParser
     /**
      * @throws InvalidFormatException The file was structurally incorrect
      */
+    @Override
     public boolean parse(URL url)
         throws IOException
     {
@@ -520,7 +521,8 @@ class STLASCIIParser extends STLParser
 
         }
 
-        if (error_found) {
+        if (error_found)
+        {
             // STL spec says use 0 0 0 for autocalc
             vector[0] = 0;
             vector[1] = 0;
@@ -538,8 +540,6 @@ class STLASCIIParser extends STLParser
         for(int i = 0; i < 3; i ++)
         {
             String num_str = strtok.nextToken();
-
-            boolean error_found = false;
 
             try
             {
@@ -575,5 +575,4 @@ class STLASCIIParser extends STLParser
             }
         }
     }
-
 }

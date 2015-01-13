@@ -70,6 +70,7 @@ public class ViewpointCellRenderer extends JLabel implements ListCellRenderer
      * @param cellHasFocus true if the cell is currently focussed
      * @return The Renderer for the values given
      */
+    @Override
     public Component getListCellRendererComponent(JList list,
                                            Object value,
                                            int index,
@@ -105,6 +106,7 @@ public class ViewpointCellRenderer extends JLabel implements ListCellRenderer
      * Overridden for performance reasons to provide an empty method when no
      * processing really needs to be done.
      */
+    @Override
     public void validate()
     {
     }
@@ -113,6 +115,7 @@ public class ViewpointCellRenderer extends JLabel implements ListCellRenderer
      * Overridden for performance reasons to provide an empty method when no
      * processing really needs to be done.
      */
+    @Override
     public void revalidate()
     {
     }
@@ -121,6 +124,7 @@ public class ViewpointCellRenderer extends JLabel implements ListCellRenderer
      * Overridden for performance reasons to provide an empty method when no
      * processing really needs to be done.
      */
+    @Override
     public void repaint(long tm, int x, int y, int width, int height)
     {
     }
@@ -129,6 +133,7 @@ public class ViewpointCellRenderer extends JLabel implements ListCellRenderer
      * Overridden for performance reasons to provide an empty method when no
      * processing really needs to be done.
      */
+    @Override
     public void repaint(Rectangle r)
     {
     }

@@ -11,6 +11,7 @@
 package org.j3d.loaders.obj;
 
 // External imports
+
 import java.io.*;
 import java.util.*;
 
@@ -26,10 +27,10 @@ import org.j3d.geom.GeometryData;
 
 /**
  * Class to parse OBJ (stereolithography) files in ASCII format.<p>
- *
- * <p>
+ * <p/>
+ * <p/>
  * <b>Internationalisation Resource Names</b>
- * <p>
+ * <p/>
  * <ul>
  * <li>invalidKeywordMsg: Unknown keyword encountered. </li>
  * <li>emptyFileMsg: File contained the header but no content. </li>
@@ -37,15 +38,15 @@ import org.j3d.geom.GeometryData;
  * <li>unexpectedEofMsg: We hit an EOF before we were expecting to.</li>
  * </ul>
  *
+ * @author Alan Hudson
+ * @version $Revision: 2.0 $
  * @see OBJFileReader
  * @see OBJLoader
- * @author  Alan Hudson
- * @version $Revision: 2.0 $
  */
 class OBJASCIIParser extends OBJParser
 {
     /** Max number of unsupported messages before we go silent */
-    private static int UNSUPPORTED_MAX_MSGS = 10;
+    private static final int UNSUPPORTED_MAX_MSGS = 10;
 
     /** Coordinate data */
     private ArrayList<double[]> coords;
@@ -93,7 +94,7 @@ class OBJASCIIParser extends OBJParser
         "org.j3d.loaders.stl.OBJASCIIParser.unexpectedEofMsg";
 
     /** Reader for the main stream */
-    private BufferedReader  itsReader;
+    private BufferedReader itsReader;
 
     /** The line number that we're at in the file */
     private int lineCount;
@@ -101,7 +102,7 @@ class OBJASCIIParser extends OBJParser
     /**
      * Create a new default parser instance.
      */
-    public OBJASCIIParser()
+    OBJASCIIParser()
     {
         coords = new ArrayList<>();
         normals = new ArrayList<>();
@@ -112,7 +113,7 @@ class OBJASCIIParser extends OBJParser
     /**
      * Create a new default parser instance.
      */
-    public OBJASCIIParser(boolean strict)
+    OBJASCIIParser(boolean strict)
     {
         super(strict);
 
@@ -124,6 +125,7 @@ class OBJASCIIParser extends OBJParser
     /**
      * Finish the parsing off now.
      */
+    @Override
     public void close() throws IOException
     {
         if(itsReader != null)
@@ -135,6 +137,7 @@ class OBJASCIIParser extends OBJParser
      *
      * @return The object or null if EOF reached.
      */
+    @Override
     public GeometryData getNextObject() throws IOException, InvalidFormatException
     {
         GeometryData ret_val = null;
@@ -149,80 +152,99 @@ class OBJASCIIParser extends OBJParser
         unsupportedCount = 0;
         boolean obj_started = false;
 
-        loop: while(input_line != null)
+        loop:
+        while(input_line != null)
         {
-            if (input_line.startsWith("#")) {
+            if(input_line.startsWith("#"))
+            {
                 input_line = itsReader.readLine();
 
                 continue;
-            } else if (input_line.indexOf("\\") > -1) {
-                input_line = input_line.replace("\\","");
+            }
+            else if(input_line.indexOf("\\") > -1)
+            {
+                input_line = input_line.replace("\\", "");
                 // Line break.  "Spec" doesn't give rules
                 input_line += itsReader.readLine();
                 continue loop;
-            } else {
+            }
+            else
+            {
 
-                StringTokenizer strtok = new StringTokenizer(input_line," ");
+                StringTokenizer strtok = new StringTokenizer(input_line, " ");
 
-                if (!strtok.hasMoreElements()) {
+                if(!strtok.hasMoreElements())
+                {
                     input_line = itsReader.readLine();
                     continue;
                 }
 
                 String token = strtok.nextToken();
 
-                if (token.equals("o"))
+                if(token.equals("o"))
                 {
-                    if (obj_started) {
+                    if(obj_started)
+                    {
                         break;
                     }
                     // new object
-                } else if (token.equals("v"))
+                }
+                else if(token.equals("v"))
                 {
                     double[] coord = readCoordinate(strtok);
                     coords.add(coord);
-//System.out.println("Found vertex: " + java.util.Arrays.toString(coord));
-                    if (ret_val == null) {
+                    if(ret_val == null)
+                    {
                         ret_val = new GeometryData();
                     }
                     // vertex
-                } else if (token.equals("vn"))
+                }
+                else if(token.equals("vn"))
                 {
                     // normal
                     double[] coord = readNormal(strtok);
                     normals.add(coord);
-                } else if (token.equals("vt"))
+                }
+                else if(token.equals("vt"))
                 {
                     // texture coordinate
                     double[] coord = readTextureCoordinate(strtok);
                     texCoords.add(coord);
-                } else if (token.equals("f"))
+                }
+                else if(token.equals("f"))
                 {
                     int[][] face = readFace(strtok);
-//System.out.println("Found face: " + java.util.Arrays.toString(face));
                     coord_indexes.add(face[0]);
 
-                    if (face.length > 1)
+                    if(face.length > 1)
                     {
                         texCoord_indexes.add(face[1]);
                     }
 
-                    if (face.length > 2)
+                    if(face.length > 2)
                     {
                         normal_indexes.add(face[2]);
                     }
 
                     obj_started = true;
-                } else if (token.equals("g")) {
+                }
+                else if(token.equals("g"))
+                {
                     // Ignore Grouping command
-                } else if (token.equals("s")) {
+                }
+                else if(token.equals("s"))
+                {
                     // Ignore State
-                } else if (token.equals("cstype")) {
+                }
+                else if(token.equals("cstype"))
+                {
                     // Unsupported Geometry
 
-                    if (unsupportedCount < UNSUPPORTED_MAX_MSGS) {
+                    if(unsupportedCount < UNSUPPORTED_MAX_MSGS)
+                    {
                         String msg = "Unsupported geometry: " + token;
-                        if (parsingMessages == null) {
+                        if(parsingMessages == null)
+                        {
                             parsingMessages = new ArrayList<String>();
                         }
                         parsingMessages.add(msg);
@@ -230,28 +252,48 @@ class OBJASCIIParser extends OBJParser
 
                     unsupportedCount++;
 
-                } else if (token.equals("surf")) {
+                }
+                else if(token.equals("surf"))
+                {
                     // Ignore, caught by cstype
-                } else if (token.equals("ctech")) {
+                }
+                else if(token.equals("ctech"))
+                {
                     // Ignore, caught by cstype
-                } else if (token.equals("curv")) {
+                }
+                else if(token.equals("curv"))
+                {
                     // Ignore, caught by cstype
-                } else if (token.equals("curv2")) {
+                }
+                else if(token.equals("curv2"))
+                {
                     // Ignore, caught by cstype
-                } else if (token.equals("trim")) {
+                }
+                else if(token.equals("trim"))
+                {
                     // Ignore, caught by cstype
-                } else if (token.equals("scurv")) {
+                }
+                else if(token.equals("scurv"))
+                {
                     // Ignore, caught by cstype
-                } else if (token.equals("end")) {
+                }
+                else if(token.equals("end"))
+                {
                     // Ignore, caught by cstype
-                } else if (token.equals("deg")) {
+                }
+                else if(token.equals("deg"))
+                {
                     // Ignore, caught by cstype
-                } else if (token.equals("parm")) {
+                }
+                else if(token.equals("parm"))
+                {
                     // Ignore, caught by cstype
-                } else
+                }
+                else
                 {
                     // Unsupported
-                    if (unsupportedCount < UNSUPPORTED_MAX_MSGS) {
+                    if(unsupportedCount < UNSUPPORTED_MAX_MSGS)
+                    {
 
                         System.out.println("Unsupported: " + input_line);
                     }
@@ -264,7 +306,7 @@ class OBJASCIIParser extends OBJParser
 
         }
 
-        if (ret_val == null)
+        if(ret_val == null)
             return null;
 
         int len = coords.size();
@@ -272,19 +314,22 @@ class OBJASCIIParser extends OBJParser
         ret_val.coordinates = new float[len * 3];
         int idx = 0;
 
-        for(int i=0; i < len; i++) {
+        for(int i = 0; i < len; i++)
+        {
             double[] val = coords.get(i);
             ret_val.coordinates[idx++] = (float) val[0];
             ret_val.coordinates[idx++] = (float) val[1];
             ret_val.coordinates[idx++] = (float) val[2];
         }
 
-        if (!normalCoordMissing && normals.size() > 0) {
+        if(!normalCoordMissing && normals.size() > 0)
+        {
             len = normals.size();
             ret_val.normals = new float[len * 3];
             idx = 0;
 
-            for(int i=0; i < len; i++) {
+            for(int i = 0; i < len; i++)
+            {
                 double[] val = normals.get(i);
                 ret_val.normals[idx++] = (float) val[0];
                 ret_val.normals[idx++] = (float) val[1];
@@ -292,12 +337,14 @@ class OBJASCIIParser extends OBJParser
             }
         }
 
-        if (!texCoordMissing && texCoords.size() > 0) {
+        if(!texCoordMissing && texCoords.size() > 0)
+        {
             len = texCoords.size();
             ret_val.textureCoordinates = new float[len * 2];
             idx = 0;
 
-            for(int i=0; i < len; i++) {
+            for(int i = 0; i < len; i++)
+            {
                 double[] val = texCoords.get(i);
                 ret_val.textureCoordinates[idx++] = (float) val[0];
                 ret_val.textureCoordinates[idx++] = (float) val[1];
@@ -308,7 +355,8 @@ class OBJASCIIParser extends OBJParser
         int count = 0;
 
         // TODO: do this count during creation?
-        for(int i=0; i < len; i++) {
+        for(int i = 0; i < len; i++)
+        {
             int[] face = coord_indexes.get(i);
             count += face.length;
         }
@@ -316,10 +364,13 @@ class OBJASCIIParser extends OBJParser
         ret_val.indexesCount = count;
         ret_val.indexes = new int[count + len];  // for extra -1
         idx = 0;
-        for(int i=0; i < len; i++) {
+        for(int i = 0; i < len; i++)
+        {
             int[] face = coord_indexes.get(i);
-            for(int j=0; j < face.length; j++) {
-                if (face[j] < 0 || face[j] >= coords.size()) {
+            for(int j = 0; j < face.length; j++)
+            {
+                if(face[j] < 0 || face[j] >= coords.size())
+                {
                     throw new InvalidFormatException("Coordinate index out of bounds");
                 }
                 ret_val.indexes[idx++] = face[j];
@@ -332,28 +383,34 @@ class OBJASCIIParser extends OBJParser
         count = 0;
 
         // TODO: do this count during creation?
-        for(int i=0; i < len; i++) {
+        for(int i = 0; i < len; i++)
+        {
             int[] face = texCoord_indexes.get(i);
 
-            if (face != null)
+            if(face != null)
                 count += face.length;
         }
 
-        if (count > 0)
+        if(count > 0)
         {
             boolean error_found = false;
 
             ret_val.texCoordIndexes = new int[count + len];  // for extra -1
             idx = 0;
-            loop: for(int i=0; i < len; i++)
+            loop:
+            for(int i = 0; i < len; i++)
             {
                 int[] face = texCoord_indexes.get(i);
-                for(int j=0; j < face.length; j++)
+                for(int j = 0; j < face.length; j++)
                 {
-                    if (face[j] < 0 || face[j] >= texCoords.size()) {
-                        if (strictParsing) {
+                    if(face[j] < 0 || face[j] >= texCoords.size())
+                    {
+                        if(strictParsing)
+                        {
                             throw new InvalidFormatException("TextureCoordinate index out of bounds");
-                        } else {
+                        }
+                        else
+                        {
                             error_found = true;
                             break loop;
                         }
@@ -365,7 +422,7 @@ class OBJASCIIParser extends OBJParser
                 ret_val.texCoordIndexes[idx++] = -1;
             }
 
-            if (error_found)
+            if(error_found)
             {
                 ret_val.texCoordIndexes = null;
             }
@@ -375,27 +432,34 @@ class OBJASCIIParser extends OBJParser
         count = 0;
 
         // TODO: do this count during creation?
-        for(int i=0; i < len; i++)
+        for(int i = 0; i < len; i++)
         {
             int[] face = normal_indexes.get(i);
 
-            if (face != null)
+            if(face != null)
                 count += face.length;
         }
 
-        if (!normalCoordMissing && count > 0)
+        if(!normalCoordMissing && count > 0)
         {
             boolean error_found = false;
 
             ret_val.normalIndexes = new int[count + len];  // for extra -1
             idx = 0;
-            loop: for(int i=0; i < len; i++) {
+            loop:
+            for(int i = 0; i < len; i++)
+            {
                 int[] face = normal_indexes.get(i);
-                for(int j=0; j < face.length; j++) {
-                    if (face[j] < 0 || face[j] >= normals.size()) {
-                        if (strictParsing) {
+                for(int j = 0; j < face.length; j++)
+                {
+                    if(face[j] < 0 || face[j] >= normals.size())
+                    {
+                        if(strictParsing)
+                        {
                             throw new InvalidFormatException("Normal index out of bounds");
-                        } else {
+                        }
+                        else
+                        {
                             error_found = true;
                             break loop;
                         }
@@ -407,7 +471,7 @@ class OBJASCIIParser extends OBJParser
                 ret_val.normalIndexes[idx++] = -1;
             }
 
-            if (error_found)
+            if(error_found)
             {
                 ret_val.normalIndexes = null;
             }
@@ -419,6 +483,7 @@ class OBJASCIIParser extends OBJParser
     /**
      * @throws InvalidFormatException The file was structurally incorrect
      */
+    @Override
     public boolean parse(URL url, Component parentComponent)
         throws InterruptedIOException, IOException
     {
@@ -465,7 +530,7 @@ class OBJASCIIParser extends OBJParser
             throw e;
         }
 
-        stream = new ProgressMonitorInputStream (
+        stream = new ProgressMonitorInputStream(
             parentComponent,
             "parsing " + url.toString(),
             stream);
@@ -479,6 +544,7 @@ class OBJASCIIParser extends OBJParser
     /**
      * @throws InvalidFormatException The file was structurally incorrect
      */
+    @Override
     public boolean parse(URL url)
         throws IOException
     {
@@ -543,10 +609,8 @@ class OBJASCIIParser extends OBJParser
     private boolean parse(BufferedReader reader)
         throws IOException, InvalidFormatException
     {
-
         // There is not header information
         return true;
-
     }
 
     /**
@@ -558,15 +622,16 @@ class OBJASCIIParser extends OBJParser
     {
         double[] vector = new double[3];
 
-        for(int i = 0; i < 3; i ++)
+        for(int i = 0; i < 3; i++)
         {
             String num_str = strtok.nextToken();
 
             boolean error_found = false;
 
-            if (num_str == "") {
+            if(num_str == "")
+            {
                 // ignore extra spaces
-                i = i -1;
+                i = i - 1;
                 continue;
             }
 
@@ -576,16 +641,18 @@ class OBJASCIIParser extends OBJParser
             }
             catch(NumberFormatException e)
             {
-                if (strictParsing)
+                if(strictParsing)
                 {
                     I18nManager intl_mgr = I18nManager.getManager();
 
                     String msg = intl_mgr.getString(INVALID_VERTEX_DATA_MSG_PROP) +
-                       ": Cannot parse vertex: " + num_str;
+                        ": Cannot parse vertex: " + num_str;
                     throw new InvalidFormatException(msg);
-                } else {
+                }
+                else
+                {
                     // Common error is to use commas instead of . in Europe
-                    String new_str = num_str.replace(",",".");
+                    String new_str = num_str.replace(",", ".");
 
                     try
                     {
@@ -597,7 +664,7 @@ class OBJASCIIParser extends OBJParser
                         I18nManager intl_mgr = I18nManager.getManager();
 
                         String msg = intl_mgr.getString(INVALID_VERTEX_DATA_MSG_PROP) +
-                           ": Cannot parse vertex: " + num_str;
+                            ": Cannot parse vertex: " + num_str;
                         throw new InvalidFormatException(msg);
                     }
                 }
@@ -616,7 +683,7 @@ class OBJASCIIParser extends OBJParser
     {
         double[] vector = new double[3];
 
-        for(int i = 0; i < 3; i ++)
+        for(int i = 0; i < 3; i++)
         {
             String num_str = strtok.nextToken();
 
@@ -628,16 +695,18 @@ class OBJASCIIParser extends OBJParser
             }
             catch(NumberFormatException e)
             {
-                if (strictParsing)
+                if(strictParsing)
                 {
                     I18nManager intl_mgr = I18nManager.getManager();
 
                     String msg = intl_mgr.getString(INVALID_VERTEX_DATA_MSG_PROP) +
-                       ": Cannot parse normal: " + num_str;
+                        ": Cannot parse normal: " + num_str;
                     throw new InvalidFormatException(msg);
-                } else {
+                }
+                else
+                {
                     // Common error is to use commas instead of . in Europe
-                    String new_str = num_str.replace(",",".");
+                    String new_str = num_str.replace(",", ".");
 
                     try
                     {
@@ -650,7 +719,8 @@ class OBJASCIIParser extends OBJParser
                     }
                 }
 
-                if (error_found == true) {
+                if(error_found == true)
+                {
                     vector[0] = 0;
                     vector[1] = 0;
                     vector[2] = 0;
@@ -670,7 +740,7 @@ class OBJASCIIParser extends OBJParser
     {
         double[] vector = new double[2];
 
-        for(int i = 0; i < 2; i ++)
+        for(int i = 0; i < 2; i++)
         {
             String num_str = strtok.nextToken();
 
@@ -682,16 +752,18 @@ class OBJASCIIParser extends OBJParser
             }
             catch(NumberFormatException e)
             {
-                if (strictParsing)
+                if(strictParsing)
                 {
                     I18nManager intl_mgr = I18nManager.getManager();
 
                     String msg = intl_mgr.getString(INVALID_VERTEX_DATA_MSG_PROP) +
-                       ": Cannot parse texture coordinate: " + num_str;
+                        ": Cannot parse texture coordinate: " + num_str;
                     throw new InvalidFormatException(msg);
-                } else {
+                }
+                else
+                {
                     // Common error is to use commas instead of . in Europe
-                    String new_str = num_str.replace(",",".");
+                    String new_str = num_str.replace(",", ".");
 
                     try
                     {
@@ -704,7 +776,8 @@ class OBJASCIIParser extends OBJParser
                     }
                 }
 
-                if (error_found == true) {
+                if(error_found == true)
+                {
                     vector[0] = 0;
                     vector[1] = 0;
                 }
@@ -726,64 +799,78 @@ class OBJASCIIParser extends OBJParser
         ArrayList<Integer> indices_normals = new ArrayList<>();
         int num_comps = 0;
 
-        while(strtok.hasMoreElements()) {
+        while(strtok.hasMoreElements())
+        {
             String num_str = strtok.nextToken();
 
             boolean error_found = false;
 
-            if (num_str.indexOf("/") < 0) {
+            if(num_str.indexOf("/") < 0)
+            {
                 num_comps = 1;
                 try
                 {
                     int index = Integer.parseInt(num_str);
 
-                    if (index < 0) {
+                    if(index < 0)
+                    {
 //System.out.println("Input index: " + index + " coord size: " + coords.size() + " ans: " + (coords.size() - index));
 
                         // Need to resolve relative index
                         index = coords.size() + index;
                         indices.add(index);
-                    } else {
+                    }
+                    else
+                    {
                         indices.add(index - 1); //  Account for weird 1 numbering
                     }
                 }
                 catch(NumberFormatException e)
                 {
-                    if (strictParsing)
+                    if(strictParsing)
                     {
                         I18nManager intl_mgr = I18nManager.getManager();
 
                         String msg = intl_mgr.getString(INVALID_FACE_DATA_MSG_PROP) +
-                           ": Cannot parse face: " + num_str;
+                            ": Cannot parse face: " + num_str;
                         throw new InvalidFormatException(msg);
-                    } else {
+                    }
+                    else
+                    {
                         // Common error is to use commas instead of . in Europe
-                        String new_str = num_str.replace(",",".");
+                        String new_str = num_str.replace(",", ".");
 
-                        try {
+                        try
+                        {
                             int index = Integer.parseInt(new_str);
 
-                            if (index < 0) {
+                            if(index < 0)
+                            {
 //System.out.println("Input index: " + index + " coord size: " + coords.size() + " ans: " + (coords.size() - index));
                                 // Need to resolve relative index
                                 index = coords.size() + index;
-                            } else {
+                            }
+                            else
+                            {
                                 indices.add(index - 1); //  Account for weird 1 numbering
                             }
-                        } catch(NumberFormatException e2)
+                        }
+                        catch(NumberFormatException e2)
                         {
 
                             I18nManager intl_mgr = I18nManager.getManager();
 
                             String msg = intl_mgr.getString(INVALID_FACE_DATA_MSG_PROP) +
-                               ": Cannot parse face: " + num_str;
+                                ": Cannot parse face: " + num_str;
                             throw new InvalidFormatException(msg);
                         }
                     }
                 }
-            } else {
+            }
+            else
+            {
                 // We have multiple indexes
-                num_str = num_str.replace("//","/U/");  // denote unspecified
+                num_str = num_str.replace("//", "/U/");  // denote unspecified
                 StringTokenizer toker = new StringTokenizer(num_str, "/");
 
                 num_comps = toker.countTokens();
@@ -792,48 +879,67 @@ class OBJASCIIParser extends OBJParser
 
                 int index = Integer.parseInt(num_str);
 
-                if (index < 0) {
+                if(index < 0)
+                {
                     // Need to resolve relative index
                     index = coords.size() + index;
-                } else {
+                }
+                else
+                {
                     indices.add(index - 1); //  Account for weird 1 numbering
                 }
 
-                if (num_comps >= 2) {
+                if(num_comps >= 2)
+                {
                     num_str = toker.nextToken();
 
-                    if (num_str != null) {
-                        if (num_str.equals("U")) {
+                    if(num_str != null)
+                    {
+                        if(num_str.equals("U"))
+                        {
                             texCoordMissing = true;
-                        } else {
+                        }
+                        else
+                        {
                             index = Integer.parseInt(num_str);
 
-                            if (index < 0) {
+                            if(index < 0)
+                            {
                                 // Need to resolve relative index
                                 index = texCoords.size() + index;
                                 indices_tc.add(index);
-                            } else {
+                            }
+                            else
+                            {
                                 indices_tc.add(index - 1); //  Account for weird 1 numbering
                             }
                         }
                     }
                 }
 
-                if (num_comps >= 3) {
+                if(num_comps >= 3)
+                {
                     num_str = toker.nextToken();
 
-                    if (num_str.equals("U")) {
+                    if(num_str.equals("U"))
+                    {
                         normalCoordMissing = true;
-                    } else {
+                    }
+                    else
+                    {
 
                         index = Integer.parseInt(num_str);
 
-                        if (num_str != null) {
-                            if (index < 0) {
+                        if(num_str != null)
+                        {
+                            if(index < 0)
+                            {
                                 // Need to resolve relative index
                                 index = normals.size() + index;
                                 indices_normals.add(index);
-                            } else {
+                            }
+                            else
+                            {
                                 indices_normals.add(index - 1); //  Account for weird 1 numbering
                             }
                         }
@@ -847,23 +953,28 @@ class OBJASCIIParser extends OBJParser
         int[][] ret_val = new int[num_comps][];
         ret_val[0] = new int[len];
 
-        for(int i=0; i < len; i++) {
+        for(int i = 0; i < len; i++)
+        {
             ret_val[0][i] = indices.get(i);
         }
 
-        if (num_comps > 1 && !texCoordMissing) {
+        if(num_comps > 1 && !texCoordMissing)
+        {
             len = indices_tc.size();
             ret_val[1] = new int[len];
-            for(int i=0; i < len; i++) {
+            for(int i = 0; i < len; i++)
+            {
                 ret_val[1][i] = indices_tc.get(i);
             }
         }
 
-        if (num_comps > 2 && !normalCoordMissing) {
+        if(num_comps > 2 && !normalCoordMissing)
+        {
             len = indices_normals.size();
             ret_val[2] = new int[len];
 
-            for(int i=0; i < len; i++) {
+            for(int i = 0; i < len; i++)
+            {
                 ret_val[2][i] = indices_normals.get(i);
             }
         }

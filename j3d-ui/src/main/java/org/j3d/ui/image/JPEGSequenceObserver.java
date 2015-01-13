@@ -107,6 +107,7 @@ public class JPEGSequenceObserver extends BaseJPEGImageObserver
      * @param img The image that was captured
      * @throws IllegalStateException The filename has not been set
      */
+    @Override
     public void canvasImageCaptured(BufferedImage img)
     {
         if(!enabled)

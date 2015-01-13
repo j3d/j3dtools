@@ -127,6 +127,7 @@ public class PointEmitter extends BaseEmitter
      *
      * @param maxCount The new maximum particle count to use
      */
+    @Override
     public void setMaxParticleCount(int maxCount)
     {
         super.setMaxParticleCount(maxCount);
@@ -141,6 +142,7 @@ public class PointEmitter extends BaseEmitter
      * @param time The new lifetime, in milliseconds
      * @throws IllegalArgumentException The lifetime is zero or negative
      */
+    @Override
     public void setParticleLifetime(int time)
         throws IllegalArgumentException
     {
@@ -158,6 +160,7 @@ public class PointEmitter extends BaseEmitter
      *    milliseconds
      * @return The number of particles to create
      */
+    @Override
     public int numParticlesToCreate(int timeDelta)
     {
         int ret_val = 0;
@@ -203,6 +206,7 @@ public class PointEmitter extends BaseEmitter
      * @param particle The particle instance to initialize
      * @return true if the ParticleSytem should keep running
      */
+    @Override
     public boolean initialize(Particle particle)
     {
         // Vary the alpha channel of the color a bit too
@@ -247,6 +251,7 @@ public class PointEmitter extends BaseEmitter
      *
      * @param speed The magnitude of the speed to use
      */
+    @Override
     public void setSpeed(float speed)
     {
         super.setSpeed(speed);

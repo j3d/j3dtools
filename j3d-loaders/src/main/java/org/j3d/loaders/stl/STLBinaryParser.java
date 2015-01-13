@@ -18,7 +18,6 @@ import java.net.URLConnection;
 import java.awt.Component;
 import javax.swing.ProgressMonitorInputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 // Local imports
 import org.j3d.loaders.InvalidFormatException;
@@ -34,24 +33,24 @@ import org.j3d.loaders.InvalidFormatException;
 class STLBinaryParser extends STLParser
 {
     /** size of binary header */
-    private static  int HEADER_SIZE = 84;
+    private static final int HEADER_SIZE = 84;
 
     /** size of one facet record in binary format */
-    private static  int RECORD_SIZE = 50;
+    private static final int RECORD_SIZE = 50;
 
     /** size of comments in header */
-    private  static int COMMENT_SIZE = 80;
+    private static final int COMMENT_SIZE = 80;
 
     /** The stream that is being read from */
     private BufferedInputStream itsStream;
 
     /** Common buffer for reading */
-    private  byte[] itsReadBuffer;
+    private byte[] itsReadBuffer;
 
     /** Common buffer for reading the converted data from bytes */
-    private  int[] itsDataBuffer;
+    private int[] itsDataBuffer;
 
-    public STLBinaryParser()
+    STLBinaryParser()
     {
         itsReadBuffer = new byte[48];
         itsDataBuffer = new int[12];
@@ -63,7 +62,7 @@ class STLBinaryParser extends STLParser
      * @param strict Attempt to deal with crappy data or short downloads.
      * Will try to return any useable geometry.
      */
-    public STLBinaryParser(boolean strict)
+    STLBinaryParser(boolean strict)
     {
         super(strict);
 
@@ -71,6 +70,7 @@ class STLBinaryParser extends STLParser
         itsDataBuffer = new int[12];
     }
 
+    @Override
     public void close() throws IOException
     {
         if(itsStream != null)
@@ -79,6 +79,7 @@ class STLBinaryParser extends STLParser
         }
     }
 
+    @Override
     public boolean parse(URL url)
         throws InvalidFormatException, IOException
     {
@@ -101,6 +102,7 @@ class STLBinaryParser extends STLParser
         return parse(length);
     }
 
+    @Override
     public boolean parse(URL url,  Component parentComponent)
         throws InvalidFormatException, IOException
     {
@@ -148,8 +150,7 @@ class STLBinaryParser extends STLParser
 
             // binary file contains only on object
             itsNumOfObjects = 1;
-            itsNumOfFacets =
-                new int[]{ LittleEndianConverter.read4ByteBlock(itsStream) };
+            itsNumOfFacets = new int[]{LittleEndianConverter.read4ByteBlock(itsStream) };
             itsNames = new String[1];
             // if length of file is known, check if it matches with the content
             // binary file contains only on object
@@ -164,8 +165,10 @@ class STLBinaryParser extends STLParser
                 close();
 
                 throw new InvalidFormatException(msg);
-            } else if (!strictParsing && length != -1 &&
-               length != itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE) {
+            }
+            else if (!strictParsing && length != -1 &&
+                     length != itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE)
+            {
 
                String msg = "File size does not match the expected size for" +
                     " the given number of facets. Given " +
@@ -173,7 +176,8 @@ class STLBinaryParser extends STLParser
                     (itsNumOfFacets[0] * RECORD_SIZE + HEADER_SIZE) +
                     " but the file size is " + length;
 
-                if (parsingMessages == null) {
+                if (parsingMessages == null)
+                {
                     parsingMessages = new ArrayList<>();
                 }
                 parsingMessages.add(msg);
@@ -192,6 +196,7 @@ class STLBinaryParser extends STLParser
      *
      * @return true if the read completed successfully
      */
+    @Override
     public boolean getNextFacet(double[] normal, double[][] vertices)
         throws IOException
     {
@@ -206,7 +211,8 @@ class STLBinaryParser extends STLParser
         for(int i = 0; i < 3; i ++)
         {
             normal[i] = Float.intBitsToFloat(itsDataBuffer[i]);
-            if (Double.isNaN(normal[i]) || Double.isInfinite(normal[i])) {
+            if (Double.isNaN(normal[i]) || Double.isInfinite(normal[i]))
+            {
                 nan_found = true;
             }
         }
@@ -223,8 +229,7 @@ class STLBinaryParser extends STLParser
         {
             for(int j = 0; j < 3; j ++)
             {
-                vertices[i][j] =
-                    Float.intBitsToFloat(itsDataBuffer[i * 3 + j + 3]);
+                vertices[i][j] = Float.intBitsToFloat(itsDataBuffer[i * 3 + j + 3]);
             }
         }
 

@@ -182,6 +182,7 @@ public class NavigationStateManager
          *
          * @param state One of the state values declared here
          */
+        @Override
         public void setNavigationState(int state)
         {
             navigationState = state;
@@ -231,6 +232,7 @@ public class NavigationStateManager
          *
          * @return The state that the listener thinks it is in
          */
+        @Override
         public int getNavigationState()
         {
             return navigationState;

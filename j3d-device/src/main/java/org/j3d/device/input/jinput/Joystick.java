@@ -123,6 +123,7 @@ public class Joystick implements JoystickDevice, TrackerDevice
      *
      * @return The name
      */
+    @Override
     public String getName()
     {
         return name;
@@ -138,6 +139,7 @@ public class Joystick implements JoystickDevice, TrackerDevice
      *
      * @param state The state structure to fill in.
      */
+    @Override
     public void getState(JoystickState state)
     {
         controller.poll();
@@ -262,6 +264,7 @@ public class Joystick implements JoystickDevice, TrackerDevice
      *
      * @return The number of trackers.  This cannot change after startup.
      */
+    @Override
     public int getTrackerCount()
     {
         return trackers.length;
@@ -272,6 +275,7 @@ public class Joystick implements JoystickDevice, TrackerDevice
      *
      * @return The trackers.  This cannot changed after startup.
      */
+    @Override
     public Tracker[] getTrackers()
     {
         return trackers;

@@ -257,15 +257,11 @@ class SeidelTriangulator
             }
         }
 
-System.out.println("init");
         initialise(i - 1);
-System.out.println("construct traps");
 
         constructTrapezoids(i - 1);
-System.out.println("monotonate traps");
         int nmonpoly = monotonateTrapezoids(i - 1);
 
-System.out.println("triangulate");
         triangulateMonotonePolygons(i - 1, nmonpoly, triangles);
     }
 
@@ -943,7 +939,7 @@ System.out.println("triangulate");
                 }
                 else
                 {
-// TODO: fix this dynamic allocation
+                    // TODO: fix this dynamic allocation
                     Point2d tmppt = new Point2d();
                     tmppt.y = trapezoidList[t].lo.y;
                     double y0 = trapezoidList[t].lo.y;
@@ -1095,7 +1091,7 @@ System.out.println("triangulate");
         segments[segnum].isInserted = true;
     }
 
-    /*
+    /**
      * Thread in the segment into the existing trapezoidation. The
      * limiting trapezoids are given by tfirst and tlast (which are the
      * trapezoids containing the two endpoints of the segment). Merges all

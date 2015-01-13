@@ -143,6 +143,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      * @param z The z coordinate for the height sampling
      * @return The height at the current point or NaN
      */
+    @Override
     public float getHeight(float x, float z)
     {
         // work out where we are in the grid first. Rememeber that we have
@@ -184,6 +185,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
+    @Override
     public void getCoordinate(float[] coord, int gridX, int gridY)
     {
         coord[0] = gridX * (float)gridStepX;
@@ -201,6 +203,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
+    @Override
     public void getCoordinate(float[] coord,
                               float[] tex,
                               float[] color,
@@ -233,6 +236,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
+    @Override
     public void getCoordinateWithTexture(float[] coord,
                                          float[] textureCoord,
                                          int gridX,
@@ -260,6 +264,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      * @param gridX The X coordinate of the position in the grid
      * @param gridY The Y coordinate of the position in the grid
      */
+    @Override
     public void getCoordinateWithColor(float[] coord,
                                        float[] color,
                                        int gridX,
@@ -284,6 +289,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      *
      * @return The texture instance to use or null
      */
+    @Override
     public BufferedImage getTexture()
     {
         return texture;
@@ -296,6 +302,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      * @param gridY The Y coordinate of the position in the grid
      * @return The height at the given grid position
      */
+    @Override
     public float getHeightFromGrid(int gridX, int gridY)
     {
         return heightMap[gridX][gridY];
@@ -311,6 +318,7 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
      *
      * @param tex The new texture to use
      */
+    @Override
     public void setTexture(BufferedImage tex)
     {
         texture = tex;

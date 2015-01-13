@@ -145,6 +145,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @param maxCount The new maximum particle count to use
      */
+    @Override
     public void setMaxParticleCount(int maxCount)
     {
         particleCount = maxCount;
@@ -155,6 +156,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @return A value >= 0
      */
+    @Override
     public int getMaxParticleCount()
     {
         return particleCount;
@@ -167,6 +169,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      * @param time The new lifetime, in milliseconds
      * @throws IllegalArgumentException The lifetime is zero or negative
      */
+    @Override
     public void setParticleLifetime(int time)
         throws IllegalArgumentException
     {
@@ -186,6 +189,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @return The current particle lifetime, in milliseconds
      */
+    @Override
     public int getParticleLifetime()
     {
         return lifetime;
@@ -199,6 +203,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      * @param variation The new variation amount
      * @throws IllegalArgumentException The variation amount was within [0,1]
      */
+    @Override
     public void setLifetimeVariation(float variation)
         throws IllegalArgumentException
     {
@@ -218,6 +223,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @return The current lifetime variation factor in the range [0,1]
      */
+    @Override
     public float getLifetimeVariation()
     {
         return lifetimeVariation;
@@ -231,6 +237,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @param variation The new variation amount
      */
+    @Override
     public void setParticleVariation(float variation)
     {
         this.variation = variation;
@@ -241,6 +248,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @return The current particle variation factor
      */
+    @Override
     public float getParticleVariation()
     {
         return variation;
@@ -255,6 +263,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      * @param b The blue component of the color
      * @param alpha The alpha component of the color
      */
+    @Override
     public void setColor(float r, float g, float b, float alpha)
     {
         color[0] = r;
@@ -269,6 +278,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @param val An array of length 4 to copy the internal values into
      */
+    @Override
     public void getColor(float[] val)
     {
         val[0] = color[0];
@@ -285,6 +295,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      * @param area The new surface area value to use, in metres squared
      * @throws IllegalArgumentException The surface area value was negative
      */
+    @Override
     public void setSurfaceArea(float area)
         throws IllegalArgumentException
     {
@@ -303,6 +314,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @return A value greater than or equal to zero
      */
+    @Override
     public float getSurfaceArea()
     {
         return surfaceArea;
@@ -315,6 +327,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      * @param mass The mass of an individual particle
      * @throws IllegalArgumentException The mass value was negative
      */
+    @Override
     public void setMass(float mass) throws IllegalArgumentException
     {
         if(mass < 0)
@@ -332,6 +345,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @return A non-negative value representing the mass
      */
+    @Override
     public float getMass()
     {
         return initialMass;
@@ -348,6 +362,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @param speed The magnitude of the speed to use
      */
+    @Override
     public void setSpeed(float speed)
     {
         this.speed = speed;
@@ -358,6 +373,7 @@ public abstract class BaseEmitter implements ParticleInitializer
      *
      * @return A value of the speed
      */
+    @Override
     public float getSpeed()
     {
         return speed;

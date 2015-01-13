@@ -648,6 +648,7 @@ public class BSplineGenerator extends GeometryGenerator
      * @throws UnsupportedTypeException The generator cannot handle the type
      *   of geometry you have requested
      */
+    @Override
     public int getVertexCount(GeometryData data)
         throws UnsupportedTypeException
     {
@@ -684,6 +685,7 @@ public class BSplineGenerator extends GeometryGenerator
      * @throws UnsupportedTypeException The generator cannot handle the type
      *   of geometry you have requested
      */
+    @Override
     public void generate(GeometryData data)
         throws UnsupportedTypeException, InvalidArraySizeException
     {

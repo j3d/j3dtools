@@ -335,6 +335,7 @@ public class BSplinePatchGenerator extends PatchGenerator
      * Regenerate the patch coordinate points according to the NURBS
      * surface function.
      */
+    @Override
     protected final void regeneratePatch()
     {
         if(!patchChanged)

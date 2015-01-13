@@ -259,6 +259,7 @@ public class SuperShapeGenerator extends GeometryGenerator
      * @throws UnsupportedTypeException The generator cannot handle the type
      *   of geometry you have requested
      */
+    @Override
     public int getVertexCount(GeometryData data)
         throws UnsupportedTypeException
     {
@@ -295,6 +296,7 @@ public class SuperShapeGenerator extends GeometryGenerator
      * @throws UnsupportedTypeException The generator cannot handle the type
      *   of geometry you have requested
      */
+    @Override
     public void generate(GeometryData data)
         throws UnsupportedTypeException, InvalidArraySizeException
     {
@@ -319,7 +321,7 @@ public class SuperShapeGenerator extends GeometryGenerator
         }
     }
 
-   /**
+    /**
      * Generate a new set of points for an unindexed quad array
      *
      * @param data The data to patch the calculations on

@@ -45,6 +45,7 @@ public class C3DFloatParameter extends C3DParameter
      *
      * @return Information about the header
      */
+    @Override
     public String toString()
     {
         StringBuffer buf = new StringBuffer("C3DFloatParameter: ");

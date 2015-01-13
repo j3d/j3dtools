@@ -155,6 +155,7 @@ public class Wheel implements WheelDevice, TrackerDevice
      *
      * @return The name
      */
+    @Override
     public String getName()
     {
         return name;
@@ -170,6 +171,7 @@ public class Wheel implements WheelDevice, TrackerDevice
      *
      * @param state The state structure to fill in.
      */
+    @Override
     public void getState(WheelState state)
     {
         controller.poll();
@@ -242,6 +244,7 @@ public class Wheel implements WheelDevice, TrackerDevice
      *
      * @param val The wheel direction, from left(-1) to 1(right).
      */
+    @Override
     public void setEquilibriumPoint(float val)
     {
         if (rumblerWheel != null)
@@ -257,6 +260,7 @@ public class Wheel implements WheelDevice, TrackerDevice
      *
      * @return The number of trackers.  This cannot change after startup.
      */
+    @Override
     public int getTrackerCount()
     {
         return trackers.length;
@@ -267,6 +271,7 @@ public class Wheel implements WheelDevice, TrackerDevice
      *
      * @return The trackers.  This cannot changed after startup.
      */
+    @Override
     public Tracker[] getTrackers()
     {
         return trackers;

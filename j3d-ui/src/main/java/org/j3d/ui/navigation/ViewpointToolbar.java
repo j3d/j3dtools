@@ -224,6 +224,7 @@ public class ViewpointToolbar extends JPanel
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void actionPerformed(ActionEvent evt)
     {
         Object src = evt.getSource();
@@ -266,6 +267,7 @@ public class ViewpointToolbar extends JPanel
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void itemStateChanged(ItemEvent evt)
     {
         if(evt.getStateChange() != ItemEvent.SELECTED)
@@ -287,6 +289,7 @@ public class ViewpointToolbar extends JPanel
      *
      * @param enabled true if this component is enabled
      */
+    @Override
     public void setEnabled(boolean enabled)
     {
         viewpoints.setEnabled(enabled);

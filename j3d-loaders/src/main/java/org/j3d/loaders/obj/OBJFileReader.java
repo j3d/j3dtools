@@ -14,7 +14,6 @@ package org.j3d.loaders.obj;
 // External Imports
 import java.io.*;
 import java.net.URL;
-import java.net.URLConnection;
 import java.awt.Component;
 import java.util.List;
 

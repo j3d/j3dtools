@@ -73,6 +73,7 @@ public class ExplosionPointEmitter extends BaseEmitter
      *    milliseconds
      * @return The number of particles to create
      */
+    @Override
     public int numParticlesToCreate(int timeDelta)
     {
         int ret_val = particleCount;
@@ -90,6 +91,7 @@ public class ExplosionPointEmitter extends BaseEmitter
      * @param particle The particle instance to initialize
      * @return true if the ParticleSytem should keep running
      */
+    @Override
     public boolean initialize(Particle particle)
     {
         // Vary the alpha channel of the color a bit too
