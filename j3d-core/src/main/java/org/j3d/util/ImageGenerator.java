@@ -264,10 +264,10 @@ class ImageGenerator implements ImageConsumer
     private void createImage()
     {
         // meet the preconditions first.
-        if((image != null) ||
-            (width == -1) ||
-            (colorModel == null) || loadComplete)
+        if((image != null) || (width == -1) || (colorModel == null) || loadComplete)
+        {
             return;
+        }
 
         raster = colorModel.createCompatibleWritableRaster(width, height);
 
