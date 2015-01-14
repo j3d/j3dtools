@@ -18,6 +18,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import java.awt.image.BufferedImage;
+import java.net.URL;
 import java.util.HashMap;
 
 // Local imports
@@ -89,7 +90,19 @@ public class ImageUtilsDemo extends DemoFrame
 
     public void loadImages(String name)
     {
-        ImageIcon icon = new ImageIcon(name);
+        ClassLoader cl = ImageUtilsDemo.class.getClassLoader();
+        URL url = cl.getResource(name);
+
+        if(url != null)
+        {
+            System.out.println("Resource URL " + url);
+        }
+        else
+        {
+            System.err.println("Unable to locate image " + name + " in the classpath");
+        }
+
+        ImageIcon icon = new ImageIcon(url);
 
         sourceImage.setIcon(icon);
         sourceImage.setText(null);

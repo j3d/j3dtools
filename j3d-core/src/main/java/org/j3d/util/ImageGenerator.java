@@ -35,7 +35,7 @@ import java.util.Hashtable;
 class ImageGenerator implements ImageConsumer
 {
     /** Semaphore to block return of a loader until the image is complete */
-    private Object holder;
+    private final Object holder;
 
     /** Colour model given to us by the consumer */
     private ColorModel colorModel;
@@ -89,7 +89,9 @@ class ImageGenerator implements ImageConsumer
             }
         }
         else
+        {
             System.err.println("Some other value passed to complete");
+        }
     }
 
     /**
@@ -123,7 +125,7 @@ class ImageGenerator implements ImageConsumer
      * Notification of load hints that may be useful. Not used in this
      * implementation.
      *
-     * @param flag The hints
+     * @param flags The hints
      */
     @Override
     public void setHints(int flags)
