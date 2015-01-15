@@ -83,8 +83,8 @@ public class NormalUtils
     }
 
     /**
-     * Negate the normals, in place. A negative normal points in the
-     * opposite direction to the original value. It assumes that the
+     * Negate the normals, in place as a 2D array. A negative normal points
+     * in the opposite direction to the original value.
      *
      * @param normals The source coordinate array to copy
      * @param numNormals The number of valid normals in the array
@@ -101,9 +101,10 @@ public class NormalUtils
 
 
     /**
-     * Translate the coordintes by the given amount in each direction and
-     * place them in the destination array. It assumes that the array has the
-     * coordinate values as a flat array of values.
+     * Negate the normals, placing them in the destination array.
+     * A negative normal points in the opposite direction to the original
+     * value. Assumes a flat array where every 3rd index is the x coordinate
+     * of the next normal.
      *
      * @param srcNormals The source coordinate array to copy
      * @param numNormals The number of valid coordinates in the array
@@ -124,15 +125,16 @@ public class NormalUtils
     }
 
     /**
-     * Translate the coordintes by the given amount in each direction and
-     * place them in the destination array. It assumes that the array has the
-     * coordinate values as a flat array of values.
+     * Negate the normals, placing them in the destination array.
+     * A negative normal points in the opposite direction to the original
+     * value. Assumes a flat array where every 3rd index is the x coordinate
+     * of the next normal.
      *
      * @param srcNormals The source coordinate array to copy
      * @param numNormals The number of valid coordinates in the array
      * @param destNormals The array to copy the values into
      */
-    public void translate(float[][] srcNormals,
+    public void negate(float[][] srcNormals,
                           int numNormals,
                           float[][] destNormals)
     {
