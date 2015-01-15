@@ -16,15 +16,13 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ImageProducer;
 import java.net.URL;
 
-import javax.swing.*;
-
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
 public class ImageGeneratorTest
 {
-    @Test(groups = "unit", enabled = false)
+    @Test(groups = "unit")
     public void testBasicLoading() throws Exception
     {
         final String TEST_IMAGE_NAME = "images/test_image.png";
@@ -34,7 +32,20 @@ public class ImageGeneratorTest
 
         assertNotNull(url, "Unable to find the test image");
 
-        Image srcImage = Toolkit.getDefaultToolkit().getImage(url);
+        Image srcImage = Toolkit.getDefaultToolkit().createImage(url);
+
+        // Use the MediaTracker to force loading of the original image so
+        // that the width and height can be found.
+        try
+        {
+            MediaTracker mt = new MediaTracker(new Canvas());
+            mt.addImage(srcImage, 0);
+            mt.waitForAll();
+        }
+        catch(InterruptedException ie)
+        {
+        }
+
         ImageProducer testProducer = srcImage.getSource();
 
         ImageGenerator gen = new ImageGenerator();
@@ -45,7 +56,7 @@ public class ImageGeneratorTest
         testProducer.removeConsumer(gen);
 
         assertNotNull(resultImage, "No image generated from the loader");
-        assertEquals(resultImage.getWidth(null), srcImage.getWidth(null), "Didn't copy width properly");
-        assertEquals(resultImage.getHeight(null), srcImage.getHeight(null), "Didn't copy height properly");
+        assertEquals(resultImage.getWidth(), srcImage.getWidth(null), "Didn't copy width properly");
+        assertEquals(resultImage.getHeight(), srcImage.getHeight(null), "Didn't copy height properly");
     }
 }
