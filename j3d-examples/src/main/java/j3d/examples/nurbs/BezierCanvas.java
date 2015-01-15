@@ -18,7 +18,6 @@ import java.awt.event.*;
 
 // Local imports
 import org.j3d.geom.GeometryData;
-import org.j3d.geom.GeometryGenerator;
 import org.j3d.geom.spline.BezierGenerator;
 
 /**
