@@ -13,7 +13,6 @@ package org.j3d.geom;
 // None
 
 // Local imports
-
 import org.j3d.maths.vector.Vector3d;
 
 /**
@@ -365,10 +364,4 @@ public class NormalUtils
             normals[offset][2] = 0;
         }
     }
-
-    /**
-     * Given a basic item of geometry generate bi-normals and tangent-space
-     * normals into the given arrays. The arrays must be at least the same
-     * length as the main face normals.
-     */
 }
