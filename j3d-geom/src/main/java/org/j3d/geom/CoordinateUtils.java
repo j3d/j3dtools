@@ -45,7 +45,7 @@ public class CoordinateUtils
      *
      * @return The current instance
      */
-    public CoordinateUtils getSharedInstance()
+    public static CoordinateUtils getSharedInstance()
     {
         if(sharedInstance == null)
             sharedInstance = new CoordinateUtils();
