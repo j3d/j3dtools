@@ -196,7 +196,7 @@ public class LongHashMap<V>
      *     <code>value</code> argument in this hashtable as determined by the
      *     <tt>equals</tt> method;  <code>false</code> otherwise.
      * @throws  NullPointerException  if the value is <code>null</code>.
-     * @see #containsKey(int)
+     * @see #containsKey(long)
      * @see #containsValue(Object)
      * @see java.util.Map
      */
@@ -266,7 +266,7 @@ public class LongHashMap<V>
      * @return  the value to which the key is mapped in this hashtable;
      *          <code>null</code> if the key is not mapped to any value in
      *          this hashtable.
-     * @see     #put(int, Object)
+     * @see     #put(long, Object)
      */
     public V get(long key)
     {
@@ -414,7 +414,7 @@ public class LongHashMap<V>
      * @return the previous value of the specified key in this hashtable,
      *         or <code>null</code> if it did not have one.
      * @throws  NullPointerException  if the key is <code>null</code>.
-     * @see     #get(int)
+     * @see     #get(long)
      */
     public V put(long key, V value)
     {
@@ -458,11 +458,11 @@ public class LongHashMap<V>
      * @return  the value to which the key had been mapped in this hashtable,
      *          or <code>null</code> if the key did not have a mapping.
      */
-    public V remove(int key)
+    public V remove(long key)
     {
         Entry<V>[] tab = table;
-        int hash = key;
-        int index = (hash & 0x7FFFFFFF) % tab.length;
+        long hash = key;
+        int index = (int)((hash & 0x7FFFFFFF) % tab.length);
         for(Entry<V> e = tab[index], prev = null ; e != null ; prev = e, e = e.next)
         {
             if(e.hash == hash)
