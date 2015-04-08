@@ -732,7 +732,6 @@ public class IntersectionUtils
         double shortest_length = Double.POSITIVE_INFINITY;
         boolean found = false;
         double this_length;
-        int offset = 0;
         int i0, i1, i2, i3;
 
         for(int i = 0; i < numIndex; )
@@ -975,7 +974,7 @@ public class IntersectionUtils
         }
         else
         {
-            // Closest interection point with. If the t0 (subtraction)
+            // Closest intersection point with. If the t0 (subtraction)
             // is greater than zero then that's the intersection point,
             // if not then compute t1 which is the addition.
             double u = (-b - Math.sqrt(disc)) / (a * 2);
@@ -997,7 +996,7 @@ public class IntersectionUtils
      * @param origin The origin of the ray
      * @param direction The direction of the ray
      * @param sphereCenter The coordinates of the center of the sphere
-     * @param sphereRadius The raduis of the sphere
+     * @param sphereRadius The radius of the sphere
      * @param point The intersection point for returning
      * @return true if there was an intersection, false if not
      */
@@ -1020,7 +1019,7 @@ public class IntersectionUtils
      * @param origin The origin of the ray
      * @param direction The direction of the ray
      * @param sphereCenter The coordinates of the center of the sphere
-     * @param sphereRadius The raduis of the sphere
+     * @param sphereRadius The radius of the sphere
      * @param point The intersection point for returning
      * @return true if there was an intersection, false if not
      */
@@ -1054,7 +1053,7 @@ public class IntersectionUtils
      * @param Yd The Y coordinate of the direction of the ray
      * @param Zd The Z coordinate of the direction of the ray
      * @param sphereCenter The coordinates of the center of the sphere
-     * @param sphereRadius The raduis of the sphere
+     * @param sphereRadius The radius of the sphere
      * @param point The intersection point for returning
      * @return true if there was an intersection, false if not
      */
@@ -1069,7 +1068,6 @@ public class IntersectionUtils
         double Zc = sphereCenter[2];
 
         // compute A, B, C
-        //C =
         double a = Xd * Xd + Yd * Yd + Zd * Zd;
         double b = 2 * (Xd * (Xo - Xc) + Yd * (Yo - Yc) + Zd * (Zo - Zc));
         double c = (Xo - Xc) * (Xo - Xc) + (Yo - Yc) * (Yo - Yc) +
@@ -1079,8 +1077,10 @@ public class IntersectionUtils
         double disc = b * b - 4 * a * c;
 
         if(disc < 0)
+        {
             return false;
-        if(disc == 0)
+        }
+        else if(disc == 0)
         {
             // tangent Intersection point is u = -b/2a
             double u = -b / a * 0.5;
@@ -1090,13 +1090,18 @@ public class IntersectionUtils
         }
         else
         {
-            // Closest interection point with. If the t0 (subtraction)
+            // Closest intersection point with. If the t0 (subtraction)
             // is greater than zero then that's the intersection point,
             // if not then compute t1 which is the addition.
             double u = (-b - Math.sqrt(disc)) / (a * 2);
 
             if(u < 0)
-                u = (-b + Math.sqrt(disc)) / (a * 2);
+            {
+                return false;
+                // If you want to do line intersection test, rather than a bounded
+                // ray, then include this item rather than returning false above.
+                // u = (-b + Math.sqrt(disc)) / (a * 2);
+            }
 
             point[0] = (float)(Xo + u * Xd);
             point[1] = (float)(Yo + u * Yd);
