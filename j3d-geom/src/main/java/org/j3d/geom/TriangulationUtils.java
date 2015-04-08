@@ -13,9 +13,7 @@ package org.j3d.geom;
 // none
 
 // Local imports
-import org.j3d.util.HashSet;
-import org.j3d.util.ObjectArray;
-
+// None
 
 /**
  * Utility routines for triangulating arbitrary polygons.
