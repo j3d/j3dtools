@@ -1062,7 +1062,7 @@ public class IntersectionUtils
                               float[] sphereCenter,
                               float sphereRadius,
                               float[] point)
-   {
+    {
         double Xc = sphereCenter[0];
         double Yc = sphereCenter[1];
         double Zc = sphereCenter[2];
@@ -1180,7 +1180,7 @@ public class IntersectionUtils
                              double Xd, double Yd, double Zd,
                              float[] plane,
                              float[] point)
-   {
+    {
         // Dot product between the ray and the normal to the plane
         double angle = Xd * plane[0] + Yd * plane[1] + Zd * plane[2];
 
