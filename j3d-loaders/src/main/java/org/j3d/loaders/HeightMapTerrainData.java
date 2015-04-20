@@ -219,11 +219,15 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
         tex[0] = ((float)gridX) / (gridWidth - 1);
         tex[1] = ((float)gridY) / (gridDepth - 1);
 
-        float[] rgb = colorInterp.floatRGBValue(height);
-        color[0] = rgb[0];
-        color[1] = rgb[1];
-        color[2] = rgb[2];
+        if(colorInterp != null)
+        {
+            float[] rgb = colorInterp.floatRGBValue(height);
+            color[0] = rgb[0];
+            color[1] = rgb[1];
+            color[2] = rgb[2];
+        }
     }
+
 
     /**
      * Get the coordinate of the point and correspond texture coordinate in
@@ -276,10 +280,13 @@ public class HeightMapTerrainData extends AbstractStaticTerrainData
         coord[1] = height;
         coord[2] = -gridY * (float)gridStepY;
 
-        float[] rgb = colorInterp.floatRGBValue(height);
-        color[0] = rgb[0];
-        color[1] = rgb[1];
-        color[2] = rgb[2];
+        if(colorInterp != null)
+        {
+            float[] rgb = colorInterp.floatRGBValue(height);
+            color[0] = rgb[0];
+            color[1] = rgb[1];
+            color[2] = rgb[2];
+        }
     }
 
     /**
