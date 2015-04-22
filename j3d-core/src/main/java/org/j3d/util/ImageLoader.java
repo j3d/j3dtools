@@ -14,7 +14,6 @@ package org.j3d.util;
 
 // External imports
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.Toolkit;
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -109,7 +108,7 @@ public class ImageLoader
         // Check the map for an instance first
         Icon ret_val = null;
 
-        WeakReference ref = (WeakReference)loadedIcons.get(name);
+        WeakReference ref = loadedIcons.get(name);
         if(ref != null)
         {
             ret_val = (Icon)ref.get();
@@ -124,7 +123,7 @@ public class ImageLoader
             if(img != null)
             {
                 ret_val = new ImageIcon(img, name);
-                loadedIcons.put(name, new WeakReference(ret_val));
+                loadedIcons.put(name, new WeakReference<>(ret_val));
             }
         }
 
@@ -146,7 +145,7 @@ public class ImageLoader
         // Check the map for an instance first
         Image ret_val = null;
 
-        WeakReference ref = (WeakReference)loadedImages.get(name);
+        WeakReference ref = loadedImages.get(name);
         if(ref != null)
         {
             ret_val = (Image)ref.get();
@@ -162,7 +161,7 @@ public class ImageLoader
             {
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 ret_val = toolkit.createImage(url);
-                loadedImages.put(name, new WeakReference(ret_val));
+                loadedImages.put(name, new WeakReference<>(ret_val));
             }
         }
 
@@ -184,7 +183,6 @@ public class ImageLoader
         if(filename.startsWith("http:") ||
             filename.startsWith("file:"))
         {
-
             try
             {
                 ret_val = new URL(filename);
@@ -200,19 +198,17 @@ public class ImageLoader
         else
         {
             // try to retrieve from the classpath
-            ret_val = (URL)AccessController.doPrivileged(
-                new PrivilegedAction()
+            ret_val = AccessController.doPrivileged(
+                new PrivilegedAction<URL>()
                 {
-                    public Object run()
+                    public URL run()
                     {
-
-                        ClassLoader cl = ClassLoader.getSystemClassLoader();
-                        URL url = cl.getSystemResource(filename);
+                        URL url = ClassLoader.getSystemResource(filename);
 
                         // WebStart fallback
                         if(url == null)
                         {
-                            cl = ImageLoader.class.getClassLoader();
+                            ClassLoader cl = ImageLoader.class.getClassLoader();
                             url = cl.getResource(filename);
                         }
 
