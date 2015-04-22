@@ -77,6 +77,63 @@ public class HeightMapTerrainDataTest
     }
 
     @Test(groups = "unit")
+    public void testArrayConstructionWithNoCopy() throws Exception
+    {
+        final double[] TEST_GRID_STEP_SIZE = { 1, 1 };
+        final float[][] TEST_HEIGHTS = { { 1, 2 }, { 3, 4 } };
+
+        HeightMapTerrainData classUnderTest = new HeightMapTerrainData(TEST_HEIGHTS, false, TEST_GRID_STEP_SIZE);
+
+        assertEquals(classUnderTest.getSourceDataType(), TerrainData.STATIC_DATA, "Incorrect data type");
+        assertFalse(classUnderTest.hasColor(), "Colour should not be available");
+        assertFalse(classUnderTest.hasTexture(), "Texture should not be available");
+        assertNull(classUnderTest.getTexture(), "No texture should be given by default");
+        assertEquals(classUnderTest.getGridXStep(), (double) TEST_GRID_STEP_SIZE[0], "Wrong X step saved");
+        assertEquals(classUnderTest.getGridYStep(), (double) TEST_GRID_STEP_SIZE[1], "Wrong Y step saved");
+
+        // Test that we are not copying the data by first checking the initial data, modifying the
+        // source array and then checking the height again
+        assertEquals(classUnderTest.getHeightFromGrid(0, 0),
+                     TEST_HEIGHTS[0][0],
+                     "Data at 0,0 is incorrect");
+
+        TEST_HEIGHTS[0][0] = 3.4f;
+
+        assertEquals(classUnderTest.getHeightFromGrid(0, 0),
+                     TEST_HEIGHTS[0][0],
+                     "Data after external update is incorrect");
+    }
+
+    @Test(groups = "unit")
+    public void testArrayConstructionWithCopy() throws Exception
+    {
+        final double[] TEST_GRID_STEP_SIZE = { 1, 1 };
+        final float[][] TEST_HEIGHTS = { { 1, 2 }, { 3, 4 } };
+
+        HeightMapTerrainData classUnderTest = new HeightMapTerrainData(TEST_HEIGHTS, true, TEST_GRID_STEP_SIZE);
+
+        assertEquals(classUnderTest.getSourceDataType(), TerrainData.STATIC_DATA, "Incorrect data type");
+        assertFalse(classUnderTest.hasColor(), "Colour should not be available");
+        assertFalse(classUnderTest.hasTexture(), "Texture should not be available");
+        assertNull(classUnderTest.getTexture(), "No texture should be given by default");
+        assertEquals(classUnderTest.getGridXStep(), (double) TEST_GRID_STEP_SIZE[0], "Wrong X step saved");
+        assertEquals(classUnderTest.getGridYStep(), (double) TEST_GRID_STEP_SIZE[1], "Wrong Y step saved");
+
+        // Test that we are not copying the data by first checking the initial data, modifying the
+        // source array and then checking the height again
+        assertEquals(classUnderTest.getHeightFromGrid(0, 0),
+                     TEST_HEIGHTS[0][0],
+                     "Data at 0,0 is incorrect");
+
+        final float ORIGINAL_TEST_HEIGHT = TEST_HEIGHTS[0][0];
+        TEST_HEIGHTS[0][0] = 3.4f;
+
+        assertEquals(classUnderTest.getHeightFromGrid(0, 0),
+                     ORIGINAL_TEST_HEIGHT,
+                     "Data after external update is incorrect");
+    }
+
+    @Test(groups = "unit")
     public void testCoordinateFetching() throws Exception
     {
         final float[] TEST_GRID_STEP_SIZE = { 1, 1 };
@@ -207,6 +264,19 @@ public class HeightMapTerrainDataTest
         when(mockHeightMapSource.getHeights()).thenReturn(TEST_HEIGHTS);
 
         HeightMapTerrainData classUnderTest = new HeightMapTerrainData(mockHeightMapSource);
+
+        // Check outside the grid returns NaN
+        assertTrue(Float.isNaN(classUnderTest.getHeight(-TEST_GRID_STEP_SIZE[0], TEST_GRID_STEP_SIZE[1])),
+                   "NaN not reported for negative x grid direction");
+
+        assertTrue(Float.isNaN(classUnderTest.getHeight(TEST_GRID_STEP_SIZE[0], -TEST_GRID_STEP_SIZE[1])),
+                   "NaN not reported for negative z grid direction");
+
+        assertTrue(Float.isNaN(classUnderTest.getHeight(TEST_GRID_STEP_SIZE[0] * (TEST_HEIGHTS.length + 1), TEST_GRID_STEP_SIZE[1])),
+                   "NaN not reported for large x grid direction");
+
+        assertTrue(Float.isNaN(classUnderTest.getHeight(TEST_GRID_STEP_SIZE[0], TEST_GRID_STEP_SIZE[1] * (TEST_HEIGHTS[0].length + 1))),
+                   "NaN not reported for large x grid direction");
 
         // Check the basic grid spot heights base on the grid step size. Should give the same height
         // as the grid coordinates
