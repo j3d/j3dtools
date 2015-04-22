@@ -126,40 +126,12 @@ class FilterErrorReporter
      * warning when a value has been set that is out of range.
      *
      * @param msg The text of the message to be displayed
-     * @param e The exception that caused this warning. May be null
-     */
-    @Override
-    public void warningReport(String msg, Exception e)
-    {
-        handleWarningReport(msg, e);
-    }
-
-    /**
-     * Notification of a warning in the way the system is currently operating.
-     * This is a non-fatal, non-serious error. For example you will get an
-     * warning when a value has been set that is out of range.
-     *
-     * @param msg The text of the message to be displayed
      * @param th The throwable that caused this warning. May be null
      */
     @Override
     public void warningReport(String msg, Throwable th)
     {
         handleWarningReport(msg, th);
-    }
-
-    /**
-     * Notification of a recoverable error. This is a serious, but non-fatal
-     * error, for example trying to add a route to a non-existent node or the
-     * use of a node that the system cannot find the definition of.
-     *
-     * @param msg The text of the message to be displayed
-     * @param e The exception that caused this warning. May be null
-     */
-    @Override
-    public void errorReport(String msg, Exception e) 
-    {
-        handleErrorReport(msg, e);
     }
 
     /**
@@ -173,21 +145,6 @@ class FilterErrorReporter
     public void errorReport(String msg, Throwable th) 
     {
         handleErrorReport(msg, th);
-    }
-
-    /**
-     * Notification of a non-recoverable error that halts the entire system.
-     * After you recieve this report the runtime system will no longer
-     * function - for example a non-recoverable parsing error. The best way
-     * out is to reload the file or restart the application internals.
-     *
-     * @param msg The text of the message to be displayed
-     * @param e The exception that caused this warning. May be null
-     */
-    @Override
-    public void fatalErrorReport(String msg, Exception e)
-    {
-        handleFatalErrorReport(msg, e);
     }
 
     /**
