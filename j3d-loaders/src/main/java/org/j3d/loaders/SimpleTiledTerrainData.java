@@ -197,22 +197,31 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
         int x_coord = (int)Math.floor(rel_x_pos);
         int y_coord = (int)Math.floor(rel_y_pos);
 
-        // This algorithm sucks. It should be much nicer, but I'm lazy and
-        // want to do some other things ATM......
-
         if((x_coord < 0) || (y_coord < 0) ||
-           (x_coord + 1 >= gridWidth) || (y_coord + 1 >= gridDepth))
+            (x_coord + 1 > gridWidth) || (y_coord + 1 > gridDepth))
         {
-           return Float.NaN;
+            return Float.NaN;
         }
 
+        // if we are on the far edge, set the two grid indicies the same.
+        // results in the right answer after interpolation without
+        // excessive if statements.
+        int x2 = x_coord + 1 == gridWidth ? x_coord : x_coord + 1;
+        int y2 = y_coord + 1 == gridDepth ? y_coord : y_coord + 1;
+
         float h1 = heightMap[x_coord][y_coord];
-        float h2 = heightMap[x_coord][y_coord + 1];
-        float h3 = heightMap[x_coord + 1][y_coord];
-        float h4 = heightMap[x_coord + 1][y_coord + 1];
+        float h2 = heightMap[x_coord][y2];
+        float h3 = heightMap[x2][y_coord];
+        float h4 = heightMap[x2][y2];
+
+        float t_x = (x % (float)gridStepX) / (float)gridStepX;
+        float t_y = (z % (float)gridStepY) / (float)gridStepY;
+
+        float avg_x_1 = h1 + (h2 - h1) * t_x;
+        float avg_x_2 = h3 + (h4 - h3) * t_x;
 
         // return the average height
-        return (h1 + h2 + h3 + h4) * 0.25f;
+        return avg_x_1 + (avg_x_2 - avg_x_1) * t_y;
     }
 
     //----------------------------------------------------------
@@ -290,10 +299,13 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
 
         if(gridX >= 0 && gridY >= 0 && gridX < gridWidth && gridY < gridDepth)
         {
-            float[] rgb = colorInterp.floatRGBValue(coord[1]);
-            color[0] = rgb[0];
-            color[1] = rgb[1];
-            color[2] = rgb[2];
+            if(colorInterp != null)
+            {
+                float[] rgb = colorInterp.floatRGBValue(coord[1]);
+                color[0] = rgb[0];
+                color[1] = rgb[1];
+                color[2] = rgb[2];
+            }
         }
         else
         {
@@ -472,10 +484,13 @@ public class SimpleTiledTerrainData extends AbstractTiledTerrainData
 
         if(gridX >= 0 && gridY >= 0 && gridX < gridWidth && gridY < gridDepth)
         {
-            float[] rgb = colorInterp.floatRGBValue(coord[1]);
-            color[0] = rgb[0];
-            color[1] = rgb[1];
-            color[2] = rgb[2];
+            if(colorInterp != null)
+            {
+                float[] rgb = colorInterp.floatRGBValue(coord[1]);
+                color[0] = rgb[0];
+                color[1] = rgb[1];
+                color[2] = rgb[2];
+            }
         }
         else
         {
