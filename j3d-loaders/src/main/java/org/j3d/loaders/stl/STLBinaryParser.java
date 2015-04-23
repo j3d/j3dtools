@@ -20,6 +20,7 @@ import javax.swing.ProgressMonitorInputStream;
 import java.util.ArrayList;
 
 // Local imports
+import org.j3d.io.EndianConverter;
 import org.j3d.loaders.InvalidFormatException;
 
 /**
@@ -83,21 +84,10 @@ class STLBinaryParser extends STLParser
     public boolean parse(URL url)
         throws InvalidFormatException, IOException
     {
-        InputStream stream = null;
-        int length = -1;
-        try
-        {
-            URLConnection connection = url.openConnection();
-            stream = connection.getInputStream();
-            length = connection.getContentLength();
-        }
-        catch(IOException e)
-        {
-            if(stream != null)
-            {
-                stream.close();
-            }
-        }
+        URLConnection connection = url.openConnection();
+        InputStream stream = connection.getInputStream();
+        int length = connection.getContentLength();
+
         itsStream = new BufferedInputStream(stream);
         return parse(length);
     }
@@ -106,21 +96,10 @@ class STLBinaryParser extends STLParser
     public boolean parse(URL url,  Component parentComponent)
         throws InvalidFormatException, IOException
     {
-        InputStream stream = null;
-        int length = -1;
-        try
-        {
-            URLConnection connection = url.openConnection();
-            stream = connection.getInputStream();
-            length = connection.getContentLength();
-        }
-        catch(IOException e)
-        {
-            if(stream != null)
-            {
-                stream.close();
-            }
-        }
+        URLConnection connection = url.openConnection();
+        InputStream stream = connection.getInputStream();
+        int length = connection.getContentLength();
+
         stream = new ProgressMonitorInputStream(
             parentComponent,
             "parsing " + url.toString(),
@@ -146,11 +125,13 @@ class STLBinaryParser extends STLParser
         {
             // skip header until number of facets info
             for(int i = 0; i < COMMENT_SIZE; i ++)
+            {
                 itsStream.read();
+            }
 
             // binary file contains only on object
             itsNumOfObjects = 1;
-            itsNumOfFacets = new int[]{LittleEndianConverter.read4ByteBlock(itsStream) };
+            itsNumOfFacets = new int[]{ EndianConverter.read4ByteBlock(itsStream) };
             itsNames = new String[1];
             // if length of file is known, check if it matches with the content
             // binary file contains only on object
@@ -200,11 +181,11 @@ class STLBinaryParser extends STLParser
     public boolean getNextFacet(double[] normal, double[][] vertices)
         throws IOException
     {
-        LittleEndianConverter.read(itsReadBuffer,
-                                   itsDataBuffer,
-                                   0,
-                                   12,
-                                   itsStream);
+        EndianConverter.read(itsReadBuffer,
+                             itsDataBuffer,
+                             0,
+                             12,
+                             itsStream);
 
         boolean nan_found = false;;
 

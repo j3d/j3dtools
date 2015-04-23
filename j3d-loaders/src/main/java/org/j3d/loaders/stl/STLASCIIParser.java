@@ -37,7 +37,6 @@ import org.j3d.util.I18nManager;
  * </ul>
  *
  * @see STLFileReader
- * @see STLLoader
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
  * @version $Revision: 2.0 $
@@ -123,6 +122,12 @@ class STLASCIIParser extends STLParser
 
         // First line with normals
         String input_line = itsReader.readLine();
+
+        if(input_line == null)
+        {
+            return false;
+        }
+
         StringTokenizer strtok = new StringTokenizer(input_line);
         String token = strtok.nextToken();
 
@@ -138,12 +143,15 @@ class STLASCIIParser extends STLParser
         // Have we reached the end of file?
         // We've encountered a lot of broken files where they use two words
         // "end solid" rather than the spec-required "endsolid".
-        if(token.equals("endsolid") || token.equals("end solid")) {
+        if(token.equals("endsolid") || token.equals("end solid"))
+        {
             // Skip line and read next
             try
             {
                 return getNextFacet(normal, vertices);
-            } catch(IOException ioe) {
+            }
+            catch(IOException ioe)
+            {
                 // gone past end of file
                 return false;
             }
@@ -265,23 +273,11 @@ class STLASCIIParser extends STLParser
 
     @Override
     public boolean parse(URL url, Component parentComponent)
-        throws InterruptedIOException, IOException
+        throws IOException
     {
-        InputStream stream = null;
-        try
-        {
-            stream = url.openStream();
-        }
-        catch(IOException e)
-        {
-            if(stream != null)
-                stream.close();
+        InputStream stream = url.openStream();
 
-            throw e;
-        }
-
-        stream = new ProgressMonitorInputStream(
-            parentComponent, "analyzing " + url.toString(), stream);
+        stream = new ProgressMonitorInputStream(parentComponent, "analyzing " + url.toString(), stream);
 
         BufferedReader reader =
             new BufferedReader(new InputStreamReader(stream));
@@ -298,7 +294,9 @@ class STLASCIIParser extends STLParser
         }
 
         if(!isAscii)
+        {
             return false;
+        }
 
         try
         {
@@ -328,18 +326,7 @@ class STLASCIIParser extends STLParser
     public boolean parse(URL url)
         throws IOException
     {
-        InputStream stream = null;
-        try
-        {
-            stream = url.openStream();
-        }
-        catch(IOException e)
-        {
-            if(stream != null)
-                stream.close();
-
-            throw e;
-        }
+        InputStream stream = url.openStream();
 
         BufferedReader reader =
             new BufferedReader(new InputStreamReader(stream));
@@ -360,18 +347,11 @@ class STLASCIIParser extends STLParser
         }
 
         if(!isAscii)
+        {
             return false;
-
-        try
-        {
-            stream = url.openStream();
-        }
-        catch(IOException e)
-        {
-            stream.close();
-            throw e;
         }
 
+        stream = url.openStream();
         reader = new BufferedReader(new InputStreamReader(stream));
         itsReader = reader;
 
@@ -393,7 +373,6 @@ class STLASCIIParser extends STLParser
         int numOfFacets = 0;
         ArrayList<Integer> facetsPerObject = new ArrayList<>(10);
         ArrayList<String> names = new ArrayList<>(10);
-        boolean isAscii = true;
         String line = reader.readLine();
         int line_count = 1;
 
@@ -407,9 +386,13 @@ class STLASCIIParser extends STLParser
         else
         {
             if(line.length() > 6)
+            {
                 names.add(line.substring(6));
+            }
             else
+            {
                 names.add(null);
+            }
         }
 
         line = reader.readLine();
@@ -426,7 +409,7 @@ class STLASCIIParser extends STLParser
         {
             line_count++;
 
-            if(line.indexOf("facet") >= 0)
+            if(line.contains("facet"))
             {
                 numOfFacets ++;
                 // skip next 6 lines:
@@ -443,14 +426,14 @@ class STLASCIIParser extends STLParser
             // JC: We have found a lot of badly formatted STL files generated
             // from some program that incorrectly end a solid object with a
             // space between end and solid. Deal with that here.
-            else if((line.indexOf("endsolid") >= 0) ||
-                    (line.indexOf("end solid") >= 0))
+            else if((line.contains("endsolid")) ||
+                    (line.contains("end solid")))
             {
-                facetsPerObject.add(new Integer(numOfFacets));
+                facetsPerObject.add(numOfFacets);
                 numOfFacets = 0;
                 numOfObjects++;
             }
-            else if(line.indexOf("solid") >= 0)
+            else if(line.contains("solid"))
             {
                 line = line.trim();
 
@@ -479,9 +462,9 @@ class STLASCIIParser extends STLParser
 
         for(int i = 0; i < numOfObjects; i ++)
         {
-            Integer num = (Integer)facetsPerObject.get(i);
-            itsNumOfFacets[i] = num.intValue();
-            itsNames[i] = (String)names.get(i);
+            Integer num = facetsPerObject.get(i);
+            itsNumOfFacets[i] = num;
+            itsNames[i] = names.get(i);
         }
 
         return true;

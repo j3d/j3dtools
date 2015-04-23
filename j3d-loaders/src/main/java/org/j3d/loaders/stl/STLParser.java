@@ -29,7 +29,7 @@ import org.j3d.loaders.InvalidFormatException;
  * @version $Revision: 1.3 $
  * Copyright (c) Dipl. Ing. Paul Szawlowski<p>
  */
-abstract class STLParser
+public abstract class STLParser
 {
     protected int       itsNumOfObjects = 0;
     protected int[]    itsNumOfFacets = null;
@@ -102,7 +102,7 @@ abstract class STLParser
     /**
      * Releases used resources. Must be called after finishing reading.
      */
-    abstract void close() throws IOException;
+    public abstract void close() throws IOException;
 
     /**
      * Parses the file to obtain the number of objects, object names and number
@@ -111,7 +111,7 @@ abstract class STLParser
      * @return <code>true</code> if file is in ASCII format, <code>false</code>
      *      otherwise. Use the appropriate subclass for reading.
      */
-    abstract boolean parse(URL url)
+    public abstract boolean parse(URL url)
         throws IOException;
 
     /**
@@ -124,7 +124,7 @@ abstract class STLParser
      * @return <code>true</code> if file is in ASCII format, <code>false</code>
      *      otherwise. Use the appropriate subclass for reading.
      */
-    abstract boolean parse(URL url, Component parentComponent)
+    public abstract boolean parse(URL url, Component parentComponent)
         throws InvalidFormatException, IOException;
 
     /**
@@ -151,6 +151,6 @@ abstract class STLParser
      *      if end of file is reached. Further calls of this method after
      *      the end of file is reached will lead to an IOException.
      */
-    abstract boolean getNextFacet(double[] normal, double[][] vertices)
+    public abstract boolean getNextFacet(double[] normal, double[][] vertices)
         throws InvalidFormatException, IOException;
 }
