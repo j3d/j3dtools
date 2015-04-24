@@ -50,6 +50,115 @@ public class STLASCIIParserTest
         classUnderTest.close();
     }
 
+    @Test(groups = "unit")
+    public void testAlternateEndSolid() throws Exception
+    {
+        File source = DataUtils.lookForFile("stl/ascii/end_solid.stl", STLASCIIParserTest.class, null);
+        URL testURL = source.toURI().toURL();
+
+        STLASCIIParser classUnderTest = new STLASCIIParser();
+        assertTrue(classUnderTest.parse(testURL), "Unable to parse the basic test file");
+
+        double[] resultNormal = new double[3];
+        double[][] resultCoords = new double[3][3];
+
+        assertTrue(classUnderTest.getNextFacet(resultNormal, resultCoords), "Unable to read the first triangle");
+
+        assertEquals(resultNormal[0], 0.0, "Incorrect normal X component read");
+        assertEquals(resultNormal[1], 0.0, "Incorrect normal Y component read");
+        assertEquals(resultNormal[2], -1.0, "Incorrect normal Z component read");
+
+        assertFalse(classUnderTest.getNextFacet(resultNormal, resultCoords), "Found additional triangles");
+
+        classUnderTest.close();
+    }
+
+    @Test(groups = "unit", expectedExceptions = InvalidFormatException.class)
+    public void testMissingEndFacet() throws Exception
+    {
+        File source = DataUtils.lookForFile("stl/ascii/missing_endfacet.stl", STLASCIIParserTest.class, null);
+        URL testURL = source.toURI().toURL();
+
+        STLASCIIParser classUnderTest = new STLASCIIParser();
+        assertTrue(classUnderTest.parse(testURL), "Unable to parse the basic test file");
+
+        double[] resultNormal = new double[3];
+        double[][] resultCoords = new double[3][3];
+
+        classUnderTest.getNextFacet(resultNormal, resultCoords);
+    }
+
+    @Test(groups = "unit", expectedExceptions = InvalidFormatException.class)
+    public void testMissingEndSolid() throws Exception
+    {
+        File source = DataUtils.lookForFile("stl/ascii/missing_endsolid.stl", STLASCIIParserTest.class, null);
+        URL testURL = source.toURI().toURL();
+
+        STLASCIIParser classUnderTest = new STLASCIIParser();
+        assertTrue(classUnderTest.parse(testURL), "Unable to parse the basic test file");
+
+        double[] resultNormal = new double[3];
+        double[][] resultCoords = new double[3][3];
+
+        classUnderTest.getNextFacet(resultNormal, resultCoords);
+    }
+
+    @Test(groups = "unit", expectedExceptions = InvalidFormatException.class)
+    public void testMissingFacet() throws Exception
+    {
+        File source = DataUtils.lookForFile("stl/ascii/missing_facet.stl", STLASCIIParserTest.class, null);
+        URL testURL = source.toURI().toURL();
+
+        STLASCIIParser classUnderTest = new STLASCIIParser();
+        assertTrue(classUnderTest.parse(testURL), "Unable to parse the basic test file");
+
+        double[] resultNormal = new double[3];
+        double[][] resultCoords = new double[3][3];
+
+        classUnderTest.getNextFacet(resultNormal, resultCoords);
+    }
+    @Test(groups = "unit", expectedExceptions = InvalidFormatException.class)
+    public void testMissingLoop() throws Exception
+    {
+        File source = DataUtils.lookForFile("stl/ascii/missing_loop.stl", STLASCIIParserTest.class, null);
+        URL testURL = source.toURI().toURL();
+
+        STLASCIIParser classUnderTest = new STLASCIIParser();
+        assertTrue(classUnderTest.parse(testURL), "Unable to parse the basic test file");
+
+        double[] resultNormal = new double[3];
+        double[][] resultCoords = new double[3][3];
+
+        classUnderTest.getNextFacet(resultNormal, resultCoords);
+    }
+    @Test(groups = "unit", expectedExceptions = InvalidFormatException.class)
+    public void testMissingNormal() throws Exception
+    {
+        File source = DataUtils.lookForFile("stl/ascii/missing_normal.stl", STLASCIIParserTest.class, null);
+        URL testURL = source.toURI().toURL();
+
+        STLASCIIParser classUnderTest = new STLASCIIParser();
+        assertTrue(classUnderTest.parse(testURL), "Unable to parse the basic test file");
+
+        double[] resultNormal = new double[3];
+        double[][] resultCoords = new double[3][3];
+
+        classUnderTest.getNextFacet(resultNormal, resultCoords);
+    }
+    @Test(groups = "unit", expectedExceptions = InvalidFormatException.class)
+    public void testMissingOuter() throws Exception
+    {
+        File source = DataUtils.lookForFile("stl/ascii/missing_outer.stl", STLASCIIParserTest.class, null);
+        URL testURL = source.toURI().toURL();
+
+        STLASCIIParser classUnderTest = new STLASCIIParser();
+        assertTrue(classUnderTest.parse(testURL), "Unable to parse the basic test file");
+
+        double[] resultNormal = new double[3];
+        double[][] resultCoords = new double[3][3];
+
+        classUnderTest.getNextFacet(resultNormal, resultCoords);
+    }
     @Test(groups = "unit", expectedExceptions = InvalidFormatException.class)
     public void testMissingVertex() throws Exception
     {
@@ -64,7 +173,6 @@ public class STLASCIIParserTest
 
         classUnderTest.getNextFacet(resultNormal, resultCoords);
     }
-
 
     @Test(groups = "unit", expectedExceptions = InvalidFormatException.class)
     public void testExtraVertex() throws Exception

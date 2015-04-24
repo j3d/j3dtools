@@ -143,7 +143,7 @@ class STLASCIIParser extends STLParser
         // Have we reached the end of file?
         // We've encountered a lot of broken files where they use two words
         // "end solid" rather than the spec-required "endsolid".
-        if(token.equals("endsolid") || token.equals("end solid"))
+        if(token.equals("endsolid"))
         {
             // Skip line and read next
             try
@@ -154,6 +154,33 @@ class STLASCIIParser extends STLParser
             {
                 // gone past end of file
                 return false;
+            }
+        }
+
+        if(token.equals("end"))
+        {
+            if("solid".equals(strtok.nextToken()))
+            {
+                // Skip line and read next
+                try
+                {
+                    return getNextFacet(normal, vertices);
+                }
+                catch(IOException ioe)
+                {
+                    // gone past end of file
+                    return false;
+                }
+            }
+            else
+            {
+                close();
+
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
+                    + lineCount;
+                throw new InvalidFormatException(msg);
             }
         }
 
