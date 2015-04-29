@@ -16,7 +16,6 @@ import java.io.*;
 import java.util.*;
 
 import java.net.URL;
-import java.net.URLConnection;
 import java.awt.Component;
 import javax.swing.ProgressMonitorInputStream;
 
@@ -41,9 +40,8 @@ import org.j3d.geom.GeometryData;
  * @author Alan Hudson
  * @version $Revision: 2.0 $
  * @see OBJFileReader
- * @see OBJLoader
  */
-class OBJASCIIParser extends OBJParser
+class OBJASCIIParser
 {
     /** Max number of unsupported messages before we go silent */
     private static final int UNSUPPORTED_MAX_MSGS = 10;
@@ -104,28 +102,44 @@ class OBJASCIIParser extends OBJParser
      */
     OBJASCIIParser()
     {
-        coords = new ArrayList<>();
-        normals = new ArrayList<>();
-        texCoords = new ArrayList<>();
+        this(false);
     }
 
 
     /**
      * Create a new default parser instance.
+     *
+     * @param strict Attempt to deal with crappy data or short downloads.
+     * Will try to return any useable geometry.
      */
     OBJASCIIParser(boolean strict)
     {
-        super(strict);
+        strictParsing = strict;
 
         coords = new ArrayList<>();
         normals = new ArrayList<>();
         texCoords = new ArrayList<double[]>();
     }
 
+    /** Do we strictly parse or try harder */
+    protected boolean strictParsing;
+
+    /** Detailed parsing messages or null if none */
+    protected List<String> parsingMessages;
+
+    /**
+     * Get detailed messages on what was wrong when parsing.  Only can happen
+     * when strictParsing is false.  Means things like getNumOfFacets might
+     * be larger then reality.
+     */
+    public List<String> getParsingMessages()
+    {
+        return parsingMessages;
+    }
+
     /**
      * Finish the parsing off now.
      */
-    @Override
     public void close() throws IOException
     {
         if(itsReader != null)
@@ -137,7 +151,6 @@ class OBJASCIIParser extends OBJParser
      *
      * @return The object or null if EOF reached.
      */
-    @Override
     public GeometryData getNextObject() throws IOException, InvalidFormatException
     {
         GeometryData ret_val = null;
@@ -161,16 +174,15 @@ class OBJASCIIParser extends OBJParser
 
                 continue;
             }
-            else if(input_line.indexOf("\\") > -1)
+            else if(input_line.contains("\\"))
             {
                 input_line = input_line.replace("\\", "");
                 // Line break.  "Spec" doesn't give rules
                 input_line += itsReader.readLine();
-                continue loop;
+                continue;
             }
             else
             {
-
                 StringTokenizer strtok = new StringTokenizer(input_line, " ");
 
                 if(!strtok.hasMoreElements())
@@ -181,124 +193,103 @@ class OBJASCIIParser extends OBJParser
 
                 String token = strtok.nextToken();
 
-                if(token.equals("o"))
+                switch(token)
                 {
-                    if(obj_started)
-                    {
-                        break;
-                    }
-                    // new object
-                }
-                else if(token.equals("v"))
-                {
-                    double[] coord = readCoordinate(strtok);
-                    coords.add(coord);
-                    if(ret_val == null)
-                    {
-                        ret_val = new GeometryData();
-                    }
-                    // vertex
-                }
-                else if(token.equals("vn"))
-                {
-                    // normal
-                    double[] coord = readNormal(strtok);
-                    normals.add(coord);
-                }
-                else if(token.equals("vt"))
-                {
-                    // texture coordinate
-                    double[] coord = readTextureCoordinate(strtok);
-                    texCoords.add(coord);
-                }
-                else if(token.equals("f"))
-                {
-                    int[][] face = readFace(strtok);
-                    coord_indexes.add(face[0]);
-
-                    if(face.length > 1)
-                    {
-                        texCoord_indexes.add(face[1]);
-                    }
-
-                    if(face.length > 2)
-                    {
-                        normal_indexes.add(face[2]);
-                    }
-
-                    obj_started = true;
-                }
-                else if(token.equals("g"))
-                {
-                    // Ignore Grouping command
-                }
-                else if(token.equals("s"))
-                {
-                    // Ignore State
-                }
-                else if(token.equals("cstype"))
-                {
-                    // Unsupported Geometry
-
-                    if(unsupportedCount < UNSUPPORTED_MAX_MSGS)
-                    {
-                        String msg = "Unsupported geometry: " + token;
-                        if(parsingMessages == null)
+                    case "o":
+                        if(obj_started)
                         {
-                            parsingMessages = new ArrayList<String>();
+                            break loop;
                         }
-                        parsingMessages.add(msg);
-                    }
+                        // new object
+                        break;
 
-                    unsupportedCount++;
+                    case "v":
+                        double[] coord = readCoordinate(strtok);
+                        coords.add(coord);
+                        if(ret_val == null)
+                        {
+                            ret_val = new GeometryData();
+                        }
+                        // vertex
+                        break;
 
-                }
-                else if(token.equals("surf"))
-                {
-                    // Ignore, caught by cstype
-                }
-                else if(token.equals("ctech"))
-                {
-                    // Ignore, caught by cstype
-                }
-                else if(token.equals("curv"))
-                {
-                    // Ignore, caught by cstype
-                }
-                else if(token.equals("curv2"))
-                {
-                    // Ignore, caught by cstype
-                }
-                else if(token.equals("trim"))
-                {
-                    // Ignore, caught by cstype
-                }
-                else if(token.equals("scurv"))
-                {
-                    // Ignore, caught by cstype
-                }
-                else if(token.equals("end"))
-                {
-                    // Ignore, caught by cstype
-                }
-                else if(token.equals("deg"))
-                {
-                    // Ignore, caught by cstype
-                }
-                else if(token.equals("parm"))
-                {
-                    // Ignore, caught by cstype
-                }
-                else
-                {
-                    // Unsupported
-                    if(unsupportedCount < UNSUPPORTED_MAX_MSGS)
-                    {
+                    case "vn":
 
-                        System.out.println("Unsupported: " + input_line);
-                    }
+                        // normal
+                        coord = readNormal(strtok);
+                        normals.add(coord);
+                        break;
 
-                    unsupportedCount++;
+                    case "vt":
+
+                        // texture coordinate
+                        coord = readTextureCoordinate(strtok);
+                        texCoords.add(coord);
+                        break;
+
+                    case "f":
+                        int[][] face = readFace(strtok);
+                        coord_indexes.add(face[0]);
+
+                        if(face.length > 1)
+                        {
+                            texCoord_indexes.add(face[1]);
+                        }
+
+                        if(face.length > 2)
+                        {
+                            normal_indexes.add(face[2]);
+                        }
+
+                        obj_started = true;
+                        break;
+
+                    case "cstype":
+                        // Unsupported Geometry
+
+                        if(unsupportedCount < UNSUPPORTED_MAX_MSGS)
+                        {
+                            String msg = "Unsupported geometry: " + token;
+                            if(parsingMessages == null)
+                            {
+                                parsingMessages = new ArrayList<String>();
+                            }
+                            parsingMessages.add(msg);
+                        }
+
+                        unsupportedCount++;
+
+                        break;
+
+                    case "g":
+                        // Ignore Grouping command
+                        break;
+                    case "s":
+                        // Ignore State
+                        break;
+
+                    case "surf":
+                    case "ctech":
+                    case "curv":
+                    case "curv2":
+                    case "trim":
+                    case "scurv":
+                    case "end":
+                    case "deg":
+                    case "parm":
+                        // Ignore, caught by cstype
+                        break;
+
+                    default:
+                        // Unsupported
+                        if(unsupportedCount < UNSUPPORTED_MAX_MSGS)
+                        {
+
+                            System.out.println("Unsupported: " + input_line);
+                        }
+
+                        unsupportedCount++;
+                        break;
                 }
             }
 
@@ -307,16 +298,17 @@ class OBJASCIIParser extends OBJParser
         }
 
         if(ret_val == null)
+        {
             return null;
+        }
 
         int len = coords.size();
         ret_val.vertexCount = len;
         ret_val.coordinates = new float[len * 3];
         int idx = 0;
 
-        for(int i = 0; i < len; i++)
+        for(double[] val: coords)
         {
-            double[] val = coords.get(i);
             ret_val.coordinates[idx++] = (float) val[0];
             ret_val.coordinates[idx++] = (float) val[1];
             ret_val.coordinates[idx++] = (float) val[2];
@@ -328,9 +320,8 @@ class OBJASCIIParser extends OBJParser
             ret_val.normals = new float[len * 3];
             idx = 0;
 
-            for(int i = 0; i < len; i++)
+            for(double[] val: normals)
             {
-                double[] val = normals.get(i);
                 ret_val.normals[idx++] = (float) val[0];
                 ret_val.normals[idx++] = (float) val[1];
                 ret_val.normals[idx++] = (float) val[2];
@@ -343,9 +334,8 @@ class OBJASCIIParser extends OBJParser
             ret_val.textureCoordinates = new float[len * 2];
             idx = 0;
 
-            for(int i = 0; i < len; i++)
+            for(double[] val: texCoords)
             {
-                double[] val = texCoords.get(i);
                 ret_val.textureCoordinates[idx++] = (float) val[0];
                 ret_val.textureCoordinates[idx++] = (float) val[1];
             }
@@ -364,19 +354,47 @@ class OBJASCIIParser extends OBJParser
         ret_val.indexesCount = count;
         ret_val.indexes = new int[count + len];  // for extra -1
         idx = 0;
+        int max_face_size = 0;
+
         for(int i = 0; i < len; i++)
         {
             int[] face = coord_indexes.get(i);
-            for(int j = 0; j < face.length; j++)
+
+            max_face_size = max_face_size < face.length ? face.length: max_face_size;
+
+            for(int aFace : face)
             {
-                if(face[j] < 0 || face[j] >= coords.size())
+                if(aFace < 0 || aFace >= coords.size())
                 {
                     throw new InvalidFormatException("Coordinate index out of bounds");
                 }
-                ret_val.indexes[idx++] = face[j];
+                ret_val.indexes[idx++] = aFace;
             }
 
             ret_val.indexes[idx++] = -1;
+        }
+
+        switch(max_face_size)
+        {
+            case 0:
+            case 1:
+                throw new InvalidFormatException("No valid lines or triangles found");
+
+            case 2:
+                ret_val.geometryType = GeometryData.INDEXED_LINES;
+                break;
+
+            case 3:
+                ret_val.geometryType = GeometryData.INDEXED_TRIANGLES;
+                break;
+
+            case 4:
+                ret_val.geometryType = GeometryData.INDEXED_QUADS;
+                break;
+
+            default:
+                ret_val.geometryType = GeometryData.INDEXED_POLYGONS;
+                break;
         }
 
         len = texCoord_indexes.size();
@@ -388,7 +406,9 @@ class OBJASCIIParser extends OBJParser
             int[] face = texCoord_indexes.get(i);
 
             if(face != null)
+            {
                 count += face.length;
+            }
         }
 
         if(count > 0)
@@ -401,9 +421,9 @@ class OBJASCIIParser extends OBJParser
             for(int i = 0; i < len; i++)
             {
                 int[] face = texCoord_indexes.get(i);
-                for(int j = 0; j < face.length; j++)
+                for(int aFace : face)
                 {
-                    if(face[j] < 0 || face[j] >= texCoords.size())
+                    if(aFace < 0 || aFace >= texCoords.size())
                     {
                         if(strictParsing)
                         {
@@ -416,7 +436,7 @@ class OBJASCIIParser extends OBJParser
                         }
                     }
 
-                    ret_val.texCoordIndexes[idx++] = face[j];
+                    ret_val.texCoordIndexes[idx++] = aFace;
                 }
 
                 ret_val.texCoordIndexes[idx++] = -1;
@@ -425,6 +445,10 @@ class OBJASCIIParser extends OBJParser
             if(error_found)
             {
                 ret_val.texCoordIndexes = null;
+            }
+            else
+            {
+                ret_val.geometryComponents |= GeometryData.TEXTURE_2D_DATA;
             }
         }
 
@@ -437,7 +461,9 @@ class OBJASCIIParser extends OBJParser
             int[] face = normal_indexes.get(i);
 
             if(face != null)
+            {
                 count += face.length;
+            }
         }
 
         if(!normalCoordMissing && count > 0)
@@ -445,14 +471,16 @@ class OBJASCIIParser extends OBJParser
             boolean error_found = false;
 
             ret_val.normalIndexes = new int[count + len];  // for extra -1
+            ret_val.geometryComponents |= GeometryData.NORMAL_DATA;
+
             idx = 0;
             loop:
             for(int i = 0; i < len; i++)
             {
                 int[] face = normal_indexes.get(i);
-                for(int j = 0; j < face.length; j++)
+                for(int aFace : face)
                 {
-                    if(face[j] < 0 || face[j] >= normals.size())
+                    if(aFace < 0 || aFace >= normals.size())
                     {
                         if(strictParsing)
                         {
@@ -465,7 +493,7 @@ class OBJASCIIParser extends OBJParser
                         }
                     }
 
-                    ret_val.normalIndexes[idx++] = face[j];
+                    ret_val.normalIndexes[idx++] = aFace;
                 }
 
                 ret_val.normalIndexes[idx++] = -1;
@@ -481,24 +509,20 @@ class OBJASCIIParser extends OBJParser
     }
 
     /**
+     * Parses the file to obtain the number of objects, object names and number
+     * of facets per object. A progress monitor will show the progress during
+     * parsing.
+     * @param url URL to read from.
+     * @param parentComponent Parent <code>Component</code> of progress monitor.
+     *      Use <code>null</code> if there is no parent.
+     * @return <code>true</code> if file is in ASCII format, <code>false</code>
+     *      otherwise. Use the appropriate subclass for reading.
      * @throws InvalidFormatException The file was structurally incorrect
      */
-    @Override
     public boolean parse(URL url, Component parentComponent)
         throws InterruptedIOException, IOException
     {
-        InputStream stream = null;
-        try
-        {
-            stream = url.openStream();
-        }
-        catch(IOException e)
-        {
-            if(stream != null)
-                stream.close();
-
-            throw e;
-        }
+        InputStream stream = url.openStream();
 
         stream = new ProgressMonitorInputStream(
             parentComponent, "analyzing " + url.toString(), stream);
@@ -518,7 +542,9 @@ class OBJASCIIParser extends OBJParser
         }
 
         if(!isAscii)
+        {
             return false;
+        }
 
         try
         {
@@ -542,24 +568,17 @@ class OBJASCIIParser extends OBJParser
     }
 
     /**
+     * Parses the file to obtain the number of objects, object names and number
+     * of facets per object.
+     * @param url URL to read from.
+     * @return <code>true</code> if file is in ASCII format, <code>false</code>
+     *      otherwise. Use the appropriate subclass for reading.
      * @throws InvalidFormatException The file was structurally incorrect
      */
-    @Override
     public boolean parse(URL url)
         throws IOException
     {
-        InputStream stream = null;
-        try
-        {
-            stream = url.openStream();
-        }
-        catch(IOException e)
-        {
-            if(stream != null)
-                stream.close();
-
-            throw e;
-        }
+        InputStream stream = url.openStream();
 
         BufferedReader reader =
             new BufferedReader(new InputStreamReader(stream));
@@ -626,9 +645,7 @@ class OBJASCIIParser extends OBJParser
         {
             String num_str = strtok.nextToken();
 
-            boolean error_found = false;
-
-            if(num_str == "")
+            if(num_str.isEmpty())
             {
                 // ignore extra spaces
                 i = i - 1;
@@ -719,7 +736,7 @@ class OBJASCIIParser extends OBJParser
                     }
                 }
 
-                if(error_found == true)
+                if(error_found)
                 {
                     vector[0] = 0;
                     vector[1] = 0;
@@ -776,7 +793,7 @@ class OBJASCIIParser extends OBJParser
                     }
                 }
 
-                if(error_found == true)
+                if(error_found)
                 {
                     vector[0] = 0;
                     vector[1] = 0;
@@ -803,9 +820,7 @@ class OBJASCIIParser extends OBJParser
         {
             String num_str = strtok.nextToken();
 
-            boolean error_found = false;
-
-            if(num_str.indexOf("/") < 0)
+            if(!num_str.contains("/"))
             {
                 num_comps = 1;
                 try
@@ -846,7 +861,6 @@ class OBJASCIIParser extends OBJParser
 
                             if(index < 0)
                             {
-//System.out.println("Input index: " + index + " coord size: " + coords.size() + " ans: " + (coords.size() - index));
                                 // Need to resolve relative index
                                 index = coords.size() + index;
                             }
@@ -927,21 +941,17 @@ class OBJASCIIParser extends OBJParser
                     }
                     else
                     {
-
                         index = Integer.parseInt(num_str);
 
-                        if(num_str != null)
+                        if(index < 0)
                         {
-                            if(index < 0)
-                            {
-                                // Need to resolve relative index
-                                index = normals.size() + index;
-                                indices_normals.add(index);
-                            }
-                            else
-                            {
-                                indices_normals.add(index - 1); //  Account for weird 1 numbering
-                            }
+                            // Need to resolve relative index
+                            index = normals.size() + index;
+                            indices_normals.add(index);
+                        }
+                        else
+                        {
+                            indices_normals.add(index - 1); //  Account for weird 1 numbering
                         }
                     }
                 }

@@ -38,7 +38,7 @@ import org.j3d.geom.GeometryData;
  */
 public class OBJFileReader
 {
-    private OBJParser itsParser;
+    private OBJASCIIParser itsParser;
 
     /**
      * Creates a <code>OBJFileReader</code> object to read a OBJ file from a
@@ -107,7 +107,7 @@ public class OBJFileReader
         throws InvalidFormatException, IOException
     {
 
-        final OBJParser asciiParser = new OBJASCIIParser(strict);
+        final OBJASCIIParser asciiParser = new OBJASCIIParser(strict);
 
         if(asciiParser.parse(url))
         {

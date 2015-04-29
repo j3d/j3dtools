@@ -70,6 +70,11 @@ public class GeometryData implements Cloneable
     /** Generate the geometry as an indexed line strip array */
     public static final int INDEXED_LINE_STRIPS = 12;
 
+    /**
+     * Generate the geometry as an indexed polygon array. The data will need breaking down into
+     * individual triangles before rendering if this data type is found
+     */
+    public static final int INDEXED_POLYGONS = 13;
 
     /** Request for lighting normal data to be produced */
     public static final int NORMAL_DATA = 0x02;
