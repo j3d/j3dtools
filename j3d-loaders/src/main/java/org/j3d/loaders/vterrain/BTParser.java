@@ -16,6 +16,7 @@ import java.io.IOException;
 
 // Local parser
 import org.j3d.loaders.HeightMapSource;
+import org.j3d.loaders.UnsupportedFormatException;
 
 /**
  * A low-level parser for the VTerrain's Project  BT file format.
@@ -75,9 +76,13 @@ public class BTParser implements HeightMapSource
         this();
 
         if(is instanceof BufferedInputStream)
-            input = (BufferedInputStream)is;
+        {
+            input = (BufferedInputStream) is;
+        }
         else
+        {
             input = new BufferedInputStream(is);
+        }
     }
 
     /**
@@ -89,9 +94,13 @@ public class BTParser implements HeightMapSource
     public void reset(InputStream is)
     {
         if(is instanceof BufferedInputStream)
-            input = (BufferedInputStream)is;
+        {
+            input = (BufferedInputStream) is;
+        }
         else
+        {
             input = new BufferedInputStream(is);
+        }
 
         dataReady = false;
         header = null;
@@ -148,15 +157,14 @@ public class BTParser implements HeightMapSource
      * Do all the parsing work. Convenience method for all to call internally
      *
      * @return A 2D array of the heighs read, if requested
-     * @throws IncorrectFormatException The file is not one our loader
-     *    understands
-     * @throws ParsingErrorException An error parsing the file
      */
     public float[][] parse()
         throws IOException
     {
         if(dataReady)
+        {
             throw new IOException("Data has already been read from this stream");
+        }
 
         input.read(buffer, 0, 10);
 
@@ -165,12 +173,23 @@ public class BTParser implements HeightMapSource
 
         header.version = new String(buffer, "US-ASCII");
 
-        if(header.version.equals(BTHeader.VERSION_1_0))
-            version = 0;
-        else if(header.version.equals(BTHeader.VERSION_1_1))
-            version = 1;
-        else if(header.version.equals(BTHeader.VERSION_1_2))
-            version = 2;
+        switch(header.version)
+        {
+            case BTHeader.VERSION_1_0:
+                version = 0;
+                break;
+
+            case BTHeader.VERSION_1_1:
+                version = 1;
+                break;
+
+            case BTHeader.VERSION_1_2:
+                version = 2;
+                break;
+
+            default:
+                throw new UnsupportedFormatException("Can't handle version " + header.version + " files");
+        }
 
         header.columns = readInt();
         header.rows = readInt();
@@ -179,10 +198,13 @@ public class BTParser implements HeightMapSource
         int columns = header.columns;
         boolean floats_used = false;
 
+        // Read and ignore
         int data_size = readShort();
 
         if(version > 0)
+        {
             floats_used = (readShort() == 1);
+        }
 
         header.utmProjection = (readShort() == 1);
         header.utmZone = readShort();
@@ -229,7 +251,9 @@ public class BTParser implements HeightMapSource
             for(int c = 0; c < columns; c++)
             {
                 for(int r = 0; r < rows; r++)
+                {
                     heights[r][c] = readFloat();
+                }
             }
         }
         else
@@ -237,7 +261,9 @@ public class BTParser implements HeightMapSource
             for(int c = 0; c < columns; c++)
             {
                 for(int r = 0; r < rows; r++)
+                {
                     heights[r][c] = readInt();
+                }
             }
         }
 
@@ -258,7 +284,7 @@ public class BTParser implements HeightMapSource
      * @return A long value
      * @throws IOException An error occurred reading the stream
      */
-    private final long readLong() throws IOException
+    private long readLong() throws IOException
     {
         input.read(buffer, 0, 8);
 
@@ -276,7 +302,7 @@ public class BTParser implements HeightMapSource
      * @return A int value
      * @throws IOException An error occurred reading the stream
      */
-    private final int readInt() throws IOException
+    private int readInt() throws IOException
     {
         input.read(buffer, 0, 4);
 
@@ -290,7 +316,7 @@ public class BTParser implements HeightMapSource
      * @return A short value
      * @throws IOException An error occurred reading the stream
      */
-    private final short readShort() throws IOException
+    private short readShort() throws IOException
     {
         input.read(buffer, 0, 2);
         return (short)((buffer[0] & 0xFF) + ((buffer[1] & 0xFF) << 8));
@@ -302,7 +328,7 @@ public class BTParser implements HeightMapSource
      * @return A float value
      * @throws IOException An error occurred reading the stream
      */
-    private final float readFloat() throws IOException
+    private float readFloat() throws IOException
     {
         return Float.intBitsToFloat(readInt());
     }
@@ -313,7 +339,7 @@ public class BTParser implements HeightMapSource
      * @return A double value
      * @throws IOException An error occurred reading the stream
      */
-    private final double readDouble() throws IOException
+    private double readDouble() throws IOException
     {
         return Double.longBitsToDouble(readLong());
     }
