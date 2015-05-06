@@ -16,6 +16,7 @@ import java.io.IOException;
 
 // Local parser
 import org.j3d.loaders.HeightMapSource;
+import org.j3d.loaders.HeightMapSourceOrigin;
 import org.j3d.loaders.UnsupportedFormatException;
 
 /**
@@ -85,6 +86,28 @@ public class BTParser implements HeightMapSource
         }
     }
 
+    // ----- Methods defined by HeightMapSource ------------------------------
+
+    @Override
+    public float[][] getHeights()
+    {
+        return heights;
+    }
+
+    @Override
+    public float[] getGridStep()
+    {
+        return gridStepData;
+    }
+
+    @Override
+    public HeightMapSourceOrigin getOriginLocation()
+    {
+        return HeightMapSourceOrigin.BOTTOM_LEFT;
+    }
+
+    // ----- Local Methods ---------------------------------------------------
+
     /**
      * Reset the parser to use the new stream. After calling this method all
      * header and height information is reset to empty.
@@ -127,30 +150,6 @@ public class BTParser implements HeightMapSource
     public BTHeader getHeader()
     {
         return header;
-    }
-
-    /**
-     * Return the height map created for the last stream parsed. If no stream
-     * has been parsed yet, this will return null.
-     *
-     * @return The array of heights in [row][column] order or null
-     */
-    @Override
-    public float[][] getHeights()
-    {
-        return heights;
-    }
-
-    /**
-     * Fetch information about the real-world stepping sizes that this
-     * grid uses.
-     *
-     * @return The stepping information for width and depth
-     */
-    @Override
-    public float[] getGridStep()
-    {
-        return gridStepData;
     }
 
     /**

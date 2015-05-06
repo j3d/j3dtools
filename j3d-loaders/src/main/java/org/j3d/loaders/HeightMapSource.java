@@ -15,7 +15,7 @@ package org.j3d.loaders;
 // none
 
 /**
- * A marker interface that describs a parser implementation that produces
+ * A marker interface that describes a parser implementation that produces
  * heightfield information.
  * <p>
  *
@@ -28,11 +28,12 @@ public interface HeightMapSource
     /**
      * Return the height map created for the last stream parsed. If no stream
      * has been parsed yet, this will return null. Height is relative to
-     * sea-level which has a value of zero.
+     * sea-level which has a value of zero. Negative heights are allowed
+     * (Bathymetry data). The rows go from west to east, columns from south to north.
      *
      * @return The array of heights in [row][column] order or null
      */
-    public abstract float[][] getHeights();
+    public float[][] getHeights();
 
     /**
      * Fetch information about the real-world stepping sizes that this
@@ -40,5 +41,12 @@ public interface HeightMapSource
      *
      * @return The stepping information for width[0] and depth [1]
      */
-    public abstract float[] getGridStep();
+    public float[] getGridStep();
+
+    /**
+     * Get the location of the origin that the grid points are centred around.
+     *
+     * @return a non-null origin definition
+     */
+    public HeightMapSourceOrigin getOriginLocation();
 }

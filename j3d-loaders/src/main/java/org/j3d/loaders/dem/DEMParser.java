@@ -20,6 +20,7 @@ import java.util.LinkedList;
 
 // Local parser
 import org.j3d.loaders.HeightMapSource;
+import org.j3d.loaders.HeightMapSourceOrigin;
 import org.j3d.util.CharHashMap;
 
 /**
@@ -161,6 +162,33 @@ public class DEMParser implements HeightMapSource
         charBuffer = new char[1024];
     }
 
+    // ----- Methods defined by HeightMapSource ------------------------------
+
+    @Override
+    public float[][] getHeights()
+    {
+        float[][] ret_val = null;
+
+        if(dataReady)
+            ret_val = convertHeights();
+
+        return ret_val;
+    }
+
+    @Override
+    public float[] getGridStep()
+    {
+        return gridStepData;
+    }
+
+    @Override
+    public HeightMapSourceOrigin getOriginLocation()
+    {
+        return HeightMapSourceOrigin.BOTTOM_LEFT;
+    }
+
+    // ----- Local Methods ---------------------------------------------------
+
     /**
      * Force a clear of the data that has been previous read by this parser.
      */
@@ -257,36 +285,6 @@ public class DEMParser implements HeightMapSource
     public DEMTypeCRecord getTypeCRecord()
     {
         return statistics;
-    }
-
-    /**
-     * Create a new height array from the pre-parsed values. If there has not
-     * been any parsing prior to this point null will be returned. Each time
-     * this method is called a new array of values is generated.
-     *
-     * @return The converted heights or null
-     */
-    @Override
-    public float[][] getHeights()
-    {
-        float[][] ret_val = null;
-
-        if(dataReady)
-            ret_val = convertHeights();
-
-        return ret_val;
-    }
-
-    /**
-     * Fetch information about the real-world stepping sizes that this
-     * grid uses.
-     *
-     * @return The stepping information for width and depth
-     */
-    @Override
-    public float[] getGridStep()
-    {
-        return gridStepData;
     }
 
     /**
