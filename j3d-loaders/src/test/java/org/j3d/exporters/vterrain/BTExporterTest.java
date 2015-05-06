@@ -29,6 +29,32 @@ import static org.testng.Assert.*;
  */
 public class BTExporterTest
 {
+    private HeightMapSource exportTestSource = new HeightMapSource()
+    {
+
+        @Override
+        public float[][] getHeights()
+        {
+            return new float[][]
+                {
+                    { 1.0f, 2.0f },
+                    { 3.0f, 4.0f }
+                };
+        }
+
+        @Override
+        public float[] getGridStep()
+        {
+            return new float[] { 1.0f, 1.0f };
+        }
+
+        @Override
+        public HeightMapSourceOrigin getOriginLocation()
+        {
+            return HeightMapSourceOrigin.BOTTOM_LEFT;
+        }
+    };
+
     @Test(groups = "unit")
     public void testBasicUTMConstruction() throws Exception
     {
@@ -82,6 +108,62 @@ public class BTExporterTest
     public void testMissingVersion() throws Exception
     {
         new BTExporter(null);
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testNegativeRowCount() throws Exception
+    {
+        BTExporter classUnderTest = new BTExporter(BTVersion.VERSION_1_3);
+        classUnderTest.setGridSize(-1, 3);
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testNegativeColumnCount() throws Exception
+    {
+        BTExporter classUnderTest = new BTExporter(BTVersion.VERSION_1_3);
+        classUnderTest.setGridSize(1, -2);
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testZeroRowCount() throws Exception
+    {
+        BTExporter classUnderTest = new BTExporter(BTVersion.VERSION_1_3);
+        classUnderTest.setGridSize(0, 3);
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testZeroColumnCount() throws Exception
+    {
+        BTExporter classUnderTest = new BTExporter(BTVersion.VERSION_1_3);
+        classUnderTest.setGridSize(1, 0);
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testZeroVerticalScale() throws Exception
+    {
+        BTExporter classUnderTest = new BTExporter(BTVersion.VERSION_1_3);
+        classUnderTest.setVerticalScale(0.0f);
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testNegativeVerticalScale() throws Exception
+    {
+        BTExporter classUnderTest = new BTExporter(BTVersion.VERSION_1_3);
+        classUnderTest.setVerticalScale(-10.5f);
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testInvalidPositiveUTMZone() throws Exception
+    {
+        BTExporter classUnderTest = new BTExporter(BTVersion.VERSION_1_3);
+        classUnderTest.setDatum(true, 61);
+    }
+
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
+    public void testInvalidNegativeUTMZone() throws Exception
+    {
+        BTExporter classUnderTest = new BTExporter(BTVersion.VERSION_1_3);
+        classUnderTest.setDatum(true, -75);
     }
 
     @Test(groups = "unit")
@@ -337,6 +419,360 @@ public class BTExporterTest
 
         assertEquals(resultStream.read(), -1, "End of stream not found");
 
+    }
+
+    @Test(groups = "unit")
+    public void test2ByteIntegerExport()
+        throws Exception
+    {
+        final BTVersion TEST_VERSION = BTVersion.VERSION_1_3;
+        BTExporter classUnderTest = new BTExporter(TEST_VERSION);
+        classUnderTest.exportTwoByteHeights(true);
+        classUnderTest.exportFloatHeights(false);
+        classUnderTest.setDataSource(exportTestSource);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream(1024);
+        classUnderTest.export(output);
+
+        byte[] data = output.toByteArray();
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+
+        // http://vterrain.org/Implementation/Formats/BT.html
+        byte[] versionBytes = new byte[10];
+        resultStream.read(versionBytes);
+
+        String header = new String(versionBytes);
+        assertEquals(header, "binterr1.3", "Incorrect version number written");
+
+        assertEquals(resultStream.readInt(), 2, "Wrong column count written");
+        assertEquals(resultStream.readInt(), 2, "Wrong row count written");
+        assertEquals(resultStream.readShort(), 2, "Should have 2 byte heights");
+        assertEquals(resultStream.readShort(), 0, "Should have integer heights");
+
+        // skip through the rest of the header here.
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readShort();
+        resultStream.readFloat();
+
+        // make sure all this buffer is padding zeroes
+        for(int i = 0; i < 190; i++)
+        {
+            resultStream.readByte();
+        }
+
+        // should be 4 height values, each 1.0, as 2 byte integers
+        assertEquals(resultStream.readShort(), 1, "Incorrect height at 0,0");
+        assertEquals(resultStream.readShort(), 2, "Incorrect height at 0,1");
+        assertEquals(resultStream.readShort(), 3, "Incorrect height at 1,0");
+        assertEquals(resultStream.readShort(), 4, "Incorrect height at 1,1");
+
+        assertEquals(resultStream.read(), -1, "End of stream not found");
+    }
+
+    @Test(groups = "unit")
+    public void test2ByteIntegerExportGridOversize()
+        throws Exception
+    {
+        final BTVersion TEST_VERSION = BTVersion.VERSION_1_3;
+        BTExporter classUnderTest = new BTExporter(TEST_VERSION);
+        classUnderTest.exportTwoByteHeights(true);
+        classUnderTest.exportFloatHeights(false);
+        classUnderTest.setDataSource(exportTestSource);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream(1024);
+        classUnderTest.setGridSize(3, 3);
+        classUnderTest.export(output);
+
+        byte[] data = output.toByteArray();
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+
+        // http://vterrain.org/Implementation/Formats/BT.html
+        byte[] versionBytes = new byte[10];
+        resultStream.read(versionBytes);
+
+        String header = new String(versionBytes);
+        assertEquals(header, "binterr1.3", "Incorrect version number written");
+
+        assertEquals(resultStream.readInt(), 3, "Wrong column count written");
+        assertEquals(resultStream.readInt(), 3, "Wrong row count written");
+        assertEquals(resultStream.readShort(), 2, "Should have 2 byte heights");
+        assertEquals(resultStream.readShort(), 0, "Should have integer heights");
+
+        // skip through the rest of the header here.
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readShort();
+        resultStream.readFloat();
+
+        // make sure all this buffer is padding zeroes
+        for(int i = 0; i < 190; i++)
+        {
+            resultStream.readByte();
+        }
+
+        // should be 4 height values, each 1.0, as 2 byte integers
+        assertEquals(resultStream.readShort(), 1, "Incorrect height at 0,0");
+        assertEquals(resultStream.readShort(), 2, "Incorrect height at 0,1");
+        assertEquals(resultStream.readShort(), 0, "Incorrect height at 0,2");
+        assertEquals(resultStream.readShort(), 3, "Incorrect height at 1,0");
+        assertEquals(resultStream.readShort(), 4, "Incorrect height at 1,1");
+        assertEquals(resultStream.readShort(), 0, "Incorrect height at 1,2");
+        assertEquals(resultStream.readShort(), 0, "Incorrect height at 2,0");
+        assertEquals(resultStream.readShort(), 0, "Incorrect height at 2,1");
+        assertEquals(resultStream.readShort(), 0, "Incorrect height at 2,2");
+
+        assertEquals(resultStream.read(), -1, "End of stream not found");
+    }
+
+    @Test(groups = "unit")
+    public void test4ByteIntegerExportGridOversize()
+        throws Exception
+    {
+        final BTVersion TEST_VERSION = BTVersion.VERSION_1_3;
+        BTExporter classUnderTest = new BTExporter(TEST_VERSION);
+        classUnderTest.exportTwoByteHeights(false);
+        classUnderTest.exportFloatHeights(false);
+        classUnderTest.setDataSource(exportTestSource);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream(1024);
+        classUnderTest.setGridSize(3, 3);
+        classUnderTest.export(output);
+
+        byte[] data = output.toByteArray();
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+
+        // http://vterrain.org/Implementation/Formats/BT.html
+        byte[] versionBytes = new byte[10];
+        resultStream.read(versionBytes);
+
+        String header = new String(versionBytes);
+        assertEquals(header, "binterr1.3", "Incorrect version number written");
+
+        assertEquals(resultStream.readInt(), 3, "Wrong column count written");
+        assertEquals(resultStream.readInt(), 3, "Wrong row count written");
+        assertEquals(resultStream.readShort(), 4, "Should have 2 byte heights");
+        assertEquals(resultStream.readShort(), 0, "Should have integer heights");
+
+        // skip through the rest of the header here.
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readShort();
+        resultStream.readFloat();
+
+        // make sure all this buffer is padding zeroes
+        for(int i = 0; i < 190; i++)
+        {
+            resultStream.readByte();
+        }
+
+        // should be 4 height values, each 1.0, as 2 byte integers
+        assertEquals(resultStream.readInt(), 1, "Incorrect height at 0,0");
+        assertEquals(resultStream.readInt(), 2, "Incorrect height at 0,1");
+        assertEquals(resultStream.readInt(), 0, "Incorrect height at 0,2");
+        assertEquals(resultStream.readInt(), 3, "Incorrect height at 1,0");
+        assertEquals(resultStream.readInt(), 4, "Incorrect height at 1,1");
+        assertEquals(resultStream.readInt(), 0, "Incorrect height at 1,2");
+        assertEquals(resultStream.readInt(), 0, "Incorrect height at 2,0");
+        assertEquals(resultStream.readInt(), 0, "Incorrect height at 2,1");
+        assertEquals(resultStream.readInt(), 0, "Incorrect height at 2,2");
+
+        assertEquals(resultStream.read(), -1, "End of stream not found");
+    }
+
+    @Test(groups = "unit")
+    public void test4ByteFloatExportGridOversize()
+        throws Exception
+    {
+        final BTVersion TEST_VERSION = BTVersion.VERSION_1_3;
+        BTExporter classUnderTest = new BTExporter(TEST_VERSION);
+        classUnderTest.exportTwoByteHeights(false);
+        classUnderTest.exportFloatHeights(true);
+        classUnderTest.setDataSource(exportTestSource);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream(1024);
+        classUnderTest.setGridSize(3, 3);
+        classUnderTest.export(output);
+
+        byte[] data = output.toByteArray();
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+
+        // http://vterrain.org/Implementation/Formats/BT.html
+        byte[] versionBytes = new byte[10];
+        resultStream.read(versionBytes);
+
+        String header = new String(versionBytes);
+        assertEquals(header, "binterr1.3", "Incorrect version number written");
+
+        assertEquals(resultStream.readInt(), 3, "Wrong column count written");
+        assertEquals(resultStream.readInt(), 3, "Wrong row count written");
+        assertEquals(resultStream.readShort(), 4, "Should have 2 byte heights");
+        assertEquals(resultStream.readShort(), 1, "Should have float heights");
+
+        // skip through the rest of the header here.
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readShort();
+        resultStream.readFloat();
+
+        // make sure all this buffer is padding zeroes
+        for(int i = 0; i < 190; i++)
+        {
+            resultStream.readByte();
+        }
+
+        // should be 4 height values, each 1.0, as 2 byte integers
+        assertEquals(resultStream.readFloat(), 1.0f, "Incorrect height at 0,0");
+        assertEquals(resultStream.readFloat(), 2.0f, "Incorrect height at 0,1");
+        assertEquals(resultStream.readFloat(), 0.0f, "Incorrect height at 0,2");
+        assertEquals(resultStream.readFloat(), 3.0f, "Incorrect height at 1,0");
+        assertEquals(resultStream.readFloat(), 4.0f, "Incorrect height at 1,1");
+        assertEquals(resultStream.readFloat(), 0.0f, "Incorrect height at 1,2");
+        assertEquals(resultStream.readFloat(), 0.0f, "Incorrect height at 2,0");
+        assertEquals(resultStream.readFloat(), 0.0f, "Incorrect height at 2,1");
+        assertEquals(resultStream.readFloat(), 0.0f, "Incorrect height at 2,2");
+
+        assertEquals(resultStream.read(), -1, "End of stream not found");
+    }
+
+    @Test(groups = "unit")
+    public void test4ByteIntegerExport()
+        throws Exception
+    {
+        final BTVersion TEST_VERSION = BTVersion.VERSION_1_3;
+        BTExporter classUnderTest = new BTExporter(TEST_VERSION);
+        classUnderTest.exportTwoByteHeights(false);
+        classUnderTest.exportFloatHeights(false);
+        classUnderTest.setDataSource(exportTestSource);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream(1024);
+        classUnderTest.export(output);
+
+        byte[] data = output.toByteArray();
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+
+        // http://vterrain.org/Implementation/Formats/BT.html
+        byte[] versionBytes = new byte[10];
+        resultStream.read(versionBytes);
+
+        String header = new String(versionBytes);
+        assertEquals(header, "binterr1.3", "Incorrect version number written");
+
+        assertEquals(resultStream.readInt(), 2, "Wrong column count written");
+        assertEquals(resultStream.readInt(), 2, "Wrong row count written");
+        assertEquals(resultStream.readShort(), 4, "Should have 4 byte heights");
+        assertEquals(resultStream.readShort(), 0, "Should have integer heights");
+
+        // skip through the rest of the header here.
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readShort();
+        resultStream.readFloat();
+
+        // make sure all this buffer is padding zeroes
+        for(int i = 0; i < 190; i++)
+        {
+            resultStream.readByte();
+        }
+
+        // should be 4 height values, each 1.0, as 2 byte integers
+        assertEquals(resultStream.readInt(), 1, "Incorrect height at 0,0");
+        assertEquals(resultStream.readInt(), 2, "Incorrect height at 0,1");
+        assertEquals(resultStream.readInt(), 3, "Incorrect height at 1,0");
+        assertEquals(resultStream.readInt(), 4, "Incorrect height at 1,1");
+
+        assertEquals(resultStream.read(), -1, "End of stream not found");
+    }
+
+    @Test(groups = "unit")
+    public void test4ByteFloatExport()
+        throws Exception
+    {
+        final BTVersion TEST_VERSION = BTVersion.VERSION_1_3;
+        BTExporter classUnderTest = new BTExporter(TEST_VERSION);
+        classUnderTest.exportTwoByteHeights(false);
+        classUnderTest.exportFloatHeights(true);
+        classUnderTest.setDataSource(exportTestSource);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream(1024);
+        classUnderTest.export(output);
+
+        byte[] data = output.toByteArray();
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+
+        // http://vterrain.org/Implementation/Formats/BT.html
+        byte[] versionBytes = new byte[10];
+        resultStream.read(versionBytes);
+
+        String header = new String(versionBytes);
+        assertEquals(header, "binterr1.3", "Incorrect version number written");
+
+        assertEquals(resultStream.readInt(), 2, "Wrong column count written");
+        assertEquals(resultStream.readInt(), 2, "Wrong row count written");
+        assertEquals(resultStream.readShort(), 4, "Should have 4 byte heights");
+        assertEquals(resultStream.readShort(), 1, "Should have float heights");
+
+        // skip through the rest of the header here.
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readShort();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readDouble();
+        resultStream.readShort();
+        resultStream.readFloat();
+
+        // make sure all this buffer is padding zeroes
+        for(int i = 0; i < 190; i++)
+        {
+            resultStream.readByte();
+        }
+
+        // should be 4 height values, each 1.0, as 2 byte integers
+        assertEquals(resultStream.readFloat(), 1.0f, "Incorrect height at 0,0");
+        assertEquals(resultStream.readFloat(), 2.0f, "Incorrect height at 0,1");
+        assertEquals(resultStream.readFloat(), 3.0f, "Incorrect height at 1,0");
+        assertEquals(resultStream.readFloat(), 4.0f, "Incorrect height at 1,1");
+
+        assertEquals(resultStream.read(), -1, "End of stream not found");
     }
 
     @DataProvider(name = "extents handling")

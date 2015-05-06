@@ -551,15 +551,25 @@ public class BTExporter
             {
                 for(int i = 0; i < columnCount; i++)
                 {
-                    for(int j = 0; j < rowCount; j++)
+                    if(i < heights.length)
                     {
-                        if(heights[i].length <= j)
+                        for(int j = 0; j < rowCount; j++)
+                        {
+                            if(heights[i].length <= j)
+                            {
+                                dataOutput.writeShort(0);
+                            }
+                            else
+                            {
+                                dataOutput.writeShort((int) heights[i][j]);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for(int j = 0; j < rowCount; j++)
                         {
                             dataOutput.writeShort(0);
-                        }
-                        else
-                        {
-                            dataOutput.writeShort((int)heights[i][j]);
                         }
                     }
                 }
@@ -571,15 +581,25 @@ public class BTExporter
             {
                 for(int i = 0; i < columnCount; i++)
                 {
-                    for(int j = 0; j < rowCount; j++)
+                    if(i < heights.length)
                     {
-                        if(heights[i].length <= j)
+                        for(int j = 0; j < rowCount; j++)
+                        {
+                            if(heights[i].length <= j)
+                            {
+                                dataOutput.writeFloat(0);
+                            }
+                            else
+                            {
+                                dataOutput.writeFloat(heights[i][j]);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for(int j = 0; j < rowCount; j++)
                         {
                             dataOutput.writeFloat(0);
-                        }
-                        else
-                        {
-                            dataOutput.writeFloat(heights[i][j]);
                         }
                     }
                 }
@@ -588,15 +608,25 @@ public class BTExporter
             {
                 for(int i = 0; i < columnCount; i++)
                 {
-                    for(int j = 0; j < rowCount; j++)
+                    if(i < heights.length)
                     {
-                        if(heights[i].length <= j)
+                        for(int j = 0; j < rowCount; j++)
+                        {
+                            if(heights[i].length <= j)
+                            {
+                                dataOutput.writeInt(0);
+                            }
+                            else
+                            {
+                                dataOutput.writeInt((int) heights[i][j]);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for(int j = 0; j < rowCount; j++)
                         {
                             dataOutput.writeInt(0);
-                        }
-                        else
-                        {
-                            dataOutput.writeInt((int) heights[i][j]);
                         }
                     }
                 }
