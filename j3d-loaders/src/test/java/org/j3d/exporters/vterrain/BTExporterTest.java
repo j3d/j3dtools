@@ -14,7 +14,7 @@ package org.j3d.exporters.vterrain;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-import org.j3d.io.BlockDataInputStream;
+import org.j3d.io.LittleEndianDataInputStream;
 import org.j3d.loaders.HeightMapSource;
 import org.j3d.loaders.HeightMapSourceOrigin;
 import org.testng.annotations.DataProvider;
@@ -178,7 +178,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];
@@ -222,7 +222,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];
@@ -265,7 +265,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];
@@ -307,7 +307,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];
@@ -380,7 +380,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];
@@ -437,7 +437,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];
@@ -494,7 +494,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];
@@ -556,7 +556,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];
@@ -618,7 +618,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];
@@ -679,7 +679,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];
@@ -735,7 +735,7 @@ public class BTExporterTest
         byte[] data = output.toByteArray();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        BlockDataInputStream resultStream = new BlockDataInputStream(bis);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
 
         // http://vterrain.org/Implementation/Formats/BT.html
         byte[] versionBytes = new byte[10];

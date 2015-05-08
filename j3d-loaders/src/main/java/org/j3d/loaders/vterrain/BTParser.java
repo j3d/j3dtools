@@ -11,12 +11,16 @@ package org.j3d.loaders.vterrain;
 
 // Externla imports
 import java.io.BufferedInputStream;
+import java.io.DataInput;
 import java.io.InputStream;
 import java.io.IOException;
 
 // Local parser
+import org.j3d.exporters.vterrain.BTVersion;
+import org.j3d.io.LittleEndianDataInputStream;
 import org.j3d.loaders.HeightMapSource;
 import org.j3d.loaders.HeightMapSourceOrigin;
+import org.j3d.loaders.InvalidFormatException;
 import org.j3d.loaders.UnsupportedFormatException;
 
 /**
@@ -36,6 +40,18 @@ import org.j3d.loaders.UnsupportedFormatException;
  */
 public class BTParser implements HeightMapSource
 {
+    /** Header string constant representing V1.0 */
+    private static final String VERSION_1_0 = "binterr1.0";
+
+    /** Header string constant representing V1.1 */
+    private static final String VERSION_1_1 = "binterr1.1";
+
+    /** Header string constant representing V1.2 */
+    private static final String VERSION_1_2 = "binterr1.2";
+
+    /** Header string constant representing V1.3 */
+    private static final String VERSION_1_3 = "binterr1.3";
+
     /** Buffer while reading bytes from the stream */
     private byte[] buffer;
 
@@ -43,7 +59,7 @@ public class BTParser implements HeightMapSource
      * The stream used to fetch the data from. Must be set before calling
      * any methods in this base class.
      */
-    private BufferedInputStream input;
+    private DataInput input;
 
     /** The header information for this file */
     private BTHeader header;
@@ -76,14 +92,18 @@ public class BTParser implements HeightMapSource
     {
         this();
 
+        BufferedInputStream bis;
+
         if(is instanceof BufferedInputStream)
         {
-            input = (BufferedInputStream) is;
+            bis = (BufferedInputStream) is;
         }
         else
         {
-            input = new BufferedInputStream(is);
+            bis = new BufferedInputStream(is);
         }
+
+        input = new LittleEndianDataInputStream(bis);
     }
 
     // ----- Methods defined by HeightMapSource ------------------------------
@@ -116,14 +136,18 @@ public class BTParser implements HeightMapSource
      */
     public void reset(InputStream is)
     {
+        BufferedInputStream bis;
+
         if(is instanceof BufferedInputStream)
         {
-            input = (BufferedInputStream) is;
+            bis = (BufferedInputStream) is;
         }
         else
         {
-            input = new BufferedInputStream(is);
+            bis = new BufferedInputStream(is);
         }
+
+        input = new LittleEndianDataInputStream(bis);
 
         dataReady = false;
         header = null;
@@ -155,7 +179,7 @@ public class BTParser implements HeightMapSource
     /**
      * Do all the parsing work. Convenience method for all to call internally
      *
-     * @return A 2D array of the heighs read, if requested
+     * @return A 2D array of the heights read, if requested in [column][row] order
      */
     public float[][] parse()
         throws IOException
@@ -165,81 +189,95 @@ public class BTParser implements HeightMapSource
             throw new IOException("Data has already been read from this stream");
         }
 
-        input.read(buffer, 0, 10);
+        input.readFully(buffer, 0, 10);
 
         header = new BTHeader();
         int version = 0;   // 0 for v1.0, 1 for v1.1, 2 for v1.2 etc
 
-        header.version = new String(buffer, "US-ASCII");
+        String versionStr = new String(buffer, "US-ASCII");
 
-        switch(header.version)
+        switch(versionStr)
         {
-            case BTHeader.VERSION_1_0:
+            case VERSION_1_0:
                 version = 0;
+                header.version = BTVersion.VERSION_1_0;
                 break;
 
-            case BTHeader.VERSION_1_1:
+            case VERSION_1_1:
                 version = 1;
+                header.version = BTVersion.VERSION_1_1;
                 break;
 
-            case BTHeader.VERSION_1_2:
+            case VERSION_1_2:
                 version = 2;
+                header.version = BTVersion.VERSION_1_2;
+                break;
+
+            case VERSION_1_3:
+                version = 3;
+                header.version = BTVersion.VERSION_1_3;
                 break;
 
             default:
                 throw new UnsupportedFormatException("Can't handle version " + header.version + " files");
         }
 
-        header.columns = readInt();
-        header.rows = readInt();
+        header.columns = input.readInt();
+        header.rows = input.readInt();
 
         int rows = header.rows;
         int columns = header.columns;
         boolean floats_used = false;
-
-        // Read and ignore
-        int data_size = readShort();
+        boolean two_byte_heights = false;
 
         if(version > 0)
         {
-            floats_used = (readShort() == 1);
-        }
-
-        header.utmProjection = (readShort() == 1);
-        header.utmZone = readShort();
-
-        if(version > 0)
-        {
-            header.datum = readShort();
-
-            header.leftExtent = readDouble();
-            header.rightExtent = readDouble();
-            header.bottomExtent = readDouble();
-            header.topExtent = readDouble();
+            two_byte_heights = parseByteSize(input.readShort());
+            floats_used = (input.readShort() == 1);
         }
         else
         {
-            header.leftExtent = readFloat();
-            header.rightExtent = readFloat();
-            header.bottomExtent = readFloat();
-            header.topExtent = readFloat();
+            two_byte_heights = parseByteSize(input.readInt());
+        }
 
-            floats_used = (readShort() == 1);
+
+        switch(version)
+        {
+            case 0:
+                floats_used = readHeader1_0();
+                break;
+
+            case 1:
+                readHeader1_1();
+                break;
+
+            case 2:
+                readHeader1_2();
+                break;
+
+            case 3:
+                readHeader1_3();
+
         }
 
         switch(version)
         {
             case 0:
-                input.skip(212);
+                input.skipBytes(212);
                 break;
 
             case 1:
-                input.skip(196);
+                input.skipBytes(196);
                 break;
 
             case 2:
-                header.needsExternalProj = (readShort() == 1);
-                input.skip(194);
+                input.skipBytes(194);
+                break;
+
+            case 3:
+                input.skipBytes(190);
+                break;
+
         }
 
         heights = new float[rows][columns];
@@ -247,21 +285,47 @@ public class BTParser implements HeightMapSource
 
         if(floats_used)
         {
-            for(int c = 0; c < columns; c++)
+            if(two_byte_heights)
             {
-                for(int r = 0; r < rows; r++)
+                for(int c = 0; c < columns; c++)
                 {
-                    heights[r][c] = readFloat();
+                    for(int r = 0; r < rows; r++)
+                    {
+                        heights[c][r] = input.readShort();
+                    }
+                }
+            }
+            else
+            {
+                for(int c = 0; c < columns; c++)
+                {
+                    for(int r = 0; r < rows; r++)
+                    {
+                        heights[c][r] = input.readFloat();
+                    }
                 }
             }
         }
         else
         {
-            for(int c = 0; c < columns; c++)
+            if(two_byte_heights)
             {
-                for(int r = 0; r < rows; r++)
+                for(int c = 0; c < columns; c++)
                 {
-                    heights[r][c] = readInt();
+                    for(int r = 0; r < rows; r++)
+                    {
+                        heights[c][r] = input.readShort();
+                    }
+                }
+            }
+            else
+            {
+                for(int c = 0; c < columns; c++)
+                {
+                    for(int r = 0; r < rows; r++)
+                    {
+                        heights[c][r] = input.readInt();
+                    }
                 }
             }
         }
@@ -278,68 +342,91 @@ public class BTParser implements HeightMapSource
     }
 
     /**
-     * Read a long value from the stream
+     * Convenience method to take the read byte size amount from
+     * the stream and check for a value that makes sense. If not
+     * then throw an exception.
      *
-     * @return A long value
-     * @throws IOException An error occurred reading the stream
+     * @param read The value read from the stream
+     * @return true if to use two bytes for heights, false to use 4 bytes
+     * @throws InvalidFormatException The read byte size was not 2 or 4
      */
-    private long readLong() throws IOException
+    private boolean parseByteSize(int read)
     {
-        input.read(buffer, 0, 8);
+        switch(read)
+        {
+            case 2:
+                return true;
 
-        long l1 = (buffer[0] & 0xFF) | ((buffer[1] & 0xFF) << 8) |
-                  ((buffer[2] & 0xFF) << 16) | ((buffer[3] & 0xFF) << 24);
-        long l2 = ((buffer[4] & 0xFF)) | ((buffer[5] & 0xFF) << 8) |
-                  ((buffer[6] & 0xFF) << 16) | ((buffer[7] & 0xFF) << 24);
+            case 4:
+                return false;
 
-        return l1 + (l2 << 32);
+            default:
+                throw new InvalidFormatException("Byte size of " +
+                                                 read +
+                                                 " is invalid. Expected either 2 or 4");
+
+        }
     }
 
-    /**
-     * Read a int value from the stream.
-     *
-     * @return A int value
-     * @throws IOException An error occurred reading the stream
-     */
-    private int readInt() throws IOException
+    private boolean readHeader1_0() throws IOException
     {
-        input.read(buffer, 0, 4);
+        header.utmProjection = (input.readShort() == 1);
+        header.utmZone = input.readShort();
 
-        return (buffer[0] & 0xFF) | ((buffer[1] & 0xFF) << 8) |
-               ((buffer[2] & 0xFF) << 16) | ((buffer[3] & 0xFF) << 24);
+        header.datum = -2; // default for NO_DATUM value
+        header.leftExtent = input.readFloat();
+        header.rightExtent = input.readFloat();
+        header.bottomExtent = input.readFloat();
+        header.topExtent = input.readFloat();
+
+        return (input.readShort() == 1);
     }
 
-    /**
-     * Read a short value from the stream.
-     *
-     * @return A short value
-     * @throws IOException An error occurred reading the stream
-     */
-    private short readShort() throws IOException
+    private void readHeader1_1() throws IOException
     {
-        input.read(buffer, 0, 2);
-        return (short)((buffer[0] & 0xFF) + ((buffer[1] & 0xFF) << 8));
+        header.utmProjection = (input.readShort() == 1);
+        header.utmZone = input.readShort();
+
+        header.datum = input.readShort();
+
+        header.leftExtent = input.readDouble();
+        header.rightExtent = input.readDouble();
+        header.bottomExtent = input.readDouble();
+        header.topExtent = input.readDouble();
     }
 
-    /**
-     * Read a float value from the stream
-     *
-     * @return A float value
-     * @throws IOException An error occurred reading the stream
-     */
-    private float readFloat() throws IOException
+    private void readHeader1_2() throws IOException
     {
-        return Float.intBitsToFloat(readInt());
+        header.utmProjection = (input.readShort() == 1);
+        header.utmZone = input.readShort();
+
+        header.datum = input.readShort();
+
+        header.leftExtent = input.readDouble();
+        header.rightExtent = input.readDouble();
+        header.bottomExtent = input.readDouble();
+        header.topExtent = input.readDouble();
+
+        header.needsExternalProj = (input.readShort() == 1);
     }
 
-    /**
-     * Read a double value from the stream
-     *
-     * @return A double value
-     * @throws IOException An error occurred reading the stream
-     */
-    private double readDouble() throws IOException
+    private void readHeader1_3() throws IOException
     {
-        return Double.longBitsToDouble(readLong());
+        int horizontal_units = input.readShort();
+
+        int utm_zone = input.readShort();
+
+        header.utmProjection = (utm_zone == 1);
+        header.utmZone = utm_zone;
+        header.datum = input.readShort();
+
+        header.leftExtent = input.readDouble();
+        header.rightExtent = input.readDouble();
+        header.bottomExtent = input.readDouble();
+        header.topExtent = input.readDouble();
+
+        header.needsExternalProj = (input.readShort() == 1);
+
+        float vertical_scale = input.readFloat();
     }
 }

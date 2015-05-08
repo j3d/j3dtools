@@ -13,6 +13,7 @@ package org.j3d.exporters.vterrain;
 
 import java.io.*;
 
+import org.j3d.io.LittleEndianDataOutputStream;
 import org.j3d.loaders.HeightMapSource;
 
 /**
@@ -289,31 +290,33 @@ public class BTExporter
      */
     public void export(OutputStream output) throws IOException
     {
-        DataOutputStream dataOutput;
+        OutputStream buffered_stream;
 
         if(output instanceof BufferedOutputStream)
         {
-            dataOutput = new DataOutputStream(output);
+            buffered_stream = new DataOutputStream(output);
         }
         else
         {
             BufferedOutputStream bis = new BufferedOutputStream(output);
-            dataOutput = new DataOutputStream(bis);
+            buffered_stream = new DataOutputStream(bis);
         }
 
-        writeVersionHeader(dataOutput);
-        writeGridHeader(dataOutput);
-        writeDataHeader(dataOutput);
-        writeDatumHeader(dataOutput);
-        writeExtentsHeader(dataOutput);
-        writeProjectionHeader(dataOutput);
-        writeHeaderPadding(dataOutput);
-        writeHeightField(dataOutput);
+        DataOutput data_output = new LittleEndianDataOutputStream(buffered_stream);
 
-        dataOutput.flush();
+        writeVersionHeader(data_output);
+        writeGridHeader(data_output);
+        writeDataHeader(data_output);
+        writeDatumHeader(data_output);
+        writeExtentsHeader(data_output);
+        writeProjectionHeader(data_output);
+        writeHeaderPadding(data_output);
+        writeHeightField(data_output);
+
+        buffered_stream.flush();
     }
 
-    private void writeVersionHeader(DataOutputStream dataOutput) throws IOException
+    private void writeVersionHeader(DataOutput dataOutput) throws IOException
     {
         switch(exportVersion)
         {
@@ -335,7 +338,7 @@ public class BTExporter
         }
     }
 
-    private void writeGridHeader(DataOutputStream dataOutput) throws IOException
+    private void writeGridHeader(DataOutput dataOutput) throws IOException
     {
         if(((rowCount == 0) || (columnCount == 0)) && (sourceData != null))
         {
@@ -355,7 +358,7 @@ public class BTExporter
         dataOutput.writeInt(rowCount);
     }
 
-    private void writeDataHeader(DataOutputStream dataOutput) throws IOException
+    private void writeDataHeader(DataOutput dataOutput) throws IOException
     {
         if(exportVersion != BTVersion.VERSION_1_0)
         {
@@ -386,7 +389,7 @@ public class BTExporter
         }
     }
 
-    private void writeDatumHeader(DataOutputStream dataOutput) throws IOException
+    private void writeDatumHeader(DataOutput dataOutput) throws IOException
     {
         if(exportUTM)
         {
@@ -400,7 +403,7 @@ public class BTExporter
         }
     }
 
-    private void writeExtentsHeader(DataOutputStream dataOutput) throws IOException
+    private void writeExtentsHeader(DataOutput dataOutput) throws IOException
     {
         float left = 0;
         float right = 0;
@@ -468,7 +471,7 @@ public class BTExporter
         }
     }
 
-    private void writeProjectionHeader(DataOutputStream dataOutput) throws IOException
+    private void writeProjectionHeader(DataOutput dataOutput) throws IOException
     {
         if(exportVersion == BTVersion.VERSION_1_0)
         {
@@ -489,7 +492,7 @@ public class BTExporter
         }
     }
 
-    private void writeHeaderPadding(DataOutputStream dataOutput) throws IOException
+    private void writeHeaderPadding(DataOutput dataOutput) throws IOException
     {
         int pad_count = 0;
 
@@ -518,7 +521,7 @@ public class BTExporter
         }
     }
 
-    private void writeHeightField(DataOutputStream dataOutput) throws IOException
+    private void writeHeightField(DataOutput dataOutput) throws IOException
     {
         if(sourceData == null)
         {
