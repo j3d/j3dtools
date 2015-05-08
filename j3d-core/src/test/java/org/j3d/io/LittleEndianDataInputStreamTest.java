@@ -673,7 +673,7 @@ public class LittleEndianDataInputStreamTest
         final String[] test_data = { "abcdef", "12345", "My 1nter#\u0400tes?" };
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(bos);
+        LittleEndianDataOutputStream dos = new LittleEndianDataOutputStream(bos);
 
         for(int i = 0; i < test_data.length; i++)
         {
