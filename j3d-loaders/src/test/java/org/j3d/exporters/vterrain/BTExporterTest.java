@@ -17,6 +17,9 @@ import java.io.ByteArrayOutputStream;
 import org.j3d.io.LittleEndianDataInputStream;
 import org.j3d.loaders.HeightMapSource;
 import org.j3d.loaders.HeightMapSourceOrigin;
+import org.j3d.util.I18nManager;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -54,6 +57,13 @@ public class BTExporterTest
             return HeightMapSourceOrigin.BOTTOM_LEFT;
         }
     };
+
+    @BeforeMethod(groups = "unit")
+    public void setupTests() throws Exception
+    {
+        I18nManager intl_mgr = I18nManager.getManager();
+        intl_mgr.setApplication("BTExporterTest", "config.i18n.org-j3d-loaders-resources");
+    }
 
     @Test(groups = "unit")
     public void testBasicUTMConstruction() throws Exception

@@ -14,6 +14,7 @@ import java.io.BufferedInputStream;
 import java.io.DataInput;
 import java.io.InputStream;
 import java.io.IOException;
+import java.text.MessageFormat;
 
 // Local parser
 import org.j3d.exporters.vterrain.BTVersion;
@@ -22,6 +23,7 @@ import org.j3d.loaders.HeightMapSource;
 import org.j3d.loaders.HeightMapSourceOrigin;
 import org.j3d.loaders.InvalidFormatException;
 import org.j3d.loaders.UnsupportedFormatException;
+import org.j3d.util.I18nManager;
 
 /**
  * A low-level parser for the VTerrain's Project  BT file format.
@@ -40,6 +42,16 @@ import org.j3d.loaders.UnsupportedFormatException;
  */
 public class BTParser implements HeightMapSource
 {
+    private static final String PARSE_CALLED_AGAIN_PROP =
+        "org.j3d.loaders.vterrain.BTParser.parserReuseMsg";
+
+    private static final String UNSUPPORTED_VERSION_PROP =
+        "org.j3d.loaders.vterrain.BTParser.unsupportedVersionMsg";
+
+    private static final String INVALID_HEIGHT_BYTE_SIZE_PROP =
+        "org.j3d.loaders.vterrain.BTParser.invalidHeightByteSizeMsg";
+
+
     /** Header string constant representing V1.0 */
     private static final String VERSION_1_0 = "binterr1.0";
 
@@ -186,7 +198,10 @@ public class BTParser implements HeightMapSource
     {
         if(dataReady)
         {
-            throw new IOException("Data has already been read from this stream");
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(PARSE_CALLED_AGAIN_PROP);
+
+            throw new IOException(msg);
         }
 
         input.readFully(buffer, 0, 10);
@@ -219,7 +234,14 @@ public class BTParser implements HeightMapSource
                 break;
 
             default:
-                throw new UnsupportedFormatException("Can't handle version " + header.version + " files");
+                I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNSUPPORTED_VERSION_PROP);
+
+                Object[] msg_args = { versionStr };
+                MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+                String msg = msg_fmt.format(msg_args);
+
+                throw new UnsupportedFormatException(msg);
         }
 
         header.columns = input.readInt();
@@ -362,9 +384,15 @@ public class BTParser implements HeightMapSource
                 return false;
 
             default:
-                throw new InvalidFormatException("Byte size of " +
-                                                 read +
-                                                 " is invalid. Expected either 2 or 4");
+                I18nManager intl_mgr = I18nManager.getManager();
+
+                String msg_pattern = intl_mgr.getString(INVALID_HEIGHT_BYTE_SIZE_PROP);
+
+                Object[] msg_args = { read };
+                MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+                String msg = msg_fmt.format(msg_args);
+
+                throw new InvalidFormatException(msg);
 
         }
     }

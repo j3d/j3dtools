@@ -12,9 +12,11 @@
 package org.j3d.exporters.vterrain;
 
 import java.io.*;
+import java.text.MessageFormat;
 
 import org.j3d.io.LittleEndianDataOutputStream;
 import org.j3d.loaders.HeightMapSource;
+import org.j3d.util.I18nManager;
 
 /**
  * Writes out terrain data in the BT format. Export version is selectable,
@@ -24,6 +26,35 @@ import org.j3d.loaders.HeightMapSource;
  */
 public class BTExporter
 {
+    /** The constructor was called with a null version number enum value */
+    private static final String MISSING_VERSION_NUMBER_PROP =
+        "org.j3d.exporters.vterrain.BTExporter.missingVersionNumberMsg";
+
+    /** The set zone, when using UTM has an invalid zone ID */
+    private static final String INVALID_UTM_ZONE_PROP =
+        "org.j3d.exporters.vterrain.BTExporter.invalidUTMZoneMsg";
+
+    /** Height vertical scale must be greater than zero */
+    private static final String INVALID_HEIGHT_SCALE_PROP =
+        "org.j3d.exporters.vterrain.BTExporter.invalidHeightScaleMsg";
+
+    /** Number of grid rows must be greater than zero */
+    private static final String INVALID_ROW_COUNT_PROP =
+        "org.j3d.exporters.vterrain.BTExporter.invalidRowCountMsg";
+
+    /** Number of grid columns must be greater than zero */
+    private static final String INVALID_COLUMN_COUNT_PROP =
+        "org.j3d.exporters.vterrain.BTExporter.invalidColumnCountMsg";
+
+    /** Number of grid columns must be greater than zero */
+    private static final String HORIZONTAL_UNITS_PRIOR_TO_V1_3_PROP =
+        "org.j3d.exporters.vterrain.BTExporter.cannotUseHorizontalUnitsMsg";
+
+    /** Number of grid columns must be greater than zero */
+    private static final String MISSING_HORIZONTAL_UNITS_PROP =
+        "org.j3d.exporters.vterrain.BTExporter.nullHorizontalUnitsMsg";
+
+
     /** Which version of the file to export  */
     private final BTVersion exportVersion;
 
@@ -70,7 +101,10 @@ public class BTExporter
     {
         if(version == null)
         {
-            throw new IllegalArgumentException("No version number supplied");
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MISSING_VERSION_NUMBER_PROP);
+
+            throw new IllegalArgumentException(msg);
         }
 
         exportVersion = version;
@@ -111,9 +145,16 @@ public class BTExporter
      */
     public void setDatum(boolean isUTM, int zone)
     {
-        if(isUTM && (zone < -60 || zone > 60))
+        if(isUTM && (zone < -60 || zone > 60 || zone == 0))
         {
-            throw new IllegalArgumentException("UTM zone must be between -60 and +60");
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(INVALID_UTM_ZONE_PROP);
+
+            Object[] msg_args = { zone };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
+            throw new IllegalArgumentException(msg);
         }
 
         exportUTM = isUTM;
@@ -219,7 +260,14 @@ public class BTExporter
     {
         if(scale <= 0)
         {
-            throw new IllegalArgumentException("Grid scale must be greater than zero");
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(INVALID_HEIGHT_SCALE_PROP);
+
+            Object[] msg_args = { scale };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
+            throw new IllegalArgumentException(msg);
         }
 
         verticalScale = scale;
@@ -235,12 +283,18 @@ public class BTExporter
     {
         if(exportVersion != BTVersion.VERSION_1_3)
         {
-            throw new IllegalArgumentException("Can't explicit units with formats earlier than 1.3");
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(HORIZONTAL_UNITS_PRIOR_TO_V1_3_PROP);
+
+            throw new IllegalArgumentException(msg);
         }
 
         if(unit == null)
         {
-            throw new IllegalArgumentException("Null unit passed");
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg = intl_mgr.getString(MISSING_HORIZONTAL_UNITS_PROP);
+
+            throw new IllegalArgumentException(msg);
         }
 
         horizontalUnits = unit;
@@ -287,12 +341,26 @@ public class BTExporter
     {
         if(rows < 1)
         {
-            throw new IllegalArgumentException("Must export at least one row");
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(INVALID_ROW_COUNT_PROP);
+
+            Object[] msg_args = { rows };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
+            throw new IllegalArgumentException(msg);
         }
 
         if(columns < 1)
         {
-            throw new IllegalArgumentException("Must export at least one column");
+            I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(INVALID_COLUMN_COUNT_PROP);
+
+            Object[] msg_args = { columns };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
+            throw new IllegalArgumentException(msg);
         }
 
         rowCount = rows;

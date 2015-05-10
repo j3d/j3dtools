@@ -35,7 +35,7 @@ import org.j3d.util.IntHashMap;
  * @author  Justin Couch
  * @version $Revision: 1.4 $
  */
-public class C3DParser
+public class  C3DParser
 {
     /** Message when the 2nd byte is not 0x50. */
     private static final String INVALID_FILE_FORMAT =

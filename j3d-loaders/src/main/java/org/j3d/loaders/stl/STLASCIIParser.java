@@ -13,6 +13,7 @@ package org.j3d.loaders.stl;
 
 // External imports
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.*;
 
 import java.net.URL;
@@ -61,10 +62,6 @@ class STLASCIIParser extends STLParser
     /** Unexpected data is encountered during parsing */
     private static final String INVALID_VERTEX_DATA_MSG_PROP =
         "org.j3d.loaders.stl.STLASCIIParser.invalidVertexDataMsg";
-
-    /** Unexpected EOF is encountered during parsing */
-    private static final String EOF_WTF_MSG_PROP =
-        "org.j3d.loaders.stl.STLASCIIParser.unexpectedEofMsg";
 
     /** Reader for the main stream */
     private BufferedReader  itsReader;
@@ -177,9 +174,12 @@ class STLASCIIParser extends STLParser
                 close();
 
                 I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP);
 
-                String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
-                    + lineCount;
+                Object[] msg_args = { token, lineCount };
+                MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+                String msg = msg_fmt.format(msg_args);
+
                 throw new InvalidFormatException(msg);
             }
         }
@@ -189,9 +189,12 @@ class STLASCIIParser extends STLParser
             close();
 
             I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP);
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
-                                            + lineCount;
+            Object[] msg_args = { token, lineCount };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
             throw new InvalidFormatException(msg);
         }
 
@@ -201,9 +204,12 @@ class STLASCIIParser extends STLParser
             close();
 
             I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP);
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
-                                            + lineCount;
+            Object[] msg_args = { token, lineCount };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
             throw new InvalidFormatException(msg);
         }
 
@@ -220,9 +226,12 @@ class STLASCIIParser extends STLParser
             close();
 
             I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP);
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
-                                            + lineCount;
+            Object[] msg_args = { token, lineCount };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
             throw new InvalidFormatException(msg);
         }
 
@@ -232,9 +241,12 @@ class STLASCIIParser extends STLParser
             close();
 
             I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP);
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
-                                            + lineCount;
+            Object[] msg_args = { token, lineCount };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
             throw new InvalidFormatException(msg);
         }
 
@@ -253,8 +265,12 @@ class STLASCIIParser extends STLParser
 
                 I18nManager intl_mgr = I18nManager.getManager();
 
-                String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
-                                                + lineCount;
+                String msg_pattern = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP);
+
+                Object[] msg_args = { token, lineCount };
+                MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+                String msg = msg_fmt.format(msg_args);
+
                 throw new InvalidFormatException(msg);
             }
 
@@ -274,8 +290,12 @@ class STLASCIIParser extends STLParser
 
             I18nManager intl_mgr = I18nManager.getManager();
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
-                                            + lineCount;
+            String msg_pattern = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP);
+
+            Object[] msg_args = { token, lineCount };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
             throw new InvalidFormatException(msg);
         }
 
@@ -289,9 +309,12 @@ class STLASCIIParser extends STLParser
             close();
 
             I18nManager intl_mgr = I18nManager.getManager();
+            String msg_pattern = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP);
 
-            String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) + ": "
-                                            + lineCount;
+            Object[] msg_args = { token, lineCount };
+            MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+            String msg = msg_fmt.format(msg_args);
+
             throw new InvalidFormatException(msg);
         }
 
@@ -427,8 +450,8 @@ class STLASCIIParser extends STLParser
         if(line == null)
         {
             I18nManager intl_mgr = I18nManager.getManager();
-
             String msg = intl_mgr.getString(EMPTY_FILE_MSG_PROP);
+
             throw new InvalidFormatException(msg);
         }
 
@@ -472,9 +495,11 @@ class STLASCIIParser extends STLParser
                 line = line.trim();
                 if(line.length() != 0) {
                     I18nManager intl_mgr = I18nManager.getManager();
+                    String msg_pattern = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP);
 
-                    String msg = intl_mgr.getString(UNKNOWN_KEYWORD_MSG_PROP) +
-                                 ": " + lineCount;
+                    Object[] msg_args = { line, lineCount };
+                    MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+                    String msg = msg_fmt.format(msg_args);
 
                     throw new InvalidFormatException(msg);
                 }
@@ -523,9 +548,12 @@ class STLASCIIParser extends STLParser
                 }
 
                 I18nManager intl_mgr = I18nManager.getManager();
+                String msg_pattern = intl_mgr.getString(INVALID_NORMAL_DATA_MSG_PROP);
 
-                String msg = intl_mgr.getString(INVALID_NORMAL_DATA_MSG_PROP) +
-                    num_str;
+                Object[] msg_args = { num_str, lineCount };
+                MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+                String msg = msg_fmt.format(msg_args);
+
                 throw new InvalidFormatException(msg);
             }
 
@@ -560,11 +588,16 @@ class STLASCIIParser extends STLParser
                 if (strictParsing)
                 {
                     I18nManager intl_mgr = I18nManager.getManager();
+                    String msg_pattern = intl_mgr.getString(INVALID_VERTEX_DATA_MSG_PROP);
 
-                    String msg = intl_mgr.getString(INVALID_VERTEX_DATA_MSG_PROP) +
-                       ": Cannot parse vertex: " + num_str;
+                    Object[] msg_args = { num_str, lineCount };
+                    MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+                    String msg = msg_fmt.format(msg_args);
+
                     throw new InvalidFormatException(msg);
-                } else {
+                }
+                else
+                {
                     // Common error is to use commas instead of . in Europe
                     String new_str = num_str.replace(",",".");
 
@@ -574,11 +607,13 @@ class STLASCIIParser extends STLParser
                     }
                     catch(NumberFormatException e2)
                     {
-
                         I18nManager intl_mgr = I18nManager.getManager();
+                        String msg_pattern = intl_mgr.getString(INVALID_VERTEX_DATA_MSG_PROP);
 
-                        String msg = intl_mgr.getString(INVALID_VERTEX_DATA_MSG_PROP) +
-                           ": Cannot parse vertex: " + num_str;
+                        Object[] msg_args = { num_str, lineCount };
+                        MessageFormat msg_fmt = new MessageFormat(msg_pattern, intl_mgr.getFoundLocale());
+                        String msg = msg_fmt.format(msg_args);
+
                         throw new InvalidFormatException(msg);
                     }
                 }

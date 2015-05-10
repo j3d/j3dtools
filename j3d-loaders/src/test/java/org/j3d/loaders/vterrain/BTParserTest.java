@@ -20,6 +20,8 @@ import org.j3d.loaders.HeightMapSource;
 import org.j3d.loaders.HeightMapSourceOrigin;
 import org.j3d.loaders.UnsupportedFormatException;
 import org.j3d.util.DataUtils;
+import org.j3d.util.I18nManager;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
@@ -56,6 +58,13 @@ public class BTParserTest
             return HeightMapSourceOrigin.BOTTOM_LEFT;
         }
     };
+
+    @BeforeMethod(groups = "unit")
+    public void setupTests() throws Exception
+    {
+        I18nManager intl_mgr = I18nManager.getManager();
+        intl_mgr.setApplication("BTParserTest", "config.i18n.org-j3d-loaders-resources");
+    }
 
     @Test(groups = "unit")
     public void testClear() throws Exception
