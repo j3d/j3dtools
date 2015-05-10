@@ -240,6 +240,7 @@ public class BTParser implements HeightMapSource
             two_byte_heights = parseByteSize(input.readInt());
         }
 
+        float height_scale = 1.0f;
 
         switch(version)
         {
@@ -256,7 +257,7 @@ public class BTParser implements HeightMapSource
                 break;
 
             case 3:
-                readHeader1_3();
+                height_scale = readHeader1_3();
 
         }
 
@@ -291,7 +292,7 @@ public class BTParser implements HeightMapSource
                 {
                     for(int r = 0; r < rows; r++)
                     {
-                        heights[c][r] = input.readShort();
+                        heights[c][r] = height_scale * input.readShort();
                     }
                 }
             }
@@ -301,7 +302,7 @@ public class BTParser implements HeightMapSource
                 {
                     for(int r = 0; r < rows; r++)
                     {
-                        heights[c][r] = input.readFloat();
+                        heights[c][r] = height_scale * input.readFloat();
                     }
                 }
             }
@@ -314,7 +315,7 @@ public class BTParser implements HeightMapSource
                 {
                     for(int r = 0; r < rows; r++)
                     {
-                        heights[c][r] = input.readShort();
+                        heights[c][r] = height_scale * input.readShort();
                     }
                 }
             }
@@ -324,7 +325,7 @@ public class BTParser implements HeightMapSource
                 {
                     for(int r = 0; r < rows; r++)
                     {
-                        heights[c][r] = input.readInt();
+                        heights[c][r] = height_scale * input.readInt();
                     }
                 }
             }
@@ -333,8 +334,8 @@ public class BTParser implements HeightMapSource
         float width = (float)(header.rightExtent - header.leftExtent);
         float depth = (float)(header.topExtent - header.bottomExtent);
 
-        gridStepData[0] = width / header.rows;
-        gridStepData[1] = depth / header.columns;
+        gridStepData[0] = width / (header.rows - 1);
+        gridStepData[1] = depth / (header.columns - 1);
 
         dataReady = true;
 
@@ -410,7 +411,13 @@ public class BTParser implements HeightMapSource
         header.needsExternalProj = (input.readShort() == 1);
     }
 
-    private void readHeader1_3() throws IOException
+    /**
+     * Parse the header block for a v1.3 file.
+     *
+     * @return The height scale factor available in this header
+     * @throws IOException any I/O error reading the underlying stream
+     */
+    private float readHeader1_3() throws IOException
     {
         int horizontal_units = input.readShort();
 
@@ -428,5 +435,6 @@ public class BTParser implements HeightMapSource
         header.needsExternalProj = (input.readShort() == 1);
 
         float vertical_scale = input.readFloat();
+        return vertical_scale;
     }
 }

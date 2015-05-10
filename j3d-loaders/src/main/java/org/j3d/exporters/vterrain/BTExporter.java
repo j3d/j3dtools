@@ -27,6 +27,9 @@ public class BTExporter
     /** Which version of the file to export  */
     private final BTVersion exportVersion;
 
+    /** Units to measure the horizontal units in */
+    private BTUnit horizontalUnits;
+
     /** If the datum reference code is zero, then use this value to specify which UTM zone the data is in */
     private boolean exportUTM;
 
@@ -78,6 +81,7 @@ public class BTExporter
         rowCount = 0;
         columnCount = 0;
         datumCode = BTDatumCode.NO_DATUM.getCode();
+        horizontalUnits = BTUnit.DEGREES;
     }
 
     /**
@@ -219,6 +223,53 @@ public class BTExporter
         }
 
         verticalScale = scale;
+    }
+
+    /**
+     * Set the horizontal unit to use. This is only used for version 1.3 and later. Earlier
+     * versions do not support this and will throw an exception if called.
+     *
+     * @param unit The unit to use
+     */
+    public void setHorizontalUnit(BTUnit unit)
+    {
+        if(exportVersion != BTVersion.VERSION_1_3)
+        {
+            throw new IllegalArgumentException("Can't explicit units with formats earlier than 1.3");
+        }
+
+        if(unit == null)
+        {
+            throw new IllegalArgumentException("Null unit passed");
+        }
+
+        horizontalUnits = unit;
+    }
+
+    /**
+     * Get the horizontal unit defined for this file format. If not a v1.3 file, this will return
+     * null. If a v1.3 file and this has not been set previously, it will return metres if the
+     * projection type is UTM and degress if the projection type is not UTM.
+     *
+     * @return null for < v1.3 files and see comment for the rest
+     */
+    public BTUnit getHorizontalUnit()
+    {
+        if(exportVersion == BTVersion.VERSION_1_3)
+        {
+            if(horizontalUnits == null)
+            {
+                return exportUTM ? BTUnit.METRES : BTUnit.DEGREES;
+            }
+            else
+            {
+                return horizontalUnits;
+            }
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
@@ -367,10 +418,26 @@ public class BTExporter
 
             if(exportVersion == BTVersion.VERSION_1_3)
             {
-                if(externalProjection)
+                if(!externalProjection)
                 {
-                    // TODO: Need flag for horizontal units
-                    dataOutput.writeShort(0);
+                    switch(horizontalUnits)
+                    {
+                        case DEGREES:
+                            dataOutput.writeShort(0);
+                            break;
+
+                        case METRES:
+                            dataOutput.writeShort(1);
+                            break;
+
+                        case FEET_INTERNATIONAL:
+                            dataOutput.writeShort(2);
+                            break;
+
+                        case FEET_US:
+                            dataOutput.writeShort(3);
+                            break;
+                    }
                 }
                 else
                 {

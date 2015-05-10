@@ -67,6 +67,7 @@ public class BTExporterTest
         assertEquals(classUnderTest.getVersion(), TEST_VERSION, "Incorrect version stored");
         assertTrue(classUnderTest.usingUTM(), "Incorrect UTM handler flag");
         assertEquals(classUnderTest.getDatum(), TEST_UTM_ZONE, "Incorrect UTM zone stored");
+        assertNull(classUnderTest.getHorizontalUnit(), "No horizontal units should be defined");
         assertTrue(classUnderTest.isExportingTwoByteHeights(), "Did not default to 2 bytes per point");
         assertFalse(classUnderTest.isExportingFloatHeights(), "Should export integer heights by default");
         assertFalse(classUnderTest.needsExternalProjectionInfo(), "Default should not need external projection");
@@ -93,6 +94,7 @@ public class BTExporterTest
         assertEquals(classUnderTest.getVersion(), TEST_VERSION, "Incorrect version stored");
         assertFalse(classUnderTest.usingUTM(), "Incorrect UTM handler flag");
         assertEquals(classUnderTest.getDatum(), TEST_GEODETIC_ID, "Incorrect datum stored");
+        assertNull(classUnderTest.getHorizontalUnit(), "No horizontal units should be defined");
 
         assertFalse(classUnderTest.isExportingTwoByteHeights(), "Did not change 2byte height flag");
         assertTrue(classUnderTest.isExportingFloatHeights(), "Did not change float height flag");
@@ -164,6 +166,39 @@ public class BTExporterTest
     {
         BTExporter classUnderTest = new BTExporter(BTVersion.VERSION_1_3);
         classUnderTest.setDatum(true, -75);
+    }
+
+    @Test(groups = "unit", dataProvider = "invalid unit setting", expectedExceptions = IllegalArgumentException.class)
+    public void testInvalidUnitSetting(BTVersion testVersion, BTUnit testUnit) throws Exception
+    {
+        BTExporter classUnderTest = new BTExporter(testVersion);
+        classUnderTest.setHorizontalUnit(testUnit);
+    }
+
+    @Test(groups = "unit", dataProvider = "valid unit settings")
+    public void testExportv1_3HeightUnits(BTUnit testUnit, int expectedEncoding) throws Exception
+    {
+        final BTVersion TEST_VERSION = BTVersion.VERSION_1_3;
+        BTExporter classUnderTest = new BTExporter(TEST_VERSION);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream(1024);
+        classUnderTest.setHorizontalUnit(testUnit);
+        classUnderTest.export(output);
+
+        byte[] data = output.toByteArray();
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        LittleEndianDataInputStream resultStream = new LittleEndianDataInputStream(bis);
+
+        // Skip all the bytes and just check the header encoding.
+        byte[] versionBytes = new byte[10];
+        resultStream.read(versionBytes);
+
+        resultStream.readInt();
+        resultStream.readInt();
+        resultStream.readShort();
+        resultStream.readShort();
+        assertEquals(resultStream.readShort(), expectedEncoding, "Incorrect height encoding");
     }
 
     @Test(groups = "unit")
@@ -786,6 +821,53 @@ public class BTExporterTest
             { HeightMapSourceOrigin.TOP_RIGHT,    -1.0,  0.0, -1.0, 0.0 }
         };
 
+        return ret_val;
+    }
+
+    @DataProvider(name = "invalid unit setting")
+    public Object[][] generateInvalidUnitSettings()
+    {
+        BTUnit[] all_units = BTUnit.values();
+        Object[][] ret_val = new Object[3 * all_units.length][2];
+
+        int idx = 0;
+        for(int i = 0; i < all_units.length; i++, idx++)
+        {
+            ret_val[idx][0] = BTVersion.VERSION_1_0;
+            ret_val[idx][1] = all_units[i];
+        }
+
+        for(int i = 0; i < all_units.length; i++, idx++)
+        {
+            ret_val[idx][0] = BTVersion.VERSION_1_1;
+            ret_val[idx][1] = all_units[i];
+        }
+
+        for(int i = 0; i < all_units.length; i++, idx++)
+        {
+            ret_val[idx][0] = BTVersion.VERSION_1_2;
+            ret_val[idx][1] = all_units[i];
+        }
+
+        return ret_val;
+    }
+
+    @DataProvider(name = "valid unit settings")
+    public Object[][] generateValidUnitSettings()
+    {
+        Object[][] ret_val = new Object[4][2];
+
+        ret_val[0][0] = BTUnit.DEGREES;
+        ret_val[0][1] = 0;
+
+        ret_val[1][0] = BTUnit.METRES;
+        ret_val[1][1] = 1;
+
+        ret_val[2][0] = BTUnit.FEET_INTERNATIONAL;
+        ret_val[2][1] = 2;
+
+        ret_val[3][0] = BTUnit.FEET_US;
+        ret_val[3][1] = 3;
         return ret_val;
     }
 }
