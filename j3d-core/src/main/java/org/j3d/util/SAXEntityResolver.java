@@ -42,6 +42,22 @@ import org.xml.sax.InputSource;
  */
 public class SAXEntityResolver implements EntityResolver
 {
+    /** A root directory to find the DTD files under */
+    private String dtdRootDirectory;
+
+    /**
+     * Set a root directory to locate DTDs in. Setting to null clears the
+     * root directory and finds it directly in the classpath. No check is done
+     * to validate that this path actually exists in the classpath at the
+     * time of setting
+     *
+     * @param dir The directory to use or null to clear
+     */
+    public void setDTDRootDirectory(String dir)
+    {
+        dtdRootDirectory = dir;
+    }
+
     /**
      * Resolve the combination of system and public identifiers. This
      * resolver ignores the publicId information.
@@ -94,7 +110,14 @@ System.out.println(" systemID: " + systemId);
         String filename = uri;
 
         if(pos != -1)
+        {
             filename = uri.substring(pos + 1);
+        }
+
+        if(dtdRootDirectory != null)
+        {
+            filename = dtdRootDirectory + '/' + filename;
+        }
 
         ClassLoader cl = ClassLoader.getSystemClassLoader();
         ret_val = cl.getResourceAsStream(filename);
