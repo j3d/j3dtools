@@ -84,7 +84,7 @@ public class SAXErrorHandler implements ErrorHandler
     @Override
     public void warning(SAXParseException spe) throws SAXException
     {
-        System.out.println("Warning: " + getParseExceptionInfo(spe));
+        output.println("Warning: " + getParseExceptionInfo(spe));
     }
 
     /**

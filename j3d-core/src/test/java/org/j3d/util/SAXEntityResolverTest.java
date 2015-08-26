@@ -28,14 +28,14 @@ public class SAXEntityResolverTest
     {
         final String TEST_SYSTEM_ID = "http://www.j3d.org/dummy/basic.dtd";
 
-        SAXEntityResolver classUnderTest = new SAXEntityResolver();
-        InputSource result = classUnderTest.resolveEntity(null, TEST_SYSTEM_ID);
+        SAXEntityResolver class_under_test = new SAXEntityResolver();
+        InputSource result = class_under_test.resolveEntity(null, TEST_SYSTEM_ID);
 
         assertNull(result, "Should not have found DTD in the root directory");
 
-        classUnderTest.setDTDRootDirectory("dtd");
+        class_under_test.setDTDRootDirectory("dtd");
 
-        result = classUnderTest.resolveEntity(null, TEST_SYSTEM_ID);
+        result = class_under_test.resolveEntity(null, TEST_SYSTEM_ID);
 
         assertNotNull(result, "Should have found DTD after setting main directory");
     }
