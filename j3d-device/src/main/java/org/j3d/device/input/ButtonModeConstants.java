@@ -27,7 +27,7 @@ package org.j3d.device.input;
  * @author Alan Hudson
  * @version $Revision: 1.1 $
  */
-public class ButtonModeConstants
+public interface ButtonModeConstants
 {
     public static final int NOTHING = 0;
     public static final int PICKING = 1;
