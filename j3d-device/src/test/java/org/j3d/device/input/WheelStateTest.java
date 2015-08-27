@@ -11,6 +11,7 @@
 
 package org.j3d.device.input;
 
+import org.j3d.device.input.WheelState;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
