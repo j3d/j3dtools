@@ -90,12 +90,11 @@ public class GamepadState extends GenericHIDState
     {
     }
 
-    /**
-     * Clear changed flags.
-     */
     @Override
     public void clearChanged()
     {
+        super.clearChanged();
+
         l1Button_changed = false;
         r1Button_changed = false;
         startButton_changed = false;

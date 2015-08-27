@@ -19,10 +19,9 @@ package org.j3d.device.input;
 // None
 
 /**
- * Holds a single gamepad state.
+ * Holds a single steering wheel state.
  *
  * @author Alan Hudson
- * @version $Revision: 1.1 $
  */
 public class WheelState extends GenericHIDState
 {
@@ -72,6 +71,8 @@ public class WheelState extends GenericHIDState
     @Override
     public void clearChanged()
     {
+        super.clearChanged();
+
         wheelX_changed = false;
         throttleSlider_changed = false;
         button1_changed = false;
