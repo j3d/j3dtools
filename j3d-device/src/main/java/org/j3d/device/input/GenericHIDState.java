@@ -37,4 +37,34 @@ public class GenericHIDState extends DeviceState
         axisValue = new float[0];
         changeValue = new boolean[0];
     }
+
+    // ----- Methods defined by DeviceState ----------------------------------
+
+    @Override
+    public void clearChanged()
+    {
+        for(int i = 0; i < changeValue.length; i++)
+        {
+            changeValue[i] = false;
+        }
+    }
+
+    // ----- Local Methods ---------------------------------------------------
+
+    /**
+     * Allocate a number of axis items. Replaces the existing assignments
+     * with new values that have defaulted to 0 and unchanged.
+     *
+     * @param count A number that must be non-negative
+     */
+    public void allocateAxes(int count)
+    {
+        if(count < 0)
+        {
+            throw new IllegalArgumentException("Count must be 0 or greater");
+        }
+
+        axisValue = new float[count];
+        changeValue = new boolean[count];
+    }
 }
