@@ -105,6 +105,7 @@ public class BezierCanvas extends Canvas
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mousePressed(MouseEvent evt)
     {
         Point p = evt.getPoint();
@@ -124,6 +125,7 @@ public class BezierCanvas extends Canvas
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseReleased(MouseEvent evt)
     {
         selectedPoint = -1;
@@ -134,6 +136,7 @@ public class BezierCanvas extends Canvas
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseClicked(MouseEvent evt)
     {
         Point p = evt.getPoint();
@@ -228,6 +231,7 @@ public class BezierCanvas extends Canvas
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseEntered(MouseEvent evt)
     {
     }
@@ -237,6 +241,7 @@ public class BezierCanvas extends Canvas
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseExited(MouseEvent evt)
     {
     }
@@ -246,6 +251,7 @@ public class BezierCanvas extends Canvas
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseMoved(MouseEvent evt)
     {
     }
@@ -255,6 +261,7 @@ public class BezierCanvas extends Canvas
      *
      * @param evt The event that caused this method to be called
      */
+    @Override
     public void mouseDragged(MouseEvent evt)
     {
         if(selectedPoint == -1)
@@ -281,8 +288,9 @@ public class BezierCanvas extends Canvas
     /**
      * Notification that the drawing mode is now the new value.
      *
-     * @para mode One of the modes above
+     * @param mode One of the modes above
      */
+    @Override
     public void changeMode(int mode)
     {
         drawMode = mode;
@@ -292,8 +300,9 @@ public class BezierCanvas extends Canvas
      * Notification that the user has selected a different number of facets
      * to work with.
      *
-     * @para number The new number to use
+     * @param number The new number to use
      */
+    @Override
     public void changeFacetCount(int number)
     {
         if(maxFacets < number)
@@ -311,6 +320,7 @@ public class BezierCanvas extends Canvas
     /**
      * Override update() to prevent the complete clear. Calls paint() directly.
      */
+    @Override
     public void update(Graphics g)
     {
         paint(g);
@@ -319,6 +329,7 @@ public class BezierCanvas extends Canvas
     /**
      * Do the repaint of the canvas now.
      */
+    @Override
     public void paint(Graphics g)
     {
         if(!initialised)
