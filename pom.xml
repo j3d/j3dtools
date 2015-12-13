@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.j3d</groupId>
     <artifactId>j3dtools</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>j3d.org Tools</name>
@@ -76,6 +76,7 @@
 
     <properties>
         <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
+        <maven.source.plugin.version>2.2.1</maven.source.plugin.version>
         <maven.javadoc.plugin.version>2.9.1</maven.javadoc.plugin.version>
         <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
         <javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
@@ -158,9 +159,25 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven.source.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven.javadoc.plugin.version}</version>
                 <configuration>
+                    <!-- Following two do the same, dependent on Java8 or Java 7 and below -->
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <failOnError>false</failOnError>
                     <docfilessubdirs>true</docfilessubdirs>
                     <windowtitle>j3d.org Code Library ${project.version}</windowtitle>
                     <doctitle>j3d.org Code Repository API ${project.version}</doctitle>
@@ -177,59 +194,21 @@
                     <excludePackageNames>
                         org.j3d.ui.collision
                     </excludePackageNames>
-                    <groups>
-                        <group>
-                            <title>J3D Core</title>
-                            <packages>org.j3d.color*:org.j3d.io*:org.j3d.maths*:org.j3d.util*</packages>
-                        </group>
-                        <group>
-                            <title>Devices</title>
-                            <packages>org.j3d.device*</packages>
-                        </group>
-                        <group>
-                            <title>Geometry</title>
-                            <packages>org.j3d.geom*</packages>
-                        </group>
-                        <group>
-                            <title>File Loaders</title>
-                            <packages>org.j3d.loaders*</packages>
-                        </group>
-                        <group>
-                            <title>Terrain Management</title>
-                            <packages>org.j3d.terrain*</packages>
-                        </group>
-                        <group>
-                            <title>Texture Utilities</title>
-                            <packages>org.j3d.texture*</packages>
-                        </group>
-                        <group>
-                            <title>UI Utilities</title>
-                            <packages>org.j3d.ui*</packages>
-                        </group>
-                        <group>
-                            <title>J3D Filter</title>
-                            <packages>j3d.filter*</packages>
-                        </group>
-                    </groups>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>aggregate</id>
+                        <id>attach-javadocs</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>aggregate</goal>
-                            <goal>aggregate-jar</goal>
+                            <goal>jar</goal>
                         </goals>
-                        <phase>site</phase>
-                        <configuration>
-                            <sourcepath>${project.build.sourceDirectory}/../generated</sourcepath>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.3</version>
+                <version>1.6.5</version>
                 <extensions>true</extensions>
                 <configuration>
                     <serverId>ossrh</serverId>
@@ -242,12 +221,12 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
+            <id>ossrh</id>
             <name>Sonatype Nexus snapshot repository</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
-            <id>sonatype-nexus-staging</id>
+            <id>ossrh</id>
             <name>Sonatype Nexus release repository</name>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
@@ -292,12 +271,89 @@
                 <artifactId>findbugs-maven-plugin</artifactId>
                 <version>2.5.3</version>
             </plugin>
+<!--
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.plugin.version}</version>
+                <configuration>
+                    <failOnError>false</failOnError>
+                    <docfilessubdirs>true</docfilessubdirs>
+                    <windowtitle>j3d.org Code Library ${project.version}</windowtitle>
+                    <doctitle>j3d.org Code Repository API ${project.version}</doctitle>
+                    <header>j3d.org Code</header>
+                    <bottom><![CDATA[
+                            <center>
+                            Latest Info from <a href="http://code.j3d.org">http://code.j3d.org/</a> <br>
+                                <font size=2>Copyright &copy; 2001 - 2015 <a href="http://www.j3d.org">j3d.org</a></font>
+                            </center>
+                            ]]>
+                    </bottom>
+                    <overview>${project.basedir}/j3d-core/src/main/javadoc/overview.html</overview>
+                    <quiet>true</quiet>
+                    <excludePackageNames>
+                        org.j3d.ui.collision
+                    </excludePackageNames>
+                    <groups>
+                        <group>
+                            <title>J3D Core</title>
+                            <packages>org.j3d.color*:org.j3d.io*:org.j3d.maths*:org.j3d.util*</packages>
+                        </group>
+                        <group>
+                            <title>Devices</title>
+                            <packages>org.j3d.device*</packages>
+                        </group>
+                        <group>
+                            <title>Geometry</title>
+                            <packages>org.j3d.geom*</packages>
+                        </group>
+                        <group>
+                            <title>File Loaders</title>
+                            <packages>org.j3d.loaders*</packages>
+                        </group>
+                        <group>
+                            <title>Terrain Management</title>
+                            <packages>org.j3d.terrain*</packages>
+                        </group>
+                        <group>
+                            <title>Texture Utilities</title>
+                            <packages>org.j3d.texture*</packages>
+                        </group>
+                        <group>
+                            <title>UI Utilities</title>
+                            <packages>org.j3d.ui*</packages>
+                        </group>
+                        <group>
+                            <title>J3D Filter</title>
+                            <packages>j3d.filter*</packages>
+                        </group>
+                    </groups>
+                </configuration>
+-->
+<!--
+                <executions>
+                    <execution>
+                        <id>aggregate</id>
+                        <goals>
+                            <goal>aggregate</goal>
+                            <goal>aggregate-jar</goal>
+                        </goals>
+                        <phase>site</phase>
+                        <configuration>
+                            <sourcepath>${project.build.sourceDirectory}/../generated</sourcepath>
+                        </configuration>
+                    </execution>
+                </executions>
+-->
+<!--
+            </plugin>
+-->
         </plugins>
     </reporting>
 
     <profiles>
         <profile>
-            <id>release-sign-artifacts</id>
+            <id>ossrh</id>
             <activation>
                 <property>
                     <name>performRelease</name>
@@ -309,6 +365,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -318,7 +375,6 @@
                                 </goals>
                             </execution>
                         </executions>
-
                     </plugin>
                 </plugins>
             </build>
