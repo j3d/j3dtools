@@ -7,17 +7,17 @@
     <parent>
         <groupId>org.j3d</groupId>
         <artifactId>j3dtools</artifactId>
-        <version>3.0.0-RC1</version>
+        <version>3.0.0</version>
     </parent>
 
     <artifactId>j3d-terrain</artifactId>
-    <version>3.0.0-RC1</version>
+    <version>3.0.0</version>
 
     <dependencies>
         <dependency>
             <groupId>org.j3d</groupId>
             <artifactId>j3d-geom</artifactId>
-            <version>3.0.0-RC1</version>
+            <version>3.0.0</version>
         </dependency>
     </dependencies>
 </project>
