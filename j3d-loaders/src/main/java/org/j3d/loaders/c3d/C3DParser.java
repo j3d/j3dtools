@@ -389,7 +389,9 @@ public class  C3DParser
         reader.setBuffer(buffer);
 
         // Readjust the read values to be more useful
-        header.numAnalogChannels /= header.numAnalogSamplesPer3DFrame;
+        if (header.numAnalogSamplesPer3DFrame != 0) {
+            header.numAnalogChannels /= header.numAnalogSamplesPer3DFrame;
+        } // on a C3D file without analog data this would divide by zero
         header.analogSampleRate = header.trajectorySampleRate *
                                   header.numAnalogSamplesPer3DFrame;
 
