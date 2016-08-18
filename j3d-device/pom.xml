@@ -7,18 +7,18 @@
     <parent>
         <groupId>org.j3d</groupId>
         <artifactId>j3dtools</artifactId>
-        <version>3.0-SNAPSHOT</version>
+        <version>3.0.1--RC1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>j3d-device</artifactId>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.0.1--RC1</version>
 
     <dependencies>
         <dependency>
             <groupId>org.j3d</groupId>
             <artifactId>j3d-core</artifactId>
-            <version>3.0-SNAPSHOT</version>
+            <version>3.0.1--RC1</version>
         </dependency>
         <dependency>
             <groupId>net.java.jinput</groupId>

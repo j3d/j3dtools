@@ -7,17 +7,17 @@
     <parent>
         <groupId>org.j3d</groupId>
         <artifactId>j3dtools</artifactId>
-        <version>3.0-SNAPSHOT</version>
+        <version>3.0.1--RC1</version>
     </parent>
 
     <artifactId>j3d-filter</artifactId>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.0.1--RC1</version>
 
     <dependencies>
         <dependency>
             <groupId>org.j3d</groupId>
             <artifactId>j3d-loaders</artifactId>
-            <version>3.0-SNAPSHOT</version>
+            <version>3.0.1--RC1</version>
         </dependency>
     </dependencies>
 </project>
