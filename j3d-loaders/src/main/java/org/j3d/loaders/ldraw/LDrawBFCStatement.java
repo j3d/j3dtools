@@ -37,9 +37,8 @@ public class LDrawBFCStatement extends LDrawFilePart
      * Construct the base part that is rendered in the specific colour. The
      * class keeps a reference to the given matrix rather than a copy.
      *
-     * @param col The colour to render in. Most not be null
-     * @param ref The file reference to load
-     * @param matrix THe transformation matrix to use.
+     * @param ccw True if the triangles are declared in counter clockwise order
+     * @param cull true to have backface culling on
      */
     public LDrawBFCStatement(boolean ccw, boolean cull)
     {

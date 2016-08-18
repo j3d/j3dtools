@@ -185,7 +185,7 @@ public class LDrawHeader
      * the first word from the file name.
      *
      * @return The category of this file
-     * @see http://ldraw.org/Article340.html
+     * @see <a href="http://ldraw.org/Article340.html">LDraw Categories</a>
      */
     public String getCategory()
     {

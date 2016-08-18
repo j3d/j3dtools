@@ -35,8 +35,7 @@ public interface LDrawParseObserver
     /**
      * A material block has been read from the file.
      *
-     * @param mat The material definition
-     * @return true if to keep reading
+     * @param hdr The header definition just completed
      * @return true if to keep reading
      */
     public boolean header(LDrawHeader hdr);
@@ -61,7 +60,7 @@ public interface LDrawParseObserver
     /**
      * A surface definition has been read.
      *
-     * @param boolean The polygon/line definition that is to be sent
+     * @param rend The renderable definition just read
      * @return true if to keep reading
      */
     public boolean renderable(LDrawRenderable rend);

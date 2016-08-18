@@ -40,7 +40,7 @@ public interface Light
      * Get the location of this light. This represents the centre point of the light,
      * regardless of which type of light it is. 
      * 
-     * @returns an array of coordinate values in the order x, y, z
+     * @return an array of coordinate values in the order x, y, z
      */
     public double[] getPosition();
     
