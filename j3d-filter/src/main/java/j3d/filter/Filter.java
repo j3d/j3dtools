@@ -341,8 +341,6 @@ public class Filter
      *
      * @param args The list of arguments for this application.
      * @param exit Should we use system exit
-     * @param ostream Send the output to this stream
-     * @param enc Specifies the encoding to use for the output stream
      * @return The exit code
      */
     public FilterExitCode executeFilters(String[] args, boolean exit)

@@ -42,7 +42,7 @@ public interface DrawModeListener
     /**
      * Notification that the drawing mode is now the new value.
      *
-     * @para mode One of the modes above
+     * @param mode One of the modes above
      */
     public void changeMode(int mode);
 }

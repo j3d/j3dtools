@@ -281,7 +281,7 @@ public class BezierCanvas extends Canvas
     /**
      * Notification that the drawing mode is now the new value.
      *
-     * @para mode One of the modes above
+     * @param mode One of the modes above
      */
     public void changeMode(int mode)
     {
@@ -292,7 +292,7 @@ public class BezierCanvas extends Canvas
      * Notification that the user has selected a different number of facets
      * to work with.
      *
-     * @para number The new number to use
+     * @param number The new number to use
      */
     public void changeFacetCount(int number)
     {

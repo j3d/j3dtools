@@ -84,9 +84,8 @@ public interface URLSceneGraphObject
      * the node in the first place and thus knows the general types of items
      * to pass through.
      *
-     * @param mimetype The mime type of this object if known
      * @param content The content of the object
-     * @throws IllegalArguementException The content object is not supported
+     * @throws IllegalArgumentException The content object is not supported
      */
     public void setContent(Object content)
         throws IllegalArgumentException;

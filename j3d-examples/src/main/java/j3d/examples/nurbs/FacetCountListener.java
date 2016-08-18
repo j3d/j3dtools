@@ -34,7 +34,7 @@ public interface FacetCountListener
      * Notification that the user has selected a different number of facets
      * to work with.
      *
-     * @para number The new number to use
+     * @param number The new number to use
      */
     public void changeFacetCount(int number);
 }

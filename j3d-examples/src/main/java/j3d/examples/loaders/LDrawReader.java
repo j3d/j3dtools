@@ -75,7 +75,7 @@ public class LDrawReader implements LDrawParseObserver
     /**
      * A surface definition has been read.
      *
-     * @param boolean The polygon/line definition that is to be sent
+     * @param rend The polygon/line definition that is to be sent
      * @return true if to keep reading
      */
     public boolean renderable(LDrawRenderable rend)
