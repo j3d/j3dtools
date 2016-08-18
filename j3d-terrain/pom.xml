@@ -7,18 +7,18 @@
     <parent>
         <groupId>org.j3d</groupId>
         <artifactId>j3dtools</artifactId>
-        <version>3.0.1--RC1</version>
+        <version>3.0.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>j3d-terrain</artifactId>
-    <version>3.0.1--RC1</version>
+    <version>3.0.1</version>
 
     <dependencies>
         <dependency>
             <groupId>org.j3d</groupId>
             <artifactId>j3d-geom</artifactId>
-            <version>3.0.1--RC1</version>
+            <version>3.0.1</version>
         </dependency>
     </dependencies>
 </project>
